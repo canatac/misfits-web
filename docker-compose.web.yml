@@ -3,9 +3,7 @@
 
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: rg.fr-par.scw.cloud/smtp-rust-registry/misfits-web:latest
     container_name: misfits-web
     ports:
       - "3000:3000"
