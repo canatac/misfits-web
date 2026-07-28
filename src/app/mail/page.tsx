@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MailSidebar } from "@/components/mail/sidebar";
 import { EmailList } from "@/components/mail/email-list";
 import { EmailView } from "@/components/mail/email-view";
+import { ThreadView } from "@/components/mail/thread-view";
 import { ComposerPanel } from "@/components/mail/composer-panel";
 import { SearchOverlay } from "@/components/mail/search-overlay";
 import {
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/modal";
 import { useMailShortcuts } from "@/hooks/use-mail-shortcuts";
 import { useEmailStore } from "@/stores/email-store";
+import { useThreadStore } from "@/stores/thread-store";
+import { useThreads } from "@/hooks/use-threads";
 import { useComposerStore } from "@/stores/composer-store";
 
 type MobileView = "list" | "view";
@@ -34,6 +37,13 @@ export default function MailPage() {
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
+
+  // Threading state
+  const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
+  const viewMode = useThreadStore((s) => s.viewMode);
+  const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
+  const threads = useThreads();
+  const selectedThread = threads.find((t) => t.id === selectedThreadId) ?? null;
 
   // When an email is selected on mobile, switch to view
   useEffect(() => {
@@ -150,7 +160,11 @@ export default function MailPage() {
             mobileView === "view" ? "block" : "hidden lg:block",
           )}
         >
-          <EmailView />
+          {threadingEnabled && selectedThread ? (
+            <ThreadView thread={selectedThread} viewMode={viewMode} />
+          ) : (
+            <EmailView />
+          )}
         </div>
       </div>
 

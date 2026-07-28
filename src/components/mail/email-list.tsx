@@ -38,7 +38,11 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useEmailStore, useFilteredSortedEmails } from "@/stores/email-store";
+import { useThreadStore } from "@/stores/thread-store";
+import { useThreads, useThreadActions } from "@/hooks/use-threads";
 import { EmailListItem } from "@/components/mail/email-list-item";
+import { ThreadListItem } from "@/components/mail/thread-list-item";
+import { ThreadHeader } from "@/components/mail/thread-header";
 import type { FilterType, SortBy } from "@/types/email";
 
 const FILTER_TABS: { value: FilterType; label: string }[] = [
@@ -80,6 +84,22 @@ export function EmailList({ className }: EmailListProps) {
   const setSearchQuery = useEmailStore((s) => s.setSearchQuery);
   const toggleEmailSelection = useEmailStore((s) => s.toggleEmailSelection);
   const clearSelection = useEmailStore((s) => s.clearSelection);
+
+  // Threading state
+  const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
+  const threadingMode = useThreadStore((s) => s.threadingMode);
+  const viewMode = useThreadStore((s) => s.viewMode);
+  const toggleThreading = useThreadStore((s) => s.toggleThreading);
+  const setThreadingMode = useThreadStore((s) => s.setThreadingMode);
+  const setViewMode = useThreadStore((s) => s.setViewMode);
+  const expandedThreadIds = useThreadStore((s) => s.expandedThreadIds);
+  const toggleThreadExpand = useThreadStore((s) => s.toggleThreadExpand);
+  const selectThread = useThreadStore((s) => s.selectThread);
+  const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
+
+  // Build threads from the filtered emails
+  const threads = useThreads();
+  const { replyToThread } = useThreadActions();
 
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -263,6 +283,19 @@ export function EmailList({ className }: EmailListProps) {
         )}
       </div>
 
+      {/* Threading header */}
+      {threadingEnabled && threads.length > 0 && !loading && (
+        <ThreadHeader
+          thread={threads.find((t) => t.id === selectedThreadId) ?? null}
+          threadingEnabled={threadingEnabled}
+          threadingMode={threadingMode}
+          viewMode={viewMode}
+          onToggleThreading={toggleThreading}
+          onSetThreadingMode={setThreadingMode}
+          onSetViewMode={setViewMode}
+        />
+      )}
+
       {/* Email rows */}
       <ScrollArea className="flex-1">
         {loading ? (
@@ -292,7 +325,33 @@ export function EmailList({ className }: EmailListProps) {
             description="This folder is empty, or no emails match your current filters."
             size="lg"
           />
+        ) : threadingEnabled && threads.length > 0 ? (
+          /* Threaded view */
+          <div role="listbox" aria-label="Thread list" data-testid="thread-list">
+            {threads.map((thread) => (
+              <ThreadListItem
+                key={thread.id}
+                thread={thread}
+                isActive={thread.id === selectedThreadId}
+                isExpanded={expandedThreadIds.has(thread.id)}
+                selectedEmailId={selectedEmailId}
+                onSelectThread={(tid) => {
+                  selectThread(tid);
+                  // Also select the last email for the view panel
+                  const last = thread.messages[thread.messages.length - 1];
+                  if (last) selectEmail(last.id);
+                }}
+                onSelectEmail={selectEmail}
+                onToggleExpand={toggleThreadExpand}
+                onReply={replyToThread}
+                onArchive={archive}
+                onDelete={deleteEmail}
+              />
+            ))}
+            <div className="h-4" aria-hidden="true" />
+          </div>
         ) : (
+          /* Flat view */
           <div role="listbox" aria-label="Email list">
             {filteredEmails.map((email) => (
               <EmailListItem

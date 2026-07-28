@@ -746,13 +746,257 @@ const seeds: EmailSeed[] = [
     isRead: true,
     bodyType: "html",
   },
+  // ── Thread reply seeds (create multi-message conversations) ───────
+  // Thread: roadmap-q3 (Sarah → me → Sarah)
+  {
+    from: { name: "Sarah Chen", address: "sarah.chen@misfits.ai" },
+    subject: "Re: Q3 Product Roadmap — Final Review",
+    preview: "Good point. Let's keep public beta scope minimal and push AI to internal. Updated the doc accordingly.",
+    body: `<p>Good point.</p><p>Let's keep public beta scope minimal and push AI to internal. Updated the doc accordingly.</p><p>Sarah</p>`,
+    folder: "inbox",
+    daysAgo: 0,
+    hoursAgo: 0,
+    isRead: false,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: redis-valkey (me → Marcus → me) — original message
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Architecture decision — Redis vs. Valkey for caching",
+    preview: "Team, we need to make a call on our caching layer. Redis license change means we should evaluate alternatives. Thoughts?",
+    body: `<p>Team,</p><p>We need to make a call on our caching layer. The Redis license change means we should evaluate alternatives.</p><p>Thoughts?</p>`,
+    folder: "sent",
+    daysAgo: 0,
+    hoursAgo: 12,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: lunch (me → Ryan → me → Ryan)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Lunch this week?",
+    preview: "Hey Ryan, want to grab lunch this week? That new ramen place on 5th opened.",
+    body: `<p>Hey Ryan,</p><p>Want to grab lunch this week? That new ramen place on 5th opened.</p>`,
+    folder: "sent",
+    daysAgo: 8,
+    isRead: true,
+    labels: ["label-personal"],
+    bodyType: "html",
+  },
+  {
+    from: { name: "Ryan Park", address: "ryan@misfits.ai" },
+    subject: "Re: Lunch this week?",
+    preview: "Sounds great! How about Wednesday? I've been wanting to try that place.",
+    body: `<p>Sounds great! How about Wednesday? I've been wanting to try that place.</p>`,
+    folder: "inbox",
+    daysAgo: 7,
+    hoursAgo: 20,
+    isRead: true,
+    labels: ["label-personal"],
+    bodyType: "html",
+  },
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: Re: Lunch this week?",
+    preview: "Wednesday works for me. 12:30 at the ramen place? I'll book a table.",
+    body: `<p>Wednesday works for me. 12:30 at the ramen place? I'll book a table.</p>`,
+    folder: "sent",
+    daysAgo: 7,
+    hoursAgo: 10,
+    isRead: true,
+    labels: ["label-personal"],
+    bodyType: "html",
+  },
+  // Thread: design-review (David → me)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: New design system components ready for review",
+    preview: "Looks great, David. I'll review the PR today. One question — should the command palette use cmd+k or ctrl+k on Windows?",
+    body: `<p>Looks great, David.</p><p>I'll review the PR today. One question — should the command palette use <code>cmd+k</code> or <code>ctrl+k</code> on Windows?</p>`,
+    folder: "sent",
+    daysAgo: 1,
+    hoursAgo: 8,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: onboarding-fb (Jenny → me)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: Onboarding feedback from new hires",
+    preview: "Thanks Jenny, this is really helpful. I'll coordinate with the infra team on the staging environment access.",
+    body: `<p>Thanks Jenny,</p><p>This is really helpful. I'll coordinate with the infra team on the staging environment access.</p>`,
+    folder: "sent",
+    daysAgo: 3,
+    hoursAgo: 22,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: rate-limiting (James → me → James)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: API rate limiting — proposed approach",
+    preview: "Token bucket looks good. Can we add a burst multiplier for paid tiers? Also, should we track per-IP as well?",
+    body: `<p>Token bucket looks good. Can we add a burst multiplier for paid tiers? Also, should we track per-IP as well?</p>`,
+    folder: "sent",
+    daysAgo: 11,
+    hoursAgo: 20,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  {
+    from: { name: "James Cooper", address: "james@misfits.ai" },
+    subject: "Re: API rate limiting — proposed approach",
+    preview: "Good call on the burst multiplier. I'll add 2x for Pro and 5x for Enterprise. Per-IP tracking could create issues with shared NAT.",
+    body: `<p>Good call on the burst multiplier. I'll add <strong>2x</strong> for Pro and <strong>5x</strong> for Enterprise.</p><p>Per-IP tracking could create issues with shared NAT — let's keep it per-user for now.</p><p>James</p>`,
+    folder: "inbox",
+    daysAgo: 11,
+    hoursAgo: 10,
+    isRead: false,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: api-outage (Alex → me)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: Postmortem: July 14 API outage",
+    preview: "Thanks Alex. The connection pool fix is deployed. Let's add the autoscaling alert in this sprint — I'll create the ticket.",
+    body: `<p>Thanks Alex.</p><p>The connection pool fix is deployed. Let's add the autoscaling alert in this sprint — I'll create the ticket.</p>`,
+    folder: "sent",
+    daysAgo: 2,
+    hoursAgo: 22,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: benefits (HR → me)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: Open enrollment: benefits selection",
+    preview: "Hi, I've submitted my selections through the portal. Can you confirm receipt? Also, is there a FSA option this year?",
+    body: `<p>Hi,</p><p>I've submitted my selections through the portal. Can you confirm receipt? Also, is there a FSA option this year?</p>`,
+    folder: "sent",
+    daysAgo: 6,
+    hoursAgo: 22,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
+  // Thread: q2-retro (Victoria → me)
+  {
+    from: { name: "me", address: "hermes@misfits.ai" },
+    subject: "Re: Q2 retrospective notes — action items",
+    preview: "Thanks Victoria. I've added the items to the tracker and assigned owners. Let's review at the next planning meeting.",
+    body: `<p>Thanks Victoria.</p><p>I've added the items to the tracker and assigned owners. Let's review at the next planning meeting.</p>`,
+    folder: "sent",
+    daysAgo: 15,
+    hoursAgo: 22,
+    isRead: true,
+    labels: ["label-work"],
+    bodyType: "html",
+  },
 ];
+
+/* ────────────────────────────────────────────────────────────────── */
+/* Thread assignment maps: assign related seeds to shared thread IDs  */
+/* and define In-Reply-To / References chains for RFC 5322 threading.  */
+/* Key = seed index (0-based), Value = thread ID or seed index ref.    */
+/* ────────────────────────────────────────────────────────────────── */
+
+/** Deterministic Message-ID generator (stable across reloads). */
+function seedMessageId(i: number): string {
+  return `<email-${String(i + 1).padStart(3, "0")}@misfits.ai>`;
+}
+
+/** Map: seed index → thread ID. Seeds not listed get a unique singleton thread. */
+const threadMap: Record<number, string> = {
+  // Existing seeds grouped into threads
+  0: "thread-roadmap-q3",       // Sarah: Q3 roadmap
+  2: "thread-redis-valkey",     // Marcus: Re: Redis vs Valkey
+  5: "thread-lisbon-trip",      // Emily: Lisbon flights
+  7: "thread-design-review",    // David: Design components
+  12: "thread-api-outage",      // Alex: Postmortem
+  15: "thread-onboarding-fb",   // Jenny: Onboarding feedback
+  17: "thread-lisbon-trip",     // Booking.com: Lisbon reservation
+  19: "thread-benefits",        // HR: Open enrollment
+  20: "thread-lunch",           // Ryan: Re:Re:Re: Lunch
+  23: "thread-security-audit",  // Tom: Security audit
+  25: "thread-rate-limiting",   // James: Rate limiting
+  29: "thread-q2-retro",        // Victoria: Q2 retro
+  34: "thread-roadmap-q3",      // me: Re: Q3 roadmap
+  36: "thread-redis-valkey",     // me: Re: Redis vs Valkey
+  38: "thread-lisbon-trip",      // me: Re: Lisbon flights
+  40: "thread-security-audit",  // me: Draft: Re: Security audit
+  // New reply seeds (indices 59+)
+  59: "thread-roadmap-q3",      // Sarah: Re: Q3 roadmap (reply to my reply)
+  60: "thread-redis-valkey",     // me: Architecture decision (original)
+  61: "thread-lunch",           // me: Lunch? (original)
+  62: "thread-lunch",           // Ryan: Re: Lunch
+  63: "thread-lunch",           // me: Re: Re: Lunch
+  64: "thread-design-review",   // me: Re: Design components
+  65: "thread-onboarding-fb",   // me: Re: Onboarding feedback
+  66: "thread-rate-limiting",   // me: Re: Rate limiting
+  67: "thread-rate-limiting",   // James: Re: Rate limiting (reply)
+  68: "thread-api-outage",      // me: Re: Postmortem
+  69: "thread-benefits",        // me: Re: Benefits
+  70: "thread-q2-retro",        // me: Re: Q2 retro
+};
+
+/** Map: seed index → seed index it replies to (for In-Reply-To header). */
+const inReplyToMap: Record<number, number> = {
+  2: 60,    // Marcus replies to my original (seed 60)
+  20: 63,   // Ryan replies to my "Re: Re: Lunch" (seed 63)
+  34: 0,    // my reply to Sarah's roadmap (seed 0)
+  36: 2,    // my reply to Marcus (seed 2)
+  38: 5,    // my reply to Emily (seed 5)
+  40: 23,   // my draft reply to Tom (seed 23)
+  59: 34,   // Sarah replies to my reply (seed 34)
+  62: 61,   // Ryan replies to my original (seed 61)
+  63: 62,   // I reply to Ryan (seed 62)
+  64: 7,    // I reply to David (seed 7)
+  65: 15,   // I reply to Jenny (seed 15)
+  66: 25,   // I reply to James (seed 25)
+  67: 66,   // James replies to my reply (seed 66)
+  68: 12,   // I reply to Alex (seed 12)
+  69: 19,   // I reply to HR (seed 19)
+  70: 29,   // I reply to Victoria (seed 29)
+};
+
+/** Map: seed index → list of seed indices in the References chain. */
+const referencesMap: Record<number, number[]> = {
+  2: [60],
+  20: [61, 62, 63],
+  34: [0],
+  36: [60, 2],
+  38: [5],
+  40: [23],
+  59: [0, 34],
+  62: [61],
+  63: [61, 62],
+  64: [7],
+  65: [15],
+  66: [25],
+  67: [25, 66],
+  68: [12],
+  69: [19],
+  70: [29],
+};
 
 export const mockEmails: Email[] = seeds.map((s, i) => {
   const date = daysAgo(s.daysAgo, s.hoursAgo ?? 0);
+  const msgId = seedMessageId(i);
+  const tid = threadMap[i] ?? `thread-${String(i + 1).padStart(3, "0")}`;
+  const inReplyToSeed = inReplyToMap[i];
+  const inReplyTo = inReplyToSeed !== undefined ? seedMessageId(inReplyToSeed) : undefined;
+  const refSeeds = referencesMap[i];
+  const references = refSeeds ? refSeeds.map(seedMessageId) : undefined;
   return {
     id: `email-${String(i + 1).padStart(3, "0")}`,
-    threadId: `thread-${String(i + 1).padStart(3, "0")}`,
+    threadId: tid,
     folder: s.folder,
     from: s.from,
     to: [{ name: "me", address: "hermes@misfits.ai" }],
@@ -769,7 +1013,9 @@ export const mockEmails: Email[] = seeds.map((s, i) => {
     attachments: s.attachments ?? [],
     labels: s.labels ?? [],
     size: s.body.length + (s.attachments?.reduce((a, x) => a + x.size, 0) ?? 0),
-    messageId: `<${crypto.randomUUID()}@misfits.ai>`,
+    messageId: msgId,
+    inReplyTo,
+    references,
     headers: {},
   };
 });
