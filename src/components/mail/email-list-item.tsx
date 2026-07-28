@@ -1,0 +1,201 @@
+"use client";
+
+/**
+ * Email list item — individual email row with avatar, sender, subject,
+ * preview, date, flags (unread, starred, attachment), bulk checkbox, and hover actions.
+ */
+import { memo } from "react";
+import { Star, Paperclip } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { Email } from "@/types/email";
+
+interface EmailListItemProps {
+  email: Email;
+  isActive: boolean;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onToggleSelection: (id: string) => void;
+  onToggleStar: (id: string) => void;
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) {
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  }
+  if (date.getFullYear() === now.getFullYear()) {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getInitials(name: string): string {
+  if (name === "me") return "Me";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function EmailListItemComponent({
+  email,
+  isActive,
+  isSelected,
+  onSelect,
+  onToggleSelection,
+  onToggleStar,
+}: EmailListItemProps) {
+  return (
+    <div
+      role="option"
+      aria-selected={isActive}
+      tabIndex={0}
+      onClick={() => onSelect(email.id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          onSelect(email.id);
+        }
+      }}
+      className={cn(
+        "group relative flex cursor-pointer items-start gap-3 border-b border-[var(--color-border)] px-3 py-3 transition-colors",
+        isActive && "bg-[var(--color-accent)]",
+        !isActive && email.isRead && "bg-[var(--color-bg)]",
+        !isActive && !email.isRead && "bg-[var(--color-card)]",
+        !isActive && "hover:bg-[var(--color-muted)]",
+      )}
+      data-testid={`email-item-${email.id}`}
+    >
+      {/* Bulk selection checkbox */}
+      <div
+        className="pt-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggleSelection(email.id)}
+          aria-label={`Select email: ${email.subject}`}
+        />
+      </div>
+
+      {/* Unread indicator */}
+      {!email.isRead && (
+        <div
+          className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[var(--color-brand-500)]"
+          aria-label="Unread"
+        />
+      )}
+
+      {/* Avatar */}
+      <Avatar className="h-9 w-9 shrink-0">
+        <AvatarFallback className="text-xs">
+          {getInitials(email.from.name)}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Content */}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className={cn(
+              "truncate text-sm",
+              !email.isRead ? "font-semibold text-[var(--color-fg)]" : "text-[var(--color-fg)]",
+            )}
+          >
+            {email.from.name}
+          </span>
+          <span className="shrink-0 text-xs text-[var(--color-muted-fg)]">
+            {formatDate(email.date)}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-2">
+          <span
+            className={cn(
+              "truncate text-sm",
+              !email.isRead ? "font-medium text-[var(--color-fg)]" : "text-[var(--color-muted-fg)]",
+            )}
+          >
+            {email.subject}
+          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {email.hasAttachments && (
+              <Paperclip className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" aria-label="Has attachments" />
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleStar(email.id);
+              }}
+              className="rounded p-0.5 transition-colors hover:bg-[var(--color-muted)]"
+              aria-label={email.isStarred ? "Unstar email" : "Star email"}
+            >
+              <Star
+                className={cn(
+                  "h-3.5 w-3.5",
+                  email.isStarred
+                    ? "fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
+                    : "text-[var(--color-muted-fg)]",
+                )}
+              />
+            </button>
+          </div>
+        </div>
+
+        <p className="truncate text-xs text-[var(--color-muted-fg)]">
+          {email.preview}
+        </p>
+
+        {/* Labels */}
+        {email.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1 pt-0.5">
+            {email.labels.slice(0, 3).map((labelId) => {
+              const label = LABELS_BY_ID[labelId];
+              if (!label) return null;
+              return (
+                <span
+                  key={labelId}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                  style={{
+                    backgroundColor: `${label.color}20`,
+                    color: label.color,
+                  }}
+                >
+                  {label.name}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Inline labels lookup (kept in sync with mock-emails for rendering badges)
+const LABELS_BY_ID: Record<string, { name: string; color: string }> = {
+  "label-work": { name: "Work", color: "#3b5bff" },
+  "label-personal": { name: "Personal", color: "#10b981" },
+  "label-finance": { name: "Finance", color: "#f59e0b" },
+  "label-travel": { name: "Travel", color: "#0ea5e9" },
+  "label-newsletter": { name: "Newsletter", color: "#a1a1aa" },
+  "label-urgent": { name: "Urgent", color: "#ef4444" },
+};
+
+export const EmailListItem = memo(EmailListItemComponent);
