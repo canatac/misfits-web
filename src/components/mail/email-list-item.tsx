@@ -9,6 +9,8 @@ import { Star, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { LabelBadge } from "@/components/mail/label-badge";
+import { useLabelStore } from "@/stores/label-store";
 import type { Email } from "@/types/email";
 
 interface EmailListItemProps {
@@ -61,6 +63,10 @@ function EmailListItemComponent({
   onToggleSelection,
   onToggleStar,
 }: EmailListItemProps) {
+  // Merge static email.labels with any dynamically-assigned labels from the store.
+  const assignedLabels = useLabelStore((s) => s.assignments[email.id] ?? []);
+  const allLabelIds = Array.from(new Set([...email.labels, ...assignedLabels]));
+
   return (
     <div
       role="option"
@@ -163,39 +169,21 @@ function EmailListItemComponent({
         </p>
 
         {/* Labels */}
-        {email.labels.length > 0 && (
+        {allLabelIds.length > 0 && (
           <div className="flex flex-wrap gap-1 pt-0.5">
-            {email.labels.slice(0, 3).map((labelId) => {
-              const label = LABELS_BY_ID[labelId];
-              if (!label) return null;
-              return (
-                <span
-                  key={labelId}
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                  style={{
-                    backgroundColor: `${label.color}20`,
-                    color: label.color,
-                  }}
-                >
-                  {label.name}
-                </span>
-              );
-            })}
+            {allLabelIds.slice(0, 3).map((labelId) => (
+              <LabelBadge key={labelId} label={labelId} />
+            ))}
+            {allLabelIds.length > 3 && (
+              <span className="inline-flex items-center rounded-full bg-[var(--color-muted)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-muted-fg)]">
+                +{allLabelIds.length - 3}
+              </span>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
-
-// Inline labels lookup (kept in sync with mock-emails for rendering badges)
-const LABELS_BY_ID: Record<string, { name: string; color: string }> = {
-  "label-work": { name: "Work", color: "#3b5bff" },
-  "label-personal": { name: "Personal", color: "#10b981" },
-  "label-finance": { name: "Finance", color: "#f59e0b" },
-  "label-travel": { name: "Travel", color: "#0ea5e9" },
-  "label-newsletter": { name: "Newsletter", color: "#a1a1aa" },
-  "label-urgent": { name: "Urgent", color: "#ef4444" },
-};
 
 export const EmailListItem = memo(EmailListItemComponent);

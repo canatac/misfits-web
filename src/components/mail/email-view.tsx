@@ -27,6 +27,8 @@ import {
   ImageOff,
   ChevronDown,
   MailOpen,
+  Tag,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,10 +42,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useEmailStore } from "@/stores/email-store";
 import { useComposerStore, uid } from "@/stores/composer-store";
+import { useLabelStore } from "@/stores/label-store";
+import { LabelBadge } from "@/components/mail/label-badge";
+import { LabelManager } from "@/components/mail/label-manager";
 import type { Email, EmailAttachment, AttachmentType } from "@/types/email";
 import type { Recipient } from "@/types/composer";
 
@@ -106,10 +112,24 @@ export function EmailView({ className }: EmailViewProps) {
   const archive = useEmailStore((s) => s.archive);
   const deleteEmail = useEmailStore((s) => s.deleteEmail);
 
+  const labels = useLabelStore((s) => s.labels);
+  const assignments = useLabelStore((s) => s.assignments);
+  const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
+  const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
+  const [labelManagerOpen, setLabelManagerOpen] = useState(false);
+
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId],
   );
+
+  // Merge static email.labels with store assignments.
+  const emailLabelIds = useMemo(() => {
+    if (!email) return [];
+    return Array.from(
+      new Set([...email.labels, ...(assignments[email.id] ?? [])]),
+    );
+  }, [email, assignments]);
 
   const [loadImages, setLoadImages] = useState(false);
   const [showQuoted, setShowQuoted] = useState(false);
@@ -363,15 +383,60 @@ export function EmailView({ className }: EmailViewProps) {
             <h1 className="text-xl font-semibold text-[var(--color-fg)]">
               {email.subject}
             </h1>
-            {email.labels.length > 0 && (
+            {emailLabelIds.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {email.labels.map((labelId) => (
-                  <Badge key={labelId} variant="secondary">
-                    {labelId.replace("label-", "")}
-                  </Badge>
+                {emailLabelIds.map((labelId) => (
+                  <LabelBadge
+                    key={labelId}
+                    label={labelId}
+                    size="md"
+                    onRemove={() => removeLabelFromEmail(email.id, labelId)}
+                  />
                 ))}
               </div>
             )}
+            {/* Add label dropdown */}
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Tag className="h-3.5 w-3.5" />
+                    Add label
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel>Assign a label</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {labels.length === 0 && (
+                    <DropdownMenuItem disabled>No labels available</DropdownMenuItem>
+                  )}
+                  {labels.map((label) => {
+                    const alreadyAssigned = emailLabelIds.includes(label.id);
+                    return (
+                      <DropdownMenuItem
+                        key={label.id}
+                        disabled={alreadyAssigned}
+                        onClick={() => assignLabelToEmail(email.id, label.id)}
+                        className="gap-2"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: label.color }}
+                          aria-hidden="true"
+                        />
+                        <span className="flex-1">{label.name}</span>
+                        {alreadyAssigned && <ChevronDown className="h-3 w-3 rotate-[-90deg]" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setLabelManagerOpen(true)} className="gap-2">
+                    <Plus className="h-3.5 w-3.5" />
+                    Manage labels
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Sender header */}
@@ -494,6 +559,9 @@ export function EmailView({ className }: EmailViewProps) {
           )}
         </div>
       </ScrollArea>
+
+      {/* Label manager modal (opened from the Add label dropdown) */}
+      <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
     </div>
   );
 }
