@@ -1,5 +1,5 @@
 # GitHub Actions CI/CD — misfits-web
-# Pipeline: lint → typecheck → test → build → Docker → Scaleway Container Registry
+# Pipeline: lint → typecheck → test → build → Docker → Scaleway Registry → Deploy SSH
 
 name: CI/CD
 
@@ -94,3 +94,28 @@ jobs:
             ${{ secrets.SCW_REGISTRY_ENDPOINT }}/misfits-web:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ============================================================
+  # Deploy to VM via SSH (main branch only)
+  # ============================================================
+  deploy:
+    name: Deploy to VM
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          script: |
+            cd ${{ secrets.VM_DEPLOY_DIR }}
+            docker compose -f docker-compose.deploy.yml --env-file .env.deploy pull misfits-web
+            docker compose -f docker-compose.deploy.yml --env-file .env.deploy up -d misfits-web
+            docker image prune -f || true
+            echo "Deploy complete: misfits-web updated on ${{ secrets.VM_HOST }}"

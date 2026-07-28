@@ -36,12 +36,17 @@ const nextConfig = {
     ];
   },
 
-  // Proxy vers le backend Rust (API Warp) sur smtp-vm
+  // Proxy vers le backend Rust (IMAP API Warp) — en production via Docker network, en dev via localhost
   async rewrites() {
+    const backendUrl =
+      process.env.BACKEND_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "http://imap-server:8080"
+        : "http://localhost:8080");
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.BACKEND_URL || "http://localhost:8080"}/api/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },
