@@ -14,6 +14,7 @@ import { MailSidebar } from "@/components/mail/sidebar";
 import { EmailList } from "@/components/mail/email-list";
 import { EmailView } from "@/components/mail/email-view";
 import { ComposerPanel } from "@/components/mail/composer-panel";
+import { SearchOverlay } from "@/components/mail/search-overlay";
 import {
   Modal,
   ModalContent,
@@ -30,6 +31,7 @@ type MobileView = "list" | "view";
 export default function MailPage() {
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
 
@@ -53,8 +55,7 @@ export default function MailPage() {
 
   // Keyboard shortcut handlers (delegate to EmailList via window hooks)
   const handleSearchFocus = useCallback(() => {
-    const w = window as Window & { __mailFocusSearch?: () => void };
-    w.__mailFocusSearch?.();
+    setSearchOverlayOpen(true);
   }, []);
 
   const handleNavNext = useCallback(() => {
@@ -164,6 +165,9 @@ export default function MailPage() {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      {/* Search overlay */}
+      <SearchOverlay open={searchOverlayOpen} onOpenChange={setSearchOverlayOpen} />
     </>
   );
 }
