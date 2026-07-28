@@ -43,7 +43,9 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useEmailStore } from "@/stores/email-store";
+import { useComposerStore, uid } from "@/stores/composer-store";
 import type { Email, EmailAttachment, AttachmentType } from "@/types/email";
+import type { Recipient } from "@/types/composer";
 
 const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
   pdf: FileText,
@@ -182,9 +184,68 @@ export function EmailView({ className }: EmailViewProps) {
     return body;
   }, [sanitizedBody, loadImages, showQuoted, hasQuoted]);
 
-  const handleReply = useCallback(() => {
-    // Placeholder — compose window will be wired in a future issue
+  const openComposer = useComposerStore((s) => s.openComposer);
+
+  const toRecipient = useCallback(
+    (address: string, name: string, type: Recipient["type"] = "to"): Recipient => ({
+      id: uid("rcpt"),
+      email: address.toLowerCase(),
+      name: name && name !== "me" ? name : undefined,
+      type,
+    }),
+    [],
+  );
+
+  const buildReplyBody = useCallback((em: Email) => {
+    const replyDate = new Date(em.date).toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+    return `<p></p><blockquote>On ${replyDate}, ${em.from.name} &lt;${em.from.address}&gt; wrote:<br/>${em.body}</blockquote>`;
   }, []);
+
+  const handleReply = useCallback(() => {
+    if (!email) return;
+    openComposer({
+      to: [toRecipient(email.from.address, email.from.name)],
+      cc: (email.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
+      subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+      body: buildReplyBody(email),
+      inReplyTo: email.messageId,
+      references: [...(email.references ?? []), email.messageId].filter(Boolean),
+    });
+  }, [email, openComposer, toRecipient, buildReplyBody]);
+
+  const handleReplyAll = useCallback(() => {
+    if (!email) return;
+    const to: Recipient[] = [toRecipient(email.from.address, email.from.name)];
+    for (const a of email.to) {
+      if (a.address !== email.from.address && !to.some((r) => r.email === a.address.toLowerCase())) {
+        to.push(toRecipient(a.address, a.name));
+      }
+    }
+    const ccRecipients: Recipient[] = (email.cc ?? []).map((a) =>
+      toRecipient(a.address, a.name, "cc"),
+    );
+    openComposer({
+      to,
+      cc: ccRecipients,
+      subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+      body: buildReplyBody(email),
+      inReplyTo: email.messageId,
+      references: [...(email.references ?? []), email.messageId].filter(Boolean),
+    });
+  }, [email, openComposer, toRecipient, buildReplyBody]);
+
+  const handleForward = useCallback(() => {
+    if (!email) return;
+    const fwdBody = `<p></p><blockquote>---------- Forwarded message ----------<br/>From: ${email.from.name} &lt;${email.from.address}&gt;<br/>Date: ${new Date(email.date).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}<br/>Subject: ${email.subject}<br/><br/>${email.body}</blockquote>`;
+    openComposer({
+      to: [],
+      subject: email.subject.startsWith("Fwd: ") ? email.subject : `Fwd: ${email.subject}`,
+      body: fwdBody,
+    });
+  }, [email, openComposer]);
 
   const handleToggleStar = useCallback(() => {
     if (email) toggleStar(email.id);
@@ -247,11 +308,11 @@ export function EmailView({ className }: EmailViewProps) {
           <Reply className="h-4 w-4" />
           Reply
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleReply} className="gap-1.5">
+        <Button variant="ghost" size="sm" onClick={handleReplyAll} className="gap-1.5">
           <ReplyAll className="h-4 w-4" />
           Reply All
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleReply} className="gap-1.5">
+        <Button variant="ghost" size="sm" onClick={handleForward} className="gap-1.5">
           <Forward className="h-4 w-4" />
           Forward
         </Button>

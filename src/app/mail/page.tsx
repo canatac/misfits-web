@@ -4,6 +4,7 @@
  * Mail page — composes Sidebar + EmailList + EmailView.
  * 3-column responsive: lg: 3 columns, md: 2 columns, mobile: 1 column.
  * Wires up keyboard shortcuts and mobile navigation.
+ * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
 import { Menu, X, Mail as MailIcon } from "lucide-react";
@@ -12,8 +13,17 @@ import { Button } from "@/components/ui/button";
 import { MailSidebar } from "@/components/mail/sidebar";
 import { EmailList } from "@/components/mail/email-list";
 import { EmailView } from "@/components/mail/email-view";
+import { ComposerPanel } from "@/components/mail/composer-panel";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+} from "@/components/ui/modal";
 import { useMailShortcuts } from "@/hooks/use-mail-shortcuts";
 import { useEmailStore } from "@/stores/email-store";
+import { useComposerStore } from "@/stores/composer-store";
 
 type MobileView = "list" | "view";
 
@@ -33,10 +43,13 @@ export default function MailPage() {
     }
   }, [selectedEmailId]);
 
-  // Compose handler (placeholder for future issue)
+  // Compose handler — opens the composer modal (fresh draft).
+  const openComposer = useComposerStore((s) => s.openComposer);
+  const composerOpen = useComposerStore((s) => s.composerOpen);
+  const closeComposer = useComposerStore((s) => s.closeComposer);
   const handleCompose = useCallback(() => {
-    window.alert("Compose window — coming soon!");
-  }, []);
+    openComposer(null);
+  }, [openComposer]);
 
   // Keyboard shortcut handlers (delegate to EmailList via window hooks)
   const handleSearchFocus = useCallback(() => {
@@ -139,6 +152,18 @@ export default function MailPage() {
           <EmailView />
         </div>
       </div>
+
+      {/* Composer modal */}
+      <Modal open={composerOpen} onOpenChange={(o) => { if (!o) closeComposer(); }}>
+        <ModalContent className="max-w-3xl gap-0 p-0">
+          <ModalHeader className="sr-only">
+            <ModalTitle>Compose email</ModalTitle>
+          </ModalHeader>
+          <ModalBody>
+            <ComposerPanel onClose={closeComposer} />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
