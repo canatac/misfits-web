@@ -1,5 +1,6 @@
 # GitHub Actions CI/CD — misfits-web
-# Pipeline: lint → typecheck → test → build → Docker → Scaleway Registry → Deploy SSH
+# Pipeline optimisé: quality (parallel) + Docker build+push+deploy
+# Target: 2-3 min total
 
 name: CI/CD
 
@@ -15,7 +16,7 @@ env:
 
 jobs:
   # ============================================================
-  # Quality gates: lint, typecheck, test
+  # Quality gates — runs IN PARALLEL with Docker build
   # ============================================================
   quality:
     name: Lint + Typecheck + Test
@@ -46,33 +47,15 @@ jobs:
         run: pnpm test
 
   # ============================================================
-  # Build + Docker push (main branch only)
+  # Docker build + push — NO pre-build, Dockerfile does it all
+  # Runs in parallel with quality (no `needs: quality`)
   # ============================================================
   build-and-push:
-    name: Build + Docker Push
-    needs: quality
+    name: Build + Push Docker
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile || pnpm install
-
-      - name: Build Next.js
-        run: pnpm build
-        env:
-          NEXT_TELEMETRY_DISABLED: "1"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -96,7 +79,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ============================================================
-  # Deploy to VM via SSH (main branch only)
+  # Deploy to VM via SSH — after Docker push only
   # ============================================================
   deploy:
     name: Deploy to VM

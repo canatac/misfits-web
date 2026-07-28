@@ -1,16 +1,19 @@
-# Dependencies
-node_modules/
-
-# Next.js
-.next/
-out/
-
-# Production
-build/
-
-# Environment
-.env
-.env.local
-
-# Docker
-docker-compose.override.yml
+# .dockerignore — reduce build context size
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env*
+.eslintrc.json
+.prettierrc
+.vscode
+.github
+docker-compose*.yml
+Dockerfile
+.dockerignore
+tsconfig.tsbuildinfo
+vitest.config.ts
+playwright-report
+test-results
+coverage
