@@ -1,0 +1,23 @@
+# docker-compose.web.yml — misfits.ai Mail Frontend
+# Déploiement sur HermesWeb VM (Scaleway)
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: misfits-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      # Backend API (Rust Warp sur smtp-vm)
+      - BACKEND_URL=http://51.158.114.182:8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
