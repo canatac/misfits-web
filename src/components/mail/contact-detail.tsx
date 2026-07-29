@@ -40,8 +40,8 @@ interface ContactDetailProps {
 /** Find recent emails involving the contact (from/to/cc), newest first. */
 function useContactTimeline(email: string): Email[] {
   const emails = useEmailStore((s) => s.emails);
+  const e = email.trim().toLowerCase();
   return useMemo(() => {
-    const e = email.trim().toLowerCase();
     return emails
       .filter(
         (m) =>
@@ -56,7 +56,8 @@ function useContactTimeline(email: string): Email[] {
 
 export function ContactDetail({ contact, onClose }: ContactDetailProps) {
   const { updateContact, deleteContact, mergeContacts } = useContactMutations();
-  const { results: duplicates } = useDuplicateContacts();
+  const duplicatesQuery = useDuplicateContacts();
+  const duplicates = duplicatesQuery.data ?? [];
   const timeline = useContactTimeline(contact.email);
 
   const [notes, setNotes] = useState(contact.notes ?? "");

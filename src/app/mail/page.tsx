@@ -7,9 +7,10 @@
  * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
-import { Menu, X, Mail as MailIcon } from "lucide-react";
+import { Menu, X, Mail as MailIcon, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { MailSidebar } from "@/components/mail/sidebar";
 import { EmailList } from "@/components/mail/email-list";
 import { EmailView } from "@/components/mail/email-view";
@@ -31,6 +32,7 @@ import { useEmailStore } from "@/stores/email-store";
 import { useThreadStore } from "@/stores/thread-store";
 import { useThreads } from "@/hooks/use-threads";
 import { useComposerStore } from "@/stores/composer-store";
+import { useAccountStore } from "@/stores/account-store";
 
 type MobileView = "list" | "view";
 
@@ -41,6 +43,19 @@ export default function MailPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
+  const setAccountId = useEmailStore((s) => s.setAccountId);
+
+  // Multi-account state (Issue #154): sync account store → email store filter.
+  const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+  const accountsCount = useAccountStore((s) => s.accounts.length);
+  const toggleUnifiedInbox = useAccountStore((s) => s.toggleUnifiedInbox);
+  const canToggleUnified = accountsCount > 1;
+
+  // When the active account / unified toggle changes, update the email filter.
+  useEffect(() => {
+    setAccountId(isUnifiedInbox ? null : activeAccountId);
+  }, [isUnifiedInbox, activeAccountId, setAccountId]);
 
   // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
@@ -123,7 +138,16 @@ export default function MailPage() {
           <MailIcon className="h-5 w-5 text-[var(--color-brand-500)]" />
           <span className="font-semibold">misfits.ai Mail</span>
         </div>
-        <div className="w-10" />
+        {/* Unified inbox toggle (mobile) — Issue #154 */}
+        <label className="flex items-center gap-1.5 text-xs" title="Toggle unified inbox">
+          <Layers className="h-4 w-4 text-[var(--color-brand-500)]" />
+          <Switch
+            checked={isUnifiedInbox}
+            disabled={!canToggleUnified}
+            onCheckedChange={toggleUnifiedInbox}
+            aria-label="Toggle unified inbox"
+          />
+        </label>
       </div>
 
       {/* 3-column layout */}

@@ -205,14 +205,14 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     }, 350);
   }
 
-  function handleSave() {
+  async function handleSave() {
     // Ensure connection is validated before saving.
     const result = validateConnection(email, password, serverConfig);
     if (!result.ok) {
       setTestResult(result);
       return;
     }
-    const account = addAccount.mutate({
+    const account = await addAccount.mutateAsync({
       email,
       name: name.trim() || undefined,
       provider,

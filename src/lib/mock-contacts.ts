@@ -46,11 +46,11 @@ function daysAgo(days: number): string {
 /* ------------------------------------------------------------------ */
 
 export const mockContactGroups: ContactGroup[] = [
-  { id: "grp-team", name: "Engineering Team", color: "#6366f1", description: "misfits.ai engineers" },
-  { id: "grp-leads", name: "Team Leads", color: "#8b5cf6", description: "People managers" },
-  { id: "grp-investors", name: "Investors", color: "#22c55e", description: "VCs and angels" },
-  { id: "grp-partners", name: "Partners", color: "#f97316", description: "Integration partners" },
-  { id: "grp-personal", name: "Personal", color: "#ec4899", description: "Friends and family" },
+  { id: "grp-team", name: "Engineering Team", color: "#6366f1", description: "misfits.ai engineers", createdAt: new Date().toISOString() },
+  { id: "grp-leads", name: "Team Leads", color: "#8b5cf6", description: "People managers", createdAt: new Date().toISOString() },
+  { id: "grp-investors", name: "Investors", color: "#22c55e", description: "VCs and angels", createdAt: new Date().toISOString() },
+  { id: "grp-partners", name: "Partners", color: "#f97316", description: "Integration partners", createdAt: new Date().toISOString() },
+  { id: "grp-personal", name: "Personal", color: "#ec4899", description: "Friends and family", createdAt: new Date().toISOString() },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -117,8 +117,8 @@ const seeds: Seed[] = [
   { id: "c44", name: "Zara Khan", email: "zara@brandstudio.com", company: "Brand Studio", role: "Creative Director", avatarColor: color(5), lastContactAt: daysAgo(44), contactFrequency: "rarely", tags: ["agency", "external"] },
 ];
 
-/** Full Contact-shaped seeds for the address book store. */
-export const mockContactSeeds: Contact[] = seeds.map((s) => ({ ...s }));
+/** Full Contact-shaped seeds for the address book store (createdAt/updatedAt added by the store). */
+export const mockContactSeeds: Seed[] = seeds.map((s) => ({ ...s }));
 
 /** Backwards-compatible minimal list consumed by the recipient input. */
 export const mockContacts: MockContact[] = mockContactSeeds.map((c) => ({

@@ -274,6 +274,7 @@ export function useFilteredSortedEmails(): Email[] {
   const sortBy = useEmailStore((s) => s.sortBy);
   const filterType = useEmailStore((s) => s.filterType);
   const searchQuery = useEmailStore((s) => s.searchQuery);
-  const filtered = filterEmails(emails, filterType, searchQuery);
+  const accountId = useEmailStore((s) => s.accountId);
+  const filtered = filterEmails(emails, filterType, searchQuery, accountId);
   return sortEmails(filtered, sortBy);
 }

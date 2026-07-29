@@ -21,6 +21,7 @@ import {
   Settings2,
   Clock,
   Zap,
+  BellRing,
   Contact as ContactIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -132,6 +133,16 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
             </Badge>
           )}
         </Button>
+      </div>
+
+      {/* Contacts link (Issue #152) — opens the address book */}
+      <div className="px-3 pb-2">
+        <Link href="/contacts" data-testid="contacts-link">
+          <Button variant="outline" className="w-full justify-start gap-2">
+            <ContactIcon className="h-4 w-4" />
+            Contacts
+          </Button>
+        </Link>
       </div>
 
       <Separator />

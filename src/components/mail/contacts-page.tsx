@@ -55,7 +55,8 @@ import type { ContactInput } from "@/types/contact";
 export function ContactsPage() {
   const { data: contacts = [] } = useContacts();
   const { data: groups = [] } = useContactGroups();
-  const { results: duplicates } = useDuplicateContacts();
+  const duplicatesQuery = useDuplicateContacts();
+  const duplicates = duplicatesQuery.data ?? [];
   const { addContact } = useContactMutations();
   const { addGroup } = useContactGroupMutations();
 
@@ -297,8 +298,8 @@ export function ContactsPage() {
       <AddContactModal
         open={addOpen}
         onOpenChange={setAddOpen}
-        onAdd={(input) => {
-          const c = addContact.mutate(input);
+        onAdd={async (input) => {
+          const c = await addContact.mutateAsync(input);
           setSelectedId(c.id);
         }}
       />

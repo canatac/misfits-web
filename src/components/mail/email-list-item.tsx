@@ -10,8 +10,10 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LabelBadge } from "@/components/mail/label-badge";
+import { AccountBadge } from "@/components/mail/account-badge";
 import { SecurityIndicator } from "@/components/mail/security-indicator";
 import { useLabelStore } from "@/stores/label-store";
+import { useAccountStore } from "@/stores/account-store";
 import type { Email } from "@/types/email";
 
 interface EmailListItemProps {
@@ -67,6 +69,10 @@ function EmailListItemComponent({
   // Merge static email.labels with any dynamically-assigned labels from the store.
   const assignedLabels = useLabelStore((s) => s.assignments[email.id] ?? []);
   const allLabelIds = Array.from(new Set([...email.labels, ...assignedLabels]));
+  // Show the account badge in unified-inbox mode (Issue #154).
+  const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
+  const accountsCount = useAccountStore((s) => s.accounts.length);
+  const showAccountBadge = isUnifiedInbox && accountsCount > 1 && !!email.accountId;
 
   return (
     <div
@@ -171,8 +177,9 @@ function EmailListItemComponent({
         </p>
 
         {/* Labels */}
-        {allLabelIds.length > 0 && (
+        {(allLabelIds.length > 0 || showAccountBadge) && (
           <div className="flex flex-wrap gap-1 pt-0.5">
+            {showAccountBadge && <AccountBadge accountId={email.accountId} />}
             {allLabelIds.slice(0, 3).map((labelId) => (
               <LabelBadge key={labelId} label={labelId} />
             ))}
