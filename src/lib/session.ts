@@ -70,9 +70,12 @@ interface PersistedSession {
 export function storeSession(session: Session, remember: boolean): void {
   if (!isBrowser()) return;
   const payload: PersistedSession = { session, storedAt: Date.now() };
+  const rfa =
+    (session as unknown as Record<string, unknown>).refreshExpiresAt ??
+    (session as unknown as Record<string, unknown>).refresh_expires_at;
   const ttlSeconds = Math.max(
     0,
-    Math.round((session.refreshExpiresAt - Date.now()) / 1000),
+    Math.round(((typeof rfa === "number" ? rfa : Date.now() + 86_400_000) - Date.now()) / 1000),
   );
 
   try {
