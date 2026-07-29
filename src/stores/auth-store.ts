@@ -56,6 +56,29 @@ import {
 } from "@/lib/demo-mode";
 
 /* ------------------------------------------------------------------ *
+ * Helper: normalize snake_case session from backend to camelCase
+ * ------------------------------------------------------------------ */
+
+function toCamel(key: string): string {
+  return key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+function normalizeSession(raw: Record<string, unknown>): Session {
+  function deepMap(obj: unknown): unknown {
+    if (Array.isArray(obj)) return obj.map(deepMap);
+    if (obj !== null && typeof obj === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(obj)) {
+        out[toCamel(k)] = deepMap(v);
+      }
+      return out;
+    }
+    return obj;
+  }
+  return deepMap(raw) as Session;
+}
+
+/* ------------------------------------------------------------------ *
  * Rate limiting (client-side)
  * ------------------------------------------------------------------ */
 
@@ -234,7 +257,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
         return;
       }
-      applySession(set, res.session, credentials.remember ?? false);
+      // Normalize snake_case from backend to camelCase before applying
+      applySession(set, normalizeSession(res.session as Record<string, unknown>), credentials.remember ?? false);
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
       // Network error → fall back to demo mode so the UI is still usable.
