@@ -1,20 +1,43 @@
 /**
  * Auth proxy — translates frontend POST /api/auth/login
- * to backend GET /login/:username/:password (Rust Warp API).
+ * to backend POST /api/auth/login (Rust Warp API).
  *
- * Frontend sends: POST /api/auth/login { email, password }
- * We call backend: GET BACKEND_URL/login/:username/:password
- * We return: { session: { id, user, accessToken, ... } }
- *
- * This normalizes the backend's JWT-only response into the Session
- * shape the frontend auth store expects.
+ * The backend returns snake_case fields; we transform to camelCase
+ * so the frontend types (Session, User) are consistent.
+ * We also set the mfa_session cookie server-side so the Edge
+ * middleware can read it on the next navigation.
  */
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL =
+  process.env.BACKEND_URL || "http://localhost:8080";
+
+/* ------------------------------------------------------------------ *
+ * Snake_case → camelCase transform (lightweight, no deps)
+ * ------------------------------------------------------------------ */
+
+function toCamel(key: string): string {
+  return key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+function deepToCamel<T>(obj: unknown): T {
+  if (Array.isArray(obj)) return obj.map(deepToCamel) as T;
+  if (obj !== null && typeof obj === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      out[toCamel(k)] = deepToCamel(v);
+    }
+    return out as T;
+  }
+  return obj as T;
+}
+
+/* ------------------------------------------------------------------ *
+ * POST handler
+ * ------------------------------------------------------------------ */
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,57 +47,41 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { message: "Email and password required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Extract username from email (backend uses username, not email)
-    const username = email.includes("@") ? email.split("@")[0] : email;
-
-    // Call backend: GET /login/:username/:password
-    const res = await fetch(
-      `${BACKEND_URL}/login/${encodeURIComponent(username)}/${encodeURIComponent(password)}`,
-      { method: "GET", headers: { "Content-Type": "application/json" } }
-    );
+    // Call backend: POST /api/auth/login
+    const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
     if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Invalid credentials" }));
       return NextResponse.json(
-        { message: "Invalid credentials" },
-        { status: 401 }
+        { message: err.message || "Invalid credentials" },
+        { status: res.status },
       );
     }
 
-    // Backend returns a JWT string — wrap it in a Session object
-    const token = await res.text();
-    const now = Date.now();
+    // Backend returns snake_case JSON — transform to camelCase
+    const raw = await res.json();
+    const transformed = deepToCamel<{ session: Record<string, unknown> }>(raw);
 
-    const session = {
-      id: `session-${now}`,
-      user: {
-        id: username,
-        email: email,
-        displayName: username,
-        role: "user",
-        twoFactorEnabled: false,
-        createdAt: new Date(now).toISOString(),
-        updatedAt: new Date(now).toISOString(),
-      },
-      accessToken: token.replace(/"/g, ""), // Remove surrounding quotes from JSON string
-      refreshToken: token.replace(/"/g, ""),
-      expiresAt: now + 60 * 60 * 1000,
-      refreshExpiresAt: now + 7 * 24 * 60 * 60 * 1000,
-      issuedAt: now,
-    };
+    const session = transformed.session;
+    const now = Date.now();
+    const ttlSeconds = Math.max(
+      0,
+      Math.round(((session.refreshExpiresAt as number) - now) / 1000),
+    );
 
     const response = NextResponse.json({ session });
 
-    // Set the mfa_session cookie server-side so the Edge middleware can
-    // read it immediately — the client-side copy in session.ts is a fallback.
-    const ttlSeconds = Math.round(
-      (session.refreshExpiresAt - now) / 1000,
-    );
-    response.cookies.set("mfa_session", session.id, {
-      httpOnly: false, // middleware runs on Edge; needs to be readable
+    // Set mfa_session cookie so the Edge middleware can read it
+    response.cookies.set("mfa_session", session.id as string, {
+      httpOnly: false,
       maxAge: ttlSeconds,
       path: "/",
       sameSite: "lax",
@@ -85,7 +92,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { message: "Backend unreachable" },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

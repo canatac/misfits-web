@@ -44,6 +44,12 @@ const nextConfig = {
         ? "http://imap-server:8080"
         : "http://localhost:8080");
     return [
+      // Auth routes are handled by Next.js route handlers (they set cookies, transform snake_case → camelCase)
+      {
+        source: "/api/auth/:path*",
+        destination: "/api/auth/:path*",
+      },
+      // All other /api/* routes are proxied to the Rust backend
       {
         source: "/api/:path*",
         destination: `${backendUrl}/api/:path*`,
