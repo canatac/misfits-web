@@ -64,7 +64,7 @@ export default function LoginPage() {
 function LoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/inbox";
+  const redirectTo = searchParams.get("redirect") || "/mail";
 
   const pendingTwoFactorChallengeId = useAuthStore(
     (s) => s.pendingTwoFactorChallengeId,

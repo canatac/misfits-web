@@ -23,7 +23,7 @@ export default function HomePage() {
           Sign in
         </a>
         <a
-          href="/inbox"
+          href="/mail"
           className="rounded-lg border border-[var(--color-border)] px-6 py-3 font-medium text-[var(--color-fg)] transition hover:bg-[var(--color-muted)]"
         >
           View inbox

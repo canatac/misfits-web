@@ -58,7 +58,7 @@ export function useLogin() {
         return;
       }
       toast.success("Welcome back!");
-      router.push("/inbox");
+      router.push("/mail");
     },
     onError: (error: unknown) => {
       const message =
@@ -80,7 +80,7 @@ export function useRegister() {
     mutationFn: (credentials: RegisterCredentials) => register(credentials),
     onSuccess: () => {
       toast.success("Account created — welcome to misfits.ai Mail!");
-      router.push("/inbox");
+      router.push("/mail");
     },
     onError: (error: unknown) => {
       const message =
@@ -175,7 +175,7 @@ export function useConfirmPasswordReset() {
  *
  * Completes the second-factor step after a login that returned
  * `two_factor_required`. On success the store transitions to authenticated
- * and we navigate to /inbox.
+ * and we navigate to /mail.
  * ------------------------------------------------------------------ */
 
 export function use2FA() {
@@ -185,7 +185,7 @@ export function use2FA() {
     mutationFn: (challenge: TwoFactorChallenge) => verify2FA(challenge),
     onSuccess: () => {
       toast.success("Two-factor verified.");
-      router.push("/inbox");
+      router.push("/mail");
     },
     onError: (error: unknown) => {
       const message =
