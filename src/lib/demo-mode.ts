@@ -1,25 +1,15 @@
 /**
- * Demo mode — when the backend is unreachable or not yet wired, the auth
- * store falls back to these credentials so the UI is fully explorable.
+ * Demo mode — when the backend is unreachable, the auth store falls back
+ * to a local demo session so the UI is still explorable.
  *
- * This is CLIENT-SIDE ONLY and clearly labelled as demo. No real
- * authentication happens. When BACKEND_URL is available and responds,
- * real auth takes over automatically.
+ * The frontend always tries real auth first (via the /api proxy).
+ * Demo mode only activates on network failure.
  */
 
 import type { Session, User } from "@/types/auth";
 
 export const DEMO_EMAIL = "demo@misfits.ai";
 export const DEMO_PASSWORD = "misfits";
-
-/** Any password works in demo mode, but we advertise DEMO_PASSWORD. */
-export function isDemoCredential(email: string, password: string): boolean {
-  return (
-    email.trim().toLowerCase() === DEMO_EMAIL ||
-    email.trim().toLowerCase() === "admin@misfits.ai" ||
-    password.length > 0 // In demo mode, any non-empty password works
-  );
-}
 
 export function createDemoSession(email: string): Session {
   const now = Date.now();
@@ -38,20 +28,18 @@ export function createDemoSession(email: string): Session {
     user,
     accessToken: `demo-token-${now}`,
     refreshToken: `demo-refresh-${now}`,
-    expiresAt: now + 60 * 60 * 1000, // 1 hour
-    refreshExpiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days
+    expiresAt: now + 60 * 60 * 1000,
+    refreshExpiresAt: now + 7 * 24 * 60 * 60 * 1000,
     issuedAt: now,
   };
 }
 
 /**
- * Check if we should use demo mode: when no BACKEND_URL / NEXT_PUBLIC_BACKEND_URL
- * is set, or when the backend is unreachable.
+ * Demo mode is determined at runtime by trying the real backend first.
+ * This function is called as a fallback when the API call fails.
  */
 export function shouldUseDemoMode(): boolean {
-  // If NEXT_PUBLIC_BACKEND_URL is explicitly set, real mode is intended.
-  if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_BACKEND_URL) {
-    return false;
-  }
-  return true;
+  // In production with a backend, the /api proxy works — no demo needed.
+  // Demo mode is only a fallback for network errors.
+  return false;
 }

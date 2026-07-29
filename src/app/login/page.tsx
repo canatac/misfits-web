@@ -348,18 +348,6 @@ function LoginInner() {
         <p className="mt-4 text-center text-xs text-[var(--color-muted-fg)]">
           © 2026 misfits.ai — Privacy-first email
         </p>
-
-        {/* Demo mode banner */}
-        <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-brand-200)] bg-[var(--color-brand-50)] p-3 text-center dark:border-[var(--color-brand-800)] dark:bg-[var(--color-brand-900)]">
-          <p className="text-xs font-medium text-[var(--color-brand-700)] dark:text-[var(--color-brand-300)]">
-            🚀 Demo mode — backend not connected
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-muted-fg)]">
-            Use any email + any password to explore the app.
-            <br />
-            Try: <code className="font-mono text-[var(--color-brand-600)] dark:text-[var(--color-brand-400)]">demo@misfits.ai</code> / <code className="font-mono text-[var(--color-brand-600)] dark:text-[var(--color-brand-400)]">misfits</code>
-          </p>
-        </div>
       </div>
     </main>
   );
