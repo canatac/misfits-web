@@ -36,13 +36,14 @@ const nextConfig = {
     ];
   },
 
-  // Proxy vers le backend Rust (IMAP API Warp) — en production via Docker network, en dev via localhost
+  // Proxy vers email_api HTTP — rewrites are baked at build time.
+  // Prefer build-arg BACKEND_URL=http://email-api:8000 in Docker image builds.
   async rewrites() {
     const backendUrl =
       process.env.BACKEND_URL ||
       (process.env.NODE_ENV === "production"
-        ? "http://imap-server:8080"
-        : "http://localhost:8080");
+        ? "http://email-api:8000"
+        : "http://localhost:8000");
     return [
       {
         source: "/api/:path*",
