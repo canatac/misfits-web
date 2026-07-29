@@ -50,6 +50,10 @@ import {
   recordSessionId,
   storeSession,
 } from "@/lib/session";
+import {
+  shouldUseDemoMode,
+  createDemoSession,
+} from "@/lib/demo-mode";
 
 /* ------------------------------------------------------------------ *
  * Rate limiting (client-side)
@@ -212,6 +216,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
 
     try {
+      // Demo mode: when no backend is configured, accept any credentials.
+      if (shouldUseDemoMode()) {
+        const session = createDemoSession(credentials.email);
+        applySession(set, session, credentials.remember ?? false);
+        audit("login", `Demo login as ${credentials.email}`);
+        return;
+      }
+
       const res = await apiLogin(credentials.email, credentials.password);
       if (isTwoFactorChallenge(res)) {
         // Backend requires a 6-digit code before issuing a session.
@@ -225,6 +237,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       applySession(set, res.session, credentials.remember ?? false);
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
+      // Network error → fall back to demo mode so the UI is still usable.
+      if (err instanceof ApiError && err.isNetworkError && shouldUseDemoMode()) {
+        const session = createDemoSession(credentials.email);
+        applySession(set, session, credentials.remember ?? false);
+        audit("login", `Demo login (backend unreachable) as ${credentials.email}`);
+        return;
+      }
+
       if (err instanceof ApiError && err.status === 0) {
         // network — don't burn a retry
       } else {
