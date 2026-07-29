@@ -5,7 +5,7 @@
  * Collapsible on mobile via hamburger menu. Uses dynamic labels from the
  * label store (Issue #146) instead of the static mock list.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Inbox,
@@ -31,7 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEmailStore } from "@/stores/email-store";
-import { useLabelStore } from "@/stores/label-store";
+import { useLabelStore, buildLabelTree } from "@/stores/label-store";
 import { useSnoozeStore } from "@/stores/snooze-store";
 import { AccountSelector } from "@/components/mail/account-selector";
 import { LabelManager } from "@/components/mail/label-manager";
@@ -63,7 +63,11 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
   const setFolder = useEmailStore((s) => s.setFolder);
   const setSearchQuery = useEmailStore((s) => s.setSearchQuery);
 
-  const labelTree = useLabelStore((s) => s.getLabelTree());
+  // NEVER select s.getLabelTree() directly — it allocates a new array every
+  // call, so Zustand sees a changed snapshot every render → React #185
+  // (Maximum update depth exceeded) on /mail.
+  const labels = useLabelStore((s) => s.labels);
+  const labelTree = useMemo(() => buildLabelTree(labels), [labels]);
   const snoozedCount = useSnoozeStore((s) => s.snoozedEmails.length);
 
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);

@@ -55,8 +55,8 @@ interface LabelState {
   setLabels: (labels: Label[]) => void;
 }
 
-/** Build a tree from a flat label list. */
-function buildTree(labels: Label[]): LabelTree[] {
+/** Build a tree from a flat label list. Pure — safe to call from useMemo. */
+export function buildLabelTree(labels: Label[]): LabelTree[] {
   const byParent = new Map<string | null, Label[]>();
   for (const l of labels) {
     const key = l.parentId ?? null;
@@ -85,7 +85,7 @@ export const useLabelStore = create<LabelState>()(
 
       getLabelById: (id) => get().labels.find((l) => l.id === id),
 
-      getLabelTree: () => buildTree(get().labels),
+      getLabelTree: () => buildLabelTree(get().labels),
 
       getLabelsForEmail: (emailId) => {
         const { labels, assignments } = get();

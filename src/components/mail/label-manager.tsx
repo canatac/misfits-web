@@ -36,7 +36,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useLabelStore, LABEL_COLORS, LABEL_ICONS } from "@/stores/label-store";
+import { useLabelStore, LABEL_COLORS, LABEL_ICONS, buildLabelTree } from "@/stores/label-store";
 import type { Label, LabelCreateInput, LabelTree } from "@/types/label";
 
 interface LabelManagerProps {
@@ -56,7 +56,9 @@ function getIcon(name: string): React.ComponentType<{ className?: string }> | un
 
 export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
   const labels = useLabelStore((s) => s.labels);
-  const tree = useLabelStore((s) => s.getLabelTree());
+  // Stable when `labels` unchanged — calling getLabelTree() in the selector
+  // returns a fresh array every time and trips React max-update-depth (#185).
+  const tree = React.useMemo(() => buildLabelTree(labels), [labels]);
   const createLabel = useLabelStore((s) => s.createLabel);
   const updateLabel = useLabelStore((s) => s.updateLabel);
   const deleteLabel = useLabelStore((s) => s.deleteLabel);

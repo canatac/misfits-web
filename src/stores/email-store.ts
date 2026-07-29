@@ -249,7 +249,11 @@ export const useEmailStore = create<EmailState>((set, get) => ({
 
   setSearchQuery: (query) => set({ searchQuery: query }),
 
-  setAccountId: (accountId) => set({ accountId, selectedEmailId: null, selectedEmailIds: new Set() }),
+  setAccountId: (accountId) => {
+    // No-op when unchanged — avoids thrashing subscribers (new Set() each call).
+    if (get().accountId === accountId) return;
+    set({ accountId, selectedEmailId: null, selectedEmailIds: new Set() });
+  },
 
   toggleEmailSelection: (id) => {
     set((state) => {

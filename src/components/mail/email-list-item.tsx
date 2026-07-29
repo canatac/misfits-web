@@ -4,7 +4,7 @@
  * Email list item — individual email row with avatar, sender, subject,
  * preview, date, flags (unread, starred, attachment), bulk checkbox, and hover actions.
  */
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Star, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,6 +15,9 @@ import { SecurityIndicator } from "@/components/mail/security-indicator";
 import { useLabelStore } from "@/stores/label-store";
 import { useAccountStore } from "@/stores/account-store";
 import type { Email } from "@/types/email";
+
+/** Stable empty array — never return `?? []` from a Zustand selector. */
+const EMPTY_LABEL_IDS: string[] = [];
 
 interface EmailListItemProps {
   email: Email;
@@ -66,9 +69,15 @@ function EmailListItemComponent({
   onToggleSelection,
   onToggleStar,
 }: EmailListItemProps) {
-  // Merge static email.labels with any dynamically-assigned labels from the store.
-  const assignedLabels = useLabelStore((s) => s.assignments[email.id] ?? []);
-  const allLabelIds = Array.from(new Set([...email.labels, ...assignedLabels]));
+  // Read the raw assignment ref (or stable EMPTY). `?? []` allocates every
+  // selector call → React #185 (max update depth) once emails are listed.
+  const assignedLabels = useLabelStore(
+    (s) => s.assignments[email.id] ?? EMPTY_LABEL_IDS,
+  );
+  const allLabelIds = useMemo(
+    () => Array.from(new Set([...email.labels, ...assignedLabels])),
+    [email.labels, assignedLabels],
+  );
   // Show the account badge in unified-inbox mode (Issue #154).
   const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
   const accountsCount = useAccountStore((s) => s.accounts.length);
