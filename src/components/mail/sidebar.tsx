@@ -160,6 +160,16 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         </Link>
       </div>
 
+      {/* AI settings */}
+      <div className="px-3 pb-2">
+        <Link href="/settings/ai" data-testid="ai-settings-link">
+          <Button variant="outline" className="w-full justify-start gap-2">
+            <Settings2 className="h-4 w-4" />
+            IA / modèles
+          </Button>
+        </Link>
+      </div>
+
       <Separator />
 
       {/* Folders + Labels */}
