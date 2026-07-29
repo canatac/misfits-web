@@ -246,7 +246,7 @@ export async function apiLogin(
   return apiClient.post<LoginResponse>(
     "/auth/login",
     { email, password },
-    { skipAuth: true, baseUrl: "" },
+    { skipAuth: true },
   );
 }
 
