@@ -87,7 +87,9 @@ export function storeSession(session: Session, remember: boolean): void {
 
   // The cookie is httpOnly-preferred when set by the backend; this client-side
   // copy is a fallback for environments where the backend cannot set cookies.
-  if (ttlSeconds > 0 && remember) {
+  // Always set the cookie so the Edge middleware can read it regardless of
+  // whether "Remember me" was checked.
+  if (ttlSeconds > 0) {
     setCookie(SESSION_COOKIE, session.id, ttlSeconds);
   }
 }
