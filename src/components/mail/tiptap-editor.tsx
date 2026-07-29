@@ -41,6 +41,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
+import { SmartCompose } from "@/components/mail/smart-compose";
 
 interface TiptapEditorProps {
   value: string;
@@ -50,6 +52,14 @@ interface TiptapEditorProps {
   onToggleFullScreen?: () => void;
   className?: string;
   editable?: boolean;
+  /** Toggle the AI composer panel (shown in the editor toolbar). */
+  onToggleAI?: () => void;
+  /** Whether the AI panel is currently open. */
+  aiActive?: boolean;
+  /** Show the AI loading animation while a generation is in flight. */
+  aiLoading?: boolean;
+  /** Notifies the parent once the editor instance is ready (for AI insertion). */
+  onEditorReady?: (editor: Editor) => void;
 }
 
 /** Minimal markdown → HTML for common inline/block constructs. */
@@ -178,6 +188,10 @@ export function TiptapEditor({
   onToggleFullScreen,
   className,
   editable = true,
+  onToggleAI,
+  aiActive,
+  aiLoading,
+  onEditorReady,
 }: TiptapEditorProps) {
   const lastValueRef = useRef(value);
 
@@ -253,6 +267,11 @@ export function TiptapEditor({
       lastValueRef.current = value;
     }
   }, [value, editor]);
+
+  // Notify the parent once the editor instance is ready (for AI insertion).
+  useEffect(() => {
+    if (editor && onEditorReady) onEditorReady(editor);
+  }, [editor, onEditorReady]);
 
   // Keyboard: Cmd/Ctrl+Shift+M converts a markdown line to HTML.
   const handleMarkdownConvert = useCallback(() => {
@@ -398,6 +417,16 @@ export function TiptapEditor({
           label="Insert image"
           onClick={insertImage}
         />
+        {onToggleAI && (
+          <>
+            <Separator orientation="vertical" className="mx-0.5 h-6" />
+            <AIToolbarButton
+              active={aiActive}
+              loading={aiLoading}
+              onClick={onToggleAI}
+            />
+          </>
+        )}
         <div className="ml-auto">
           {onToggleFullScreen && (
             <ToolbarButton
@@ -411,6 +440,9 @@ export function TiptapEditor({
 
       {/* Editor surface */}
       <EditorContent editor={editor} className="flex-1 overflow-auto" />
+
+      {/* Smart compose ghost-text autocomplete */}
+      <SmartCompose editor={editor} />
 
       {/* Placeholder styling */}
       <style>{`

@@ -60,6 +60,11 @@ import {
 import { getActiveSignature } from "@/lib/signatures";
 import { useAuthStore } from "@/stores/auth-store";
 import type { ComposeDraft, Recipient, RecipientType } from "@/types/composer";
+import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
+import { AIComposerPanel } from "@/components/mail/ai-composer-panel";
+import { AISubjectSuggester } from "@/components/mail/ai-subject-suggester";
+import { useAIStore } from "@/stores/ai-store";
+import type { Editor } from "@tiptap/react";
 
 interface ComposerPanelProps {
   variant?: "panel" | "page";
@@ -120,6 +125,9 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   const [showTemplates, setShowTemplates] = useState(false);
   const [undoBanner, setUndoBanner] = useState<{ id: string; seconds: number } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showAIPanel, setShowAIPanel] = useState(false);
+  const [aiEditor, setAiEditor] = useState<Editor | null>(null);
+  const aiGenerating = useAIStore((s) => s.isGenerating);
 
   const sendMutation = useSendEmail();
   const saveMutation = useSaveDraft();
@@ -261,7 +269,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   return (
     <div
       className={cn(
-        "flex flex-col bg-[var(--color-card)] text-[var(--color-card-fg)]",
+        "relative flex flex-col bg-[var(--color-card)] text-[var(--color-card-fg)]",
         variant === "page" ? "h-full" : "max-h-[85vh] rounded-[var(--radius-xl)] border border-[var(--color-border)] shadow-[var(--shadow-xl)]",
         isFullScreen && "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
         className,
@@ -274,6 +282,12 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           {isDirty ? "Unsaved draft" : "Draft saved"}
         </span>
         <div className="ml-auto flex items-center gap-1">
+          <AIToolbarButton
+            active={showAIPanel}
+            loading={aiGenerating}
+            onClick={() => setShowAIPanel((v) => !v)}
+          />
+
           {/* Send later */}
           <Popover>
             <PopoverTrigger asChild>
@@ -404,12 +418,15 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           <Separator />
 
           {/* Subject */}
-          <Input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder="Subject"
-            className="border-0 bg-transparent px-0 text-base font-medium shadow-none focus-visible:ring-0"
-          />
+          <div className="flex items-center gap-1">
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Subject"
+              className="border-0 bg-transparent px-0 text-base font-medium shadow-none focus-visible:ring-0"
+            />
+            <AISubjectSuggester body={body} onApply={setSubject} />
+          </div>
 
           <Separator />
 
@@ -439,6 +456,10 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
             onChange={setBody}
             isFullScreen={false}
             placeholder="Write your email… (Cmd/Ctrl+Enter to send)"
+            onEditorReady={setAiEditor}
+            onToggleAI={() => setShowAIPanel((v) => !v)}
+            aiActive={showAIPanel}
+            aiLoading={aiGenerating}
           />
 
           {/* Signature preview */}
@@ -498,6 +519,13 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           ⌘/Ctrl + Enter to send
         </span>
       </div>
+
+      {/* AI composer panel */}
+      <AIComposerPanel
+        open={showAIPanel}
+        editor={aiEditor}
+        onClose={() => setShowAIPanel(false)}
+      />
     </div>
   );
 }

@@ -14,7 +14,7 @@ import {
   X,
   Wand2,
   Languages,
-  InsertText,
+  ClipboardPaste,
   History,
   Trash2,
   Loader2,
@@ -382,7 +382,7 @@ export function AIComposerPanel({
                 onClick={() => insertIntoEditor(output, insertMode)}
                 disabled={!editor}
               >
-                <InsertText className="h-4 w-4" />
+                <ClipboardPaste className="h-4 w-4" />
                 Insérer ({insertMode === "replace" ? "remplacer" : "ajouter"})
               </Button>
             </div>
@@ -421,7 +421,7 @@ export function AIComposerPanel({
             </div>
             {!hasSelection && (
               <p className="text-xs text-[var(--color-muted-fg)]">
-                Sélectionne du texte dans l'éditeur pour le réécrire ou le traduire.
+                {"Sélectionne du texte dans l'éditeur pour le réécrire ou le traduire."}
               </p>
             )}
           </div>
