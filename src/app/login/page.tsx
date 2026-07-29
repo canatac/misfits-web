@@ -13,7 +13,7 @@
 
 import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Mail, AlertTriangle, ArrowLeft, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,16 @@ import { cn } from "@/lib/utils";
  * ------------------------------------------------------------------ */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Accept full email OR local-part username (admin). */
+const USER_RE = /^[^\s@]+(?:@[^\s@]+\.[^\s@]+)?$/;
+
+function isValidLoginId(value: string): boolean {
+  const v = value.trim();
+  if (!v) return false;
+  if (v.includes("@")) return EMAIL_RE.test(v);
+  // local-part only (bootstrap admin, mailbox user_id)
+  return /^[A-Za-z0-9._+-]{1,64}$/.test(v);
+}
 
 function isRateLimited(retryAfter?: number): boolean {
   return Boolean(retryAfter && retryAfter > Date.now());
@@ -62,9 +72,8 @@ export default function LoginPage() {
 }
 
 function LoginInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/mail";
+  // redirect handled via ?redirect= in useLogin
+  useSearchParams(); // keep suspense boundary happy
 
   const pendingTwoFactorChallengeId = useAuthStore(
     (s) => s.pendingTwoFactorChallengeId,
@@ -85,7 +94,7 @@ function LoginInner() {
   const [code, setCode] = useState("");
   const codeInputRef = useRef<HTMLInputElement>(null);
 
-  const emailValid = EMAIL_RE.test(email);
+  const emailValid = isValidLoginId(email);
   const emailError = emailTouched && !emailValid && email.length > 0;
 
   const is2FAStep = pendingTwoFactorChallengeId !== null;
@@ -95,11 +104,7 @@ function LoginInner() {
     if (is2FAStep) codeInputRef.current?.focus();
   }, [is2FAStep]);
 
-  // If the store becomes authenticated (e.g. after 2FA), bounce to the inbox.
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  useEffect(() => {
-    if (isAuthenticated) router.push(redirectTo);
-  }, [isAuthenticated, router, redirectTo]);
+  // Success navigation handled solely by useLogin (replace) — avoid double /mail push.
 
   const rateLimited = isRateLimited(authError?.retryAfter);
   const showFormError = authError && !is2FAStep;
@@ -250,12 +255,12 @@ function LoginInner() {
             ) : (
               <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email or username</Label>
                   <Input
                     id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="admin or you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setEmailTouched(true)}
@@ -269,7 +274,7 @@ function LoginInner() {
                       className="text-xs text-[var(--color-danger-500)]"
                       role="alert"
                     >
-                      Please enter a valid email address.
+                      Enter a username (e.g. admin) or a valid email.
                     </p>
                   ) : null}
                 </div>

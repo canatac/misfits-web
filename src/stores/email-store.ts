@@ -128,12 +128,17 @@ export const useEmailStore = create<EmailState>((set, get) => ({
 
   fetchEmails: (folder) => {
     const targetFolder = folder ?? get().currentFolder;
+    // Skip duplicate in-flight / same-folder reloads when data already present
+    if (get().loading && get().currentFolder === targetFolder) return;
     set({ loading: true, error: null, currentFolder: targetFolder });
     const params = new URLSearchParams({
       folder: targetFolder,
       page: "1",
       pageSize: "50",
     });
+    const gen = (get() as { _fetchGen?: number })._fetchGen ?? 0;
+    const myGen = gen + 1;
+    (get() as { _fetchGen?: number })._fetchGen = myGen;
     void (async () => {
       try {
         const res = await fetch(`/api/emails?${params.toString()}`, {
@@ -147,6 +152,8 @@ export const useEmailStore = create<EmailState>((set, get) => ({
           emails?: Email[];
           total?: number;
         };
+        // Drop stale responses
+        if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
         const emails = Array.isArray(data.emails) ? data.emails : [];
         set({
           emails,
@@ -154,7 +161,6 @@ export const useEmailStore = create<EmailState>((set, get) => ({
           error: null,
           selectedEmailId: null,
           selectedEmailIds: new Set(),
-          // Keep folder chrome from mocks until backend exposes counts.
           folders: get().folders.map((f) =>
             f.id === targetFolder
               ? {
@@ -166,6 +172,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
           ),
         });
       } catch (err) {
+        if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
         set({
           loading: false,
           error:

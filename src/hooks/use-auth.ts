@@ -58,7 +58,18 @@ export function useLogin() {
         return;
       }
       toast.success("Welcome back!");
-      router.push("/mail");
+      // Prefer ?redirect= when present (login page sets it via sessionStorage)
+      let dest = "/mail";
+      try {
+        const fromQs =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("redirect")
+            : null;
+        if (fromQs && fromQs.startsWith("/")) dest = fromQs;
+      } catch {
+        /* ignore */
+      }
+      router.replace(dest);
     },
     onError: (error: unknown) => {
       const message =
