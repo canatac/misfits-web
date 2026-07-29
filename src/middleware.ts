@@ -131,6 +131,13 @@ export async function middleware(
     return handleLogin(request);
   }
 
+  // TEMP DEBUG: tag all /api/auth responses so we know middleware ran
+  if (pathname.startsWith("/api/auth")) {
+    const resp = NextResponse.next();
+    resp.headers.set("x-middleware-ran", "true");
+    return resp;
+  }
+
   // Route protection
   if (!isProtected(pathname)) {
     return NextResponse.next();
