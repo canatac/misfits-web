@@ -11,6 +11,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/mail", "/compose", "/settings"];
+const PROTECTED_PREFIXES = ["/mail", "/compose", "/settings", "/contacts"];
 const PUBLIC_EXACT = new Set(["/", "/login", "/reset-password"]);
 const SESSION_COOKIE = "mfa_session";
 
