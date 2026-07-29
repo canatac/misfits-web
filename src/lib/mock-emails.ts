@@ -1017,6 +1017,7 @@ export const mockEmails: Email[] = seeds.map((s, i) => {
     inReplyTo,
     references,
     headers: {},
+    accountId: "acc-1",
   };
 });
 

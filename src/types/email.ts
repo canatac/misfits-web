@@ -75,6 +75,8 @@ export interface Email {
   inReplyTo?: string;
   references?: string[];
   headers?: Record<string, string>;
+  /** Owning account id (Issue #154). Undefined on legacy/untagged emails. */
+  accountId?: string;
 }
 
 export interface EmailListResponse {
@@ -93,6 +95,8 @@ export interface EmailQuery {
   page?: number;
   pageSize?: number;
   label?: string;
+  /** Filter to a single account (null = all accounts / unified). */
+  accountId?: string | null;
 }
 
 export interface EmailAccount {

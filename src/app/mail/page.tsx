@@ -18,6 +18,7 @@ import { ComposerPanel } from "@/components/mail/composer-panel";
 import { SearchOverlay } from "@/components/mail/search-overlay";
 import { ChatPanel } from "@/components/mail/chat-panel";
 import { ChatTrigger } from "@/components/mail/chat-trigger";
+import { ReminderBanner } from "@/components/mail/reminder-banner";
 import {
   Modal,
   ModalContent,
@@ -189,6 +190,9 @@ export default function MailPage() {
       {/* Conversational AI chat assistant */}
       <ChatTrigger />
       <ChatPanel />
+
+      {/* Follow-up reminder banner (Issue #151) */}
+      <ReminderBanner />
     </>
   );
 }

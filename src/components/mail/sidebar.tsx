@@ -6,6 +6,7 @@
  * label store (Issue #146) instead of the static mock list.
  */
 import { useState } from "react";
+import Link from "next/link";
 import {
   Inbox,
   Send,
@@ -20,28 +21,23 @@ import {
   Settings2,
   Clock,
   Zap,
+  Contact as ContactIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { useEmailStore } from "@/stores/email-store";
 import { useLabelStore } from "@/stores/label-store";
 import { useSnoozeStore } from "@/stores/snooze-store";
+import { AccountSelector } from "@/components/mail/account-selector";
 import { LabelManager } from "@/components/mail/label-manager";
 import { FilterEditor } from "@/components/mail/filter-editor";
 import { SnoozePicker } from "@/components/mail/snooze-picker";
 import { TriagePanel } from "@/components/mail/triage-panel";
+import { FollowUpList } from "@/components/mail/follow-up-list";
+import { useFollowUpStore } from "@/stores/follow-up-store";
 import type { Folder } from "@/types/email";
 import type { LabelTree } from "@/types/label";
 
@@ -53,11 +49,6 @@ const FOLDER_ICONS: Record<string, typeof Inbox> = {
   Trash2,
   AlertCircle,
 };
-
-const ACCOUNTS = [
-  { id: "acc-1", email: "hermes@misfits.ai", name: "Hermes", avatar: "H" },
-  { id: "acc-2", email: "personal@gmail.com", name: "Personal", avatar: "P" },
-];
 
 interface SidebarProps {
   className?: string;
@@ -73,10 +64,17 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
   const labelTree = useLabelStore((s) => s.getLabelTree());
   const snoozedCount = useSnoozeStore((s) => s.snoozedEmails.length);
 
-  const [activeAccount, setActiveAccount] = useState(ACCOUNTS[0]);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [filterEditorOpen, setFilterEditorOpen] = useState(false);
   const [triageOpen, setTriageOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+
+  const followUpCount = useFollowUpStore(
+    (s) =>
+      s.followUps.filter(
+        (fu) => fu.status !== "dismissed" && fu.status !== "completed",
+      ).length,
+  );
 
   return (
     <aside
@@ -86,50 +84,9 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
       )}
       data-testid="mail-sidebar"
     >
-      {/* Account selector */}
+      {/* Account selector — multi-account + unified inbox (Issue #154) */}
       <div className="p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start gap-3 px-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{activeAccount.avatar}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col items-start gap-0">
-                <span className="text-sm font-medium">{activeAccount.name}</span>
-                <span className="text-xs text-[var(--color-muted-fg)]">
-                  {activeAccount.email}
-                </span>
-              </div>
-              <ChevronDown className="ml-auto h-4 w-4 text-[var(--color-muted-fg)]" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-64">
-            <DropdownMenuLabel>Accounts</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {ACCOUNTS.map((acc) => (
-              <DropdownMenuItem
-                key={acc.id}
-                onClick={() => setActiveAccount(acc)}
-                className="gap-3"
-              >
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback>{acc.avatar}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{acc.name}</span>
-                  <span className="text-xs text-[var(--color-muted-fg)]">
-                    {acc.email}
-                  </span>
-                </div>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 text-[var(--color-brand-500)]">
-              <Mail className="h-4 w-4" />
-              Add account
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AccountSelector />
       </div>
 
       {/* Compose button */}
@@ -155,6 +112,25 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         >
           <Zap className="h-4 w-4 text-[var(--color-warning-500)]" />
           AI Triage
+        </Button>
+      </div>
+
+      {/* Follow-up tracking toggle (Issue #151) */}
+      <div className="px-3 pb-2">
+        <Button
+          variant={followUpOpen ? "secondary" : "outline"}
+          className="w-full justify-start gap-2"
+          onClick={() => setFollowUpOpen((v) => !v)}
+          data-testid="followup-toggle"
+          aria-expanded={followUpOpen}
+        >
+          <BellRing className="h-4 w-4 text-[var(--color-brand-500)]" />
+          Follow-ups
+          {followUpCount > 0 && (
+            <Badge variant="default" className="ml-auto">
+              {followUpCount}
+            </Badge>
+          )}
         </Button>
       </div>
 
@@ -252,6 +228,20 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <>
             <Separator />
             <TriagePanel emails={[]} />
+          </>
+        )}
+
+        {/* Follow-up list panel (Issue #151) — toggled by the button above */}
+        {followUpOpen && (
+          <>
+            <Separator />
+            <div className="p-3">
+              <div className="mb-2 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+                <BellRing className="h-3 w-3" />
+                Needs Follow-up
+              </div>
+              <FollowUpList />
+            </div>
           </>
         )}
       </ScrollArea>

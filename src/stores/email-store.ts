@@ -28,6 +28,8 @@ interface EmailState {
   selectedEmailIds: Set<string>;
   loading: boolean;
   error: string | null;
+  /** Active account filter (Issue #154). null = all accounts (unified inbox). */
+  accountId: string | null;
 
   // Actions
   fetchEmails: (folder?: Folder) => void;
@@ -42,6 +44,7 @@ interface EmailState {
   setSortBy: (sortBy: SortBy) => void;
   setFilterType: (filterType: FilterType) => void;
   setSearchQuery: (query: string) => void;
+  setAccountId: (accountId: string | null) => void;
   toggleEmailSelection: (id: string) => void;
   clearSelection: () => void;
 }
@@ -73,8 +76,14 @@ function filterEmails(
   emails: Email[],
   filterType: FilterType,
   searchQuery: string,
+  accountId: string | null,
 ): Email[] {
   let result = emails;
+  // Account filter (Issue #154): null = unified (all accounts). Untagged emails
+  // (no accountId) are shown in every account's view so legacy mock data stays visible.
+  if (accountId !== null) {
+    result = result.filter((e) => e.accountId === undefined || e.accountId === accountId);
+  }
   switch (filterType) {
     case "unread":
       result = result.filter((e) => !e.isRead);
@@ -114,6 +123,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   selectedEmailIds: new Set(),
   loading: false,
   error: null,
+  accountId: null,
 
   fetchEmails: (folder) => {
     const targetFolder = folder ?? get().currentFolder;
@@ -238,6 +248,8 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   setFilterType: (filterType) => set({ filterType, selectedEmailIds: new Set() }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),
+
+  setAccountId: (accountId) => set({ accountId, selectedEmailId: null, selectedEmailIds: new Set() }),
 
   toggleEmailSelection: (id) => {
     set((state) => {
