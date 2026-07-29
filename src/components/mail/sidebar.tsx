@@ -23,6 +23,7 @@ import {
   Zap,
   BellRing,
   Contact as ContactIcon,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -141,6 +142,16 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <Button variant="outline" className="w-full justify-start gap-2">
             <ContactIcon className="h-4 w-4" />
             Contacts
+          </Button>
+        </Link>
+      </div>
+
+      {/* Calendar link (Issue #153) — opens the integrated calendar */}
+      <div className="px-3 pb-2">
+        <Link href="/calendar" data-testid="calendar-link">
+          <Button variant="outline" className="w-full justify-start gap-2">
+            <CalendarIcon className="h-4 w-4" />
+            Calendar
           </Button>
         </Link>
       </div>
