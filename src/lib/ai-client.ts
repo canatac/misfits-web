@@ -25,6 +25,7 @@ import type {
   ChatMessage,
   CompletionOptions,
 } from "@/types/ai";
+import { resolveFeatureModel } from "@/lib/ai-settings";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const AI_PROXY_URL = "/api/ai";
@@ -39,7 +40,7 @@ const STREAM_TIMEOUT_MS = 60_000;
 export const AI_MODEL =
   (typeof process !== "undefined" &&
     (process.env.NEXT_PUBLIC_AI_MODEL || process.env.AI_MODEL)) ||
-  "openai/gpt-4o-mini";
+  "qwen/qwen3.7-flash";
 
 /* ------------------------------------------------------------------ *
  * Errors
@@ -523,29 +524,45 @@ export function generateEmail(
   const messages = buildEmailMessages(req);
   const maxTokens = lengthToTokens(req.length);
   if (opts.stream) {
-    return streamChatCompletion(messages, { signal: opts.signal, maxTokens });
+    return (async function* () {
+      const model = await resolveFeatureModel("compose");
+      yield* streamChatCompletion(messages, {
+        signal: opts.signal,
+        maxTokens,
+        model,
+      });
+    })();
   }
-  return chatCompletion(messages, { signal: opts.signal, maxTokens });
+  return (async () => {
+    const model = await resolveFeatureModel("compose");
+    return chatCompletion(messages, {
+      signal: opts.signal,
+      maxTokens,
+      model,
+    });
+  })();
 }
 
 /** Rewrite the given text in the requested tone / length. */
-export function rewriteText(
+export async function rewriteText(
   text: string,
   opts: { tone?: AITone; length?: AILength; signal?: AbortSignal } = {},
 ): Promise<AIResponse> {
   const messages = buildRewriteMessages(text, opts);
   const maxTokens = opts.length ? lengthToTokens(opts.length) : 512;
-  return chatCompletion(messages, { signal: opts.signal, maxTokens });
+  const model = await resolveFeatureModel("rewrite");
+  return chatCompletion(messages, { signal: opts.signal, maxTokens, model });
 }
 
 /** Translate the given text into the target language. */
-export function translateText(
+export async function translateText(
   text: string,
   target: AITranslationLang,
   signal?: AbortSignal,
 ): Promise<AIResponse> {
   const messages = buildTranslateMessages(text, target);
-  return chatCompletion(messages, { signal, maxTokens: 1024 });
+  const model = await resolveFeatureModel("translate");
+  return chatCompletion(messages, { signal, maxTokens: 1024, model });
 }
 
 /**
@@ -558,10 +575,12 @@ export async function generateSubject(
 ): Promise<string[]> {
   const count = Math.max(1, Math.min(5, opts.count ?? 3));
   const messages = buildSubjectMessages(body, count);
+  const model = await resolveFeatureModel("subject");
   const res = await chatCompletion(messages, {
     signal: opts.signal,
     maxTokens: 128,
     temperature: 0.8,
+    model,
   });
   const subjects = parseSubjects(res.content, count);
   // If the model returned fewer than requested, pad by reusing (rare).
@@ -575,13 +594,15 @@ export async function generateSubject(
  * Inline smart-completion: given the text typed so far, return a short
  * continuation to display as ghost text.
  */
-export function smartComplete(
+export async function smartComplete(
   req: { textBefore: string; signal?: AbortSignal },
 ): Promise<AIResponse> {
   const messages = buildSmartCompleteMessages(req.textBefore);
+  const model = await resolveFeatureModel("complete");
   return chatCompletion(messages, {
     signal: req.signal,
     maxTokens: 32,
     temperature: 0.4,
+    model,
   });
 }
