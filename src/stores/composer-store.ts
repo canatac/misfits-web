@@ -14,6 +14,7 @@ import type {
   RecipientType,
   SendOptions,
 } from "@/types/composer";
+import { mailAuthHeaders } from "@/lib/mail-api";
 
 const STORAGE_KEY = "misfits:composer-draft";
 const AUTOSAVE_INTERVAL = 10_000;
@@ -210,18 +211,23 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   send: async (options) => {
     set({ sending: true, sendError: null });
     try {
-      // Simulate a network send. When a backend exists this would POST to /api/send.
-      const BACKEND_AVAILABLE =
-        typeof process !== "undefined" && !!process.env.NEXT_PUBLIC_BACKEND_URL;
-      if (BACKEND_AVAILABLE) {
-        const res = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...snapshot(get()), ...options }),
-        });
-        if (!res.ok) throw new Error(`Send failed: ${res.statusText}`);
-      } else {
-        await new Promise((r) => setTimeout(r, 600));
+      const snap = snapshot(get());
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: mailAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({
+          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
+          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
+          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
+          subject: snap.subject,
+          body: snap.body,
+          ...options,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "");
+        throw new Error(errBody || `Send failed: ${res.status}`);
       }
       // Clear the persisted draft on success.
       if (typeof window !== "undefined") {
@@ -242,17 +248,23 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   scheduleSend: async (date) => {
     set({ sending: true, sendError: null });
     try {
-      const BACKEND_AVAILABLE =
-        typeof process !== "undefined" && !!process.env.NEXT_PUBLIC_BACKEND_URL;
-      if (BACKEND_AVAILABLE) {
-        const res = await fetch("/api/send/schedule", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...snapshot(get()), sendLater: date }),
-        });
-        if (!res.ok) throw new Error(`Schedule failed: ${res.statusText}`);
-      } else {
-        await new Promise((r) => setTimeout(r, 400));
+      const snap = snapshot(get());
+      const res = await fetch("/api/send/schedule", {
+        method: "POST",
+        headers: mailAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({
+          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
+          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
+          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
+          subject: snap.subject,
+          body: snap.body,
+          sendLater: date,
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => "");
+        throw new Error(errBody || `Schedule failed: ${res.status}`);
       }
       set({ sending: false, sendError: null });
       return true;

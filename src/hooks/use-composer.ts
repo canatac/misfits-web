@@ -16,9 +16,10 @@ import { useEffect, useRef, useCallback } from "react";
 import { emailTemplates } from "@/lib/email-templates";
 import type { EmailTemplate } from "@/lib/email-templates";
 import type { ComposeDraft, SendOptions } from "@/types/composer";
+import { mailAuthHeaders } from "@/lib/mail-api";
 
-const BACKEND_AVAILABLE =
-  typeof process !== "undefined" && !!process.env.NEXT_PUBLIC_BACKEND_URL;
+/** Always hit same-origin `/api/*` (Next rewrite → email-api). Demo is login-only. */
+const BACKEND_AVAILABLE = true;
 
 const DRAFTS_KEY = "misfits:drafts";
 const DEBOUNCE_MS = 1500;
@@ -136,13 +137,26 @@ export function useSendEmail() {
         const endpoint = options?.sendLater ? "/api/send/schedule" : "/api/send";
         const res = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...draft, ...options }),
+          headers: mailAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify({
+            to: draft.to.map((r) => ({ email: r.email, name: r.name })),
+            cc: draft.cc.map((r) => ({ email: r.email, name: r.name })),
+            bcc: draft.bcc.map((r) => ({ email: r.email, name: r.name })),
+            subject: draft.subject,
+            body: draft.body,
+            ...options,
+          }),
         });
-        if (!res.ok) throw new Error(`Send failed: ${res.statusText}`);
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "");
+          throw new Error(
+            errBody || `Send failed: ${res.status} ${res.statusText}`,
+          );
+        }
         return res.json();
       }
-      // Mock: simulate network latency.
+      // unreachable — BACKEND_AVAILABLE is always true; kept for tests override
       await new Promise((r) => setTimeout(r, 600));
       return { id: draft.id, sent: true, sendLater: options?.sendLater };
     },

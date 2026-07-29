@@ -1,6 +1,6 @@
 /**
  * Email data hooks using TanStack Query.
- * Falls back to mock data when no backend is available.
+ * Same-origin `/api/emails` → email_api (Phase A5, #170).
  */
 import {
   useQuery,
@@ -14,81 +14,10 @@ import type {
   EmailQuery,
   Folder,
 } from "@/types/email";
-import { mockEmails, getMockEmailById, getMockEmailsByFolder } from "@/lib/mock-emails";
-
-/**
- * Check if a backend is available at runtime.
- * In dev without BACKEND_URL, we use mock data.
- */
-const BACKEND_AVAILABLE =
-  typeof process !== "undefined" &&
-  !!process.env.NEXT_PUBLIC_BACKEND_URL;
+import { mailAuthHeaders } from "@/lib/mail-api";
+import { useEmailStore } from "@/stores/email-store";
 
 async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
-  if (!BACKEND_AVAILABLE) {
-    // Mock fallback
-    let emails = getMockEmailsByFolder(query.folder ?? "inbox");
-
-    // Apply filter
-    if (query.filterType === "unread") {
-      emails = emails.filter((e) => !e.isRead);
-    } else if (query.filterType === "starred") {
-      emails = emails.filter((e) => e.isStarred);
-    } else if (query.filterType === "attachments") {
-      emails = emails.filter((e) => e.hasAttachments);
-    }
-
-    // Apply search
-    if (query.searchQuery?.trim()) {
-      const q = query.searchQuery.toLowerCase();
-      emails = emails.filter(
-        (e) =>
-          e.subject.toLowerCase().includes(q) ||
-          e.from.name.toLowerCase().includes(q) ||
-          e.preview.toLowerCase().includes(q),
-      );
-    }
-
-    // Apply sort
-    switch (query.sortBy) {
-      case "sender":
-        emails = [...emails].sort((a, b) => a.from.name.localeCompare(b.from.name));
-        break;
-      case "subject":
-        emails = [...emails].sort((a, b) => a.subject.localeCompare(b.subject));
-        break;
-      case "size":
-        emails = [...emails].sort((a, b) => b.size - a.size);
-        break;
-      case "unreadFirst":
-        emails = [...emails].sort((a, b) => {
-          if (a.isRead === b.isRead)
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          return a.isRead ? 1 : -1;
-        });
-        break;
-      case "date":
-      default:
-        emails = [...emails].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-        );
-        break;
-    }
-
-    const page = query.page ?? 1;
-    const pageSize = query.pageSize ?? 50;
-    const start = (page - 1) * pageSize;
-    const paged = emails.slice(start, start + pageSize);
-
-    return {
-      emails: paged,
-      total: emails.length,
-      page,
-      pageSize,
-      hasMore: start + pageSize < emails.length,
-    };
-  }
-
   const params = new URLSearchParams();
   if (query.folder) params.set("folder", query.folder);
   if (query.sortBy) params.set("sortBy", query.sortBy);
@@ -97,16 +26,27 @@ async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
   if (query.page) params.set("page", String(query.page));
   if (query.pageSize) params.set("pageSize", String(query.pageSize));
 
-  const res = await fetch(`/api/emails?${params.toString()}`);
+  const res = await fetch(`/api/emails?${params.toString()}`, {
+    headers: mailAuthHeaders(),
+    credentials: "include",
+  });
   if (!res.ok) throw new Error(`Failed to fetch emails: ${res.statusText}`);
-  return res.json();
+  const data = await res.json();
+  return {
+    emails: data.emails ?? [],
+    total: data.total ?? 0,
+    page: data.page ?? query.page ?? 1,
+    pageSize: data.pageSize ?? query.pageSize ?? 50,
+    hasMore: Boolean(data.hasMore),
+  };
 }
 
 async function fetchEmailById(id: string): Promise<Email | null> {
-  if (!BACKEND_AVAILABLE) {
-    return getMockEmailById(id) ?? null;
-  }
-  const res = await fetch(`/api/emails/${id}`);
+  const res = await fetch(`/api/emails/${encodeURIComponent(id)}`, {
+    headers: mailAuthHeaders(),
+    credentials: "include",
+  });
+  if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Failed to fetch email: ${res.statusText}`);
   return res.json();
 }
@@ -139,53 +79,37 @@ export function useEmail(id: string | null) {
 /**
  * Hook: useEmailActions
  * Mutations for star, read, archive, delete, bulk actions.
- * Optimistically updates the TanStack Query cache.
+ * Until flag endpoints exist server-side, update local email store optimistically.
  */
 export function useEmailActions() {
   const queryClient = useQueryClient();
+  const store = useEmailStore;
 
   const toggleStar = useMutation({
     mutationFn: async (id: string) => {
-      if (!BACKEND_AVAILABLE) {
-        const email = getMockEmailById(id);
-        return email ? { ...email, isStarred: !email.isStarred } : null;
-      }
-      const res = await fetch(`/api/emails/${id}/star`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to toggle star");
-      return res.json();
+      store.getState().toggleStar(id);
+      return { id };
     },
-    onSuccess: (updated) => {
-      queryClient.setQueryData(["email", updated?.id], updated);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
     },
   });
 
   const markRead = useMutation({
     mutationFn: async ({ id, isRead }: { id: string; isRead: boolean }) => {
-      if (!BACKEND_AVAILABLE) {
-        const email = getMockEmailById(id);
-        return email ? { ...email, isRead } : null;
-      }
-      const res = await fetch(`/api/emails/${id}/read`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isRead }),
-      });
-      if (!res.ok) throw new Error("Failed to mark email");
-      return res.json();
+      if (isRead) store.getState().markRead(id);
+      else store.getState().markUnread(id);
+      return { id, isRead };
     },
-    onSuccess: (updated) => {
-      queryClient.setQueryData(["email", updated?.id], updated);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
     },
   });
 
   const archive = useMutation({
     mutationFn: async (id: string) => {
-      if (!BACKEND_AVAILABLE) return { id, folder: "archive" as Folder };
-      const res = await fetch(`/api/emails/${id}/archive`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to archive email");
-      return res.json();
+      store.getState().archive(id);
+      return { id, folder: "archive" as Folder };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
@@ -194,10 +118,8 @@ export function useEmailActions() {
 
   const deleteEmail = useMutation({
     mutationFn: async (id: string) => {
-      if (!BACKEND_AVAILABLE) return { id };
-      const res = await fetch(`/api/emails/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete email");
-      return res.json();
+      store.getState().deleteEmail(id);
+      return { id };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
@@ -210,16 +132,12 @@ export function useEmailActions() {
       action,
     }: {
       ids: string[];
-      action: "archive" | "delete" | "markRead" | "markUnread";
+      action: "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
     }) => {
-      if (!BACKEND_AVAILABLE) return { ids, action };
-      const res = await fetch(`/api/emails/bulk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids, action }),
-      });
-      if (!res.ok) throw new Error("Failed to bulk action");
-      return res.json();
+      // Align with store BulkActionType using selected ids
+      useEmailStore.setState({ selectedEmailIds: new Set(ids) });
+      store.getState().bulkAction(action as never);
+      return { ids, action };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
@@ -236,16 +154,24 @@ export function useEmailActions() {
 }
 
 /**
- * Hook: useMockEmailCount
- * Returns unread counts per folder (for sidebar badges).
+ * Hook: useFolderCounts
+ * Derives counts from the current email store only (no mock corpus).
  */
 export function useFolderCounts() {
   return useQuery({
     queryKey: ["folder-counts"],
     queryFn: () => {
-      const folders: Folder[] = ["inbox", "sent", "drafts", "archive", "trash", "spam"];
+      const emails = useEmailStore.getState().emails;
+      const folders: Folder[] = [
+        "inbox",
+        "sent",
+        "drafts",
+        "archive",
+        "trash",
+        "spam",
+      ];
       return folders.map((f) => {
-        const list = mockEmails.filter((e) => e.folder === f);
+        const list = emails.filter((e) => e.folder === f);
         return {
           folder: f,
           total: list.length,

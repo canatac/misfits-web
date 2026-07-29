@@ -24,6 +24,7 @@ import {
   clearSession,
   getAccessToken,
   getRefreshToken,
+  loadSession,
   storeSession,
 } from "@/lib/session";
 
@@ -143,6 +144,16 @@ async function request<T>(
   if (!skipAuth) {
     const token = getAccessToken();
     if (token) finalHeaders.set("Authorization", `Bearer ${token}`);
+    // Mail API wants local-part user id (Mongo user_id convention).
+    const session = loadSession();
+    const email = session?.user?.email?.trim();
+    if (email) {
+      finalHeaders.set("x-user-email", email);
+      finalHeaders.set(
+        "x-user-id",
+        email.includes("@") ? email.split("@")[0]! : email,
+      );
+    }
   }
 
   const init: RequestInit = {

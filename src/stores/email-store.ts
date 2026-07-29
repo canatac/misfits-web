@@ -11,7 +11,8 @@ import type {
   FilterType,
   SortBy,
 } from "@/types/email";
-import { mockFolders, mockLabels, mockEmails } from "@/lib/mock-emails";
+import { mockFolders, mockLabels } from "@/lib/mock-emails";
+import { mailAuthHeaders } from "@/lib/mail-api";
 
 export type BulkActionType = "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
 
@@ -32,7 +33,7 @@ interface EmailState {
   accountId: string | null;
 
   // Actions
-  fetchEmails: (folder?: Folder) => void;
+  fetchEmails: (folder?: Folder) => void | Promise<void>;
   selectEmail: (id: string | null) => void;
   toggleStar: (id: string) => void;
   markRead: (id: string) => void;
@@ -127,19 +128,52 @@ export const useEmailStore = create<EmailState>((set, get) => ({
 
   fetchEmails: (folder) => {
     const targetFolder = folder ?? get().currentFolder;
-    set({ loading: true, error: null });
-    try {
-      const folderEmails = mockEmails.filter((e) => e.folder === targetFolder);
-      set({
-        emails: folderEmails,
-        loading: false,
-        currentFolder: targetFolder,
-        selectedEmailId: null,
-        selectedEmailIds: new Set(),
-      });
-    } catch {
-      set({ loading: false, error: "Failed to fetch emails" });
-    }
+    set({ loading: true, error: null, currentFolder: targetFolder });
+    const params = new URLSearchParams({
+      folder: targetFolder,
+      page: "1",
+      pageSize: "50",
+    });
+    void (async () => {
+      try {
+        const res = await fetch(`/api/emails?${params.toString()}`, {
+          headers: mailAuthHeaders(),
+          credentials: "include",
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to fetch emails: ${res.status}`);
+        }
+        const data = (await res.json()) as {
+          emails?: Email[];
+          total?: number;
+        };
+        const emails = Array.isArray(data.emails) ? data.emails : [];
+        set({
+          emails,
+          loading: false,
+          error: null,
+          selectedEmailId: null,
+          selectedEmailIds: new Set(),
+          // Keep folder chrome from mocks until backend exposes counts.
+          folders: get().folders.map((f) =>
+            f.id === targetFolder
+              ? {
+                  ...f,
+                  totalCount: data.total ?? emails.length,
+                  unreadCount: emails.filter((e) => !e.isRead).length,
+                }
+              : f,
+          ),
+        });
+      } catch (err) {
+        set({
+          loading: false,
+          error:
+            err instanceof Error ? err.message : "Failed to fetch emails",
+          emails: [],
+        });
+      }
+    })();
   },
 
   selectEmail: (id) => {
