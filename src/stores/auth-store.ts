@@ -258,7 +258,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         return;
       }
       // Normalize snake_case from backend to camelCase before applying
-      applySession(set, normalizeSession(res.session as Record<string, unknown>), credentials.remember ?? false);
+      applySession(set, normalizeSession(res.session as unknown as Record<string, unknown>), credentials.remember ?? false);
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
       // Network error → fall back to demo mode so the UI is still usable.
