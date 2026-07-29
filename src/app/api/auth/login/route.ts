@@ -66,7 +66,22 @@ export async function POST(request: NextRequest) {
       issuedAt: now,
     };
 
-    return NextResponse.json({ session });
+    const response = NextResponse.json({ session });
+
+    // Set the mfa_session cookie server-side so the Edge middleware can
+    // read it immediately — the client-side copy in session.ts is a fallback.
+    const ttlSeconds = Math.round(
+      (session.refreshExpiresAt - now) / 1000,
+    );
+    response.cookies.set("mfa_session", session.id, {
+      httpOnly: false, // middleware runs on Edge; needs to be readable
+      maxAge: ttlSeconds,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return response;
   } catch {
     return NextResponse.json(
       { message: "Backend unreachable" },
