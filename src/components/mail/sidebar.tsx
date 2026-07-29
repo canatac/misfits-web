@@ -19,6 +19,7 @@ import {
   Tag,
   Settings2,
   Clock,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ import { useSnoozeStore } from "@/stores/snooze-store";
 import { LabelManager } from "@/components/mail/label-manager";
 import { FilterEditor } from "@/components/mail/filter-editor";
 import { SnoozePicker } from "@/components/mail/snooze-picker";
+import { TriagePanel } from "@/components/mail/triage-panel";
 import type { Folder } from "@/types/email";
 import type { LabelTree } from "@/types/label";
 
@@ -74,6 +76,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
   const [activeAccount, setActiveAccount] = useState(ACCOUNTS[0]);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [filterEditorOpen, setFilterEditorOpen] = useState(false);
+  const [triageOpen, setTriageOpen] = useState(false);
 
   return (
     <aside
@@ -138,6 +141,20 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         >
           <PenSquare className="h-4 w-4" />
           Compose
+        </Button>
+      </div>
+
+      {/* AI triage toggle */}
+      <div className="px-3 pb-2">
+        <Button
+          variant={triageOpen ? "secondary" : "outline"}
+          className="w-full justify-start gap-2"
+          onClick={() => setTriageOpen((v) => !v)}
+          data-testid="triage-toggle"
+          aria-expanded={triageOpen}
+        >
+          <Zap className="h-4 w-4 text-[var(--color-warning-500)]" />
+          AI Triage
         </Button>
       </div>
 
@@ -227,6 +244,14 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
               </div>
               <SnoozePicker triggerLabel={`Snoozed (${snoozedCount})`} className="w-full justify-start" />
             </div>
+          </>
+        )}
+
+        {/* AI triage panel (Issue #148) — toggled by the button above */}
+        {triageOpen && (
+          <>
+            <Separator />
+            <TriagePanel emails={[]} />
           </>
         )}
       </ScrollArea>

@@ -16,6 +16,8 @@ import { EmailView } from "@/components/mail/email-view";
 import { ThreadView } from "@/components/mail/thread-view";
 import { ComposerPanel } from "@/components/mail/composer-panel";
 import { SearchOverlay } from "@/components/mail/search-overlay";
+import { ChatPanel } from "@/components/mail/chat-panel";
+import { ChatTrigger } from "@/components/mail/chat-trigger";
 import {
   Modal,
   ModalContent,
@@ -35,6 +37,7 @@ export default function MailPage() {
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
 
@@ -182,6 +185,10 @@ export default function MailPage() {
 
       {/* Search overlay */}
       <SearchOverlay open={searchOverlayOpen} onOpenChange={setSearchOverlayOpen} />
+
+      {/* Conversational AI chat assistant */}
+      <ChatTrigger />
+      <ChatPanel />
     </>
   );
 }

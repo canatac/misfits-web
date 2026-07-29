@@ -50,6 +50,7 @@ import { useComposerStore, uid } from "@/stores/composer-store";
 import { useLabelStore } from "@/stores/label-store";
 import { LabelBadge } from "@/components/mail/label-badge";
 import { LabelManager } from "@/components/mail/label-manager";
+import { SecurityBanner } from "@/components/mail/security-banner";
 import type { Email, EmailAttachment, AttachmentType } from "@/types/email";
 import type { Recipient } from "@/types/composer";
 
@@ -480,6 +481,9 @@ export function EmailView({ className }: EmailViewProps) {
           </div>
 
           <Separator className="mb-4" />
+
+          {/* Security / phishing banner */}
+          <SecurityBanner result={{ emailId: email.id, threatLevel: "safe", score: 0, reasons: [], indicators: [], suspiciousLinks: [], headers: { spf: "none", dkim: "none", dmarc: "none", details: [] }, scannedAt: new Date().toISOString(), aiAssisted: false }} emailId={email.id} />
 
           {/* Image blocking toggle */}
           {!loadImages && email.bodyType === "html" && (

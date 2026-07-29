@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LabelBadge } from "@/components/mail/label-badge";
+import { SecurityIndicator } from "@/components/mail/security-indicator";
 import { useLabelStore } from "@/stores/label-store";
 import type { Email } from "@/types/email";
 
@@ -141,6 +142,7 @@ function EmailListItemComponent({
             {email.subject}
           </span>
           <div className="flex shrink-0 items-center gap-1.5">
+            <SecurityIndicator threatLevel="safe" />
             {email.hasAttachments && (
               <Paperclip className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" aria-label="Has attachments" />
             )}
