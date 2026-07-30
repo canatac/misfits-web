@@ -163,8 +163,9 @@ export interface AuthStore extends AuthState {
   resetPassword: (confirmation: PasswordResetConfirmation) => Promise<void>;
   refreshSession: () => Promise<void>;
   clearError: () => void;
-  /** Rehydrate from persisted storage (call once on app boot). */
-  hydrate: () => void;
+  /** Rehydrate from persisted storage (call once on app boot).
+   *  Returns `{ fromOAuth: true, provider }` when an OAuth session was consumed. */
+  hydrate: () => { fromOAuth: true; provider: string } | void;
 }
 
 /* ------------------------------------------------------------------ *
@@ -383,7 +384,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         user: oauth.session.user,
         isAuthenticated: true,
       });
-      return;
+      return { fromOAuth: true, provider: oauth.provider };
     }
 
     const session = loadSession();
