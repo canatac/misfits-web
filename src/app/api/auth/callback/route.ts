@@ -58,7 +58,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl;
   const sessionParam = searchParams.get("session");
   const provider = searchParams.get("provider") ?? "unknown";
+  const errorParam = searchParams.get("error");
   const isSecure = req.nextUrl.protocol === "https:";
+
+  // ── Case 0: Backend / OAuth provider returned an error ──
+  if (!sessionParam && errorParam) {
+    // Propagate recognisable error codes; fall back to oauth_failed.
+    const code =
+      errorParam === "access_denied" ? "oauth_cancelled" : "oauth_failed";
+    return NextResponse.redirect(
+      new URL(`/login?error=${code}`, req.url),
+    );
+  }
 
   // ── Case 1: Backend passed the full session as a base64-encoded JSON param ──
   if (sessionParam) {

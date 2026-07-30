@@ -13,7 +13,7 @@
 
 import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, AlertTriangle, ArrowLeft, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,20 @@ function formatRetry(retryAfter?: number): string {
 }
 
 /* ------------------------------------------------------------------ *
+ * OAuth error messages
+ * ------------------------------------------------------------------ */
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  oauth_failed: "Social login failed. Please try again.",
+  oauth_cancelled: "Login was cancelled. You can try again or use your email and password.",
+};
+
+function getOAuthErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  return OAUTH_ERROR_MESSAGES[code] ?? "Something went wrong. Please try again.";
+}
+
+/* ------------------------------------------------------------------ *
  * Login page
  * ------------------------------------------------------------------ */
 
@@ -73,8 +87,8 @@ export default function LoginPage() {
 }
 
 function LoginInner() {
-  // redirect handled via ?redirect= in useLogin
-  useSearchParams(); // keep suspense boundary happy
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const pendingTwoFactorChallengeId = useAuthStore(
     (s) => s.pendingTwoFactorChallengeId,
@@ -95,6 +109,13 @@ function LoginInner() {
   const [code, setCode] = useState("");
   const codeInputRef = useRef<HTMLInputElement>(null);
 
+  // OAuth per-provider loading state
+  const [oauthPending, setOauthPending] = useState<"google" | "github" | null>(null);
+
+  // OAuth error from ?error= query param (set by callback route on failure)
+  const oauthErrorCode = searchParams.get("error");
+  const oauthErrorMessage = getOAuthErrorMessage(oauthErrorCode);
+
   const emailValid = isValidLoginId(email);
   const emailError = emailTouched && !emailValid && email.length > 0;
 
@@ -104,6 +125,18 @@ function LoginInner() {
   useEffect(() => {
     if (is2FAStep) codeInputRef.current?.focus();
   }, [is2FAStep]);
+
+  // Clear the ?error= query param from the URL after displaying it once
+  // so a manual page refresh doesn't re-show it.
+  useEffect(() => {
+    if (oauthErrorCode) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("error");
+      const newSearch = params.toString();
+      router.replace(newSearch ? `/login?${newSearch}` : "/login", { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Success navigation handled solely by useLogin (replace) — avoid double /mail push.
 
@@ -140,6 +173,15 @@ function LoginInner() {
     clearError();
     useAuthStore.setState({ pendingTwoFactorChallengeId: null });
     setCode("");
+  }
+
+  function handleOAuthClick(provider: "google" | "github") {
+    setOauthPending(provider);
+    if (provider === "google") {
+      initiateGoogleLogin();
+    } else {
+      initiateGithubLogin();
+    }
   }
 
   const submitting = loginMutation.isPending || twoFactorMutation.isPending;
@@ -185,6 +227,16 @@ function LoginInner() {
           </CardHeader>
 
           <CardContent>
+            {/* OAuth error banner — shown when the callback route redirects here with ?error= */}
+            {oauthErrorMessage ? (
+              <ErrorBanner
+                role="alert"
+                aria-live="assertive"
+                message={oauthErrorMessage}
+                tone={oauthErrorCode === "oauth_cancelled" ? "warning" : "danger"}
+              />
+            ) : null}
+
             {showFormError ? (
               <ErrorBanner
                 role="alert"
@@ -262,20 +314,22 @@ function LoginInner() {
                     type="button"
                     variant="outline"
                     className="w-full gap-2"
-                    disabled={submitting}
-                    onClick={initiateGoogleLogin}
+                    disabled={submitting || oauthPending !== null}
+                    loading={oauthPending === "google"}
+                    onClick={() => handleOAuthClick("google")}
                   >
-                    <GoogleIcon />
+                    {oauthPending !== "google" && <GoogleIcon />}
                     Continuer avec Google
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     className="w-full gap-2"
-                    disabled={submitting}
-                    onClick={initiateGithubLogin}
+                    disabled={submitting || oauthPending !== null}
+                    loading={oauthPending === "github"}
+                    onClick={() => handleOAuthClick("github")}
                   >
-                    <GithubIcon />
+                    {oauthPending !== "github" && <GithubIcon />}
                     Continuer avec GitHub
                   </Button>
                 </div>
