@@ -6,6 +6,9 @@
  * and /api/*) are always allowed. The middleware runs on the Edge runtime so it
  * cannot read localStorage — it relies on the httpOnly cookie set by the backend
  * (and mirrored client-side by `src/lib/session.ts`).
+ *
+ * /api/auth/callback is intentionally public — it is the OAuth redirect target
+ * that sets the session before the user reaches any protected route.
  */
 
 import { NextResponse, type NextRequest } from "next/server";

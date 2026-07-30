@@ -45,6 +45,7 @@ import {
 import {
   audit,
   clearSession,
+  consumePendingOAuthSession,
   detectConcurrentSession,
   loadSession,
   recordSessionId,
@@ -372,6 +373,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   clearError: () => set({ error: null }),
 
   hydrate: () => {
+    // Consume session deposited by the OAuth callback route handler first.
+    const oauth = consumePendingOAuthSession();
+    if (oauth) {
+      recordSessionId(oauth.session.id);
+      audit("login", `oauth:${oauth.provider}`);
+      set({
+        session: oauth.session,
+        user: oauth.session.user,
+        isAuthenticated: true,
+      });
+      return;
+    }
+
     const session = loadSession();
     if (session) {
       recordSessionId(session.id);
