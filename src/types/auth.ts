@@ -157,3 +157,9 @@ export interface PasswordResetRequestResponse {
 export interface RefreshSessionResponse {
   session: Session;
 }
+
+/* ------------------------------------------------------------------ *
+ * OAuth
+ * ------------------------------------------------------------------ */
+
+export type OAuthProvider = "google" | "github";
