@@ -7,6 +7,7 @@
  */
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Inbox,
   Send,
@@ -26,6 +27,7 @@ import {
   Contact as ContactIcon,
   Calendar as CalendarIcon,
   Activity,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -61,6 +63,7 @@ interface SidebarProps {
 }
 
 export function MailSidebar({ className, onCompose }: SidebarProps) {
+  const pathname = usePathname();
   const folders = useEmailStore((s) => s.folders);
   const currentFolder = useEmailStore((s) => s.currentFolder);
   const setFolder = useEmailStore((s) => s.setFolder);
@@ -84,6 +87,15 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         (fu) => fu.status !== "dismissed" && fu.status !== "completed",
       ).length,
   );
+
+  const navClass = (active: boolean) =>
+    cn(
+      "w-full justify-start gap-2",
+      active && "bg-[var(--color-accent)] text-[var(--color-accent-fg)] hover:bg-[var(--color-accent)]",
+    );
+
+  const isActivePath = (prefix: string) =>
+    pathname === prefix || pathname.startsWith(`${prefix}/`);
 
   return (
     <aside
@@ -145,42 +157,77 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
       {/* Contacts link (Issue #152) — opens the address book */}
       <div className="px-3 pb-2">
-        <Link href="/contacts" data-testid="contacts-link">
-          <Button variant="outline" className="w-full justify-start gap-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/contacts"))}
+          data-testid="contacts-link"
+        >
+          <Link href="/contacts">
             <ContactIcon className="h-4 w-4" />
             Contacts
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Calendar link (Issue #153) — opens the integrated calendar */}
       <div className="px-3 pb-2">
-        <Link href="/calendar" data-testid="calendar-link">
-          <Button variant="outline" className="w-full justify-start gap-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/calendar"))}
+          data-testid="calendar-link"
+        >
+          <Link href="/calendar">
             <CalendarIcon className="h-4 w-4" />
             Calendar
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* AI settings */}
       <div className="px-3 pb-2">
-        <Link href="/settings/ai" data-testid="ai-settings-link">
-          <Button variant="outline" className="w-full justify-start gap-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/settings"))}
+          data-testid="ai-settings-link"
+        >
+          <Link href="/settings/ai">
             <Settings2 className="h-4 w-4" />
             IA / modèles
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Monitoring link — SMTP observability dashboard */}
       <div className="px-3 pb-2">
-        <Link href="/dashboard/monitoring" data-testid="monitoring-link">
-          <Button variant="outline" className="w-full justify-start gap-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/dashboard/monitoring"))}
+          data-testid="monitoring-link"
+        >
+          <Link href="/dashboard/monitoring">
             <Activity className="h-4 w-4" />
             Monitoring SMTP
-          </Button>
-        </Link>
+          </Link>
+        </Button>
+      </div>
+
+      {/* Security link — incidents and remediation */}
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/dashboard/security"))}
+          data-testid="security-link"
+        >
+          <Link href="/dashboard/security">
+            <ShieldAlert className="h-4 w-4" />
+            Security
+          </Link>
+        </Button>
       </div>
 
       <Separator />

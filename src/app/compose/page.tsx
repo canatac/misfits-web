@@ -8,6 +8,7 @@
  */
 import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { AppSwitcher } from "@/components/navigation/app-switcher";
 import { ComposerPanel } from "@/components/mail/composer-panel";
 import { useComposerStore, uid, type ComposerPrefill } from "@/stores/composer-store";
 import { getMockEmailById } from "@/lib/mock-emails";
@@ -86,18 +87,21 @@ function ComposePageContent() {
   }, []);
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-4xl flex-col p-4" data-testid="compose-page">
-      <ComposerPanel variant="page" />
-      {prefill && replyId && (
-        <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
-          Replying to email {replyId}.
-        </p>
-      )}
-      {prefill && forwardId && (
-        <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
-          Forwarding email {forwardId}.
-        </p>
-      )}
+    <div className="min-h-screen bg-[var(--color-bg)]" data-testid="compose-page">
+      <AppSwitcher />
+      <div className="mx-auto flex h-[calc(100vh-56px)] w-full max-w-4xl flex-col p-4">
+        <ComposerPanel variant="page" />
+        {prefill && replyId && (
+          <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
+            Replying to email {replyId}.
+          </p>
+        )}
+        {prefill && forwardId && (
+          <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
+            Forwarding email {forwardId}.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -92,7 +92,7 @@ export function CalendarPage() {
 
   return (
     <div
-      className="flex h-screen w-full overflow-hidden bg-[var(--color-bg)]"
+      className="flex h-full w-full overflow-hidden bg-[var(--color-bg)]"
       data-testid="calendar-page"
     >
       {/* Main calendar area */}

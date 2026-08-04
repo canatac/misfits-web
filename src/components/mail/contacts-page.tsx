@@ -114,7 +114,7 @@ export function ContactsPage() {
 
   return (
     <div
-      className="flex h-screen w-full overflow-hidden bg-[var(--color-bg)]"
+      className="flex h-full w-full overflow-hidden bg-[var(--color-bg)]"
       data-testid="contacts-page"
     >
       {/* Group sidebar */}
