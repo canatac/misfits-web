@@ -209,6 +209,15 @@ export default function RegisterPage() {
     }));
   }
 
+  function setTermsAccepted(next: boolean) {
+    setAcceptTerms(next);
+    if (next) {
+      setTermsTouched(false);
+    } else {
+      setTermsTouched(true);
+    }
+  }
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSubmitAttempted(true);
@@ -450,18 +459,18 @@ export default function RegisterPage() {
                   <Checkbox
                     id="accept-terms"
                     checked={acceptTerms}
-                    onCheckedChange={(v) => {
-                      setAcceptTerms(v === true);
-                      if (v === true) {
-                        setTermsTouched(false);
-                      } else {
-                        setTermsTouched(true);
-                      }
-                    }}
+                    onCheckedChange={(v) => setTermsAccepted(v === true)}
                     aria-invalid={termsError ? "true" : "false"}
                     aria-describedby={termsError ? "accept-terms-error" : undefined}
                   />
-                  <Label htmlFor="accept-terms" className="text-sm font-normal leading-5">
+                  <Label
+                    htmlFor="accept-terms"
+                    className="cursor-pointer text-sm font-normal leading-5"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setTermsAccepted(!acceptTerms);
+                    }}
+                  >
                     J&apos;accepte les conditions d&apos;utilisation.
                   </Label>
                 </div>
