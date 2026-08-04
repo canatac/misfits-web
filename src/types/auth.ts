@@ -68,8 +68,14 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
+  /** First name of the user. */
+  firstName: string;
+  /** Last name of the user. */
+  lastName: string;
   /** Optional display name captured at sign-up. */
   displayName?: string;
+  /** Avatar URL pre-selected during sign-up. */
+  avatarUrl?: string;
   /** Must be accepted to create an account. */
   acceptTerms: boolean;
 }
