@@ -12,6 +12,7 @@
  *  - "page": full-height, used by the /compose route.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Send,
   Clock,
@@ -90,6 +91,7 @@ function buildDraft(s: ReturnType<typeof useComposerStore.getState>): ComposeDra
 }
 
 export function ComposerPanel({ variant = "panel", onClose, className }: ComposerPanelProps) {
+  const router = useRouter();
   const store = useComposerStore();
   const {
     to,
@@ -102,7 +104,6 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
     isFullScreen,
     isCompact,
     isDirty,
-    sending,
     sendError,
     setRecipients,
     addRecipient,
@@ -132,6 +133,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   const sendMutation = useSendEmail();
   const saveMutation = useSaveDraft();
   const undoSend = useUndoSend(UNDO_SEND_DEFAULT);
+  const isSending = sendMutation.isPending;
 
   // Initialise signature + autosave on mount.
   useEffect(() => {
@@ -170,7 +172,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
     [to, cc, bcc],
   );
 
-  const canSend = to.length > 0 && invalidRecipients.length === 0 && !sending && subject.trim() !== "";
+  const canSend = to.length > 0 && invalidRecipients.length === 0 && !isSending && subject.trim() !== "";
 
   const finalBody = useMemo(() => {
     if (!signature) return body;
@@ -193,31 +195,24 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
       const draft = buildDraft({ ...state, body: finalBody });
       try {
         const result = await sendMutation.mutateAsync({ draft, options });
-        const id = (result as { id?: string })?.id ?? draft.id;
+        const payload = result as { id?: string; message_id?: string; messageId?: string };
+        const id = payload.message_id ?? payload.messageId ?? payload.id ?? draft.id;
         if (options?.sendLater) {
-          toast.success("Email scheduled to send later.");
-          onClose?.();
+          toast.success(`Email programme. ID: ${id}`);
+          reset();
+          if (onClose) onClose();
+          else if (variant === "page") router.push("/mail");
         } else {
-          // Show undo banner with countdown.
-          setUndoBanner({ id, seconds: undoSend.windowSeconds });
-          if (undoTimer.current) clearInterval(undoTimer.current);
-          undoTimer.current = setInterval(() => {
-            setUndoBanner((b) => {
-              if (!b) return null;
-              if (b.seconds <= 1) {
-                if (undoTimer.current) clearInterval(undoTimer.current);
-                undoTimer.current = null;
-                return null;
-              }
-              return { ...b, seconds: b.seconds - 1 };
-            });
-          }, 1000);
+          toast.success(`Email envoye. ID: ${id}`);
+          reset();
+          if (onClose) onClose();
+          else if (variant === "page") router.push("/mail");
         }
       } catch (err) {
         toast.error((err as Error).message || "Failed to send email.");
       }
     },
-    [finalBody, invalidRecipients, to.length, sendMutation, undoSend.windowSeconds, onClose],
+    [finalBody, invalidRecipients, to.length, sendMutation, onClose, reset, variant, router],
   );
 
   const handleUndoSend = useCallback(() => {
@@ -307,7 +302,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
                 />
                 <Button
                   size="sm"
-                  disabled={!sendLaterDate || sending}
+                  disabled={!sendLaterDate || isSending}
                   onClick={() => {
                     handleSend({ sendLater: new Date(sendLaterDate).toISOString() });
                   }}
@@ -499,7 +494,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           disabled={!canSend}
           className="gap-1.5"
         >
-          {sending ? (
+          {isSending ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
               Sending…

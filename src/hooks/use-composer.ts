@@ -154,7 +154,25 @@ export function useSendEmail() {
             errBody || `Send failed: ${res.status} ${res.statusText}`,
           );
         }
-        return res.json();
+
+        const responseText = await res.text().catch(() => "");
+        if (!responseText) {
+          return {
+            id: draft.id,
+            messageId: res.headers.get("x-message-id") ?? draft.id,
+            sent: true,
+          };
+        }
+        try {
+          return JSON.parse(responseText) as unknown;
+        } catch {
+          return {
+            id: draft.id,
+            messageId: draft.id,
+            sent: true,
+            raw: responseText,
+          };
+        }
       }
       // unreachable — BACKEND_AVAILABLE is always true; kept for tests override
       await new Promise((r) => setTimeout(r, 600));

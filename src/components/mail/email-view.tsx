@@ -6,6 +6,7 @@
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
  */
 import { useState, useMemo, useCallback, useEffect } from "react";
+import Link from "next/link";
 import DOMPurify from "dompurify";
 import {
   Star,
@@ -126,6 +127,12 @@ export function EmailView({ className }: EmailViewProps) {
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId],
   );
+
+  const monitoringLink = useMemo(() => {
+    if (!email || email.folder !== "sent") return null;
+    const messageId = email.messageId?.trim() || email.id;
+    return `/monitoring?message_id=${encodeURIComponent(messageId)}`;
+  }, [email]);
 
   // List responses omit body for speed — hydrate on select
   useEffect(() => {
@@ -475,6 +482,11 @@ export function EmailView({ className }: EmailViewProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {monitoringLink && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={monitoringLink}>Log</Link>
+                </Button>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlertBanner } from "@/components/monitoring/alert-banner";
 import { EventsTable } from "@/components/monitoring/events-table";
 import { KpiCards } from "@/components/monitoring/kpi-cards";
@@ -20,11 +22,28 @@ import type { MonitoringEventFilters, MonitoringWindow } from "@/types/monitorin
 const DEFAULT_WINDOW: MonitoringWindow = "15m";
 
 export default function MonitoringPage() {
+  const searchParams = useSearchParams();
   const [window, setWindow] = useState<MonitoringWindow>(DEFAULT_WINDOW);
   const [filters, setFilters] = useState<MonitoringEventFilters>({ page: 1, page_size: 50 });
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [traceOpen, setTraceOpen] = useState(false);
   const [liveMessageFilter, setLiveMessageFilter] = useState("");
+
+  useEffect(() => {
+    const messageFromQuery =
+      searchParams.get("message_id")?.trim() ||
+      searchParams.get("messageId")?.trim() ||
+      "";
+    if (!messageFromQuery) return;
+
+    setFilters((prev) => {
+      if (prev.message_id === messageFromQuery && prev.page === 1) return prev;
+      return { ...prev, message_id: messageFromQuery, page: 1 };
+    });
+    setLiveMessageFilter((prev) => (prev === messageFromQuery ? prev : messageFromQuery));
+    setSelectedMessageId((prev) => (prev === messageFromQuery ? prev : messageFromQuery));
+    setTraceOpen(true);
+  }, [searchParams]);
 
   const summaryQuery = useMonitoringSummary(window);
   const alertsQuery = useMonitoringAlerts("1h");
