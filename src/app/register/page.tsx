@@ -36,9 +36,18 @@ const AVATAR_PALETTES = [
 
 type AvatarOption = {
   id: string;
-  initials: string;
+  name: string;
   background: string;
 };
+
+const SYLLABLE_ONSETS = [
+  "b", "br", "c", "cl", "d", "dr", "f", "fl", "g", "gl", "k", "kr",
+  "l", "m", "n", "p", "pl", "r", "s", "st", "t", "tr", "v", "z",
+] as const;
+
+const SYLLABLE_VOWELS = ["a", "e", "i", "o", "u", "ae", "ai", "ou", "io"] as const;
+
+const SYLLABLE_CODAS = ["", "n", "r", "s", "x", "th", "m", "l", "v", "z"] as const;
 
 function hashText(input: string): number {
   let h = 2166136261;
@@ -49,28 +58,92 @@ function hashText(input: string): number {
   return h >>> 0;
 }
 
-function getInitials(firstName: string, lastName: string): string {
-  const first = firstName.trim().charAt(0).toUpperCase();
-  const last = lastName.trim().charAt(0).toUpperCase();
-  const combined = `${first}${last}`.trim();
-  return combined || "U";
+function initialsFromName(name: string): string {
+  const normalized = name.trim().toLowerCase();
+  if (!normalized) return "UA";
+
+  const parts = normalized.split(/[-\s]+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0][0]?.toUpperCase() ?? "U"}${parts[1][0]?.toUpperCase() ?? "A"}`;
+  }
+
+  const one = parts[0] ?? normalized;
+  const first = one[0]?.toUpperCase() ?? "U";
+  const second = one[1]?.toUpperCase() ?? "A";
+  return `${first}${second}`;
+}
+
+function makeRng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s += 0x6d2b79f5;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function createPseudoWord(seed: number, syllables: 2 | 3): string {
+  const rng = makeRng(seed);
+  let word = "";
+
+  for (let i = 0; i < syllables; i += 1) {
+    const onset = SYLLABLE_ONSETS[Math.floor(rng() * SYLLABLE_ONSETS.length)];
+    const vowel = SYLLABLE_VOWELS[Math.floor(rng() * SYLLABLE_VOWELS.length)];
+    const coda = SYLLABLE_CODAS[Math.floor(rng() * SYLLABLE_CODAS.length)];
+    word += `${onset}${vowel}${coda}`;
+  }
+
+  return word
+    .replace(/[^a-z]/g, "")
+    .replace(/(.)\1{2,}/g, "$1$1")
+    .slice(0, 12);
+}
+
+function sanitizeAvatarName(input: string): string {
+  const sanitized = input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-_]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 30);
+
+  return sanitized || "user-avatar";
 }
 
 function buildAvatarOptions(
   firstName: string,
   lastName: string,
   email: string,
+  salt: number,
 ): AvatarOption[] {
-  const initials = getInitials(firstName, lastName);
-  const seedBase = `${firstName}|${lastName}|${email}`.toLowerCase();
+  const seedBase = `${firstName}|${lastName}|${email}|${salt}`.toLowerCase();
   const baseHash = hashText(seedBase || "avatar");
+
+  const usedNames = new Set<string>();
 
   return Array.from({ length: 6 }, (_, i) => {
     const idx = (baseHash + i * 13) % AVATAR_PALETTES.length;
     const [c1, c2] = AVATAR_PALETTES[idx];
+
+    let step = 0;
+    let generatedName = "user-avatar";
+    while (step < 50) {
+      const leftSeed = hashText(`${baseHash}-${i}-${step}-left`);
+      const rightSeed = hashText(`${baseHash}-${i}-${step}-right`);
+      const left = createPseudoWord(leftSeed, (leftSeed % 2 === 0 ? 2 : 3));
+      const right = createPseudoWord(rightSeed, (rightSeed % 2 === 0 ? 2 : 3));
+      generatedName = sanitizeAvatarName(`${left}-${right}`);
+      if (!usedNames.has(generatedName)) break;
+      step += 1;
+    }
+    usedNames.add(generatedName);
+
     return {
-      id: `avatar-${idx}-${i}`,
-      initials,
+      id: `avatar-slot-${i}`,
+      name: generatedName,
       background: `linear-gradient(135deg, ${c1}, ${c2})`,
     };
   });
@@ -89,12 +162,19 @@ export default function RegisterPage() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [confirmTouched, setConfirmTouched] = useState(false);
   const [termsTouched, setTermsTouched] = useState(false);
+  const [avatarSalt, setAvatarSalt] = useState(() => Date.now());
+  const [avatarNameEdits, setAvatarNameEdits] = useState<Record<string, string>>({});
 
   const avatarOptions = useMemo(
-    () => buildAvatarOptions(firstName, lastName, email),
-    [firstName, lastName, email],
+    () => buildAvatarOptions(firstName, lastName, email, avatarSalt),
+    [firstName, lastName, email, avatarSalt],
   );
   const [selectedAvatar, setSelectedAvatar] = useState(0);
+
+  const selectedAvatarOption = avatarOptions[selectedAvatar] ?? avatarOptions[0];
+  const selectedAvatarName = selectedAvatarOption
+    ? (avatarNameEdits[selectedAvatarOption.id] ?? selectedAvatarOption.name)
+    : "user-avatar";
 
   const emailValid = EMAIL_RE.test(email.trim());
   const emailError = emailTouched && !emailValid && email.length > 0;
@@ -112,6 +192,20 @@ export default function RegisterPage() {
     acceptTerms &&
     !registerMutation.isPending;
 
+  function regenerateAvatars() {
+    setAvatarSalt((prev) => prev + Math.floor(Math.random() * 1_000_000) + 1);
+    setAvatarNameEdits({});
+    setSelectedAvatar(0);
+  }
+
+  function updateSelectedAvatarName(next: string) {
+    if (!selectedAvatarOption) return;
+    setAvatarNameEdits((prev) => ({
+      ...prev,
+      [selectedAvatarOption.id]: sanitizeAvatarName(next),
+    }));
+  }
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -126,7 +220,7 @@ export default function RegisterPage() {
 
     // Avatar selection is currently client-only metadata; registration API
     // only supports email/password/displayName at the moment.
-    void selectedAvatar;
+    void selectedAvatarName;
 
     registerMutation.mutate({
       email: email.trim(),
@@ -236,29 +330,56 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Avatar</Label>
-                <div className="grid grid-cols-6 gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Avatar</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-8 px-3 text-xs"
+                    onClick={regenerateAvatars}
+                  >
+                    Regenerer
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                   {avatarOptions.map((option, idx) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => setSelectedAvatar(idx)}
-                      className={cn(
-                        "flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white transition",
-                        selectedAvatar === idx
-                          ? "ring-2 ring-[var(--color-brand-500)] ring-offset-2 ring-offset-[var(--color-bg)]"
-                          : "opacity-80 hover:opacity-100",
-                      )}
-                      style={{ background: option.background }}
-                      aria-label={`Select avatar ${idx + 1}`}
-                      aria-pressed={selectedAvatar === idx}
-                    >
-                      {option.initials}
-                    </button>
+                    <div key={option.id} className="space-y-1 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAvatar(idx)}
+                        className={cn(
+                          "mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white transition",
+                          selectedAvatar === idx
+                            ? "ring-2 ring-[var(--color-brand-500)] ring-offset-2 ring-offset-[var(--color-bg)]"
+                            : "opacity-80 hover:opacity-100",
+                        )}
+                        style={{ background: option.background }}
+                        aria-label={`Select avatar ${option.name}`}
+                        aria-pressed={selectedAvatar === idx}
+                      >
+                        {initialsFromName(avatarNameEdits[option.id] ?? option.name)}
+                      </button>
+                      <p className="truncate text-[10px] text-[var(--color-muted-fg)]">
+                        {avatarNameEdits[option.id] ?? option.name}
+                      </p>
+                    </div>
                   ))}
                 </div>
+                <div className="space-y-1">
+                  <Label htmlFor="avatar-name">Nom d&apos;avatar (editable)</Label>
+                  <Input
+                    id="avatar-name"
+                    type="text"
+                    value={selectedAvatarName}
+                    onChange={(e) => updateSelectedAvatarName(e.target.value)}
+                    placeholder="stellar-rabbit"
+                    maxLength={30}
+                    autoCapitalize="none"
+                    spellCheck={false}
+                  />
+                </div>
                 <p className="text-xs text-[var(--color-muted-fg)]">
-                  Suggestions are generated from your profile data.
+                  Suggestions are generated on the fly and can be edited.
                 </p>
               </div>
 
