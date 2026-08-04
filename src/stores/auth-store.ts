@@ -51,6 +51,7 @@ import {
   recordSessionId,
   storeSession,
 } from "@/lib/session";
+import { useAccountStore } from "@/stores/account-store";
 import {
   shouldUseDemoMode,
   createDemoSession,
@@ -191,6 +192,16 @@ function applySession(
     pendingTwoFactorChallengeId: null,
     isLoading: false,
   });
+
+  // Sync the primary account entry with the authenticated user's real data.
+  const { accounts, updateAccount } = useAccountStore.getState();
+  const primary = accounts.find((a: { isDefault: boolean }) => a.isDefault) ?? accounts[0];
+  if (primary) {
+    updateAccount(primary.id, {
+      email: session.user.email,
+      name: session.user.displayName ?? session.user.email.split("@")[0],
+    });
+  }
 }
 
 /* ------------------------------------------------------------------ *
