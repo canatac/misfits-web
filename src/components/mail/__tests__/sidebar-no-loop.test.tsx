@@ -9,6 +9,12 @@ import { render } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MailSidebar } from "@/components/mail/sidebar";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/mail",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // Minimal localStorage polyfill for zustand/persist
 const mem = new Map<string, string>();
 const localStorageMock = {
