@@ -265,10 +265,11 @@ export async function apiRegister(
   email: string,
   password: string,
   displayName?: string,
+  acceptTerms?: boolean,
 ): Promise<AuthApiResponse> {
   return apiClient.post<AuthApiResponse>(
     "/auth/register",
-    { email, password, displayName },
+    { email, password, displayName, acceptTerms },
     { skipAuth: true },
   );
 }

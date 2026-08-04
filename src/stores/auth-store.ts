@@ -288,6 +288,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         credentials.email,
         credentials.password,
         credentials.displayName,
+        credentials.acceptTerms,
       );
       applySession(set, res.session, /* remember */ true);
       audit("register", `New account ${res.session.user.email}`);
