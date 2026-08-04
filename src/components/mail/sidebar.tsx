@@ -22,10 +22,12 @@ import {
   Clock,
   Zap,
   BellRing,
+  LogOut,
   Contact as ContactIcon,
   Calendar as CalendarIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLogoutAction } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -284,7 +286,27 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
       <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
       <FilterEditor open={filterEditorOpen} onOpenChange={setFilterEditorOpen} />
+
+      <Separator />
+      <div className="p-3">
+        <LogoutButton />
+      </div>
     </aside>
+  );
+}
+
+function LogoutButton() {
+  const logout = useLogoutAction();
+  return (
+    <Button
+      variant="ghost"
+      className="w-full justify-start gap-2 text-[var(--color-muted-fg)] hover:text-[var(--color-danger-500)]"
+      onClick={logout}
+      data-testid="logout-button"
+    >
+      <LogOut className="h-4 w-4" />
+      Se déconnecter
+    </Button>
   );
 }
 

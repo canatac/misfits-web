@@ -22,17 +22,6 @@ const DEFAULT_ACCOUNTS: EmailAccount[] = [
     aliases: [],
     connectedAt: "2025-01-01T00:00:00.000Z",
   },
-  {
-    id: "acc-2",
-    email: "personal@gmail.com",
-    name: "Personal",
-    provider: "gmail",
-    color: "#10b981",
-    avatar: "P",
-    isDefault: false,
-    aliases: [],
-    connectedAt: "2025-01-02T00:00:00.000Z",
-  },
 ];
 
 /** Generate a unique account id. */

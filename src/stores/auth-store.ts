@@ -193,8 +193,9 @@ function applySession(
     isLoading: false,
   });
 
-  // Sync the primary account entry with the authenticated user's real data.
-  const { accounts, updateAccount } = useAccountStore.getState();
+  // Sync the primary account with the real user and purge stale demo accounts.
+  const accountStore = useAccountStore.getState();
+  const { accounts, updateAccount, removeAccount } = accountStore;
   const primary = accounts.find((a: { isDefault: boolean }) => a.isDefault) ?? accounts[0];
   if (primary) {
     updateAccount(primary.id, {
@@ -202,6 +203,10 @@ function applySession(
       name: session.user.displayName ?? session.user.email.split("@")[0],
     });
   }
+  // Remove leftover demo accounts that are not the primary misfits account.
+  accounts
+    .filter((a: { id: string }) => a.id !== primary?.id)
+    .forEach((a: { id: string }) => removeAccount(a.id));
 }
 
 /* ------------------------------------------------------------------ *
