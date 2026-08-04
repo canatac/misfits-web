@@ -98,7 +98,7 @@ jobs:
           port: 22
           script: |
             cd ${{ secrets.VM_DEPLOY_DIR }}
-            docker compose -f docker-compose.deploy.yml --env-file .env.deploy pull misfits-web
-            docker compose -f docker-compose.deploy.yml --env-file .env.deploy up -d misfits-web
+            docker compose -f docker-compose.web.yml pull web
+            docker compose -f docker-compose.web.yml up -d web
             docker image prune -f || true
             echo "Deploy complete: misfits-web updated on ${{ secrets.VM_HOST }}"
