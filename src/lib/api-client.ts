@@ -313,11 +313,6 @@ export async function apiResetPassword(
   );
 }
 
-/** Redirects the browser to the backend to initiate OAuth with Google. */
-export function initiateGoogleLogin(): void {
-  window.location.href = `${BASE_URL}/auth/oauth/google`;
-}
-
 /** Redirects the browser to the backend to initiate OAuth with GitHub. */
 export function initiateGithubLogin(): void {
   window.location.href = `${BASE_URL}/auth/oauth/github`;

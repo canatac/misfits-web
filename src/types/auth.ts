@@ -162,4 +162,4 @@ export interface RefreshSessionResponse {
  * OAuth
  * ------------------------------------------------------------------ */
 
-export type OAuthProvider = "google" | "github";
+export type OAuthProvider = "github";

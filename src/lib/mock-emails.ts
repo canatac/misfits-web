@@ -687,8 +687,8 @@ const seeds: EmailSeed[] = [
   {
     from: { name: "The Pragmatic Engineer", address: "newsletter@substack.com" },
     subject: "Issue #210: The art of code review",
-    preview: "This week: how great teams do code reviews at scale, with patterns from Google, Meta, and small startups.",
-    body: `<p>This week: how great teams do <strong>code reviews</strong> at scale, with patterns from Google, Meta, and small startups.</p>`,
+    preview: "This week: how great teams do code reviews at scale, with patterns from large organizations and small startups.",
+    body: `<p>This week: how great teams do <strong>code reviews</strong> at scale, with patterns from large organizations and small startups.</p>`,
     folder: "archive",
     daysAgo: 50,
     isRead: true,

@@ -1,10 +1,10 @@
 /**
  * OAuth callback route handler for misfits.ai Mail.
  *
- * The backend performs the OAuth dance (Google / GitHub) and then redirects
+ * The backend performs the OAuth dance and then redirects
  * the browser here:
  *
- *   /api/auth/callback?session=<base64_json>&provider=google|github
+ *   /api/auth/callback?session=<base64_json>&provider=github
  *
  * This handler:
  *  1. Decodes and validates the session from the `session` query parameter.
