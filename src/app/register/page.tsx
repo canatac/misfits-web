@@ -118,10 +118,9 @@ function sanitizeAvatarName(input: string): string {
 function buildAvatarOptions(
   firstName: string,
   lastName: string,
-  email: string,
   salt: number,
 ): AvatarOption[] {
-  const seedBase = `${firstName}|${lastName}|${email}|${salt}`.toLowerCase();
+  const seedBase = `${firstName}|${lastName}|${salt}`.toLowerCase();
   const baseHash = hashText(seedBase || "avatar");
 
   const usedNames = new Set<string>();
@@ -169,8 +168,8 @@ export default function RegisterPage() {
   const [avatarNameEdits, setAvatarNameEdits] = useState<Record<string, string>>({});
 
   const avatarOptions = useMemo(
-    () => buildAvatarOptions(firstName, lastName, email, avatarSalt),
-    [firstName, lastName, email, avatarSalt],
+    () => buildAvatarOptions(firstName, lastName, avatarSalt),
+    [firstName, lastName, avatarSalt],
   );
   const [selectedAvatar, setSelectedAvatar] = useState(0);
 
@@ -466,10 +465,6 @@ export default function RegisterPage() {
                   <Label
                     htmlFor="accept-terms"
                     className="cursor-pointer text-sm font-normal leading-5"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setTermsAccepted(!acceptTerms);
-                    }}
                   >
                     J&apos;accepte les conditions d&apos;utilisation.
                   </Label>
