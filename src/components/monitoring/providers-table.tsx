@@ -15,6 +15,8 @@ interface ProvidersTableProps {
 }
 
 export function ProvidersTable({ providers, isLoading }: ProvidersTableProps) {
+  const sortedProviders = [...providers].sort((a, b) => b.count - a.count);
+
   return (
     <Card>
       <CardHeader>
@@ -39,23 +41,40 @@ export function ProvidersTable({ providers, isLoading }: ProvidersTableProps) {
                   <th className="px-3 py-2 font-medium">Datacenter</th>
                   <th className="px-3 py-2 font-medium">Country</th>
                   <th className="px-3 py-2 text-right font-medium">Count</th>
+                  <th className="px-3 py-2 font-medium">Delivery Rate</th>
                   <th className="px-3 py-2 text-right font-medium">Avg Risk</th>
                 </tr>
               </thead>
               <tbody>
                 {providers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-3 py-6 text-center text-[var(--color-muted-fg)]">
+                    <td colSpan={6} className="px-3 py-6 text-center text-[var(--color-muted-fg)]">
                       Aucun provider sur cette fenetre.
                     </td>
                   </tr>
                 ) : (
-                  providers.map((provider, idx) => (
+                  sortedProviders.map((provider, idx) => (
                     <tr key={`${provider.company}-${provider.datacenter}-${idx}`} className="border-b border-[var(--color-border)]">
                       <td className="px-3 py-2">{displayNullable(provider.company)}</td>
                       <td className="px-3 py-2">{displayNullable(provider.datacenter)}</td>
                       <td className="px-3 py-2">{displayNullable(provider.country)}</td>
                       <td className="px-3 py-2 text-right">{provider.count}</td>
+                      <td className="px-3 py-2">
+                        {(() => {
+                          const rate = provider.count > 0 ? (provider.delivered / provider.count) * 100 : 0;
+                          return (
+                            <div className="space-y-1">
+                              <div className="h-2 rounded-full bg-[var(--color-muted)]">
+                                <div
+                                  className="h-2 rounded-full bg-[var(--color-success-500)]"
+                                  style={{ width: `${Math.max(4, rate)}%` }}
+                                />
+                              </div>
+                              <div className="text-right text-xs text-[var(--color-muted-fg)]">{rate.toFixed(1)}%</div>
+                            </div>
+                          );
+                        })()}
+                      </td>
                       <td className={`px-3 py-2 text-right font-semibold ${riskTextClass(provider.avg_risk_score)}`}>
                         {provider.avg_risk_score.toFixed(1)}
                       </td>

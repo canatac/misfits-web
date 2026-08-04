@@ -113,3 +113,75 @@ export type SecurityAction =
   | "do-not-click"
   | "report-phishing"
   | "block-sender";
+
+/* ------------------------------------------------------------------ */
+/* Security monitoring API domain types                               */
+/* ------------------------------------------------------------------ */
+
+export type SecuritySeverity = "info" | "low" | "medium" | "high" | "critical";
+export type SecurityMode = "observe" | "enforce";
+export type SecurityActionType =
+  | "alert"
+  | "throttle"
+  | "quarantine"
+  | "block"
+  | "human_challenge";
+export type SecurityAlertStatus = "active" | "acknowledged" | "resolved" | "rolled_back";
+
+export interface SecurityAlert {
+  id: string;
+  ts: string;
+  rule_id: string;
+  rule_name: string;
+  rule_version: string;
+  severity: SecuritySeverity;
+  confidence: number;
+  tenant_id?: string | null;
+  user_id?: string | null;
+  ip?: string | null;
+  country?: string | null;
+  asn?: string | null;
+  signal?: Record<string, unknown>;
+  mode: SecurityMode;
+  action: SecurityActionType;
+  action_duration_s?: number | null;
+  remediation_level: 1 | 2 | 3 | 4;
+  rolled_back: boolean;
+  audit_hash: string;
+  context?: Record<string, unknown>;
+  status: SecurityAlertStatus;
+}
+
+export interface SecurityAlertsResponse {
+  window?: string;
+  alert_count?: number;
+  alerts: SecurityAlert[];
+}
+
+export interface SecurityIncidentsResponse {
+  page: number;
+  page_size: number;
+  count: number;
+  alerts: SecurityAlert[];
+}
+
+export interface TenantRemediationState {
+  tenant_id: string;
+  level: 1 | 2 | 3 | 4;
+  action: SecurityActionType;
+  reason: string;
+  alert_id: string;
+  applied_at: string;
+  expires_at?: string | null;
+  rolled_back: boolean;
+}
+
+export interface TenantStatusResponse {
+  tenant_id: string;
+  state: TenantRemediationState | null;
+}
+
+export interface RollbackResponse {
+  rolled_back: boolean;
+  alert_id: string;
+}

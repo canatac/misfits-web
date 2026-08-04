@@ -13,6 +13,12 @@ function severityClass(severity: string): string {
   if (severity === "critical") {
     return "border-[var(--color-danger-300)] bg-[var(--color-danger-50)] text-[var(--color-danger-700)]";
   }
+  if (severity === "high") {
+    return "border-[var(--color-danger-200)] bg-[var(--color-danger-50)] text-[var(--color-danger-600)]";
+  }
+  if (severity === "medium") {
+    return "border-[var(--color-warning-300)] bg-[var(--color-warning-50)] text-[var(--color-warning-800)]";
+  }
   return "border-[var(--color-warning-300)] bg-[var(--color-warning-50)] text-[var(--color-warning-800)]";
 }
 

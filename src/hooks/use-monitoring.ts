@@ -4,12 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMonitoringActiveAlerts,
+  getMonitoringBounces,
   getMonitoringEvents,
   getMonitoringSummary,
   getMonitoringTopProviders,
   getMonitoringTrace,
 } from "@/lib/monitoring-api";
-import { loadSession } from "@/lib/session";
 import type {
   MonitoringEventFilters,
   MonitoringWindow,
@@ -50,6 +50,15 @@ export function useMonitoringProviders(window: MonitoringWindow) {
   });
 }
 
+export function useMonitoringBounces(window: MonitoringWindow) {
+  return useQuery({
+    queryKey: ["monitoring", "bounces", window],
+    queryFn: () => getMonitoringBounces(window),
+    refetchInterval: REFRESH_30S,
+    staleTime: 10_000,
+  });
+}
+
 export function useMonitoringEvents(filters: MonitoringEventFilters) {
   return useQuery({
     queryKey: ["monitoring", "events", filters],
@@ -78,6 +87,7 @@ export function useMonitoringLive(options: UseMonitoringLiveOptions = {}) {
   const [events, setEvents] = useState<SmtpEvent[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [lastError, setLastError] = useState<string | null>(null);
   const retryRef = useRef<number>(0);
   const reconnectTimerRef = useRef<number | null>(null);
@@ -93,15 +103,23 @@ export function useMonitoringLive(options: UseMonitoringLiveOptions = {}) {
     const params = new URLSearchParams();
     if (messageId?.trim()) params.set("message_id", messageId.trim());
 
-    const email = loadSession()?.user?.email?.trim();
-    if (email) params.set("user_email", email);
-
     const q = params.toString();
     return q ? `/api/monitoring/live?${q}` : "/api/monitoring/live";
   }, [messageId]);
 
   useEffect(() => {
-    if (!enabled || isMobile) {
+    if (typeof document === "undefined") return;
+    const onVisibility = () => {
+      setIsVisible(document.visibilityState === "visible");
+    };
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  useEffect(() => {
+    const supportsSse = typeof window !== "undefined" && "EventSource" in window;
+    if (!enabled || isMobile || !isVisible || !supportsSse) {
       setIsConnected(false);
       return;
     }
@@ -166,12 +184,13 @@ export function useMonitoringLive(options: UseMonitoringLiveOptions = {}) {
       source?.close();
       setIsConnected(false);
     };
-  }, [enabled, isMobile, streamUrl]);
+  }, [enabled, isMobile, isVisible, streamUrl]);
 
   return {
     events,
     isConnected,
     isMobile,
+    isVisible,
     lastError,
   };
 }

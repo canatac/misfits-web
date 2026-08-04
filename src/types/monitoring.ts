@@ -1,11 +1,13 @@
-export type MonitoringWindow = "5m" | "15m" | "1h" | "24h";
+export type MonitoringWindow = "15m" | "1h" | "6h" | "24h" | "7d";
 
 export type SmtpEventType =
   | "accepted"
+  | "queued"
   | "dns_lookup"
   | "mx_selected"
   | "smtp_connect"
   | "tls_ok"
+  | "smtp_response"
   | "delivered"
   | "deferred"
   | "bounced";
@@ -37,9 +39,11 @@ export interface SmtpEvent {
   dns_ms?: number;
   connect_ms?: number;
   tls_ms?: number;
+  queue_ms?: number | null;
   total_ms?: number;
   smtp_code?: number;
   smtp_reply?: string;
+  attempt?: number;
   status: DeliveryStatus;
   bounce_type?: "hard" | "soft" | "policy";
   bounce_reason?: string;
@@ -47,32 +51,39 @@ export interface SmtpEvent {
 }
 
 export interface MonitoringSummary {
+  window?: MonitoringWindow;
+  since?: string;
   total_events: number;
   by_status: Record<string, number>;
   delivery_rate: number;
   bounce_rate: number;
   avg_total_ms: number;
-  p95_total_ms: number;
+  p95_total_ms: number | null;
   avg_risk_score: number;
 }
 
 export interface MonitoringEventsResponse {
   events: SmtpEvent[];
   total: number;
+  page?: number;
+  page_size?: number;
   has_more: boolean;
 }
 
 export interface MonitoringTrace {
   message_id: string;
-  status: DeliveryStatus;
+  status: DeliveryStatus | string;
   total_ms?: number;
+  steps?: number;
   trace: SmtpEvent[];
 }
 
 export interface MonitoringBouncesResponse {
+  window?: MonitoringWindow;
   total: number;
   hard: number;
   soft: number;
+  policy?: number;
   bounces: SmtpEvent[];
 }
 
@@ -93,7 +104,7 @@ export interface MonitoringProvidersResponse {
 
 export interface MonitoringAlert {
   kind: string;
-  severity: "critical" | "warning" | string;
+  severity: "low" | "medium" | "high" | "critical" | string;
   message: string;
   value: number;
   threshold: number;
@@ -101,13 +112,19 @@ export interface MonitoringAlert {
 }
 
 export interface MonitoringAlertsResponse {
+  window?: MonitoringWindow;
+  alert_count?: number;
   alerts: MonitoringAlert[];
 }
 
 export interface MonitoringEventFilters {
   status?: string;
+  from?: string;
+  to?: string;
   country?: string;
   provider?: string;
+  since?: string;
+  until?: string;
   message_id?: string;
   page?: number;
   page_size?: number;

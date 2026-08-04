@@ -131,7 +131,7 @@ export function EmailView({ className }: EmailViewProps) {
   const monitoringLink = useMemo(() => {
     if (!email || email.folder !== "sent") return null;
     const messageId = email.messageId?.trim() || email.id;
-    return `/monitoring?message_id=${encodeURIComponent(messageId)}`;
+    return `/dashboard/monitoring?message_id=${encodeURIComponent(messageId)}`;
   }, [email]);
 
   // List responses omit body for speed — hydrate on select

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-function resolveMonitoringBaseUrl(): string {
+function resolveBackendBaseUrl(): string {
   const raw =
     process.env.MONITORING_API_BASE ||
     process.env.BACKEND_URL ||
@@ -10,16 +10,10 @@ function resolveMonitoringBaseUrl(): string {
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
 }
 
-export async function GET(request: NextRequest) {
-  const params = request.nextUrl.searchParams;
-  const messageId = params.get("message_id")?.trim();
-
-  const upstreamUrl = new URL(`${resolveMonitoringBaseUrl()}/api/monitoring/live`);
-  if (messageId) upstreamUrl.searchParams.set("message_id", messageId);
-
+export async function GET() {
   let upstream: Response;
   try {
-    upstream = await fetch(upstreamUrl.toString(), {
+    upstream = await fetch(`${resolveBackendBaseUrl()}/api/security/live`, {
       method: "GET",
       headers: {
         Accept: "text/event-stream",
@@ -30,7 +24,7 @@ export async function GET(request: NextRequest) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Unable to reach monitoring stream upstream." },
+      { error: "Unable to reach security stream upstream." },
       { status: 502 },
     );
   }

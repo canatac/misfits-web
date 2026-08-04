@@ -29,7 +29,7 @@ export default function HomePage() {
           View inbox
         </a>
         <a
-          href="/monitoring"
+          href="/dashboard/monitoring"
           className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-info-300)] bg-[var(--color-info-50)] px-6 py-3 font-medium text-[var(--color-info-800)] transition hover:bg-[var(--color-info-100)]"
         >
           <Activity className="h-4 w-4" />

@@ -175,7 +175,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
       {/* Monitoring link — SMTP observability dashboard */}
       <div className="px-3 pb-2">
-        <Link href="/monitoring" data-testid="monitoring-link">
+        <Link href="/dashboard/monitoring" data-testid="monitoring-link">
           <Button variant="outline" className="w-full justify-start gap-2">
             <Activity className="h-4 w-4" />
             Monitoring SMTP

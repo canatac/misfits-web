@@ -30,8 +30,12 @@ export function getMonitoringEvents(filters: MonitoringEventFilters) {
   return apiClient.get<MonitoringEventsResponse>(
     withParams("/monitoring/events", {
       status: filters.status,
+      from: filters.from,
+      to: filters.to,
       country: filters.country,
       provider: filters.provider,
+      since: filters.since,
+      until: filters.until,
       message_id: filters.message_id,
       page: filters.page,
       page_size: filters.page_size ?? 50,
