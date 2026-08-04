@@ -25,6 +25,7 @@ import {
   LogOut,
   Contact as ContactIcon,
   Calendar as CalendarIcon,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -168,6 +169,16 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <Button variant="outline" className="w-full justify-start gap-2">
             <Settings2 className="h-4 w-4" />
             IA / modèles
+          </Button>
+        </Link>
+      </div>
+
+      {/* Monitoring link — SMTP observability dashboard */}
+      <div className="px-3 pb-2">
+        <Link href="/monitoring" data-testid="monitoring-link">
+          <Button variant="outline" className="w-full justify-start gap-2">
+            <Activity className="h-4 w-4" />
+            Monitoring SMTP
           </Button>
         </Link>
       </div>

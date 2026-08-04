@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Activity, Mail } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -15,7 +15,7 @@ export default function HomePage() {
         </p>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
         <a
           href="/login"
           className="rounded-lg bg-[var(--color-brand-500)] px-6 py-3 font-medium text-white shadow-md transition hover:bg-[var(--color-brand-600)]"
@@ -27,6 +27,13 @@ export default function HomePage() {
           className="rounded-lg border border-[var(--color-border)] px-6 py-3 font-medium text-[var(--color-fg)] transition hover:bg-[var(--color-muted)]"
         >
           View inbox
+        </a>
+        <a
+          href="/monitoring"
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-info-300)] bg-[var(--color-info-50)] px-6 py-3 font-medium text-[var(--color-info-800)] transition hover:bg-[var(--color-info-100)]"
+        >
+          <Activity className="h-4 w-4" />
+          Monitoring SMTP
         </a>
       </div>
 
