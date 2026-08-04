@@ -285,10 +285,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await apiRegister(
-        credentials.email,
+        credentials.first_name,
+        credentials.last_name,
         credentials.password,
-        credentials.displayName,
-        credentials.acceptTerms,
+        credentials.condition_accepted,
       );
       applySession(set, res.session, /* remember */ true);
       audit("register", `New account ${res.session.user.email}`);

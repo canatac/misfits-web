@@ -262,14 +262,14 @@ export async function apiLogin(
 }
 
 export async function apiRegister(
-  email: string,
+  first_name: string,
+  last_name: string,
   password: string,
-  displayName?: string,
-  acceptTerms?: boolean,
+  condition_accepted: boolean,
 ): Promise<AuthApiResponse> {
   return apiClient.post<AuthApiResponse>(
     "/auth/register",
-    { email, password, displayName, acceptTerms },
+    { first_name, last_name, password, condition_accepted },
     { skipAuth: true },
   );
 }

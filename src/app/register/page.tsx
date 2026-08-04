@@ -186,7 +186,6 @@ export default function RegisterPage() {
   const canSubmit =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
-    emailValid &&
     password.length >= 8 &&
     password === confirmPassword &&
     acceptTerms &&
@@ -226,17 +225,14 @@ export default function RegisterPage() {
       return;
     }
 
-    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-
-    // Avatar selection is currently client-only metadata; registration API
-    // only supports email/password/displayName at the moment.
+    // Avatar selection is client-only metadata.
     void selectedAvatarName;
 
     registerMutation.mutate({
-      email: email.trim(),
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
       password,
-      displayName: fullName,
-      acceptTerms: true,
+      condition_accepted: true,
     });
   }
 

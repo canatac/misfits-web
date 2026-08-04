@@ -66,12 +66,10 @@ export interface LoginCredentials {
 }
 
 export interface RegisterCredentials {
-  email: string;
+  first_name: string;
+  last_name: string;
   password: string;
-  /** Optional display name captured at sign-up. */
-  displayName?: string;
-  /** Must be accepted to create an account. */
-  acceptTerms: boolean;
+  condition_accepted: boolean;
 }
 
 /** Body for the second-factor verification step. */
