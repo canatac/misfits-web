@@ -41,13 +41,12 @@ type AvatarOption = {
 };
 
 const SYLLABLE_ONSETS = [
-  "b", "br", "c", "cl", "d", "dr", "f", "fl", "g", "gl", "k", "kr",
-  "l", "m", "n", "p", "pl", "r", "s", "st", "t", "tr", "v", "z",
+  "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z",
 ] as const;
 
-const SYLLABLE_VOWELS = ["a", "e", "i", "o", "u", "ae", "ai", "ou", "io"] as const;
+const SYLLABLE_VOWELS = ["a", "e", "i", "o", "u", "ai", "ou"] as const;
 
-const SYLLABLE_CODAS = ["", "n", "r", "s", "x", "th", "m", "l", "v", "z"] as const;
+const SYLLABLE_CODAS = ["", "n", "r", "s", "m", "l"] as const;
 
 function hashText(input: string): number {
   let h = 2166136261;
@@ -83,7 +82,7 @@ function makeRng(seed: number): () => number {
   };
 }
 
-function createPseudoWord(seed: number, syllables: 2 | 3): string {
+function createPseudoWord(seed: number, syllables: 1 | 2): string {
   const rng = makeRng(seed);
   let word = "";
 
@@ -94,10 +93,13 @@ function createPseudoWord(seed: number, syllables: 2 | 3): string {
     word += `${onset}${vowel}${coda}`;
   }
 
-  return word
+  const shortened = word
     .replace(/[^a-z]/g, "")
     .replace(/(.)\1{2,}/g, "$1$1")
-    .slice(0, 12);
+    .slice(0, 6);
+
+  if (shortened.length >= 3) return shortened;
+  return `${shortened}a`.slice(0, 3);
 }
 
 function sanitizeAvatarName(input: string): string {
@@ -108,7 +110,7 @@ function sanitizeAvatarName(input: string): string {
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 30);
+    .slice(0, 16);
 
   return sanitized || "user-avatar";
 }
@@ -133,8 +135,8 @@ function buildAvatarOptions(
     while (step < 50) {
       const leftSeed = hashText(`${baseHash}-${i}-${step}-left`);
       const rightSeed = hashText(`${baseHash}-${i}-${step}-right`);
-      const left = createPseudoWord(leftSeed, (leftSeed % 2 === 0 ? 2 : 3));
-      const right = createPseudoWord(rightSeed, (rightSeed % 2 === 0 ? 2 : 3));
+      const left = createPseudoWord(leftSeed, (leftSeed % 2 === 0 ? 1 : 2));
+      const right = createPseudoWord(rightSeed, (rightSeed % 2 === 0 ? 1 : 2));
       generatedName = sanitizeAvatarName(`${left}-${right}`);
       if (!usedNames.has(generatedName)) break;
       step += 1;
@@ -162,6 +164,7 @@ export default function RegisterPage() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [confirmTouched, setConfirmTouched] = useState(false);
   const [termsTouched, setTermsTouched] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [avatarSalt, setAvatarSalt] = useState(() => Date.now());
   const [avatarNameEdits, setAvatarNameEdits] = useState<Record<string, string>>({});
 
@@ -181,7 +184,7 @@ export default function RegisterPage() {
   const passwordTooShort = password.length > 0 && password.length < 8;
   const passwordMismatch =
     confirmTouched && password.length > 0 && password !== confirmPassword;
-  const termsError = termsTouched && !acceptTerms;
+  const termsError = (termsTouched || submitAttempted) && !acceptTerms;
 
   const canSubmit =
     firstName.trim().length > 0 &&
@@ -208,11 +211,12 @@ export default function RegisterPage() {
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSubmitAttempted(true);
 
     if (!canSubmit) {
       setEmailTouched(true);
       setConfirmTouched(true);
-      setTermsTouched(true);
+      if (!acceptTerms) setTermsTouched(true);
       return;
     }
 
@@ -448,7 +452,11 @@ export default function RegisterPage() {
                     checked={acceptTerms}
                     onCheckedChange={(v) => {
                       setAcceptTerms(v === true);
-                      setTermsTouched(true);
+                      if (v === true) {
+                        setTermsTouched(false);
+                      } else {
+                        setTermsTouched(true);
+                      }
                     }}
                     aria-invalid={termsError ? "true" : "false"}
                     aria-describedby={termsError ? "accept-terms-error" : undefined}
@@ -463,7 +471,7 @@ export default function RegisterPage() {
                     className="text-xs text-[var(--color-danger-500)]"
                     role="alert"
                   >
-                    You must accept the terms to create an account.
+                    Vous devez accepter les conditions d&apos;utilisation.
                   </p>
                 ) : null}
               </div>
