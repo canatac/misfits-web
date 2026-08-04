@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertBanner } from "@/components/monitoring/alert-banner";
 import { BouncesPanel } from "@/components/monitoring/bounces-panel";
@@ -22,7 +22,7 @@ import type { MonitoringEventFilters, MonitoringWindow } from "@/types/monitorin
 
 const DEFAULT_WINDOW: MonitoringWindow = "15m";
 
-export default function MonitoringDashboardPage() {
+function MonitoringDashboardContent() {
   const searchParams = useSearchParams();
   const [window, setWindow] = useState<MonitoringWindow>(DEFAULT_WINDOW);
   const [filters, setFilters] = useState<MonitoringEventFilters>({ page: 1, page_size: 50 });
@@ -118,5 +118,19 @@ export default function MonitoringDashboardPage() {
         onClose={() => setTraceOpen(false)}
       />
     </section>
+  );
+}
+
+export default function MonitoringDashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-card)] p-6 text-sm text-[var(--color-muted-fg)]">
+          Chargement du monitoring...
+        </section>
+      }
+    >
+      <MonitoringDashboardContent />
+    </Suspense>
   );
 }
