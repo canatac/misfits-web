@@ -116,11 +116,9 @@ function sanitizeAvatarName(input: string): string {
 }
 
 function buildAvatarOptions(
-  firstName: string,
-  lastName: string,
   salt: number,
 ): AvatarOption[] {
-  const seedBase = `${firstName}|${lastName}|${salt}`.toLowerCase();
+  const seedBase = `avatar-${salt}`;
   const baseHash = hashText(seedBase || "avatar");
 
   const usedNames = new Set<string>();
@@ -168,8 +166,8 @@ export default function RegisterPage() {
   const [avatarNameEdits, setAvatarNameEdits] = useState<Record<string, string>>({});
 
   const avatarOptions = useMemo(
-    () => buildAvatarOptions(firstName, lastName, avatarSalt),
-    [firstName, lastName, avatarSalt],
+    () => buildAvatarOptions(avatarSalt),
+    [avatarSalt],
   );
   const [selectedAvatar, setSelectedAvatar] = useState(0);
 
