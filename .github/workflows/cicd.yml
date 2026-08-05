@@ -89,16 +89,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve footer build labels
+        run: |
+          WEB_SHORT_SHA="$(printf '%.12s' "${GITHUB_SHA}")"
+          echo "MISFITS_WEB_BUILD_VERSION=misfits-web@${WEB_SHORT_SHA}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=misfits-web@${WEB_SHORT_SHA}" >> "$GITHUB_ENV"
+
+          BACKEND_SHA=$(curl -fsSL "https://api.github.com/repos/canatac/reimagined-guide/actions/runs?branch=master&status=success&event=push&per_page=1" | python3 -c "import json,sys; d=json.load(sys.stdin); runs=d.get('workflow_runs') or []; print((runs[0].get('head_sha','')[:12]) if runs else '')")
+          if [ -n "$BACKEND_SHA" ]; then
+            BACKEND_LABEL="reimagined-guide@${BACKEND_SHA}"
+          else
+            BACKEND_LABEL="reimagined-guide@unknown"
+          fi
+
+          echo "REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          MISFITS_WEB_BUILD_VERSION: ${{ env.MISFITS_WEB_BUILD_VERSION }}
+          REIMAGINED_GUIDE_BUILD_VERSION: ${{ env.REIMAGINED_GUIDE_BUILD_VERSION }}
+          NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION: ${{ env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION }}
+          NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION: ${{ env.NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: 22
+          envs: MISFITS_WEB_BUILD_VERSION,REIMAGINED_GUIDE_BUILD_VERSION,NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION,NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION
           script: |
             cd ${{ secrets.VM_DEPLOY_DIR }}
             docker compose -f docker-compose.web.yml pull web
+            MISFITS_WEB_BUILD_VERSION="$MISFITS_WEB_BUILD_VERSION" \
+            REIMAGINED_GUIDE_BUILD_VERSION="$REIMAGINED_GUIDE_BUILD_VERSION" \
+            NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION="$NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION" \
+            NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION="$NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION" \
             docker compose -f docker-compose.web.yml up -d web
             docker image prune -f || true
             echo "Deploy complete: misfits-web updated on ${{ secrets.VM_HOST }}"
