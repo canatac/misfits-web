@@ -35,11 +35,19 @@ pnpm test:e2e
 
 ```bash
 # .env.local
-BACKEND_URL=http://localhost:8080  # Rust API Warp
+BACKEND_URL=http://localhost:8080  # Rust API (reimagined-guide)
 
-# Hermes private API (server-side only)
+# Hermes proxy mode (default: direct)
+# direct  -> misfits-web calls Hermes upstream directly
+# backend -> misfits-web calls BACKEND_URL/api/hermes/chat
+HERMES_PROXY_MODE=direct
+
+# Direct mode only (server-side only)
 HERMES_BASE_URL=http://172.16.12.2:8642/v1
 HERMES_API_KEY=<secret>
+
+# Optional explicit backend base for backend mode
+# HERMES_GATEWAY_BASE_URL=http://localhost:8000
 ```
 
 ## Docker
