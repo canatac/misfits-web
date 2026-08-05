@@ -61,6 +61,30 @@ describe("/api/hermes/runs/[runId] route", () => {
     expect(url).toBe("http://email-api:8000/api/hermes/runs/run_1");
   });
 
+  it("prioritizes HERMES_GATEWAY_BASE_URL over BACKEND_URL in backend mode", async () => {
+    process.env.HERMES_PROXY_MODE = "backend";
+    process.env.HERMES_GATEWAY_BASE_URL = "http://gateway:9000";
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: "run_1", status: "completed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = new Request("http://localhost/api/hermes/runs/run_1");
+
+    const res = await GET(req as any, {
+      params: Promise.resolve({ runId: "run_1" }),
+    });
+
+    expect(res.status).toBe(200);
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://gateway:9000/api/hermes/runs/run_1");
+  });
+
   it("forces direct mode when HERMES_PROXY_MODE=direct even if BACKEND_URL is set", async () => {
     process.env.HERMES_PROXY_MODE = "direct";
     process.env.BACKEND_URL = "http://email-api:8000";
