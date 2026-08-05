@@ -48,6 +48,11 @@ HERMES_API_KEY=<secret>
 
 # Optional explicit backend base for backend mode
 # HERMES_GATEWAY_BASE_URL=http://localhost:8000
+
+# Build versions shown in the footer on every page
+# (set these at deploy time for exact traceability)
+NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=misfits-web@<git-sha-or-tag>
+NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=reimagined-guide@<git-sha-or-tag>
 ```
 
 ## Docker
