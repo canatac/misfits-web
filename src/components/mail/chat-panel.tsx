@@ -6,9 +6,7 @@ import { useThreadStore } from "@/stores/thread-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { ChatMessageBubble } from "@/components/mail/chat-message";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Sparkles, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const QUICK_PROMPTS = [
   "Quels emails importants aujourd'hui?",
@@ -17,7 +15,19 @@ const QUICK_PROMPTS = [
 ];
 
 export function ChatPanel() {
-  const { isOpen, setOpen, conversations, activeConversationId, sendMessage, isStreaming, createConversation, selectConversation } = useChatStore();
+  const {
+    isOpen,
+    setOpen,
+    conversations,
+    activeConversationId,
+    sendMessage,
+    isStreaming,
+    createConversation,
+    traceEnabled,
+    traceEvents,
+    setTraceEnabled,
+    clearTrace,
+  } = useChatStore();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +40,7 @@ export function ChatPanel() {
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [active?.messages.length, isStreaming]);
+  }, [active?.messages.length, isStreaming, traceEvents.length]);
 
   if (!isOpen) return null;
 
@@ -46,16 +56,35 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="fixed right-0 top-0 z-50 flex h-screen w-96 max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl">
+    <div className="fixed right-0 top-0 z-50 flex h-screen w-[28rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] p-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-[var(--color-brand-500)]" />
           <span className="text-sm font-semibold">Mail Assistant</span>
         </div>
-        <button onClick={() => setOpen(false)} aria-label="Close"><X className="h-4 w-4" /></button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const next = !traceEnabled;
+              setTraceEnabled(next);
+              if (!next) clearTrace();
+            }}
+            className={`rounded border px-2 py-1 text-xs ${
+              traceEnabled
+                ? "border-[var(--color-brand-500)] text-[var(--color-brand-500)]"
+                : "border-[var(--color-border)] text-[var(--color-muted-fg)]"
+            }`}
+            title="Afficher les détails d'exécution (mode CLI-like)"
+          >
+            Trace {traceEnabled ? "on" : "off"}
+          </button>
+          <button onClick={() => setOpen(false)} aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3">
         {(!active || active.messages.length === 0) && (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <Sparkles className="h-10 w-10 text-[var(--color-brand-500)]" />
@@ -79,8 +108,47 @@ export function ChatPanel() {
             ))}
           </div>
         )}
+
         {active?.messages.map((msg, i) => <ChatMessageBubble key={i} message={msg} />)}
-        {isStreaming && <div className="flex items-center gap-2 text-sm text-[var(--color-muted-fg)]"><Sparkles className="h-4 w-4 animate-pulse" /> Thinking...</div>}
+
+        {isStreaming && (
+          <div className="flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
+            <Sparkles className="h-4 w-4 animate-pulse" />
+            {traceEnabled ? "Exécution Hermes en cours..." : "Thinking..."}
+          </div>
+        )}
+
+        {traceEnabled && traceEvents.length > 0 && (
+          <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-muted)]/40 p-2">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-medium text-[var(--color-muted-fg)]">Détails exécution</p>
+              <button
+                className="text-xs text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]"
+                onClick={clearTrace}
+              >
+                clear
+              </button>
+            </div>
+            <div className="space-y-1">
+              {traceEvents.slice(-14).map((e) => (
+                <div key={e.id} className="text-xs">
+                  <span
+                    className={
+                      e.level === "error"
+                        ? "text-red-500"
+                        : e.level === "warn"
+                          ? "text-amber-500"
+                          : "text-[var(--color-muted-fg)]"
+                    }
+                  >
+                    [{new Date(e.at).toLocaleTimeString()}] {e.kind}
+                  </span>
+                  <span className="ml-2 text-[var(--color-fg)]">{e.message}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-[var(--color-border)] p-3">
