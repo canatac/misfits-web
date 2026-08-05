@@ -11,6 +11,7 @@ import {
   PenSquare,
   Settings2,
   ShieldAlert,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: ShieldAlert,
     matchPrefix: "/dashboard/security",
   },
+  { href: "/admin", label: "Admin", icon: Wrench, matchPrefix: "/admin" },
   { href: "/settings/ai", label: "Settings", icon: Settings2, matchPrefix: "/settings" },
 ];
 
