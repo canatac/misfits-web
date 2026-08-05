@@ -26,6 +26,19 @@ function resolveHermesBaseUrl() {
   );
 }
 
+function resolveBackendGatewayBaseUrl() {
+  const raw = process.env.HERMES_GATEWAY_BASE_URL || process.env.BACKEND_URL;
+  if (!raw) return null;
+  return trimTrailingSlash(raw);
+}
+
+function shouldUseBackendGateway() {
+  const mode = process.env.HERMES_PROXY_MODE?.toLowerCase();
+  if (mode === "backend") return true;
+  if (mode === "direct") return false;
+  return Boolean(process.env.HERMES_GATEWAY_BASE_URL);
+}
+
 function sanitizeHeaderValue(value: string): string {
   return value.replace(/[\r\n\0]/g, "").trim().slice(0, 256);
 }
@@ -52,14 +65,6 @@ function buildSessionHeaders(body: HermesRunBody): Record<string, string> {
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.HERMES_API_KEY;
-  if (!apiKey) {
-    return jsonError(
-      "Hermes service is not configured (missing HERMES_API_KEY).",
-      503,
-    );
-  }
-
   let body: HermesRunBody;
   try {
     body = (await req.json()) as HermesRunBody;
@@ -69,6 +74,57 @@ export async function POST(req: NextRequest) {
 
   if (body.input === undefined || body.input === null) {
     return jsonError("`input` is required.", 400);
+  }
+
+  if (shouldUseBackendGateway()) {
+    const backendBase = resolveBackendGatewayBaseUrl();
+    if (!backendBase) {
+      return jsonError(
+        "Backend Hermes gateway mode is enabled but BACKEND_URL/HERMES_GATEWAY_BASE_URL is missing.",
+        503,
+      );
+    }
+
+    let upstream: Response;
+    try {
+      upstream = await fetch(`${backendBase}/api/hermes/runs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: body.input,
+          model: body.model || "hermes-agent",
+          threadId: body.threadId,
+          userId: body.userId,
+          sessionId: body.sessionId,
+          sessionKey: body.sessionKey,
+        }),
+        cache: "no-store",
+      });
+    } catch {
+      return jsonError("Unable to reach backend Hermes gateway.", 502);
+    }
+
+    const contentType =
+      upstream.headers.get("content-type") || "application/json";
+    const text = await upstream.text().catch(() => "");
+
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
+  const apiKey = process.env.HERMES_API_KEY;
+  if (!apiKey) {
+    return jsonError(
+      "Hermes service is not configured (missing HERMES_API_KEY).",
+      503,
+    );
   }
 
   const baseUrl = resolveHermesBaseUrl();
