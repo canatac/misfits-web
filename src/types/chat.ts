@@ -1,11 +1,24 @@
 /**
  * Chat types for the conversational AI mail assistant.
  */
+
+export interface ChatSourceCitation {
+  label: string;
+  value: string;
+}
+
+export interface ChatMessageMetadata {
+  trace?: boolean;
+  confidence?: "high" | "medium" | "low";
+  confidenceReason?: string;
+  sources?: ChatSourceCitation[];
+}
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp?: number;
-  metadata?: Record<string, unknown>;
+  metadata?: ChatMessageMetadata & Record<string, unknown>;
 }
 
 export interface ChatConversation {
