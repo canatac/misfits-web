@@ -37,6 +37,30 @@ describe("/api/hermes/runs/[runId] route", () => {
     expect(init.method).toBe("GET");
   });
 
+  it("defaults to backend gateway when BACKEND_URL is set and mode is unset", async () => {
+    delete process.env.HERMES_PROXY_MODE;
+    process.env.BACKEND_URL = "http://email-api:8000";
+    delete process.env.HERMES_GATEWAY_BASE_URL;
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: "run_1", status: "completed" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = new Request("http://localhost/api/hermes/runs/run_1");
+
+    const res = await GET(req as any, {
+      params: Promise.resolve({ runId: "run_1" }),
+    });
+
+    expect(res.status).toBe(200);
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://email-api:8000/api/hermes/runs/run_1");
+  });
+
   it("returns 503 in backend mode if no backend base URL is configured", async () => {
     process.env.HERMES_PROXY_MODE = "backend";
     delete process.env.BACKEND_URL;
