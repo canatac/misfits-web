@@ -13,6 +13,9 @@ export interface MailShortcutHandlers {
   onCompose: () => void;
   onSearchFocus: () => void;
   onClose: () => void;
+  onToggleSidebar?: () => void;
+  onToggleChat?: () => void;
+  onCloseOverlay?: () => boolean;
   onToggleStar?: () => void;
   onMarkUnread?: () => void;
 }
@@ -34,11 +37,21 @@ export function useMailShortcuts(handlers: MailShortcutHandlers): void {
     (e: KeyboardEvent) => {
       if (isEditable(e.target)) return;
 
-      // Meta/Ctrl + k is a global search (browser or command palette)
+      // Meta/Ctrl shortcuts
       if (e.metaKey || e.ctrlKey) {
         if (e.key === "/") {
           e.preventDefault();
           handlers.onSearchFocus();
+          return;
+        }
+        if (e.key.toLowerCase() === "b" && handlers.onToggleSidebar) {
+          e.preventDefault();
+          handlers.onToggleSidebar();
+          return;
+        }
+        if (e.key.toLowerCase() === "j" && handlers.onToggleChat) {
+          e.preventDefault();
+          handlers.onToggleChat();
           return;
         }
         return;
@@ -69,10 +82,12 @@ export function useMailShortcuts(handlers: MailShortcutHandlers): void {
           e.preventDefault();
           handlers.onSearchFocus();
           break;
-        case "Escape":
+        case "Escape": {
           e.preventDefault();
-          handlers.onClose();
+          const overlayClosed = handlers.onCloseOverlay?.() ?? false;
+          if (!overlayClosed) handlers.onClose();
           break;
+        }
         case "s":
           if (handlers.onToggleStar) {
             e.preventDefault();

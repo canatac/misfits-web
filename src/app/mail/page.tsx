@@ -7,7 +7,7 @@
  * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
-import { Menu, X, Mail as MailIcon, Layers } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layers, Mail as MailIcon, Menu, PanelLeft, PanelRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -33,14 +33,17 @@ import { useThreadStore } from "@/stores/thread-store";
 import { useThreads } from "@/hooks/use-threads";
 import { useComposerStore } from "@/stores/composer-store";
 import { useAccountStore } from "@/stores/account-store";
+import { useChatStore } from "@/stores/chat-store";
+import { useMailLayoutStore } from "@/stores/mail-layout-store";
 
 type MobileView = "list" | "view";
 
 export default function MailPage() {
   const [mobileView, setMobileView] = useState<MobileView>("list");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
   const setAccountId = useEmailStore((s) => s.setAccountId);
@@ -52,10 +55,48 @@ export default function MailPage() {
   const toggleUnifiedInbox = useAccountStore((s) => s.toggleUnifiedInbox);
   const canToggleUnified = accountsCount > 1;
 
+  // Desktop layout state (persistent)
+  const desktopSidebarOpen = useMailLayoutStore((s) => s.desktopSidebarOpen);
+  const setDesktopSidebarOpen = useMailLayoutStore((s) => s.setDesktopSidebarOpen);
+  const toggleDesktopSidebar = useMailLayoutStore((s) => s.toggleDesktopSidebar);
+  const desktopChatOpen = useMailLayoutStore((s) => s.desktopChatOpen);
+  const setDesktopChatOpen = useMailLayoutStore((s) => s.setDesktopChatOpen);
+  const toggleDesktopChat = useMailLayoutStore((s) => s.toggleDesktopChat);
+
+  // Chat global open state
+  const chatOpen = useChatStore((s) => s.isOpen);
+  const setChatOpen = useChatStore((s) => s.setOpen);
+  const toggleChatOpen = useChatStore((s) => s.toggleOpen);
+
   // When the active account / unified toggle changes, update the email filter.
   useEffect(() => {
     setAccountId(isUnifiedInbox ? null : activeAccountId);
   }, [isUnifiedInbox, activeAccountId, setAccountId]);
+
+  // Desktop breakpoint tracking.
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setIsDesktop(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  // Keep ChatPanel mode aligned with viewport/layout state.
+  useEffect(() => {
+    if (isDesktop) {
+      setChatOpen(desktopChatOpen);
+      return;
+    }
+    setDesktopSidebarOpen(true);
+  }, [isDesktop, desktopChatOpen, setChatOpen, setDesktopSidebarOpen]);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    if (chatOpen !== desktopChatOpen) {
+      setDesktopChatOpen(chatOpen);
+    }
+  }, [chatOpen, desktopChatOpen, isDesktop, setDesktopChatOpen]);
 
   // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
@@ -112,6 +153,37 @@ export default function MailPage() {
     setMobileView("list");
   }, [selectEmail]);
 
+  const closeActiveOverlay = useCallback(() => {
+    if (isDesktop) return false;
+    if (chatOpen) {
+      setChatOpen(false);
+      return true;
+    }
+    if (mobileSidebarOpen) {
+      setMobileSidebarOpen(false);
+      return true;
+    }
+    return false;
+  }, [chatOpen, isDesktop, mobileSidebarOpen, setChatOpen]);
+
+  const handleToggleSidebarShortcut = useCallback(() => {
+    if (isDesktop) {
+      toggleDesktopSidebar();
+      return;
+    }
+    setMobileSidebarOpen((v) => !v);
+  }, [isDesktop, toggleDesktopSidebar]);
+
+  const handleToggleChatShortcut = useCallback(() => {
+    if (isDesktop) {
+      const next = !desktopChatOpen;
+      setDesktopChatOpen(next);
+      setChatOpen(next);
+      return;
+    }
+    toggleChatOpen();
+  }, [desktopChatOpen, isDesktop, setChatOpen, setDesktopChatOpen, toggleChatOpen]);
+
   useMailShortcuts({
     onNext: handleNavNext,
     onPrev: handleNavPrev,
@@ -120,6 +192,9 @@ export default function MailPage() {
     onCompose: handleCompose,
     onSearchFocus: handleSearchFocus,
     onClose: handleClose,
+    onToggleSidebar: handleToggleSidebarShortcut,
+    onToggleChat: handleToggleChatShortcut,
+    onCloseOverlay: closeActiveOverlay,
   });
 
   return (
@@ -129,10 +204,11 @@ export default function MailPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          aria-label="Toggle sidebar"
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          aria-label="Ouvrir/fermer le menu"
+          title={mobileSidebarOpen ? "Replier le menu" : "Afficher le menu"}
         >
-          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
         <div className="flex items-center gap-2">
           <MailIcon className="h-5 w-5 text-[var(--color-brand-500)]" />
@@ -151,18 +227,54 @@ export default function MailPage() {
       </div>
 
       {/* 3-column layout */}
-      <div className="flex h-full w-full overflow-hidden">
-        {/* Sidebar — persistent on desktop, slide-over on mobile */}
-        <div className="hidden h-full shrink-0 lg:block lg:w-64">
-          <MailSidebar onCompose={handleCompose} />
+      <div className="relative flex h-full w-full overflow-hidden">
+        {/* Desktop panel toggles */}
+        <div className="pointer-events-none absolute left-2 right-2 top-2 z-30 hidden items-center justify-between lg:flex">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="pointer-events-auto gap-1"
+            onClick={() => toggleDesktopSidebar()}
+            aria-label={desktopSidebarOpen ? "Replier le menu" : "Afficher le menu"}
+            title={desktopSidebarOpen ? "Replier le menu (⌘/Ctrl+B)" : "Afficher le menu (⌘/Ctrl+B)"}
+          >
+            <PanelLeft className="h-4 w-4" />
+            {desktopSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            className="pointer-events-auto gap-1"
+            onClick={() => {
+              const next = !desktopChatOpen;
+              setDesktopChatOpen(next);
+              setChatOpen(next);
+            }}
+            aria-label={desktopChatOpen ? "Replier le chat" : "Afficher le chat"}
+            title={desktopChatOpen ? "Replier le chat (⌘/Ctrl+J)" : "Afficher le chat (⌘/Ctrl+J)"}
+          >
+            {desktopChatOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            <PanelRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Sidebar — desktop docked with smooth collapse */}
+        <div
+          className={cn(
+            "hidden h-full shrink-0 overflow-hidden transition-all duration-200 ease-out lg:block",
+            desktopSidebarOpen ? "lg:w-64" : "lg:w-0",
+          )}
+        >
+          {desktopSidebarOpen && <MailSidebar onCompose={handleCompose} />}
         </div>
 
         {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
+        {mobileSidebarOpen && (
           <>
             <div
               className="fixed inset-0 z-40 bg-[var(--color-overlay)] lg:hidden"
-              onClick={() => setSidebarOpen(false)}
+              onClick={() => setMobileSidebarOpen(false)}
               aria-hidden="true"
             />
             <div className="fixed inset-y-0 left-0 z-50 h-full w-64 lg:hidden">
@@ -194,6 +306,24 @@ export default function MailPage() {
             <EmailView />
           )}
         </div>
+
+        {/* Desktop chat panel — docked and independent */}
+        <div
+          className={cn(
+            "hidden h-full shrink-0 overflow-hidden border-l border-[var(--color-border)] transition-all duration-200 ease-out lg:block",
+            desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0",
+          )}
+        >
+          {desktopChatOpen && (
+            <ChatPanel
+              layout="docked"
+              onRequestClose={() => {
+                setDesktopChatOpen(false);
+                setChatOpen(false);
+              }}
+            />
+          )}
+        </div>
       </div>
 
       {/* Composer modal */}
@@ -211,9 +341,18 @@ export default function MailPage() {
       {/* Search overlay */}
       <SearchOverlay open={searchOverlayOpen} onOpenChange={setSearchOverlayOpen} />
 
-      {/* Conversational AI chat assistant */}
-      <ChatTrigger />
-      <ChatPanel />
+      {/* Mobile chat overlay + trigger */}
+      {!isDesktop && chatOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-[var(--color-overlay)]"
+            onClick={() => setChatOpen(false)}
+            aria-hidden="true"
+          />
+          <ChatPanel layout="overlay" onRequestClose={() => setChatOpen(false)} />
+        </>
+      )}
+      {!isDesktop && <ChatTrigger />}
 
       {/* Follow-up reminder banner (Issue #151) */}
       <ReminderBanner />
