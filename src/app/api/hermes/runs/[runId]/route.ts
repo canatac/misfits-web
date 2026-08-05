@@ -27,7 +27,7 @@ function shouldUseBackendGateway() {
   const mode = process.env.HERMES_PROXY_MODE?.toLowerCase();
   if (mode === "backend") return true;
   if (mode === "direct") return false;
-  return Boolean(process.env.HERMES_GATEWAY_BASE_URL);
+  return Boolean(resolveBackendGatewayBaseUrl());
 }
 
 export async function GET(

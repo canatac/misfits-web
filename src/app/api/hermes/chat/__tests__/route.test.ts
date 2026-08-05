@@ -80,6 +80,34 @@ describe("/api/hermes/chat route", () => {
     expect(payload.userId).toBe("u-1");
   });
 
+  it("uses backend gateway mode implicitly when BACKEND_URL is set", async () => {
+    delete process.env.HERMES_PROXY_MODE;
+    delete process.env.HERMES_GATEWAY_BASE_URL;
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = new Request("http://localhost/api/hermes/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Hello" }],
+      }),
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://email-api:8000/api/hermes/chat");
+  });
+
   it("forwards explicit session overrides in backend mode", async () => {
     process.env.HERMES_PROXY_MODE = "backend";
     process.env.BACKEND_URL = "http://email-api:8000";
