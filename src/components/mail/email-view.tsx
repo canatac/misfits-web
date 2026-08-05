@@ -30,6 +30,7 @@ import {
   MailOpen,
   Tag,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,8 @@ import {
 import { useEmailStore } from "@/stores/email-store";
 import { useComposerStore, uid } from "@/stores/composer-store";
 import { useLabelStore } from "@/stores/label-store";
+import { useChatStore } from "@/stores/chat-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { LabelBadge } from "@/components/mail/label-badge";
 import { LabelManager } from "@/components/mail/label-manager";
 import { SecurityBanner } from "@/components/mail/security-banner";
@@ -91,6 +94,16 @@ function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function toPlainText(body: string, bodyType: "html" | "text"): string {
+  if (bodyType === "text") return body;
+  return body
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // Regex to detect quoted reply sections
@@ -251,6 +264,9 @@ export function EmailView({ className }: EmailViewProps) {
   }, [sanitizedBody, loadImages, showQuoted, hasQuoted]);
 
   const openComposer = useComposerStore((s) => s.openComposer);
+  const sendChatMessage = useChatStore((s) => s.sendMessage);
+  const openChatPanel = useChatStore((s) => s.setOpen);
+  const userId = useAuthStore((s) => s.user?.id ?? null);
 
   const toRecipient = useCallback(
     (address: string, name: string, type: Recipient["type"] = "to"): Recipient => ({
@@ -329,6 +345,56 @@ export function EmailView({ className }: EmailViewProps) {
     if (email) markUnread(email.id);
   }, [email, markUnread]);
 
+  const askHermesAboutEmail = useCallback(
+    (instruction: string) => {
+      if (!email) return;
+      const bodyPreview = toPlainText(email.body, email.bodyType).slice(0, 4000);
+      const prompt = [
+        instruction,
+        "",
+        `Sujet: ${email.subject}`,
+        `De: ${email.from.name} <${email.from.address}>`,
+        `Date: ${email.date}`,
+        "",
+        "Contenu:",
+        bodyPreview,
+      ].join("\n");
+
+      openChatPanel(true);
+      void sendChatMessage(prompt, {
+        currentEmailId: email.id,
+        currentFolder: email.folder,
+        threadId: email.threadId,
+        userId: userId ? String(userId) : undefined,
+      });
+    },
+    [email, openChatPanel, sendChatMessage, userId],
+  );
+
+  const handleHermesSummarize = useCallback(() => {
+    askHermesAboutEmail(
+      "Résume cet email en 5 puces maximum (FR), puis donne niveau d'urgence (faible/moyen/élevé).",
+    );
+  }, [askHermesAboutEmail]);
+
+  const handleHermesReplyDraft = useCallback(() => {
+    askHermesAboutEmail(
+      "Propose une réponse email professionnelle en français: objet suggéré + corps prêt à envoyer.",
+    );
+  }, [askHermesAboutEmail]);
+
+  const handleHermesTranslate = useCallback(() => {
+    askHermesAboutEmail(
+      "Traduis cet email en français clair en gardant le sens exact. Si déjà en français, fournis une version plus concise.",
+    );
+  }, [askHermesAboutEmail]);
+
+  const handleHermesTodos = useCallback(() => {
+    askHermesAboutEmail(
+      "Extrais les TODO/action items: owner suggéré, échéance si détectée, et priorité.",
+    );
+  }, [askHermesAboutEmail]);
+
   if (!email) {
     return (
       <div
@@ -382,6 +448,22 @@ export function EmailView({ className }: EmailViewProps) {
           <Forward className="h-4 w-4" />
           Forward
         </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Hermes actions">
+              <Sparkles className="h-4 w-4" />
+              Hermes
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel>Hermes actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleHermesSummarize}>Résumer</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesReplyDraft}>Proposer réponse</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesTranslate}>Traduire</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesTodos}>Extraire TODO</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           size="icon"

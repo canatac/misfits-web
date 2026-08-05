@@ -36,6 +36,10 @@ pnpm test:e2e
 ```bash
 # .env.local
 BACKEND_URL=http://localhost:8080  # Rust API Warp
+
+# Hermes private API (server-side only)
+HERMES_BASE_URL=http://172.16.12.2:8642/v1
+HERMES_API_KEY=<secret>
 ```
 
 ## Docker
