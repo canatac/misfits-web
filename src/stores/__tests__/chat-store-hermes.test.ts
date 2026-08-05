@@ -8,6 +8,8 @@ function resetChatStore() {
     isStreaming: false,
     error: null,
     isOpen: false,
+    traceEnabled: false,
+    traceEvents: [],
   });
 }
 
@@ -81,6 +83,63 @@ describe("chat-store Hermes proxy", () => {
     const payload = JSON.parse(String(init.body));
     expect(payload.sessionId).toBe("mail-thread-explicit");
     expect(payload.sessionKey).toBe("user-explicit");
+  });
+
+  it("streams Hermes run events in trace mode", async () => {
+    useChatStore.getState().setTraceEnabled(true);
+
+    const encoder = new TextEncoder();
+    const ssePayload = [
+      'data: {"event":"message.delta","delta":"Bon"}\n\n',
+      'data: {"event":"message.delta","delta":"jour"}\n\n',
+      'data: {"event":"run.completed","output":"Bonjour","usage":{"total_tokens":123}}\n\n',
+    ].join("");
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+
+      if (url === "/api/hermes/runs") {
+        return new Response(JSON.stringify({ run_id: "run_test_1" }), {
+          status: 202,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      if (url === "/api/hermes/runs/run_test_1/events?stream=true") {
+        return new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(ssePayload));
+              controller.close();
+            },
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "text/event-stream" },
+          },
+        );
+      }
+
+      return new Response("not found", { status: 404 });
+    });
+
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    await useChatStore.getState().sendMessage("Bonjour", {
+      threadId: "thread-1",
+      userId: "user-1",
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(useChatStore.getState().isStreaming).toBe(false);
+
+    const conv = useChatStore.getState().conversations[0];
+    expect(conv.messages.at(-1)?.role).toBe("assistant");
+    expect(conv.messages.at(-1)?.content).toBe("Bonjour");
+
+    const traceEvents = useChatStore.getState().traceEvents;
+    expect(traceEvents.length).toBeGreaterThan(0);
+    expect(traceEvents.some((e) => e.kind === "run.completed")).toBe(true);
   });
 
   it("sets a Hermes error when upstream fails", async () => {
