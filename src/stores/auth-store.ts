@@ -394,13 +394,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     // Consume session deposited by the OAuth callback route handler first.
     const oauth = consumePendingOAuthSession();
     if (oauth) {
-      recordSessionId(oauth.session.id);
       audit("login", `oauth:${oauth.provider}`);
-      set({
-        session: oauth.session,
-        user: oauth.session.user,
-        isAuthenticated: true,
-      });
+      // applySession syncs the account store (name/email/avatar) in addition to auth state.
+      applySession(set, oauth.session, /* remember */ true);
       return { fromOAuth: true, provider: oauth.provider };
     }
 
