@@ -7,7 +7,19 @@
  * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Layers, Mail as MailIcon, Menu, PanelLeft, PanelRight, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  Mail as MailIcon,
+  Menu,
+  MessageSquare,
+  PanelLeft,
+  PanelRight,
+  PenSquare,
+  Search,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -184,6 +196,15 @@ export default function MailPage() {
     toggleChatOpen();
   }, [desktopChatOpen, isDesktop, setChatOpen, setDesktopChatOpen, toggleChatOpen]);
 
+  const openChatPanel = useCallback(() => {
+    if (isDesktop) {
+      setDesktopChatOpen(true);
+      setChatOpen(true);
+      return;
+    }
+    setChatOpen(true);
+  }, [isDesktop, setChatOpen, setDesktopChatOpen]);
+
   useMailShortcuts({
     onNext: handleNavNext,
     onPrev: handleNavPrev,
@@ -258,6 +279,53 @@ export default function MailPage() {
             <PanelRight className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Icônes compactes persistantes quand panneaux repliés */}
+        {!desktopSidebarOpen && (
+          <div className="absolute left-2 top-14 z-30 hidden flex-col gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]/95 p-1 shadow-sm backdrop-blur lg:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDesktopSidebarOpen(true)}
+              aria-label="Afficher le menu"
+              title="Afficher le menu (⌘/Ctrl+B)"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCompose}
+              aria-label="Nouveau message"
+              title="Nouveau message"
+            >
+              <PenSquare className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSearchFocus}
+              aria-label="Rechercher"
+              title="Rechercher"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {!desktopChatOpen && (
+          <div className="absolute right-2 top-14 z-30 hidden flex-col gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]/95 p-1 shadow-sm backdrop-blur lg:flex">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openChatPanel}
+              aria-label="Afficher le chat Hermes"
+              title="Afficher le chat Hermes (⌘/Ctrl+J)"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
         {/* Sidebar — desktop docked with smooth collapse */}
         <div
