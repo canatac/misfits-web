@@ -4,6 +4,7 @@ import type { ChatContext, ChatConversation, ChatMessage } from "@/types/chat";
 
 const STORAGE_KEY = "mfa.chat";
 const MAX_CONVERSATIONS = 10;
+let activeAbortController: AbortController | null = null;
 
 type TraceLevel = "info" | "warn" | "error";
 
@@ -23,7 +24,9 @@ interface ChatStore {
   isOpen: boolean;
   traceEnabled: boolean;
   traceEvents: ChatTraceEvent[];
+  lastLatencyMs: number | null;
   sendMessage: (content: string, context?: ChatContext) => Promise<void>;
+  stopStreaming: () => void;
   createConversation: () => string;
   deleteConversation: (id: string) => void;
   selectConversation: (id: string) => void;
@@ -157,11 +160,14 @@ function summarizeHermesEvent(payload: Record<string, unknown>): {
   };
 }
 
-function buildSourceCitations(context?: ChatContext): { label: string; value: string }[] {
-  const sources: { label: string; value: string }[] = [];
-  if (context?.currentEmailId) sources.push({ label: "Email", value: context.currentEmailId });
-  if (context?.threadId) sources.push({ label: "Thread", value: context.threadId });
-  if (context?.currentFolder) sources.push({ label: "Folder", value: context.currentFolder });
+function buildSourceCitations(context?: ChatContext): { label: string; value: string; kind?: "email" | "thread" | "folder" | "attachment" }[] {
+  const sources: { label: string; value: string; kind?: "email" | "thread" | "folder" | "attachment" }[] = [];
+  if (context?.currentEmailId) sources.push({ label: "Email", value: context.currentEmailId, kind: "email" });
+  if (context?.threadId) sources.push({ label: "Thread", value: context.threadId, kind: "thread" });
+  if (context?.currentFolder) sources.push({ label: "Folder", value: context.currentFolder, kind: "folder" });
+  for (const name of context?.attachmentNames ?? []) {
+    sources.push({ label: "Attachment", value: name, kind: "attachment" });
+  }
   return sources;
 }
 
@@ -215,6 +221,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isOpen: false,
   traceEnabled: false,
   traceEvents: [],
+  lastLatencyMs: null,
 
   createConversation: () => {
     const id = `chat-${Date.now()}`;
@@ -261,6 +268,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       };
     });
 
+    const startedAt = Date.now();
+    activeAbortController?.abort();
+    activeAbortController = new AbortController();
+
     try {
       const messages = get().conversations.find((c) => c.id === convId)?.messages || [];
       const resolvedThreadId = context?.threadId ?? context?.currentEmailId;
@@ -271,17 +282,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const resolvedSessionKey =
         context?.sessionKey ??
         (resolvedUserId ? `user-${resolvedUserId}` : undefined);
+      const attachmentContextNote =
+        (context?.attachmentNames?.length ?? 0) > 0
+          ? `Pièces jointes du mail courant: ${(context?.attachmentNames ?? []).join(", ")}. Si nécessaire, demande d'ouvrir la pièce jointe ciblée.`
+          : "Aucune pièce jointe signalée dans le contexte.";
 
       if (!get().traceEnabled) {
         const res = await fetch("/api/hermes/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: activeAbortController.signal,
           body: JSON.stringify({
             messages: [
               {
                 role: "system",
                 content:
-                  "You are a helpful email assistant for misfits.ai Mail. Answer concisely in French or English.",
+                  `You are a helpful email assistant for misfits.ai Mail. Answer concisely in French or English. ${attachmentContextNote}`,
               },
               ...messages.map((m) => ({ role: m.role, content: m.content })),
             ],
@@ -305,6 +321,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         const sources = buildSourceCitations(context);
         const confidence = deriveConfidence("standard", []);
+        const latencyMs = Date.now() - startedAt;
         const assistantMsg: ChatMessage = {
           role: "assistant",
           content: assistantContent,
@@ -312,6 +329,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           metadata: {
             ...confidence,
             sources,
+            latencyMs,
           },
         };
 
@@ -322,7 +340,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
               : c,
           );
           saveConversations(conversations);
-          return { conversations, isStreaming: false };
+          return { conversations, isStreaming: false, lastLatencyMs: latencyMs };
         });
         return;
       }
@@ -341,6 +359,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       const runInput = [
         "Tu es l'assistant email de misfits.ai Mail. Réponds de façon concise en français ou anglais.",
+        attachmentContextNote,
         history ? `Historique:\n${history}` : "",
         `Question actuelle:\n${content}`,
       ]
@@ -350,6 +369,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const runRes = await fetch("/api/hermes/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: activeAbortController.signal,
         body: JSON.stringify({
           input: runInput,
           model: "hermes-agent",
@@ -393,6 +413,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const eventsRes = await fetch(`/api/hermes/runs/${encodeURIComponent(runId)}/events?stream=true`, {
         method: "GET",
         headers: { Accept: "text/event-stream" },
+        signal: activeAbortController.signal,
       });
 
       if (!eventsRes.ok || !eventsRes.body) {
@@ -486,6 +507,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
 
       const finalConfidence = deriveConfidence("trace", get().traceEvents);
+      const latencyMs = Date.now() - startedAt;
       set((s) => {
         const conversations = updateAssistantDraft(
           s.conversations,
@@ -494,19 +516,37 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           {
             sources: traceSources,
             ...finalConfidence,
+            latencyMs,
           },
         );
         saveConversations(conversations);
-        return { conversations, isStreaming: false };
+        return { conversations, isStreaming: false, lastLatencyMs: latencyMs };
       });
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        set({ isStreaming: false, error: null });
+        pushTrace(set, {
+          kind: "trace.aborted",
+          message: "Exécution interrompue par l'utilisateur",
+          level: "warn",
+        });
+        return;
+      }
       set({ isStreaming: false, error: "Failed to get Hermes response" });
       pushTrace(set, {
         kind: "trace.error",
         message: "Échec récupération réponse Hermes",
         level: "error",
       });
+    } finally {
+      activeAbortController = null;
     }
+  },
+
+  stopStreaming: () => {
+    activeAbortController?.abort();
+    activeAbortController = null;
+    set({ isStreaming: false });
   },
 
   deleteConversation: (id) => {

@@ -5,6 +5,7 @@
 export interface ChatSourceCitation {
   label: string;
   value: string;
+  kind?: "email" | "thread" | "folder" | "attachment";
 }
 
 export interface ChatMessageMetadata {
@@ -12,6 +13,7 @@ export interface ChatMessageMetadata {
   confidence?: "high" | "medium" | "low";
   confidenceReason?: string;
   sources?: ChatSourceCitation[];
+  latencyMs?: number;
 }
 
 export interface ChatMessage {
@@ -37,4 +39,5 @@ export interface ChatContext {
   userId?: string;
   sessionId?: string;
   sessionKey?: string;
+  attachmentNames?: string[];
 }
