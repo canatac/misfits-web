@@ -1,6 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "@/stores/chat-store";
+import { useEmailStore } from "@/stores/email-store";
+import { useThreadStore } from "@/stores/thread-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { ChatMessageBubble } from "@/components/mail/chat-message";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,6 +23,11 @@ export function ChatPanel() {
 
   const active = conversations.find((c) => c.id === activeConversationId);
 
+  const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
+  const currentFolder = useEmailStore((s) => s.currentFolder);
+  const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [active?.messages.length, isStreaming]);
@@ -28,7 +36,12 @@ export function ChatPanel() {
 
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
-    sendMessage(input.trim());
+    sendMessage(input.trim(), {
+      currentEmailId: selectedEmailId ?? undefined,
+      currentFolder,
+      threadId: selectedThreadId ?? selectedEmailId ?? undefined,
+      userId: userId ? String(userId) : undefined,
+    });
     setInput("");
   };
 
@@ -48,7 +61,21 @@ export function ChatPanel() {
             <Sparkles className="h-10 w-10 text-[var(--color-brand-500)]" />
             <p className="text-sm text-[var(--color-muted-fg)]">Ask me anything about your emails.</p>
             {QUICK_PROMPTS.map((p) => (
-              <button key={p} onClick={() => { if (!active) createConversation(); sendMessage(p); }} className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs hover:bg-[var(--color-muted)]">{p}</button>
+              <button
+                key={p}
+                onClick={() => {
+                  if (!active) createConversation();
+                  sendMessage(p, {
+                    currentEmailId: selectedEmailId ?? undefined,
+                    currentFolder,
+                    threadId: selectedThreadId ?? selectedEmailId ?? undefined,
+                    userId: userId ? String(userId) : undefined,
+                  });
+                }}
+                className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-xs hover:bg-[var(--color-muted)]"
+              >
+                {p}
+              </button>
             ))}
           </div>
         )}

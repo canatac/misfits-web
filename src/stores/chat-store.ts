@@ -1,6 +1,6 @@
 "use client";
 import { create } from "zustand";
-import type { ChatConversation, ChatMessage } from "@/types/chat";
+import type { ChatContext, ChatConversation, ChatMessage } from "@/types/chat";
 
 const STORAGE_KEY = "mfa.chat";
 const MAX_CONVERSATIONS = 10;
@@ -11,7 +11,7 @@ interface ChatStore {
   isStreaming: boolean;
   error: string | null;
   isOpen: boolean;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, context?: ChatContext) => Promise<void>;
   createConversation: () => string;
   deleteConversation: (id: string) => void;
   selectConversation: (id: string) => void;
@@ -51,7 +51,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     return id;
   },
 
-  sendMessage: async (content: string) => {
+  sendMessage: async (content: string, context?: ChatContext) => {
     let convId = get().activeConversationId;
     if (!convId) convId = get().createConversation();
 
@@ -66,22 +66,47 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const messages = get().conversations.find((c) => c.id === convId)?.messages || [];
-      const res = await fetch("/api/ai", {
+      const res = await fetch("/api/hermes/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "system", content: "You are a helpful email assistant for misfits.ai Mail. Answer concisely in French or English." }, ...messages.map((m) => ({ role: m.role, content: m.content }))] }),
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful email assistant for misfits.ai Mail. Answer concisely in French or English.",
+            },
+            ...messages.map((m) => ({ role: m.role, content: m.content })),
+          ],
+          threadId: context?.threadId ?? context?.currentEmailId,
+          userId: context?.userId,
+        }),
       });
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "Hermes request failed");
+        throw new Error(errorText || `Hermes request failed (${res.status})`);
+      }
+
       const data = await res.json();
-      const assistantMsg: ChatMessage = { role: "assistant", content: data.content || "Sorry, I could not generate a response.", timestamp: Date.now() };
+      const assistantContent =
+        data?.choices?.[0]?.message?.content ||
+        data?.content ||
+        "Sorry, I could not generate a response.";
+      const assistantMsg: ChatMessage = {
+        role: "assistant",
+        content: assistantContent,
+        timestamp: Date.now(),
+      };
       set((s) => {
         const conversations = s.conversations.map((c) =>
-          c.id === convId ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() } : c
+          c.id === convId ? { ...c, messages: [...c.messages, assistantMsg], updatedAt: Date.now() } : c,
         );
         saveConversations(conversations);
         return { conversations, isStreaming: false };
       });
-    } catch (err) {
-      set({ isStreaming: false, error: "Failed to get AI response" });
+    } catch {
+      set({ isStreaming: false, error: "Failed to get Hermes response" });
     }
   },
 

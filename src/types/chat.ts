@@ -20,4 +20,6 @@ export interface ChatContext {
   currentEmailId?: string;
   currentFolder?: string;
   selectedEmails?: string[];
+  threadId?: string;
+  userId?: string;
 }
