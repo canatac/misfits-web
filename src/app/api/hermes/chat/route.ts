@@ -105,6 +105,8 @@ export async function POST(req: NextRequest) {
       maxTokens: body.max_tokens,
       threadId: body.threadId,
       userId: body.userId,
+      sessionId: body.sessionId,
+      sessionKey: body.sessionKey,
     };
 
     let upstream: Response;

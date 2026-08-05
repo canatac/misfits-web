@@ -80,6 +80,37 @@ describe("/api/hermes/chat route", () => {
     expect(payload.userId).toBe("u-1");
   });
 
+  it("forwards explicit session overrides in backend mode", async () => {
+    process.env.HERMES_PROXY_MODE = "backend";
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = new Request("http://localhost/api/hermes/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Hello" }],
+        sessionId: "mail-thread-explicit",
+        sessionKey: "user-explicit",
+      }),
+    });
+
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body));
+    expect(payload.sessionId).toBe("mail-thread-explicit");
+    expect(payload.sessionKey).toBe("user-explicit");
+  });
+
   it("returns 503 in backend mode if no backend base URL is configured", async () => {
     process.env.HERMES_PROXY_MODE = "backend";
     delete process.env.BACKEND_URL;
