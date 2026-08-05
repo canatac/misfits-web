@@ -46,12 +46,41 @@ describe("chat-store Hermes proxy", () => {
     const payload = JSON.parse(String(init.body));
     expect(payload.threadId).toBe("thread-123");
     expect(payload.userId).toBe("user-9");
+    expect(payload.sessionId).toBe("mail-thread-thread-123");
+    expect(payload.sessionKey).toBe("user-user-9");
     expect(Array.isArray(payload.messages)).toBe(true);
 
     const conv = useChatStore.getState().conversations[0];
     expect(conv.messages.at(-1)?.role).toBe("assistant");
     expect(conv.messages.at(-1)?.content).toBe("ok-from-hermes");
     expect(useChatStore.getState().error).toBeNull();
+  });
+
+  it("preserves explicit session overrides when provided", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: "ok-from-hermes" } }],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await useChatStore.getState().sendMessage("Bonjour", {
+      threadId: "thread-123",
+      userId: "user-9",
+      sessionId: "mail-thread-explicit",
+      sessionKey: "user-explicit",
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const payload = JSON.parse(String(init.body));
+    expect(payload.sessionId).toBe("mail-thread-explicit");
+    expect(payload.sessionKey).toBe("user-explicit");
   });
 
   it("sets a Hermes error when upstream fails", async () => {
