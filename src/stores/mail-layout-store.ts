@@ -15,7 +15,7 @@ interface MailLayoutState {
 export const useMailLayoutStore = create<MailLayoutState>()(
   persist(
     (set) => ({
-      desktopSidebarOpen: true,
+      desktopSidebarOpen: false,
       desktopChatOpen: false,
       setDesktopSidebarOpen: (open) => set({ desktopSidebarOpen: open }),
       toggleDesktopSidebar: () =>

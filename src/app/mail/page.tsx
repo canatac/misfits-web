@@ -59,6 +59,8 @@ export default function MailPage() {
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
   const setAccountId = useEmailStore((s) => s.setAccountId);
+  const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
+  const hasDesktopSelection = Boolean(selectedEmailId || selectedThreadId);
 
   // Multi-account state (Issue #154): sync account store → email store filter.
   const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
@@ -110,10 +112,27 @@ export default function MailPage() {
     }
   }, [chatOpen, desktopChatOpen, isDesktop, setDesktopChatOpen]);
 
+  // Vue principale desktop: sans sélection, panneaux latéraux repliés.
+  useEffect(() => {
+    if (!isDesktop || hasDesktopSelection) return;
+    if (desktopSidebarOpen) setDesktopSidebarOpen(false);
+    if (desktopChatOpen) {
+      setDesktopChatOpen(false);
+      setChatOpen(false);
+    }
+  }, [
+    isDesktop,
+    hasDesktopSelection,
+    desktopSidebarOpen,
+    desktopChatOpen,
+    setDesktopSidebarOpen,
+    setDesktopChatOpen,
+    setChatOpen,
+  ]);
+
   // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
   const viewMode = useThreadStore((s) => s.viewMode);
-  const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
   const threads = useThreads();
   const selectedThread = threads.find((t) => t.id === selectedThreadId) ?? null;
 
@@ -351,21 +370,28 @@ export default function MailPage() {
           </>
         )}
 
-        {/* Email list — visible on lg, and on mobile when mobileView === "list" */}
+        {/* Email list — desktop: plein écran sans sélection, split après sélection */}
         <div
           className={cn(
-            "h-full w-full overflow-hidden lg:w-80 xl:w-96",
+            "h-full w-full overflow-hidden",
+            hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
             mobileView === "list" ? "block" : "hidden lg:block",
           )}
         >
           <EmailList />
         </div>
 
-        {/* Email view — visible on lg, and on mobile when mobileView === "view" */}
+        {/* Email view — desktop: visible seulement après sélection */}
         <div
           className={cn(
             "h-full flex-1 overflow-hidden",
-            mobileView === "view" ? "block" : "hidden lg:block",
+            mobileView === "view"
+              ? hasDesktopSelection
+                ? "block lg:block"
+                : "block lg:hidden"
+              : hasDesktopSelection
+                ? "hidden lg:block"
+                : "hidden lg:hidden",
           )}
         >
           {threadingEnabled && selectedThread ? (
