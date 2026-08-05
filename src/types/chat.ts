@@ -22,4 +22,6 @@ export interface ChatContext {
   selectedEmails?: string[];
   threadId?: string;
   userId?: string;
+  sessionId?: string;
+  sessionKey?: string;
 }

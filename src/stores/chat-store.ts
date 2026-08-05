@@ -66,6 +66,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     try {
       const messages = get().conversations.find((c) => c.id === convId)?.messages || [];
+      const resolvedThreadId = context?.threadId ?? context?.currentEmailId;
+      const resolvedUserId = context?.userId;
+      const resolvedSessionId =
+        context?.sessionId ??
+        (resolvedThreadId ? `mail-thread-${resolvedThreadId}` : undefined);
+      const resolvedSessionKey =
+        context?.sessionKey ??
+        (resolvedUserId ? `user-${resolvedUserId}` : undefined);
+
       const res = await fetch("/api/hermes/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,8 +87,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             },
             ...messages.map((m) => ({ role: m.role, content: m.content })),
           ],
-          threadId: context?.threadId ?? context?.currentEmailId,
-          userId: context?.userId,
+          threadId: resolvedThreadId,
+          userId: resolvedUserId,
+          sessionId: resolvedSessionId,
+          sessionKey: resolvedSessionKey,
         }),
       });
 
