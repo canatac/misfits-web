@@ -20,9 +20,41 @@ import {
   Send,
   ShieldAlert,
   Sparkles,
+  Square,
   X,
 } from "lucide-react";
-import type { ChatMessage } from "@/types/chat";
+import type { ChatSourceCitation } from "@/types/chat";
+
+type TaskItem = {
+  id: string;
+  text: string;
+  done: boolean;
+  status: "idle" | "running" | "done" | "failed";
+  runId?: string;
+};
+
+type OpsAction = {
+  at: number;
+  action: string;
+  mode: "dry-run" | "execute";
+};
+
+type Analytics = {
+  sent: number;
+  redactions: number;
+  stops: number;
+  regenerations: number;
+  inserts: number;
+  feedbackUp: number;
+  feedbackDown: number;
+  backendTaskRuns: number;
+};
+
+type PersonaPreset = {
+  tone: "neutre" | "court" | "professionnel" | "empathique";
+  length: "court" | "moyen" | "détaillé";
+  language: "fr" | "en";
+};
 
 const QUICK_PROMPTS = [
   "Quels emails importants aujourd'hui ?",
@@ -57,6 +89,33 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
+const ROLE_TEMPLATES = [
+  {
+    id: "sales",
+    label: "Sales",
+    prompt:
+      "Contexte métier: Sales. Priorise impact business, next-step clair et CTA en fin de mail.",
+  },
+  {
+    id: "support",
+    label: "Support",
+    prompt:
+      "Contexte métier: Support client. Réponse empathique, structurée, orientée résolution.",
+  },
+  {
+    id: "legal",
+    label: "Legal",
+    prompt:
+      "Contexte métier: Legal. Réponse prudente, factuelle, sans engagement non validé.",
+  },
+  {
+    id: "exec",
+    label: "Exec",
+    prompt:
+      "Contexte métier: Executive. Résumé ultra-court, décision à prendre, risques/impacts.",
+  },
+] as const;
+
 const SENSITIVE_KEYWORDS = [
   "deploy",
   "rollback",
@@ -68,17 +127,27 @@ const SENSITIVE_KEYWORDS = [
   "rotate key",
 ];
 
-type TaskItem = {
-  id: string;
-  text: string;
-  done: boolean;
+const DEFAULT_PERSONA: PersonaPreset = {
+  tone: "professionnel",
+  length: "court",
+  language: "fr",
 };
 
-type OpsAction = {
-  at: number;
-  action: string;
-  mode: "dry-run" | "execute";
+const DEFAULT_ANALYTICS: Analytics = {
+  sent: 0,
+  redactions: 0,
+  stops: 0,
+  regenerations: 0,
+  inserts: 0,
+  feedbackUp: 0,
+  feedbackDown: 0,
+  backendTaskRuns: 0,
 };
+
+function containsSensitiveIntent(value: string): boolean {
+  const lower = value.toLowerCase();
+  return SENSITIVE_KEYWORDS.some((k) => lower.includes(k));
+}
 
 function parseTaskCandidates(text: string): string[] {
   return text
@@ -89,9 +158,29 @@ function parseTaskCandidates(text: string): string[] {
     .slice(0, 8);
 }
 
-function containsSensitiveIntent(value: string): boolean {
-  const lower = value.toLowerCase();
-  return SENSITIVE_KEYWORDS.some((k) => lower.includes(k));
+function redactPii(input: string): { sanitized: string; count: number } {
+  let count = 0;
+  const apply = (value: string, pattern: RegExp, replacement: string) =>
+    value.replace(pattern, () => {
+      count += 1;
+      return replacement;
+    });
+
+  let out = input;
+  out = apply(out, /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[REDACTED_EMAIL]");
+  out = apply(out, /\b(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?){2,5}\d{2,4}\b/g, "[REDACTED_PHONE]");
+  out = apply(out, /\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/gi, "[REDACTED_IBAN]");
+  out = apply(out, /\b(?:sk|ghp|ops)_[A-Za-z0-9]{10,}\b/g, "[REDACTED_TOKEN]");
+
+  return { sanitized: out, count };
+}
+
+function buildPersonaInstruction(preset: PersonaPreset): string {
+  return [
+    `Réponds en ${preset.language === "fr" ? "français" : "anglais"}.`,
+    `Ton attendu: ${preset.tone}.`,
+    `Longueur: ${preset.length}.`,
+  ].join(" ");
 }
 
 export function ChatPanel() {
@@ -101,6 +190,7 @@ export function ChatPanel() {
     conversations,
     activeConversationId,
     sendMessage,
+    stopStreaming,
     isStreaming,
     createConversation,
     traceEnabled,
@@ -108,6 +198,7 @@ export function ChatPanel() {
     setTraceEnabled,
     clearTrace,
     selectConversation,
+    lastLatencyMs,
   } = useChatStore();
 
   const [input, setInput] = useState("");
@@ -118,20 +209,31 @@ export function ChatPanel() {
   const [pendingSensitivePrompt, setPendingSensitivePrompt] = useState<string | null>(null);
   const [opsDryRun, setOpsDryRun] = useState(true);
   const [opsHistory, setOpsHistory] = useState<OpsAction[]>([]);
-
   const [memoryNote, setMemoryNote] = useState("");
   const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
+  const [templateId, setTemplateId] = useState<string>("none");
+  const [persona, setPersona] = useState<PersonaPreset>(DEFAULT_PERSONA);
+  const [analytics, setAnalytics] = useState<Analytics>(DEFAULT_ANALYTICS);
+  const [lastRedactionCount, setLastRedactionCount] = useState(0);
+  const [lastExecError, setLastExecError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const emails = useEmailStore((s) => s.emails);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
+  const selectEmail = useEmailStore((s) => s.selectEmail);
   const currentFolder = useEmailStore((s) => s.currentFolder);
   const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
+  const selectThread = useThreadStore((s) => s.selectThread);
   const user = useAuthStore((s) => s.user);
   const openComposer = useComposerStore((s) => s.openComposer);
 
   const active = conversations.find((c) => c.id === activeConversationId);
   const isAdmin = user?.role === "admin";
+  const selectedEmail = useMemo(
+    () => emails.find((e) => e.id === selectedEmailId) ?? null,
+    [emails, selectedEmailId],
+  );
 
   const chatContext = useMemo(
     () => ({
@@ -139,8 +241,9 @@ export function ChatPanel() {
       currentFolder,
       threadId: selectedThreadId ?? selectedEmailId ?? undefined,
       userId: user?.id ? String(user.id) : undefined,
+      attachmentNames: (selectedEmail?.attachments ?? []).slice(0, 8).map((a) => a.filename),
     }),
-    [selectedEmailId, currentFolder, selectedThreadId, user?.id],
+    [selectedEmailId, currentFolder, selectedThreadId, user?.id, selectedEmail?.attachments],
   );
 
   const sessionId = chatContext.threadId ? `mail-thread-${chatContext.threadId}` : "(none)";
@@ -148,6 +251,8 @@ export function ChatPanel() {
 
   const memoryKey = useMemo(() => `mfa.chat.memory.${sessionKey}`, [sessionKey]);
   const tasksKey = useMemo(() => `mfa.chat.tasks.${sessionKey}`, [sessionKey]);
+  const personaKey = useMemo(() => `mfa.chat.persona.${sessionKey}`, [sessionKey]);
+  const analyticsKey = useMemo(() => `mfa.chat.analytics.${sessionKey}`, [sessionKey]);
 
   const traceStats = useMemo(() => {
     const info = traceEvents.filter((e) => e.level === "info").length;
@@ -177,6 +282,11 @@ export function ChatPanel() {
     return [...active.messages].reverse().find((m) => m.role === "assistant") ?? null;
   }, [active]);
 
+  const lastUserMessage = useMemo(() => {
+    if (!active) return null;
+    return [...active.messages].reverse().find((m) => m.role === "user") ?? null;
+  }, [active]);
+
   const livingSummary = useMemo(() => {
     if (!lastAssistantMessage?.content) return "Aucun résumé disponible.";
     return lastAssistantMessage.content.slice(0, 240);
@@ -186,6 +296,7 @@ export function ChatPanel() {
     if (!isOpen) return;
     const savedNote = window.localStorage.getItem(memoryKey) ?? "";
     setMemoryNote(savedNote);
+
     const savedTasks = window.localStorage.getItem(tasksKey);
     if (savedTasks) {
       try {
@@ -196,7 +307,25 @@ export function ChatPanel() {
     } else {
       setTaskItems([]);
     }
-  }, [isOpen, memoryKey, tasksKey]);
+
+    const savedPersona = window.localStorage.getItem(personaKey);
+    if (savedPersona) {
+      try {
+        setPersona(JSON.parse(savedPersona) as PersonaPreset);
+      } catch {
+        setPersona(DEFAULT_PERSONA);
+      }
+    }
+
+    const savedAnalytics = window.localStorage.getItem(analyticsKey);
+    if (savedAnalytics) {
+      try {
+        setAnalytics(JSON.parse(savedAnalytics) as Analytics);
+      } catch {
+        setAnalytics(DEFAULT_ANALYTICS);
+      }
+    }
+  }, [isOpen, memoryKey, tasksKey, personaKey, analyticsKey]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -206,9 +335,27 @@ export function ChatPanel() {
 
   if (!isOpen) return null;
 
+  const bumpAnalytics = (patch: Partial<Analytics>) => {
+    const next = { ...analytics, ...Object.fromEntries(
+      Object.entries(patch).map(([k, v]) => [k, ((analytics as Record<string, number>)[k] ?? 0) + (v ?? 0)]),
+    ) } as Analytics;
+    setAnalytics(next);
+    window.localStorage.setItem(analyticsKey, JSON.stringify(next));
+  };
+
   const dispatchPrompt = (prompt: string) => {
+    const templatePrompt = ROLE_TEMPLATES.find((t) => t.id === templateId)?.prompt;
+    const finalPrompt = [
+      buildPersonaInstruction(persona),
+      templatePrompt,
+      prompt,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     if (!active) createConversation();
-    void sendMessage(prompt, chatContext);
+    bumpAnalytics({ sent: 1 });
+    void sendMessage(finalPrompt, chatContext);
   };
 
   const askForVariant = (tone: "court" | "professionnel" | "empathique") => {
@@ -220,11 +367,16 @@ export function ChatPanel() {
 
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
-    if (containsSensitiveIntent(input)) {
-      setPendingSensitivePrompt(input.trim());
+    const redacted = redactPii(input.trim());
+    setLastRedactionCount(redacted.count);
+    if (redacted.count > 0) bumpAnalytics({ redactions: redacted.count });
+
+    if (containsSensitiveIntent(redacted.sanitized)) {
+      setPendingSensitivePrompt(redacted.sanitized);
       return;
     }
-    dispatchPrompt(input.trim());
+
+    dispatchPrompt(redacted.sanitized);
     setInput("");
   };
 
@@ -236,7 +388,7 @@ export function ChatPanel() {
   };
 
   const copySessionContext = async () => {
-    const payload = `session_id=${sessionId}\nsession_key=${sessionKey}\nfolder=${chatContext.currentFolder ?? "(none)"}`;
+    const payload = `session_id=${sessionId}\nsession_key=${sessionKey}\nfolder=${chatContext.currentFolder ?? "(none)"}\nattachments=${(chatContext.attachmentNames ?? []).join(", ") || "(none)"}`;
     await navigator.clipboard.writeText(payload);
   };
 
@@ -245,6 +397,7 @@ export function ChatPanel() {
       subject: "Réponse proposée par Hermes",
       body: `<p>${content.replace(/\n/g, "<br/>")}</p>`,
     });
+    bumpAnalytics({ inserts: 1 });
   };
 
   const handleCreateTasks = (content: string) => {
@@ -254,16 +407,86 @@ export function ChatPanel() {
       id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       text,
       done: false,
+      status: "idle" as const,
     }));
     const next = [...taskItems, ...appended].slice(-20);
     setTaskItems(next);
     window.localStorage.setItem(tasksKey, JSON.stringify(next));
   };
 
-  const toggleTask = (id: string) => {
-    const next = taskItems.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+  const updateTasks = (next: TaskItem[]) => {
     setTaskItems(next);
     window.localStorage.setItem(tasksKey, JSON.stringify(next));
+  };
+
+  const toggleTask = (id: string) => {
+    const next = taskItems.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+    updateTasks(next);
+  };
+
+  const executeTaskOnBackend = async (taskId: string) => {
+    setLastExecError(null);
+    const task = taskItems.find((t) => t.id === taskId);
+    if (!task) return;
+
+    updateTasks(taskItems.map((t) => (t.id === taskId ? { ...t, status: "running" } : t)));
+
+    try {
+      const modeHint = opsDryRun ? "DRY-RUN" : "EXECUTE";
+      const response = await fetch("/api/hermes/runs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input: `[TASK ${modeHint}] ${task.text}\nContexte: session=${sessionId} user=${sessionKey}. Retourne un plan d'exécution court.`,
+          model: "hermes-agent",
+          threadId: chatContext.threadId,
+          userId: chatContext.userId,
+          sessionId,
+          sessionKey,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend task run failed (${response.status})`);
+      }
+
+      const data = (await response.json().catch(() => ({}))) as { run_id?: string; id?: string };
+      const runId = data.run_id ?? data.id ?? "n/a";
+      bumpAnalytics({ backendTaskRuns: 1 });
+
+      updateTasks(
+        taskItems.map((t) =>
+          t.id === taskId
+            ? { ...t, status: "done", done: true, runId }
+            : t,
+        ),
+      );
+    } catch (err) {
+      updateTasks(taskItems.map((t) => (t.id === taskId ? { ...t, status: "failed" } : t)));
+      setLastExecError(err instanceof Error ? err.message : "Échec exécution backend");
+    }
+  };
+
+  const handleSourceClick = (source: ChatSourceCitation) => {
+    if (source.kind === "email") {
+      selectEmail(source.value);
+      return;
+    }
+    if (source.kind === "thread") {
+      selectThread(source.value);
+    }
+  };
+
+  const handleFeedback = (vote: "up" | "down", reason?: string) => {
+    if (vote === "up") bumpAnalytics({ feedbackUp: 1 });
+    else bumpAnalytics({ feedbackDown: 1 });
+
+    if (!reason) return;
+    const key = `mfa.chat.feedback.${sessionKey}`;
+    const raw = window.localStorage.getItem(key);
+    const list = raw ? (JSON.parse(raw) as Array<{ at: number; vote: string; reason: string }>) : [];
+    list.unshift({ at: Date.now(), vote, reason: reason.slice(0, 120) });
+    window.localStorage.setItem(key, JSON.stringify(list.slice(0, 30)));
   };
 
   const runAdminAction = (action: string, prompt: string) => {
@@ -275,20 +498,35 @@ export function ChatPanel() {
     dispatchPrompt(finalPrompt);
   };
 
+  const stopCurrent = () => {
+    if (!isStreaming) return;
+    stopStreaming();
+    bumpAnalytics({ stops: 1 });
+  };
+
+  const regenerate = () => {
+    if (!lastUserMessage) return;
+    bumpAnalytics({ regenerations: 1 });
+    dispatchPrompt(`Régénère une meilleure version de la réponse précédente pour ce prompt:\n${lastUserMessage.content}`);
+  };
+
   const saveMemoryNote = () => {
     window.localStorage.setItem(memoryKey, memoryNote);
   };
 
+  const savePersona = (next: PersonaPreset) => {
+    setPersona(next);
+    window.localStorage.setItem(personaKey, JSON.stringify(next));
+  };
+
   return (
-    <div className="fixed right-0 top-0 z-50 flex h-screen w-[32rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl">
+    <div className="fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl">
       <div className="border-b border-[var(--color-border)] p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[var(--color-brand-500)]" />
             <span className="text-sm font-semibold">Mail Assistant</span>
-            <Badge variant="secondary" className="text-[10px]">
-              équilibré+
-            </Badge>
+            <Badge variant="secondary" className="text-[10px]">v2 top10</Badge>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -316,11 +554,17 @@ export function ChatPanel() {
           <Badge variant={traceStats.error > 0 ? "destructive" : "success"}>{confidence}</Badge>
           <Badge variant="outline">Session: {sessionId}</Badge>
           <Badge variant="outline">User: {sessionKey}</Badge>
+          {lastLatencyMs !== null && <Badge variant="outline">latence {Math.round(lastLatencyMs)}ms</Badge>}
         </div>
 
         <div className="mt-3 rounded-md border border-[var(--color-border)] bg-[var(--color-muted)]/30 p-2">
           <p className="text-[11px] font-medium text-[var(--color-muted-fg)]">Résumé vivant du thread</p>
           <p className="mt-1 text-xs">{livingSummary}</p>
+          {!!chatContext.attachmentNames?.length && (
+            <p className="mt-1 text-[11px] text-[var(--color-muted-fg)]">
+              Attachments contexte: {chatContext.attachmentNames.join(", ")}
+            </p>
+          )}
         </div>
       </div>
 
@@ -332,13 +576,15 @@ export function ChatPanel() {
           </div>
           <p className="mt-1">Confirmation requise avant envoi du prompt.</p>
           <div className="mt-2 flex gap-2">
-            <Button size="sm" onClick={handleConfirmSensitivePrompt}>
-              Confirmer
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setPendingSensitivePrompt(null)}>
-              Annuler
-            </Button>
+            <Button size="sm" onClick={handleConfirmSensitivePrompt}>Confirmer</Button>
+            <Button size="sm" variant="outline" onClick={() => setPendingSensitivePrompt(null)}>Annuler</Button>
           </div>
+        </div>
+      )}
+
+      {lastRedactionCount > 0 && (
+        <div className="mx-3 mt-2 rounded border border-[var(--color-border)] bg-[var(--color-muted)]/40 px-2 py-1 text-[11px] text-[var(--color-muted-fg)]">
+          PII masquée avant envoi: {lastRedactionCount} élément(s)
         </div>
       )}
 
@@ -356,13 +602,27 @@ export function ChatPanel() {
           </TabsList>
 
           <TabsContent value="assistant" className="mt-3 flex-1 overflow-hidden">
-            <div className="mb-2 flex items-center gap-2">
-              <Search className="h-4 w-4 text-[var(--color-muted-fg)]" />
-              <Input
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="Rechercher dans l'historique IA"
-              />
+            <div className="mb-2 grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-[var(--color-muted-fg)]" />
+                <Input
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="Rechercher dans l'historique IA"
+                />
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <select
+                  value={templateId}
+                  onChange={(e) => setTemplateId(e.target.value)}
+                  className="w-full rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-2"
+                >
+                  <option value="none">Template: aucun</option>
+                  {ROLE_TEMPLATES.map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>Template: {tpl.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
@@ -381,7 +641,7 @@ export function ChatPanel() {
               ))}
             </div>
 
-            <div ref={scrollRef} className="h-[calc(100%-5.5rem)] space-y-3 overflow-y-auto pr-1">
+            <div ref={scrollRef} className="h-[calc(100%-9rem)] space-y-3 overflow-y-auto pr-1">
               {(!active || active.messages.length === 0) && (
                 <div className="flex flex-col items-center gap-3 py-8 text-center">
                   <Sparkles className="h-10 w-10 text-[var(--color-brand-500)]" />
@@ -406,33 +666,31 @@ export function ChatPanel() {
                   message={msg}
                   onInsertToDraft={msg.role === "assistant" ? handleInsertToDraft : undefined}
                   onCreateTasks={msg.role === "assistant" ? handleCreateTasks : undefined}
+                  onSourceClick={msg.role === "assistant" ? handleSourceClick : undefined}
+                  onFeedback={msg.role === "assistant" ? handleFeedback : undefined}
                 />
               ))}
 
               {isStreaming && (
                 <div className="flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
                   <Sparkles className="h-4 w-4 animate-pulse" />
-                  {traceEnabled ? "Exécution Hermes en cours..." : "Thinking..."}
+                  {traceEnabled ? "Streaming Hermes en cours..." : "Génération en temps réel..."}
                 </div>
               )}
             </div>
 
-            {lastAssistantMessage && (
-              <div className="mt-2 rounded-md border border-[var(--color-border)] p-2">
-                <p className="text-[11px] font-medium text-[var(--color-muted-fg)]">Variantes ton</p>
-                <div className="mt-1 flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => askForVariant("court")}>
-                    A court
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => askForVariant("professionnel")}>
-                    B pro
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => askForVariant("empathique")}>
-                    C empathique
-                  </Button>
-                </div>
+            <div className="mt-2 rounded-md border border-[var(--color-border)] p-2">
+              <p className="text-[11px] font-medium text-[var(--color-muted-fg)]">Variantes ton</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => askForVariant("court")} disabled={!lastAssistantMessage}>A court</Button>
+                <Button size="sm" variant="outline" onClick={() => askForVariant("professionnel")} disabled={!lastAssistantMessage}>B pro</Button>
+                <Button size="sm" variant="outline" onClick={() => askForVariant("empathique")} disabled={!lastAssistantMessage}>C empathique</Button>
+                <Button size="sm" variant="outline" onClick={regenerate} disabled={!lastUserMessage || isStreaming}>Regenerate</Button>
+                <Button size="sm" variant="destructive" onClick={stopCurrent} disabled={!isStreaming}>
+                  <Square className="mr-1 h-3 w-3" /> Stop
+                </Button>
               </div>
-            )}
+            </div>
           </TabsContent>
 
           <TabsContent value="trace" className="mt-3 flex-1 overflow-hidden">
@@ -462,7 +720,7 @@ export function ChatPanel() {
                   </p>
                 ) : (
                   <div className="space-y-1">
-                    {traceEvents.slice(-40).map((e) => (
+                    {traceEvents.slice(-80).map((e) => (
                       <div key={e.id} className="text-xs">
                         <span
                           className={
@@ -489,20 +747,46 @@ export function ChatPanel() {
               <div className="rounded-md border border-[var(--color-border)] p-3">
                 <p className="text-xs font-medium text-[var(--color-muted-fg)]">Contexte conversation</p>
                 <div className="mt-2 space-y-1 text-xs">
-                  <p>
-                    <span className="text-[var(--color-muted-fg)]">session_id:</span> {sessionId}
-                  </p>
-                  <p>
-                    <span className="text-[var(--color-muted-fg)]">session_key:</span> {sessionKey}
-                  </p>
-                  <p>
-                    <span className="text-[var(--color-muted-fg)]">folder:</span>{" "}
-                    {chatContext.currentFolder ?? "(none)"}
-                  </p>
+                  <p><span className="text-[var(--color-muted-fg)]">session_id:</span> {sessionId}</p>
+                  <p><span className="text-[var(--color-muted-fg)]">session_key:</span> {sessionKey}</p>
+                  <p><span className="text-[var(--color-muted-fg)]">folder:</span> {chatContext.currentFolder ?? "(none)"}</p>
                 </div>
                 <Button variant="outline" size="sm" className="mt-3 gap-1" onClick={() => void copySessionContext()}>
                   <Copy className="h-3.5 w-3.5" /> Copier le contexte
                 </Button>
+              </div>
+
+              <div className="rounded-md border border-[var(--color-border)] p-3">
+                <p className="text-xs font-medium text-[var(--color-muted-fg)]">Persona (persistant)</p>
+                <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                  <select
+                    value={persona.tone}
+                    onChange={(e) => savePersona({ ...persona, tone: e.target.value as PersonaPreset["tone"] })}
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1"
+                  >
+                    <option value="neutre">Ton neutre</option>
+                    <option value="court">Ton court</option>
+                    <option value="professionnel">Ton pro</option>
+                    <option value="empathique">Ton empathique</option>
+                  </select>
+                  <select
+                    value={persona.length}
+                    onChange={(e) => savePersona({ ...persona, length: e.target.value as PersonaPreset["length"] })}
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1"
+                  >
+                    <option value="court">Court</option>
+                    <option value="moyen">Moyen</option>
+                    <option value="détaillé">Détaillé</option>
+                  </select>
+                  <select
+                    value={persona.language}
+                    onChange={(e) => savePersona({ ...persona, language: e.target.value as PersonaPreset["language"] })}
+                    className="rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1"
+                  >
+                    <option value="fr">Français</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
               </div>
 
               <div className="rounded-md border border-[var(--color-border)] p-3">
@@ -515,9 +799,7 @@ export function ChatPanel() {
                   placeholder="Préférences, contexte métier, contraintes de réponse…"
                 />
                 <div className="mt-2 flex gap-2">
-                  <Button size="sm" onClick={saveMemoryNote}>
-                    Sauvegarder
-                  </Button>
+                  <Button size="sm" onClick={saveMemoryNote}>Sauvegarder</Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -532,26 +814,58 @@ export function ChatPanel() {
               </div>
 
               <div className="rounded-md border border-[var(--color-border)] p-3">
-                <p className="text-xs font-medium text-[var(--color-muted-fg)]">TODO exploitables</p>
+                <p className="text-xs font-medium text-[var(--color-muted-fg)]">TODO exécutables (backend)</p>
                 {taskItems.length === 0 ? (
                   <p className="mt-1 text-xs text-[var(--color-muted-fg)]">
                     Utilise « Créer tâches » depuis une réponse assistant pour remplir cette liste.
                   </p>
                 ) : (
-                  <div className="mt-2 space-y-1">
+                  <div className="mt-2 space-y-2">
                     {taskItems.map((task) => (
-                      <label key={task.id} className="flex items-start gap-2 text-xs">
-                        <input
-                          type="checkbox"
-                          checked={task.done}
-                          onChange={() => toggleTask(task.id)}
-                          className="mt-0.5"
-                        />
-                        <span className={task.done ? "line-through text-[var(--color-muted-fg)]" : ""}>{task.text}</span>
-                      </label>
+                      <div key={task.id} className="rounded border border-[var(--color-border)] p-2 text-xs">
+                        <label className="flex items-start gap-2">
+                          <input
+                            type="checkbox"
+                            checked={task.done}
+                            onChange={() => toggleTask(task.id)}
+                            className="mt-0.5"
+                          />
+                          <span className={task.done ? "line-through text-[var(--color-muted-fg)]" : ""}>{task.text}</span>
+                        </label>
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge variant="outline">{task.status}</Badge>
+                          {task.runId && <Badge variant="secondary">run {task.runId}</Badge>}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={task.status === "running"}
+                            onClick={() => void executeTaskOnBackend(task.id)}
+                          >
+                            Exécuter backend
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
+                {lastExecError && (
+                  <p className="mt-2 text-xs text-red-500">{lastExecError}</p>
+                )}
+              </div>
+
+              <div className="rounded-md border border-[var(--color-border)] p-3">
+                <p className="text-xs font-medium text-[var(--color-muted-fg)]">Analytics qualité assistant</p>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  <p>requêtes: {analytics.sent}</p>
+                  <p>latence dernière: {lastLatencyMs ? `${Math.round(lastLatencyMs)}ms` : "n/a"}</p>
+                  <p>insertions brouillon: {analytics.inserts}</p>
+                  <p>régénérations: {analytics.regenerations}</p>
+                  <p>stops: {analytics.stops}</p>
+                  <p>PII redactions: {analytics.redactions}</p>
+                  <p>feedback 👍: {analytics.feedbackUp}</p>
+                  <p>feedback 👎: {analytics.feedbackDown}</p>
+                  <p>tasks backend: {analytics.backendTaskRuns}</p>
+                </div>
               </div>
 
               {traceStats.error > 0 && (

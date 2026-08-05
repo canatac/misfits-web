@@ -1,14 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { User, Bot, Copy, FilePenLine, ListTodo } from "lucide-react";
-import { useState } from "react";
-import type { ChatMessage } from "@/types/chat";
+import { User, Bot, Copy, FilePenLine, ListTodo, ThumbsDown, ThumbsUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import type { ChatMessage, ChatSourceCitation } from "@/types/chat";
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   onInsertToDraft?: (content: string) => void;
   onCreateTasks?: (content: string) => void;
+  onSourceClick?: (source: ChatSourceCitation) => void;
+  onFeedback?: (vote: "up" | "down", reason?: string) => void;
 }
 
 const confidenceLabel: Record<string, string> = {
@@ -21,8 +23,12 @@ export function ChatMessageBubble({
   message,
   onInsertToDraft,
   onCreateTasks,
+  onSourceClick,
+  onFeedback,
 }: ChatMessageBubbleProps) {
   const [copied, setCopied] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackReason, setFeedbackReason] = useState("");
   const isUser = message.role === "user";
   const confidence =
     typeof message.metadata?.confidence === "string"
@@ -36,7 +42,14 @@ export function ChatMessageBubble({
   const sources = Array.isArray(message.metadata?.sources)
     ? message.metadata.sources
     : [];
-
+  const latencyMs =
+    typeof message.metadata?.latencyMs === "number"
+      ? Math.max(0, Math.round(message.metadata.latencyMs))
+      : null;
+  const feedbackPlaceholder = useMemo(
+    () => "Pourquoi ? (optionnel, 120 caractères max)",
+    [],
+  );
   const copy = () => {
     navigator.clipboard.writeText(message.content);
     setCopied(true);
@@ -77,9 +90,14 @@ export function ChatMessageBubble({
           </div>
         )}
 
-        {!isUser && sources.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {sources.slice(0, 3).map((source) => {
+        {!isUser && (latencyMs !== null || sources.length > 0) && (
+          <div className="mt-2 flex flex-wrap items-center gap-1">
+            {latencyMs !== null && (
+              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[10px] text-[var(--color-muted-fg)]">
+                latence {latencyMs}ms
+              </span>
+            )}
+            {sources.slice(0, 5).map((source) => {
               const label =
                 source && typeof source === "object" && "label" in source
                   ? String(source.label)
@@ -89,12 +107,13 @@ export function ChatMessageBubble({
                   ? String(source.value)
                   : "-";
               return (
-                <span
+                <button
                   key={`${label}-${value}`}
-                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[10px] text-[var(--color-muted-fg)]"
+                  onClick={() => onSourceClick?.(source)}
+                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[10px] text-[var(--color-muted-fg)] hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-500)]"
                 >
                   {label}: {value}
-                </span>
+                </button>
               );
             })}
           </div>
@@ -129,6 +148,60 @@ export function ChatMessageBubble({
                 <ListTodo className="mr-1 inline h-3 w-3" /> Créer tâches
               </button>
             )}
+
+            {onFeedback && (
+              <>
+                <button
+                  onClick={() => {
+                    onFeedback("up");
+                    setFeedbackOpen(false);
+                  }}
+                  className="opacity-70 hover:opacity-100"
+                  title="Réponse utile"
+                >
+                  <ThumbsUp className="mr-1 inline h-3 w-3" /> Utile
+                </button>
+                <button
+                  onClick={() => setFeedbackOpen((v) => !v)}
+                  className="opacity-70 hover:opacity-100"
+                  title="Réponse non satisfaisante"
+                >
+                  <ThumbsDown className="mr-1 inline h-3 w-3" /> Pas utile
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {!isUser && feedbackOpen && onFeedback && (
+          <div className="mt-2 rounded border border-[var(--color-border)]/60 bg-[var(--color-bg)]/70 p-2 text-[11px]">
+            <input
+              value={feedbackReason}
+              onChange={(e) => setFeedbackReason(e.target.value.slice(0, 120))}
+              placeholder={feedbackPlaceholder}
+              className="w-full rounded border border-[var(--color-border)] bg-transparent px-2 py-1 text-[11px]"
+            />
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={() => {
+                  onFeedback("down", feedbackReason.trim() || undefined);
+                  setFeedbackOpen(false);
+                  setFeedbackReason("");
+                }}
+                className="rounded border border-[var(--color-border)] px-2 py-1"
+              >
+                Envoyer
+              </button>
+              <button
+                onClick={() => {
+                  setFeedbackOpen(false);
+                  setFeedbackReason("");
+                }}
+                className="rounded border border-[var(--color-border)] px-2 py-1"
+              >
+                Annuler
+              </button>
+            </div>
           </div>
         )}
       </div>
