@@ -450,13 +450,13 @@ export function EmailView({ className }: EmailViewProps) {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Hermes actions">
+            <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Demander à Hermes">
               <Sparkles className="h-4 w-4" />
-              Hermes
+              Demander à Hermes
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Hermes actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Actions Hermes</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleHermesSummarize}>Résumer</DropdownMenuItem>
             <DropdownMenuItem onClick={handleHermesReplyDraft}>Proposer réponse</DropdownMenuItem>
