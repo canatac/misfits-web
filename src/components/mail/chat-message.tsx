@@ -3,13 +3,12 @@
 import { cn } from "@/lib/utils";
 import { User, Bot, Copy, FilePenLine, ListTodo, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { ChatMessage, ChatSourceCitation } from "@/types/chat";
+import type { ChatMessage } from "@/types/chat";
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   onInsertToDraft?: (content: string) => void;
   onCreateTasks?: (content: string) => void;
-  onSourceClick?: (source: ChatSourceCitation) => void;
   onFeedback?: (vote: "up" | "down", reason?: string) => void;
 }
 
@@ -23,7 +22,6 @@ export function ChatMessageBubble({
   message,
   onInsertToDraft,
   onCreateTasks,
-  onSourceClick,
   onFeedback,
 }: ChatMessageBubbleProps) {
   const [copied, setCopied] = useState(false);
@@ -97,25 +95,11 @@ export function ChatMessageBubble({
                 latence {latencyMs}ms
               </span>
             )}
-            {sources.slice(0, 5).map((source) => {
-              const label =
-                source && typeof source === "object" && "label" in source
-                  ? String(source.label)
-                  : "Source";
-              const value =
-                source && typeof source === "object" && "value" in source
-                  ? String(source.value)
-                  : "-";
-              return (
-                <button
-                  key={`${label}-${value}`}
-                  onClick={() => onSourceClick?.(source)}
-                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[10px] text-[var(--color-muted-fg)] hover:border-[var(--color-brand-500)] hover:text-[var(--color-brand-500)]"
-                >
-                  {label}: {value}
-                </button>
-              );
-            })}
+            {sources.length > 0 && (
+              <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-0.5 text-[10px] text-[var(--color-muted-fg)]">
+                {sources.length} source(s)
+              </span>
+            )}
           </div>
         )}
 
