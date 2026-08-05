@@ -41,6 +41,30 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     expect(init.method).toBe("GET");
   });
 
+  it("preserves upstream success status and content-type in backend mode", async () => {
+    process.env.HERMES_PROXY_MODE = "backend";
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("event: ping\ndata: ok\n\n", {
+        status: 201,
+        headers: { "Content-Type": "text/event-stream; charset=utf-8" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const req = {
+      nextUrl: new URL("http://localhost/api/hermes/runs/run_1/events"),
+    };
+
+    const res = await GET(req as any, {
+      params: Promise.resolve({ runId: "run_1" }),
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+  });
+
   it("returns 503 in backend mode if no backend base URL is configured", async () => {
     process.env.HERMES_PROXY_MODE = "backend";
     delete process.env.BACKEND_URL;

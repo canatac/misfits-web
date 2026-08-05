@@ -76,10 +76,13 @@ export async function GET(
       });
     }
 
+    const contentType =
+      upstream.headers.get("content-type") || "text/event-stream";
+
     return new NextResponse(upstream.body, {
-      status: 200,
+      status: upstream.status,
       headers: {
-        "Content-Type": "text/event-stream",
+        "Content-Type": contentType,
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no",
@@ -123,10 +126,13 @@ export async function GET(
     });
   }
 
+  const contentType =
+    upstream.headers.get("content-type") || "text/event-stream";
+
   return new NextResponse(upstream.body, {
-    status: 200,
+    status: upstream.status,
     headers: {
-      "Content-Type": "text/event-stream",
+      "Content-Type": contentType,
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no",
