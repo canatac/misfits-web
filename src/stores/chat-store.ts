@@ -157,10 +157,32 @@ function summarizeHermesEvent(payload: Record<string, unknown>): {
   };
 }
 
+function buildSourceCitations(context?: ChatContext): { label: string; value: string }[] {
+  const sources: { label: string; value: string }[] = [];
+  if (context?.currentEmailId) sources.push({ label: "Email", value: context.currentEmailId });
+  if (context?.threadId) sources.push({ label: "Thread", value: context.threadId });
+  if (context?.currentFolder) sources.push({ label: "Folder", value: context.currentFolder });
+  return sources;
+}
+
+function deriveConfidence(
+  mode: "trace" | "standard",
+  traceEvents: ChatTraceEvent[],
+): { confidence: "high" | "medium" | "low"; confidenceReason: string } {
+  if (traceEvents.some((e) => e.level === "error")) {
+    return { confidence: "low", confidenceReason: "Une ou plusieurs erreurs d'exécution ont été détectées." };
+  }
+  if (mode === "trace" && traceEvents.some((e) => e.kind === "run.completed")) {
+    return { confidence: "high", confidenceReason: "Run complété avec succès et flux d'événements cohérent." };
+  }
+  return { confidence: "medium", confidenceReason: "Réponse générée sans erreur explicite, mais sans validation externe." };
+}
+
 function updateAssistantDraft(
   convs: ChatConversation[],
   convId: string,
   content: string,
+  metadata?: ChatMessage["metadata"],
 ): ChatConversation[] {
   return convs.map((c) => {
     if (c.id !== convId) return c;
@@ -171,14 +193,14 @@ function updateAssistantDraft(
         ...last,
         content,
         timestamp: Date.now(),
-        metadata: { ...(last.metadata ?? {}), trace: true },
+        metadata: { ...(last.metadata ?? {}), ...(metadata ?? {}), trace: true },
       };
     } else {
       messages.push({
         role: "assistant",
         content,
         timestamp: Date.now(),
-        metadata: { trace: true },
+        metadata: { ...(metadata ?? {}), trace: true },
       });
     }
     return { ...c, messages, updatedAt: Date.now() };
@@ -281,10 +303,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           data?.content ||
           "Sorry, I could not generate a response.";
 
+        const sources = buildSourceCitations(context);
+        const confidence = deriveConfidence("standard", []);
         const assistantMsg: ChatMessage = {
           role: "assistant",
           content: assistantContent,
           timestamp: Date.now(),
+          metadata: {
+            ...confidence,
+            sources,
+          },
         };
 
         set((s) => {
@@ -349,9 +377,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         level: "info",
       });
 
+      const traceSources = buildSourceCitations(context);
+
       // Start assistant draft bubble immediately.
       set((s) => {
-        const conversations = updateAssistantDraft(s.conversations, convId!, "");
+        const conversations = updateAssistantDraft(s.conversations, convId!, "", {
+          sources: traceSources,
+          confidence: "medium",
+          confidenceReason: "Réponse en cours de génération.",
+        });
         saveConversations(conversations);
         return { conversations };
       });
@@ -406,6 +440,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                   s.conversations,
                   convId!,
                   assistantContent,
+                  {
+                    sources: traceSources,
+                    confidence: "medium",
+                    confidenceReason: "Streaming en cours.",
+                  },
                 );
                 saveConversations(conversations);
                 return { conversations };
@@ -423,6 +462,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                   s.conversations,
                   convId!,
                   assistantContent,
+                  {
+                    sources: traceSources,
+                    confidence: "medium",
+                    confidenceReason: "Streaming en cours.",
+                  },
                 );
                 saveConversations(conversations);
                 return { conversations };
@@ -441,7 +485,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         });
       }
 
-      set({ isStreaming: false });
+      const finalConfidence = deriveConfidence("trace", get().traceEvents);
+      set((s) => {
+        const conversations = updateAssistantDraft(
+          s.conversations,
+          convId!,
+          assistantContent,
+          {
+            sources: traceSources,
+            ...finalConfidence,
+          },
+        );
+        saveConversations(conversations);
+        return { conversations, isStreaming: false };
+      });
     } catch {
       set({ isStreaming: false, error: "Failed to get Hermes response" });
       pushTrace(set, {
