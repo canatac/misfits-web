@@ -28,6 +28,7 @@ import {
   Calendar as CalendarIcon,
   Activity,
   ShieldAlert,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -226,6 +227,21 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <Link href="/dashboard/security">
             <ShieldAlert className="h-4 w-4" />
             Security
+          </Link>
+        </Button>
+      </div>
+
+      {/* Admin hub — settings/security/monitoring/changelog/change requests */}
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/admin"))}
+          data-testid="admin-link"
+        >
+          <Link href="/admin">
+            <Wrench className="h-4 w-4" />
+            Admin
           </Link>
         </Button>
       </div>
