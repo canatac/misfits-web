@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Send, ShieldAlert } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useChatStore } from "@/stores/chat-store";
 import { useEmailStore } from "@/stores/email-store";
 import { useThreadStore } from "@/stores/thread-store";
@@ -176,7 +177,13 @@ function buildPersonaInstruction(preset: PersonaPreset): string {
   ].join(" ");
 }
 
-export function ChatPanel() {
+interface ChatPanelProps {
+  layout?: "overlay" | "docked";
+  className?: string;
+  onRequestClose?: () => void;
+}
+
+export function ChatPanel({ layout = "overlay", className, onRequestClose }: ChatPanelProps) {
   const {
     isOpen,
     setOpen,
@@ -485,12 +492,24 @@ export function ChatPanel() {
   const confidenceLabel =
     traceStats.error > 0 ? "À vérifier" : isStreaming ? "Génération" : "Prêt";
 
+  const closePanel = () => {
+    setOpen(false);
+    onRequestClose?.();
+  };
+
   return (
-    <div className="fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl">
+    <div
+      className={cn(
+        layout === "overlay"
+          ? "fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl"
+          : "flex h-full w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)]",
+        className,
+      )}
+    >
       <ChatPanelHeader
         uiMode={uiMode}
         onModeChange={setUiMode}
-        onClose={() => setOpen(false)}
+        onClose={closePanel}
         isStreaming={isStreaming}
         lastLatencyMs={lastLatencyMs}
         traceEnabled={traceEnabled}
