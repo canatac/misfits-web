@@ -20,7 +20,7 @@ jobs:
   # ============================================================
   quality:
     name: Lint + Typecheck + Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, scw-rust-large]
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +53,7 @@ jobs:
   build-and-push:
     name: Build + Push Docker
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, scw-rust-large]
     steps:
       - uses: actions/checkout@v4
 
@@ -85,7 +85,7 @@ jobs:
     name: Deploy to VM
     needs: build-and-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, scw-rust-large]
     steps:
       - uses: actions/checkout@v4
 
