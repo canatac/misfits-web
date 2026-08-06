@@ -135,6 +135,7 @@ export function useSendEmail() {
             id: draft.id,
             messageId: res.headers.get("x-message-id") ?? draft.id,
             sent: true,
+            deliveryState: "sent",
           };
         }
         try {
@@ -144,13 +145,19 @@ export function useSendEmail() {
             id: draft.id,
             messageId: draft.id,
             sent: true,
+            deliveryState: "sent",
             raw: responseText,
           };
         }
       }
       // unreachable — BACKEND_AVAILABLE is always true; kept for tests override
       await new Promise((r) => setTimeout(r, 600));
-      return { id: draft.id, sent: true, sendLater: options?.sendLater };
+      return {
+        id: draft.id,
+        sent: true,
+        deliveryState: options?.sendLater ? "queued" : "sent",
+        sendLater: options?.sendLater,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });

@@ -195,15 +195,29 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
       const draft = buildDraft({ ...state, body: finalBody });
       try {
         const result = await sendMutation.mutateAsync({ draft, options });
-        const payload = result as { id?: string; message_id?: string; messageId?: string };
+        const payload = result as {
+          id?: string;
+          message_id?: string;
+          messageId?: string;
+          deliveryState?: "queued" | "sending" | "sent" | "failed";
+        };
         const id = payload.message_id ?? payload.messageId ?? payload.id ?? draft.id;
+        const state = payload.deliveryState;
         if (options?.sendLater) {
           toast.success(`Email programme. ID: ${id}`);
           reset();
           if (onClose) onClose();
           else if (variant === "page") router.push("/mail");
         } else {
-          toast.success(`Email envoye. ID: ${id}`);
+          const stateLabel =
+            state === "sent"
+              ? "sent"
+              : state === "queued"
+                ? "queued"
+                : state === "sending"
+                  ? "sending"
+                  : "failed";
+          toast.success(`Email ${stateLabel}. ID: ${id}`);
           reset();
           if (onClose) onClose();
           else if (variant === "page") router.push("/mail");
