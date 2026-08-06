@@ -27,6 +27,9 @@ import {
   Contact as ContactIcon,
   Calendar as CalendarIcon,
   Activity,
+  Newspaper,
+  Languages,
+  BookOpen,
   ShieldAlert,
   Wrench,
 } from "lucide-react";
@@ -182,6 +185,49 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <Link href="/calendar">
             <CalendarIcon className="h-4 w-4" />
             Calendar
+          </Link>
+        </Button>
+      </div>
+
+      {/* Novamail parity modules */}
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/newsletters"))}
+          data-testid="newsletters-link"
+        >
+          <Link href="/newsletters">
+            <Newspaper className="h-4 w-4" />
+            Newsletters
+          </Link>
+        </Button>
+      </div>
+
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/translation"))}
+          data-testid="translation-link"
+        >
+          <Link href="/translation">
+            <Languages className="h-4 w-4" />
+            Translation
+          </Link>
+        </Button>
+      </div>
+
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/docs"))}
+          data-testid="docs-link"
+        >
+          <Link href="/docs">
+            <BookOpen className="h-4 w-4" />
+            Docs
           </Link>
         </Button>
       </div>

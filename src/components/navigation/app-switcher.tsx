@@ -4,10 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import {
+  BookOpen,
   Calendar,
   Contact,
   LayoutDashboard,
+  Languages,
   Mail,
+  Newspaper,
   PenSquare,
   Settings2,
   ShieldAlert,
@@ -27,6 +30,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/compose", label: "Compose", icon: PenSquare, matchPrefix: "/compose" },
   { href: "/contacts", label: "Contacts", icon: Contact, matchPrefix: "/contacts" },
   { href: "/calendar", label: "Calendar", icon: Calendar, matchPrefix: "/calendar" },
+  { href: "/newsletters", label: "Newsletters", icon: Newspaper, matchPrefix: "/newsletters" },
+  { href: "/translation", label: "Translation", icon: Languages, matchPrefix: "/translation" },
+  { href: "/docs", label: "Docs", icon: BookOpen, matchPrefix: "/docs" },
   {
     href: "/dashboard/monitoring",
     label: "Monitoring",
