@@ -51,6 +51,39 @@ async function fetchEmailById(id: string): Promise<Email | null> {
   return res.json();
 }
 
+async function postEmailAction(
+  id: string,
+  action:
+    | "move"
+    | "archive"
+    | "trash"
+    | "delete"
+    | "restore"
+    | "markRead"
+    | "markUnread"
+    | "star"
+    | "unstar",
+  targetFolder?: Folder,
+): Promise<void> {
+  const payload =
+    action === "move" && targetFolder
+      ? { action, targetFolder }
+      : { action };
+
+  const res = await fetch(`/api/emails/${encodeURIComponent(id)}/action`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...mailAuthHeaders(),
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to apply email action: ${res.status} ${res.statusText}`);
+  }
+}
+
 /**
  * Hook: useEmailList
  * Fetches emails by folder with TanStack Query, supporting filter, sort, search.
@@ -78,8 +111,7 @@ export function useEmail(id: string | null) {
 
 /**
  * Hook: useEmailActions
- * Mutations for star, read, archive, delete, bulk actions.
- * Until flag endpoints exist server-side, update local email store optimistically.
+ * Mutations persisted server-side (source-of-truth via `/api/emails/{id}/action`).
  */
 export function useEmailActions() {
   const queryClient = useQueryClient();
@@ -87,7 +119,8 @@ export function useEmailActions() {
 
   const toggleStar = useMutation({
     mutationFn: async (id: string) => {
-      store.getState().toggleStar(id);
+      const email = store.getState().emails.find((e) => e.id === id);
+      await postEmailAction(id, email?.isStarred ? "unstar" : "star");
       return { id };
     },
     onSuccess: () => {
@@ -97,8 +130,7 @@ export function useEmailActions() {
 
   const markRead = useMutation({
     mutationFn: async ({ id, isRead }: { id: string; isRead: boolean }) => {
-      if (isRead) store.getState().markRead(id);
-      else store.getState().markUnread(id);
+      await postEmailAction(id, isRead ? "markRead" : "markUnread");
       return { id, isRead };
     },
     onSuccess: () => {
@@ -108,7 +140,7 @@ export function useEmailActions() {
 
   const archive = useMutation({
     mutationFn: async (id: string) => {
-      store.getState().archive(id);
+      await postEmailAction(id, "archive");
       return { id, folder: "archive" as Folder };
     },
     onSuccess: () => {
@@ -118,7 +150,7 @@ export function useEmailActions() {
 
   const deleteEmail = useMutation({
     mutationFn: async (id: string) => {
-      store.getState().deleteEmail(id);
+      await postEmailAction(id, "delete");
       return { id };
     },
     onSuccess: () => {
@@ -134,9 +166,7 @@ export function useEmailActions() {
       ids: string[];
       action: "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
     }) => {
-      // Align with store BulkActionType using selected ids
-      useEmailStore.setState({ selectedEmailIds: new Set(ids) });
-      store.getState().bulkAction(action as never);
+      await Promise.all(ids.map((id) => postEmailAction(id, action)));
       return { ids, action };
     },
     onSuccess: () => {
