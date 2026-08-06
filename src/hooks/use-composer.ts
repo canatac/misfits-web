@@ -21,39 +21,23 @@ import { mailAuthHeaders } from "@/lib/mail-api";
 /** Always hit same-origin `/api/*` (Next rewrite → email-api). Demo is login-only. */
 const BACKEND_AVAILABLE = true;
 
-const DRAFTS_KEY = "misfits:drafts";
 const DEBOUNCE_MS = 1500;
 
-/* ------------------------------------------------------------------ *
- * Drafts list (localStorage-backed)
- * ------------------------------------------------------------------ */
-
-function readDraftsList(): ComposeDraft[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(DRAFTS_KEY);
-    return raw ? (JSON.parse(raw) as ComposeDraft[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeDraftsList(drafts: ComposeDraft[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
-  } catch {
-    // ignore
-  }
-}
-
 /**
- * Query: list of saved drafts (read from localStorage).
+ * Query: list of saved drafts (server source-of-truth).
  */
 export function useDrafts() {
   return useQuery({
     queryKey: ["composer-drafts"],
-    queryFn: () => readDraftsList(),
+    queryFn: async () => {
+      const res = await fetch("/api/drafts", {
+        headers: mailAuthHeaders(),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`Failed to fetch drafts: ${res.status}`);
+      const data = (await res.json()) as { drafts?: ComposeDraft[] };
+      return Array.isArray(data.drafts) ? data.drafts : [];
+    },
     staleTime: 10_000,
   });
 }
@@ -68,27 +52,17 @@ export function useSaveDraft() {
 
   const mutation = useMutation({
     mutationFn: async (draft: ComposeDraft) => {
-      if (BACKEND_AVAILABLE) {
-        const res = await fetch("/api/drafts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(draft),
-        });
-        if (!res.ok) throw new Error(`Save draft failed: ${res.statusText}`);
-        return res.json();
-      }
-      // localStorage fallback
-      const drafts = readDraftsList();
-      const idx = drafts.findIndex((d) => d.id === draft.id);
-      const updated: ComposeDraft = {
-        ...draft,
-        updatedAt: new Date().toISOString(),
-      };
-      if (idx >= 0) drafts[idx] = updated;
-      else drafts.unshift(updated);
-      writeDraftsList(drafts);
-      await new Promise((r) => setTimeout(r, 200));
-      return updated;
+      const res = await fetch("/api/drafts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...mailAuthHeaders(),
+        },
+        credentials: "include",
+        body: JSON.stringify(draft),
+      });
+      if (!res.ok) throw new Error(`Save draft failed: ${res.statusText}`);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["composer-drafts"] });
