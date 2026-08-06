@@ -336,7 +336,7 @@ export default function MailPage() {
             desktopSidebarOpen ? "lg:w-64" : "lg:w-0",
           )}
         >
-          {desktopSidebarOpen && <MailSidebar onCompose={handleCompose} />}
+          {desktopSidebarOpen && <MailSidebar onCompose={handleCompose} className="lg:pt-12" />}
         </div>
 
         {/* Mobile sidebar overlay */}
