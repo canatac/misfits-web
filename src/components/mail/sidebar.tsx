@@ -91,8 +91,8 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
   const navClass = (active: boolean) =>
     cn(
-      "w-full justify-start gap-2",
-      active && "bg-[var(--color-accent)] text-[var(--color-accent-fg)] hover:bg-[var(--color-accent)]",
+      "w-full justify-start gap-2 border border-[#262629] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]",
+      active && "border-[#C49B66]/50 bg-[#1E1A15] text-[#F2D5A7] hover:bg-[#1E1A15]",
     );
 
   const isActivePath = (prefix: string) =>
@@ -101,7 +101,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full w-full flex-col bg-[var(--color-card)] border-r border-[var(--color-border)]",
+        "flex h-full w-full flex-col border-r border-[#242427] bg-[#101012]/95 text-[#E4E4E7] backdrop-blur",
         className,
       )}
       data-testid="mail-sidebar"
@@ -114,7 +114,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
       {/* Compose button */}
       <div className="px-3 pb-2">
         <Button
-          className="w-full justify-start gap-2"
+          className="w-full justify-start gap-2 border border-[#C49B66]/40 bg-[#C49B66] text-[#0A0A0B] hover:bg-[#b78f5c]"
           onClick={onCompose}
           data-testid="compose-button"
         >
@@ -127,7 +127,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
       <div className="px-3 pb-2">
         <Button
           variant={triageOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2"
+          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
           onClick={() => setTriageOpen((v) => !v)}
           data-testid="triage-toggle"
           aria-expanded={triageOpen}
@@ -141,7 +141,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
       <div className="px-3 pb-2">
         <Button
           variant={followUpOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2"
+          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
           onClick={() => setFollowUpOpen((v) => !v)}
           data-testid="followup-toggle"
           aria-expanded={followUpOpen}
@@ -259,10 +259,10 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
                 key={folder.id}
                 onClick={() => setFolder(folder.id as Folder)}
                 className={cn(
-                  "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2 text-sm transition-colors",
+                  "flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-sm transition-colors",
                   isActive
-                    ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)] font-medium"
-                    : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]",
+                    ? "border-[#C49B66]/50 bg-[#1E1A15] text-[#F2D5A7] font-medium"
+                    : "text-[#D4D4D8] hover:border-[#2A2A2D] hover:bg-[#1A1A1E]",
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
