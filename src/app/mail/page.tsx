@@ -375,6 +375,8 @@ export default function MailPage() {
           className={cn(
             "h-full w-full overflow-hidden",
             hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
+            !desktopSidebarOpen && "lg:pl-14",
+            !desktopChatOpen && !hasDesktopSelection && "lg:pr-14",
             mobileView === "list" ? "block" : "hidden lg:block",
           )}
         >
@@ -385,6 +387,8 @@ export default function MailPage() {
         <div
           className={cn(
             "h-full flex-1 overflow-hidden",
+            !desktopSidebarOpen && "lg:pl-14",
+            !desktopChatOpen && "lg:pr-14",
             mobileView === "view"
               ? hasDesktopSelection
                 ? "block lg:block"
