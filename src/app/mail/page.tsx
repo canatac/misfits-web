@@ -223,7 +223,7 @@ export default function MailPage() {
   return (
     <>
       {/* Mobile top bar */}
-      <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-card)] px-3 py-2 lg:hidden">
+      <div className="flex items-center justify-between border-b border-[#242427] bg-[#111113]/95 px-3 py-2.5 text-[#E4E4E7] backdrop-blur-xl lg:hidden">
         <Button
           variant="ghost"
           size="icon"
@@ -234,7 +234,7 @@ export default function MailPage() {
           {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
         <div className="flex items-center gap-2">
-          <MailIcon className="h-5 w-5 text-[var(--color-brand-500)]" />
+          <MailIcon className="h-5 w-5 text-[#C49B66]" />
           <span className="font-semibold">misfits.ai Mail</span>
         </div>
         {/* Unified inbox toggle (mobile) — Issue #154 */}
@@ -250,13 +250,13 @@ export default function MailPage() {
       </div>
 
       {/* 3-column layout */}
-      <div className="relative flex h-full w-full overflow-hidden">
+      <div className="relative flex h-full w-full overflow-hidden p-2 lg:p-3">
         {/* Desktop panel toggles */}
-        <div className="pointer-events-none absolute left-2 right-2 top-2 z-30 hidden items-center justify-between lg:flex">
+        <div className="pointer-events-none absolute left-5 right-5 top-4 z-30 hidden items-center justify-between lg:flex">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="pointer-events-auto gap-1"
+            className="pointer-events-auto gap-1 border border-[#2A2A2D] bg-[#121214]/90 text-[#E4E4E7] shadow-xl backdrop-blur hover:bg-[#1A1A1D]"
             onClick={() => toggleDesktopSidebar()}
             aria-label={desktopSidebarOpen ? "Replier le menu" : "Afficher le menu"}
             title={desktopSidebarOpen ? "Replier le menu (⌘/Ctrl+B)" : "Afficher le menu (⌘/Ctrl+B)"}
@@ -266,9 +266,9 @@ export default function MailPage() {
           </Button>
 
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="pointer-events-auto gap-1"
+            className="pointer-events-auto gap-1 border border-[#2A2A2D] bg-[#121214]/90 text-[#E4E4E7] shadow-xl backdrop-blur hover:bg-[#1A1A1D]"
             onClick={() => {
               const next = !desktopChatOpen;
               setDesktopChatOpen(next);
@@ -284,7 +284,7 @@ export default function MailPage() {
 
         {/* Icônes compactes persistantes quand panneaux repliés */}
         {!desktopSidebarOpen && (
-          <div className="absolute left-2 top-14 z-30 hidden flex-col gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]/95 p-1 shadow-sm backdrop-blur lg:flex">
+          <div className="absolute left-5 top-16 z-30 hidden flex-col gap-1 rounded-2xl border border-[#2A2A2D] bg-[#121214]/95 p-1.5 shadow-2xl backdrop-blur lg:flex">
             <Button
               variant="ghost"
               size="icon"
@@ -316,7 +316,7 @@ export default function MailPage() {
         )}
 
         {!desktopChatOpen && (
-          <div className="absolute right-2 top-14 z-30 hidden flex-col gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]/95 p-1 shadow-sm backdrop-blur lg:flex">
+          <div className="absolute right-5 top-16 z-30 hidden flex-col gap-1 rounded-2xl border border-[#2A2A2D] bg-[#121214]/95 p-1.5 shadow-2xl backdrop-blur lg:flex">
             <Button
               variant="ghost"
               size="icon"
@@ -332,7 +332,7 @@ export default function MailPage() {
         {/* Sidebar — desktop docked with smooth collapse */}
         <div
           className={cn(
-            "hidden h-full shrink-0 overflow-hidden transition-all duration-200 ease-out lg:block",
+            "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
             desktopSidebarOpen ? "lg:w-64" : "lg:w-0",
           )}
         >
@@ -356,7 +356,7 @@ export default function MailPage() {
         {/* Email list — desktop: plein écran sans sélection, split après sélection */}
         <div
           className={cn(
-            "h-full w-full overflow-hidden",
+            "h-full w-full overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
             hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
             !desktopSidebarOpen && "lg:pl-14",
             !desktopChatOpen && !hasDesktopSelection && "lg:pr-14",
@@ -369,7 +369,7 @@ export default function MailPage() {
         {/* Email view — desktop: visible seulement après sélection */}
         <div
           className={cn(
-            "h-full flex-1 overflow-hidden",
+            "h-full flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
             !desktopSidebarOpen && "lg:pl-14",
             !desktopChatOpen && "lg:pr-14",
             mobileView === "view"
@@ -391,7 +391,7 @@ export default function MailPage() {
         {/* Desktop chat panel — docked and independent */}
         <div
           className={cn(
-            "hidden h-full shrink-0 overflow-hidden border-l border-[var(--color-border)] transition-all duration-200 ease-out lg:block",
+            "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
             desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0",
           )}
         >

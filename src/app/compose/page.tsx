@@ -87,8 +87,8 @@ function ComposePageContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]" data-testid="compose-page">
-      <AppSwitcher />
+    <div className="min-h-screen bg-[#09090B] text-[#E4E4E7]" data-testid="compose-page">
+      <AppSwitcher className="border-[#242427] bg-[#111113]/95 text-[#E4E4E7]" />
       <div className="mx-auto flex h-[calc(100vh-56px)] w-full max-w-4xl flex-col p-4">
         <ComposerPanel variant="page" />
         {prefill && replyId && (
