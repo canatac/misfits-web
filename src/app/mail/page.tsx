@@ -112,23 +112,6 @@ export default function MailPage() {
     }
   }, [chatOpen, desktopChatOpen, isDesktop, setDesktopChatOpen]);
 
-  // Vue principale desktop: sans sélection, panneaux latéraux repliés.
-  useEffect(() => {
-    if (!isDesktop || hasDesktopSelection) return;
-    if (desktopSidebarOpen) setDesktopSidebarOpen(false);
-    if (desktopChatOpen) {
-      setDesktopChatOpen(false);
-      setChatOpen(false);
-    }
-  }, [
-    isDesktop,
-    hasDesktopSelection,
-    desktopSidebarOpen,
-    desktopChatOpen,
-    setDesktopSidebarOpen,
-    setDesktopChatOpen,
-    setChatOpen,
-  ]);
 
   // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
