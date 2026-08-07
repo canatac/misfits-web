@@ -5,7 +5,7 @@
  * timeline (recent emails exchanged with this contact), and a merge-duplicate
  * suggestion when a duplicate is detected.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Mail,
   Phone,
