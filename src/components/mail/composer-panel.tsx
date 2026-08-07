@@ -278,15 +278,15 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   return (
     <div
       className={cn(
-        "relative flex flex-col bg-[var(--color-card)] text-[var(--color-card-fg)]",
-        variant === "page" ? "h-full" : "max-h-[85vh] rounded-[var(--radius-xl)] border border-[var(--color-border)] shadow-[var(--shadow-xl)]",
+        "relative flex flex-col bg-[#0A0A0B] text-[#E0E0E0]",
+        variant === "page" ? "h-full" : "max-h-[85vh] rounded-[var(--radius-xl)] border border-[#242427] shadow-[var(--shadow-xl)]",
         isFullScreen && "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
         className,
       )}
       data-testid="composer-panel"
     >
       {/* Header / action bar */}
-      <div className="flex items-center gap-1 border-b border-[var(--color-border)] px-3 py-2">
+      <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
         <span className="text-sm font-medium text-[var(--color-muted-fg)]">
           {isDirty ? "Unsaved draft" : "Draft saved"}
         </span>
@@ -502,11 +502,11 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
       </ScrollArea>
 
       {/* Footer / send bar */}
-      <div className="flex items-center gap-2 border-t border-[var(--color-border)] px-3 py-2">
+      <div className="flex items-center gap-2 border-t border-[#242427] bg-[#121214] px-3 py-2">
         <Button
           onClick={() => handleSend()}
           disabled={!canSend}
-          className="gap-1.5"
+          className="gap-1.5 bg-[#C49B66] text-black hover:bg-[#B1844E]"
         >
           {isSending ? (
             <>
