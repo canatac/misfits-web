@@ -9,15 +9,9 @@
 import { useState, useCallback, useEffect } from "react";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Layers,
   Mail as MailIcon,
   Menu,
-  MessageSquare,
-  PanelLeft,
-  PanelRight,
-  PenSquare,
   Search,
   SlidersHorizontal,
   Sparkles,
@@ -35,6 +29,8 @@ import { SearchOverlay } from "@/components/mail/search-overlay";
 import { ChatPanel } from "@/components/mail/chat-panel";
 import { ChatTrigger } from "@/components/mail/chat-trigger";
 import { ReminderBanner } from "@/components/mail/reminder-banner";
+import { TerminalConsole } from "@/components/mail/terminal-console";
+import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
 import {
   Modal,
   ModalContent,
@@ -80,7 +76,11 @@ export default function MailPage() {
   const toggleDesktopSidebar = useMailLayoutStore((s) => s.toggleDesktopSidebar);
   const desktopChatOpen = useMailLayoutStore((s) => s.desktopChatOpen);
   const setDesktopChatOpen = useMailLayoutStore((s) => s.setDesktopChatOpen);
-  const toggleDesktopChat = useMailLayoutStore((s) => s.toggleDesktopChat);
+  const desktopHeaderOpen = useMailLayoutStore((s) => s.desktopHeaderOpen);
+  const toggleDesktopHeader = useMailLayoutStore((s) => s.toggleDesktopHeader);
+  const desktopConsoleOpen = useMailLayoutStore((s) => s.desktopConsoleOpen);
+  const setDesktopConsoleOpen = useMailLayoutStore((s) => s.setDesktopConsoleOpen);
+  const toggleDesktopConsole = useMailLayoutStore((s) => s.toggleDesktopConsole);
 
   // Chat global open state
   const chatOpen = useChatStore((s) => s.isOpen);
@@ -203,15 +203,6 @@ export default function MailPage() {
     toggleChatOpen();
   }, [desktopChatOpen, isDesktop, setChatOpen, setDesktopChatOpen, toggleChatOpen]);
 
-  const openChatPanel = useCallback(() => {
-    if (isDesktop) {
-      setDesktopChatOpen(true);
-      setChatOpen(true);
-      return;
-    }
-    setChatOpen(true);
-  }, [isDesktop, setChatOpen, setDesktopChatOpen]);
-
   useMailShortcuts({
     onNext: handleNavNext,
     onPrev: handleNavPrev,
@@ -255,120 +246,89 @@ export default function MailPage() {
       </div>
 
       {/* Desktop navigation (NovaMail-style) */}
-      <div className="hidden border-b border-[#242427] bg-[#0A0A0B]/90 px-4 py-3 text-[#E0E0E0] backdrop-blur lg:block">
-        <div className="mx-auto flex max-w-[1920px] items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setMobileView("list")}
-            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#C49B66]/80 bg-[#121214] text-xl font-extrabold text-[#C49B66] shadow-lg shadow-[#C49B66]/10"
-            title="Dashboard mail"
-          >
-            M
-          </button>
+      {desktopHeaderOpen && (
+        <div className="hidden border-b border-[#242427] bg-[#0A0A0B]/90 px-4 py-3 text-[#E0E0E0] backdrop-blur lg:block">
+          <div className="mx-auto flex max-w-[1920px] items-center gap-3">
+            <div className="flex items-center gap-2 pl-2 pr-2.5 border-r border-[#242427] animate-in fade-in duration-200">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C49B66]/60 bg-[#1D1D20] font-serif text-[10px] font-bold text-[#C49B66]">
+                M
+              </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={handleSearchFocus}
-            className="group flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
-          >
-            <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
-            <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
-            <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-            </span>
-            <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
-          </button>
+            <VscodeLayoutControls
+              isSidebarCollapsed={!desktopSidebarOpen}
+              onToggleSidebar={toggleDesktopSidebar}
+              isHeaderCollapsed={!desktopHeaderOpen}
+              onToggleHeader={toggleDesktopHeader}
+              isBottomConsoleOpen={desktopConsoleOpen}
+              onToggleBottomConsole={toggleDesktopConsole}
+              isRightPanelOpen={desktopChatOpen}
+              onToggleRightPanel={() => {
+                const next = !desktopChatOpen;
+                setDesktopChatOpen(next);
+                setChatOpen(next);
+              }}
+            />
 
-          <button
-            type="button"
-            className="flex items-center gap-1 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#C49B66] hover:bg-[#1D1D20]"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            {t("mailShell.proMode")}
-            <ChevronDown className="h-3.5 w-3.5" />
-          </button>
+            <button
+              type="button"
+              onClick={handleSearchFocus}
+              className="group ml-2 flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
+            >
+              <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
+              <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
+              <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+              </span>
+              <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
+            </button>
+
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#C49B66] hover:bg-[#1D1D20]"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              {t("mailShell.proMode")}
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 3-column layout */}
-      <div className="relative flex h-full w-full overflow-hidden p-2 lg:h-[calc(100%-72px)] lg:p-3">
-        {/* Desktop panel toggles */}
-        <div className="pointer-events-none absolute left-5 right-5 top-4 z-30 hidden items-center justify-between lg:flex">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto gap-1 border border-[#2A2A2D] bg-[#121214]/90 text-[#E4E4E7] shadow-xl backdrop-blur hover:bg-[#1A1A1D]"
-            onClick={() => toggleDesktopSidebar()}
-            aria-label={desktopSidebarOpen ? "Replier le menu" : "Afficher le menu"}
-            title={desktopSidebarOpen ? "Replier le menu (⌘/Ctrl+B)" : "Afficher le menu (⌘/Ctrl+B)"}
-          >
-            <PanelLeft className="h-4 w-4" />
-            {desktopSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="pointer-events-auto gap-1 border border-[#2A2A2D] bg-[#121214]/90 text-[#E4E4E7] shadow-xl backdrop-blur hover:bg-[#1A1A1D]"
-            onClick={() => {
-              const next = !desktopChatOpen;
-              setDesktopChatOpen(next);
-              setChatOpen(next);
-            }}
-            aria-label={desktopChatOpen ? "Replier le chat" : "Afficher le chat"}
-            title={desktopChatOpen ? "Replier le chat (⌘/Ctrl+J)" : "Afficher le chat (⌘/Ctrl+J)"}
-          >
-            {desktopChatOpen ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            <PanelRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Icônes compactes persistantes quand panneaux repliés */}
-        {!desktopSidebarOpen && (
-          <div className="absolute left-5 top-16 z-30 hidden flex-col gap-1 rounded-2xl border border-[#2A2A2D] bg-[#121214]/95 p-1.5 shadow-2xl backdrop-blur lg:flex">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setDesktopSidebarOpen(true)}
-              aria-label="Afficher le menu"
-              title="Afficher le menu (⌘/Ctrl+B)"
-            >
-              <PanelLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCompose}
-              aria-label="Nouveau message"
-              title="Nouveau message"
-            >
-              <PenSquare className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSearchFocus}
-              aria-label="Rechercher"
-              title="Rechercher"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
+      <div
+        className={cn(
+          "relative flex h-full w-full overflow-hidden p-2 lg:p-3",
+          desktopHeaderOpen ? "lg:h-[calc(100%-72px)]" : "lg:h-full",
+        )}
+      >
+        {!desktopHeaderOpen && (
+          <div className="pointer-events-none absolute left-5 top-4 z-30 hidden items-center gap-3 lg:flex">
+            <div className="pointer-events-auto flex items-center gap-2 pl-2 pr-2.5 border-r border-[#242427] animate-in fade-in duration-200">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C49B66]/60 bg-[#1D1D20] font-serif text-[10px] font-bold text-[#C49B66]">
+                M
+              </div>
+            </div>
+            <div className="pointer-events-auto">
+              <VscodeLayoutControls
+                isSidebarCollapsed={!desktopSidebarOpen}
+                onToggleSidebar={toggleDesktopSidebar}
+                isHeaderCollapsed={!desktopHeaderOpen}
+                onToggleHeader={toggleDesktopHeader}
+                isBottomConsoleOpen={desktopConsoleOpen}
+                onToggleBottomConsole={toggleDesktopConsole}
+                isRightPanelOpen={desktopChatOpen}
+                onToggleRightPanel={() => {
+                  const next = !desktopChatOpen;
+                  setDesktopChatOpen(next);
+                  setChatOpen(next);
+                }}
+              />
+            </div>
           </div>
         )}
 
-        {!desktopChatOpen && (
-          <div className="absolute right-5 top-16 z-30 hidden flex-col gap-1 rounded-2xl border border-[#2A2A2D] bg-[#121214]/95 p-1.5 shadow-2xl backdrop-blur lg:flex">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={openChatPanel}
-              aria-label="Afficher le chat Hermes"
-              title="Afficher le chat Hermes (⌘/Ctrl+J)"
-            >
-              <MessageSquare className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        {/* VSCode-like layout controls moved to top desktop navigation */}
 
         {/* Sidebar — desktop docked with smooth collapse */}
         <div
@@ -399,8 +359,6 @@ export default function MailPage() {
           className={cn(
             "h-full w-full overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
             hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
-            !desktopSidebarOpen && "lg:pl-14",
-            !desktopChatOpen && !hasDesktopSelection && "lg:pr-14",
             mobileView === "list" ? "block" : "hidden lg:block",
           )}
         >
@@ -411,8 +369,6 @@ export default function MailPage() {
         <div
           className={cn(
             "h-full flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
-            !desktopSidebarOpen && "lg:pl-14",
-            !desktopChatOpen && "lg:pr-14",
             mobileView === "view"
               ? hasDesktopSelection
                 ? "block lg:block"
@@ -475,6 +431,11 @@ export default function MailPage() {
         </>
       )}
       {!isDesktop && <ChatTrigger />}
+
+      <TerminalConsole
+        isOpen={desktopConsoleOpen}
+        onClose={() => setDesktopConsoleOpen(false)}
+      />
 
       {/* Follow-up reminder banner (Issue #151) */}
       <ReminderBanner />
