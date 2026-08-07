@@ -141,11 +141,6 @@ export function EmailView({ className }: EmailViewProps) {
     [emails, selectedEmailId],
   );
 
-  const monitoringLink = useMemo(() => {
-    if (!email || email.folder !== "sent") return null;
-    const messageId = email.messageId?.trim() || email.id;
-    return `/dashboard/monitoring?message_id=${encodeURIComponent(messageId)}`;
-  }, [email]);
 
   // List responses omit body for speed — hydrate on select
   useEffect(() => {
@@ -567,11 +562,6 @@ export function EmailView({ className }: EmailViewProps) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              {monitoringLink && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={monitoringLink}>Log</Link>
-                </Button>
-              )}
             </div>
           </div>
 

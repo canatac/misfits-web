@@ -159,21 +159,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         </Button>
       </div>
 
-      {/* Contacts link (Issue #152) — opens the address book */}
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/contacts"))}
-          data-testid="contacts-link"
-        >
-          <Link href="/contacts">
-            <ContactIcon className="h-4 w-4" />
-            Contacts
-          </Link>
-        </Button>
-      </div>
-
       {/* Calendar link (Issue #153) — opens the integrated calendar */}
       <div className="px-3 pb-2">
         <Button
@@ -232,65 +217,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         </Button>
       </div>
 
-      {/* AI settings */}
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/settings"))}
-          data-testid="ai-settings-link"
-        >
-          <Link href="/settings/ai">
-            <Settings2 className="h-4 w-4" />
-            IA / modèles
-          </Link>
-        </Button>
-      </div>
-
-      {/* Monitoring link — SMTP observability dashboard */}
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/dashboard/monitoring"))}
-          data-testid="monitoring-link"
-        >
-          <Link href="/dashboard/monitoring">
-            <Activity className="h-4 w-4" />
-            Monitoring SMTP
-          </Link>
-        </Button>
-      </div>
-
-      {/* Security link — incidents and remediation */}
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/dashboard/security"))}
-          data-testid="security-link"
-        >
-          <Link href="/dashboard/security">
-            <ShieldAlert className="h-4 w-4" />
-            Security
-          </Link>
-        </Button>
-      </div>
-
-      {/* Admin hub — settings/security/monitoring/changelog/change requests */}
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/admin"))}
-          data-testid="admin-link"
-        >
-          <Link href="/admin">
-            <Wrench className="h-4 w-4" />
-            Admin
-          </Link>
-        </Button>
-      </div>
 
       <Separator />
 
