@@ -5,7 +5,7 @@
  * timeline (recent emails exchanged with this contact), and a merge-duplicate
  * suggestion when a duplicate is detected.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   Phone,
@@ -64,7 +64,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
   const [tagInput, setTagInput] = useState("");
 
   // Keep local notes in sync when switching contacts.
-  useMemo(() => setNotes(contact.notes ?? ""), [contact.id]);
+  useEffect(() => setNotes(contact.notes ?? ""), [contact.id, contact.notes]);
 
   const duplicateOf = duplicates.find((d) => d.duplicateId === contact.id);
 
