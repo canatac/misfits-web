@@ -62,6 +62,7 @@ export function NovaMailIconRail({ onCompose }: NovaMailIconRailProps) {
   const pathname = usePathname();
   const router = useRouter();
   const currentFolder = useEmailStore((s) => s.currentFolder);
+  const filterType = useEmailStore((s) => s.filterType);
   const setFolder = useEmailStore((s) => s.setFolder);
   const setFilterType = useEmailStore((s) => s.setFilterType);
   const setSearchQuery = useEmailStore((s) => s.setSearchQuery);
@@ -115,7 +116,7 @@ export function NovaMailIconRail({ onCompose }: NovaMailIconRailProps) {
         <ShieldCheck className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
 
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox"} title="Boîte de réception" onClick={() => openFolder("inbox")}>
+      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "all"} title="Boîte de réception" onClick={() => openFolder("inbox")}>
         <Inbox className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
       <RailButton active={pathname.startsWith("/mail") && currentFolder === "sent"} title="Envoyés" onClick={() => openFolder("sent")}>
@@ -130,10 +131,10 @@ export function NovaMailIconRail({ onCompose }: NovaMailIconRailProps) {
       <RailButton active={pathname.startsWith("/mail") && currentFolder === "trash"} title="Corbeille" onClick={() => openFolder("trash")}>
         <Trash2 className="h-5 w-5 text-[#71717A]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox"} title="Prioritaires" onClick={openPriority}>
+      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "unread"} title="Prioritaires" onClick={openPriority}>
         <Sparkles className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox"} title="Starred" onClick={openStarred}>
+      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "starred"} title="Starred" onClick={openStarred}>
         <Star className="h-5 w-5 text-[#71717A]" />
       </RailButton>
 

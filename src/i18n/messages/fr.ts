@@ -1,6 +1,6 @@
 const fr = {
   nav: {
-    dashboard: "Dashboard",
+    dashboard: "Tableau de bord",
     mail: "Mail",
     compose: "Composer",
     contacts: "Contacts",
