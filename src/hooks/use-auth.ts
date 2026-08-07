@@ -59,7 +59,7 @@ export function useLogin() {
       }
       toast.success("Welcome back!");
       // Prefer ?redirect= when present (login page sets it via sessionStorage)
-      let dest = "/mail";
+      let dest = "/dashboard";
       try {
         const fromQs =
           typeof window !== "undefined"
@@ -91,7 +91,7 @@ export function useRegister() {
     mutationFn: (credentials: RegisterCredentials) => register(credentials),
     onSuccess: () => {
       toast.success("Account created — welcome to misfits.ai Mail!");
-      router.push("/mail");
+      router.push("/dashboard");
     },
     onError: (error: unknown) => {
       const message =
@@ -186,7 +186,7 @@ export function useConfirmPasswordReset() {
  *
  * Completes the second-factor step after a login that returned
  * `two_factor_required`. On success the store transitions to authenticated
- * and we navigate to /mail.
+ * and we navigate to /dashboard.
  * ------------------------------------------------------------------ */
 
 export function use2FA() {
@@ -196,7 +196,7 @@ export function use2FA() {
     mutationFn: (challenge: TwoFactorChallenge) => verify2FA(challenge),
     onSuccess: () => {
       toast.success("Two-factor verified.");
-      router.push("/mail");
+      router.push("/dashboard");
     },
     onError: (error: unknown) => {
       const message =

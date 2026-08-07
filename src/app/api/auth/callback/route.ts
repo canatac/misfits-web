@@ -13,10 +13,10 @@
  *  3. Sets a short-lived `mfa_oauth_pending` cookie (readable by JS) so the
  *     client-side auth store can persist the full session to localStorage on
  *     the next render.
- *  4. Redirects the user to `/mail`.
+ *  4. Redirects the user to `/dashboard`.
  *
  * If no `session` param is present but the backend already set the
- * `mfa_session` cookie directly, this handler simply redirects to `/mail`.
+ * `mfa_session` cookie directly, this handler simply redirects to `/dashboard`.
  *
  * On any failure the user is redirected to `/login?error=oauth_failed`.
  */
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
       const pendingPayload = JSON.stringify({ session, provider });
 
-      const res = NextResponse.redirect(new URL("/mail", req.url));
+      const res = NextResponse.redirect(new URL("/dashboard", req.url));
 
       // httpOnly session cookie — read by Edge middleware for route protection.
       res.cookies.set("mfa_session", session.id, {
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   // ── Case 2: Backend already set the mfa_session cookie — just redirect ──
   if (req.cookies.get("mfa_session")) {
-    return NextResponse.redirect(new URL("/mail", req.url));
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // ── Case 3: Nothing to work with — send back to login ──

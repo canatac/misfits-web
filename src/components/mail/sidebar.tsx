@@ -26,8 +26,6 @@ import {
   Newspaper,
   Languages,
   BookOpen,
-  Zap,
-  BellRing,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -75,9 +73,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [filterEditorOpen, setFilterEditorOpen] = useState(false);
-  const [triageOpen, setTriageOpen] = useState(false);
-  const [followUpOpen, setFollowUpOpen] = useState(false);
-  const followUpCount = 0;
 
   const navClass = (active: boolean) =>
     cn(
@@ -110,39 +105,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         >
           <PenSquare className="h-4 w-4" />
           Compose
-        </Button>
-      </div>
-
-      {/* AI triage toggle */}
-      <div className="px-3 pb-2">
-        <Button
-          variant={triageOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
-          onClick={() => setTriageOpen((v) => !v)}
-          data-testid="triage-toggle"
-          aria-expanded={triageOpen}
-        >
-          <Zap className="h-4 w-4 text-[var(--color-warning-500)]" />
-          AI Triage
-        </Button>
-      </div>
-
-      {/* Follow-up tracking toggle (Issue #151) */}
-      <div className="px-3 pb-2">
-        <Button
-          variant={followUpOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
-          onClick={() => setFollowUpOpen((v) => !v)}
-          data-testid="followup-toggle"
-          aria-expanded={followUpOpen}
-        >
-          <BellRing className="h-4 w-4 text-[var(--color-brand-500)]" />
-          Follow-ups
-          {followUpCount > 0 && (
-            <Badge variant="default" className="ml-auto">
-              {followUpCount}
-            </Badge>
-          )}
         </Button>
       </div>
 
