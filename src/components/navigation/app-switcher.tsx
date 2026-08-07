@@ -6,15 +6,10 @@ import type { ComponentType } from "react";
 import {
   BookOpen,
   Calendar,
-  Contact,
-  LayoutDashboard,
   Languages,
   Mail,
   Newspaper,
   PenSquare,
-  Settings2,
-  ShieldAlert,
-  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/provider";
@@ -30,25 +25,10 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { href: "/mail", labelKey: "nav.mail", icon: Mail, matchPrefix: "/mail" },
   { href: "/compose", labelKey: "nav.compose", icon: PenSquare, matchPrefix: "/compose" },
-  { href: "/contacts", labelKey: "nav.contacts", icon: Contact, matchPrefix: "/contacts" },
   { href: "/calendar", labelKey: "nav.calendar", icon: Calendar, matchPrefix: "/calendar" },
   { href: "/newsletters", labelKey: "nav.newsletters", icon: Newspaper, matchPrefix: "/newsletters" },
   { href: "/translation", labelKey: "nav.translation", icon: Languages, matchPrefix: "/translation" },
   { href: "/docs", labelKey: "nav.docs", icon: BookOpen, matchPrefix: "/docs" },
-  {
-    href: "/dashboard/monitoring",
-    labelKey: "nav.monitoring",
-    icon: LayoutDashboard,
-    matchPrefix: "/dashboard/monitoring",
-  },
-  {
-    href: "/dashboard/security",
-    labelKey: "nav.security",
-    icon: ShieldAlert,
-    matchPrefix: "/dashboard/security",
-  },
-  { href: "/admin", labelKey: "nav.admin", icon: Wrench, matchPrefix: "/admin" },
-  { href: "/settings/ai", labelKey: "nav.settings", icon: Settings2, matchPrefix: "/settings" },
 ];
 
 interface AppSwitcherProps {

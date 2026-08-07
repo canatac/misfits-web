@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   ArrowUpRight,
   Calendar,
-  ShieldAlert,
   Sparkles,
   ChevronRight,
   HardDrive,
@@ -75,17 +74,6 @@ export default function DashboardIndexPage() {
         locale === "fr"
           ? ["14:00 — Point Produit", "16:30 — Revue architecture", "Signer accord fournisseur"]
           : ["14:00 — Product sync", "16:30 — Architecture review", "Sign supplier agreement"],
-    },
-    {
-      title: t("dashboard.blocks.ops"),
-      icon: ShieldAlert,
-      tone: "text-amber-400",
-      href: "/dashboard/security",
-      cta: t("dashboard.blocks.inspect"),
-      items:
-        locale === "fr"
-          ? ["Tentative phishing bloquée", "Quota IA nominal", "Monitoring SMTP stable"]
-          : ["Phishing attempt blocked", "AI quota nominal", "SMTP monitoring stable"],
     },
   ];
 
