@@ -21,17 +21,11 @@ import {
   Tag,
   Settings2,
   Clock,
-  Zap,
-  BellRing,
   LogOut,
-  Contact as ContactIcon,
   Calendar as CalendarIcon,
-  Activity,
   Newspaper,
   Languages,
   BookOpen,
-  ShieldAlert,
-  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -46,9 +40,6 @@ import { AccountSelector } from "@/components/mail/account-selector";
 import { LabelManager } from "@/components/mail/label-manager";
 import { FilterEditor } from "@/components/mail/filter-editor";
 import { SnoozePicker } from "@/components/mail/snooze-picker";
-import { TriagePanel } from "@/components/mail/triage-panel";
-import { FollowUpList } from "@/components/mail/follow-up-list";
-import { useFollowUpStore } from "@/stores/follow-up-store";
 import type { Folder } from "@/types/email";
 import type { LabelTree } from "@/types/label";
 
@@ -82,15 +73,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [filterEditorOpen, setFilterEditorOpen] = useState(false);
-  const [triageOpen, setTriageOpen] = useState(false);
-  const [followUpOpen, setFollowUpOpen] = useState(false);
-
-  const followUpCount = useFollowUpStore(
-    (s) =>
-      s.followUps.filter(
-        (fu) => fu.status !== "dismissed" && fu.status !== "completed",
-      ).length,
-  );
 
   const navClass = (active: boolean) =>
     cn(
@@ -123,39 +105,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         >
           <PenSquare className="h-4 w-4" />
           Compose
-        </Button>
-      </div>
-
-      {/* AI triage toggle */}
-      <div className="px-3 pb-2">
-        <Button
-          variant={triageOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
-          onClick={() => setTriageOpen((v) => !v)}
-          data-testid="triage-toggle"
-          aria-expanded={triageOpen}
-        >
-          <Zap className="h-4 w-4 text-[var(--color-warning-500)]" />
-          AI Triage
-        </Button>
-      </div>
-
-      {/* Follow-up tracking toggle (Issue #151) */}
-      <div className="px-3 pb-2">
-        <Button
-          variant={followUpOpen ? "secondary" : "outline"}
-          className="w-full justify-start gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
-          onClick={() => setFollowUpOpen((v) => !v)}
-          data-testid="followup-toggle"
-          aria-expanded={followUpOpen}
-        >
-          <BellRing className="h-4 w-4 text-[var(--color-brand-500)]" />
-          Follow-ups
-          {followUpCount > 0 && (
-            <Badge variant="default" className="ml-auto">
-              {followUpCount}
-            </Badge>
-          )}
         </Button>
       </div>
 
@@ -307,27 +256,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           </>
         )}
 
-        {/* AI triage panel (Issue #148) — toggled by the button above */}
-        {triageOpen && (
-          <>
-            <Separator />
-            <TriagePanel emails={[]} />
-          </>
-        )}
-
-        {/* Follow-up list panel (Issue #151) — toggled by the button above */}
-        {followUpOpen && (
-          <>
-            <Separator />
-            <div className="p-3">
-              <div className="mb-2 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
-                <BellRing className="h-3 w-3" />
-                Needs Follow-up
-              </div>
-              <FollowUpList />
-            </div>
-          </>
-        )}
       </ScrollArea>
 
       <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
