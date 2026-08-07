@@ -26,6 +26,8 @@ import {
   Newspaper,
   Languages,
   BookOpen,
+  Zap,
+  BellRing,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -73,6 +75,9 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
   const [filterEditorOpen, setFilterEditorOpen] = useState(false);
+  const [triageOpen, setTriageOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+  const followUpCount = 0;
 
   const navClass = (active: boolean) =>
     cn(
