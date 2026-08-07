@@ -7,6 +7,7 @@ import {
   BookOpen,
   Calendar,
   Languages,
+  LayoutDashboard,
   Mail,
   Newspaper,
   PenSquare,
@@ -23,6 +24,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, matchPrefix: "/dashboard" },
   { href: "/mail", labelKey: "nav.mail", icon: Mail, matchPrefix: "/mail" },
   { href: "/compose", labelKey: "nav.compose", icon: PenSquare, matchPrefix: "/compose" },
   { href: "/calendar", labelKey: "nav.calendar", icon: Calendar, matchPrefix: "/calendar" },

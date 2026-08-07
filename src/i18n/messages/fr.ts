@@ -1,5 +1,6 @@
 const fr = {
   nav: {
+    dashboard: "Dashboard",
     mail: "Mail",
     compose: "Composer",
     contacts: "Contacts",
