@@ -749,7 +749,13 @@ export default function DashboardIndexPage() {
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 id="storage-modal-title" className="text-base font-bold text-white">StorageGauge — Nettoyage</h3>
-                <X className="h-4 w-4 text-[#71717A]" />
+              <button
+                type="button"
+                onClick={() => setShowStorageModal(false)}
+                className="rounded-md p-1 text-[#71717A] transition hover:text-white"
+                aria-label="Fermer"
+              >
+                <X className="h-4 w-4" />
               </button>
             </div>
 
