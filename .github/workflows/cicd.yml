@@ -85,7 +85,7 @@ jobs:
     name: Deploy to VM
     needs: build-and-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: [self-hosted, linux, x64, scw-rust-large]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
