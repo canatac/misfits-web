@@ -195,13 +195,13 @@ export function EmailList({ className }: EmailListProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)]",
+        "flex h-full flex-col border-r border-[#242427] bg-[#0A0A0B] text-[#E0E0E0]",
         className,
       )}
       data-testid="email-list"
     >
       {/* Toolbar */}
-      <div className="flex flex-col gap-2 border-b border-[var(--color-border)] p-3">
+      <div className="flex flex-col gap-2 border-b border-[#242427] bg-[#121214] p-3">
         {/* Search + Sort */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -212,12 +212,12 @@ export function EmailList({ className }: EmailListProps) {
               placeholder="Search mail..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="border-[#242427] bg-[#0A0A0B] pl-9 text-[#E0E0E0] placeholder:text-[#71717A]"
               aria-label="Search emails"
             />
           </div>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-            <SelectTrigger className="w-[160px]" aria-label="Sort by">
+            <SelectTrigger className="w-[160px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]" aria-label="Sort by">
               <ArrowDownUp className="mr-1 h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>

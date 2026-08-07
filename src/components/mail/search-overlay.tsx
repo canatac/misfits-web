@@ -230,9 +230,9 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-w-2xl gap-0 overflow-hidden p-0" aria-label="Search mail">
+      <ModalContent className="max-w-3xl gap-0 overflow-hidden rounded-2xl border border-[#242427] bg-[#0A0A0B] p-0" aria-label="Search mail">
         {/* Search input */}
-        <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-4 py-3">
+        <div className="flex items-center gap-2 border-b border-[#242427] bg-[#121214] px-4 py-3">
           <SearchIcon className="h-5 w-5 shrink-0 text-[var(--color-muted-fg)]" />
           <Input
             ref={inputRef}
@@ -241,7 +241,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             value={query}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            className="border-0 bg-transparent px-0 text-base shadow-none focus-visible:ring-0"
+            className="border-0 bg-transparent px-0 text-base text-[#E0E0E0] shadow-none placeholder:text-[#71717A] focus-visible:ring-0"
             aria-label="Search emails"
             data-testid="search-overlay-input"
           />
@@ -260,14 +260,14 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             </Button>
           )}
           <Separator orientation="vertical" className="h-6" />
-          <kbd className="shrink-0 rounded border border-[var(--color-border)] px-1.5 py-0.5 text-xs text-[var(--color-muted-fg)]">
+          <kbd className="shrink-0 rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-xs text-[#71717A]">
             ESC
           </kbd>
         </div>
 
         {/* Operator autocomplete */}
         {showOperatorHints && (
-          <div className="border-b border-[var(--color-border)] bg-[var(--color-muted)]/50 p-2">
+          <div className="border-b border-[#242427] bg-[#121214]/80 p-2">
             <div className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
               Operators
             </div>
@@ -279,7 +279,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                     e.preventDefault();
                     insertOperator(op);
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#242427] bg-[#0A0A0B] px-2.5 py-1 text-xs text-[#D4D4D8] transition-colors hover:border-[#C49B66]/40 hover:bg-[#1D1D20]"
                 >
                   <span className="font-mono font-medium text-[var(--color-brand-500)]">{op.label}</span>
                   <span className="text-[var(--color-muted-fg)]">{op.description}</span>

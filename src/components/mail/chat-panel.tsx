@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Send, ShieldAlert } from "lucide-react";
+import { CalendarClock, ListTodo, Send, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/stores/chat-store";
 import { useEmailStore } from "@/stores/email-store";
@@ -202,6 +202,7 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   } = useChatStore();
 
   const [uiMode, setUiMode] = useState<"assistant" | "expert">("assistant");
+  const [workspaceTab, setWorkspaceTab] = useState<"ai" | "agenda" | "tasks">("ai");
   const [input, setInput] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [pendingSensitivePrompt, setPendingSensitivePrompt] = useState<string | null>(null);
@@ -264,6 +265,16 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
     () => [...(active?.messages ?? [])].reverse().find((m) => m.role === "user") ?? null,
     [active],
   );
+
+  const agendaEmails = useMemo(
+    () =>
+      emails
+        .filter((e) => /meeting|call|deadline|rdv|agenda|today|tomorrow/i.test(`${e.subject} ${e.preview}`))
+        .slice(0, 6),
+    [emails],
+  );
+
+  const pendingTasks = useMemo(() => taskItems.filter((t) => !t.done).slice(0, 8), [taskItems]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -501,8 +512,8 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
     <div
       className={cn(
         layout === "overlay"
-          ? "fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)] shadow-xl"
-          : "flex h-full w-full flex-col border-l border-[var(--color-border)] bg-[var(--color-bg)]",
+          ? "fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[#242427] bg-[#0A0A0B] shadow-2xl"
+          : "flex h-full w-full flex-col border-l border-[#242427] bg-[#0A0A0B]",
         className,
       )}
     >
@@ -533,6 +544,39 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             <span>{`session=${sessionId} · user=${sessionKey}`}</span>
           )}
         </div>
+
+        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-[#242427] bg-[#121214] p-1 text-[11px]">
+          <button
+            type="button"
+            onClick={() => setWorkspaceTab("ai")}
+            className={cn(
+              "rounded-lg px-2 py-1.5 font-medium transition",
+              workspaceTab === "ai" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+            )}
+          >
+            IA
+          </button>
+          <button
+            type="button"
+            onClick={() => setWorkspaceTab("agenda")}
+            className={cn(
+              "rounded-lg px-2 py-1.5 font-medium transition",
+              workspaceTab === "agenda" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+            )}
+          >
+            Agenda
+          </button>
+          <button
+            type="button"
+            onClick={() => setWorkspaceTab("tasks")}
+            className={cn(
+              "rounded-lg px-2 py-1.5 font-medium transition",
+              workspaceTab === "tasks" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+            )}
+          >
+            Tâches
+          </button>
+        </div>
       </div>
 
       {pendingSensitivePrompt && (
@@ -560,73 +604,126 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
       )}
 
       <div className="min-h-0 flex-1 overflow-hidden p-3">
-        {uiMode === "assistant" ? (
-          <ChatAssistantView
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            activeConversation={active}
-            lastAssistantMessage={lastAssistantMessage}
-            lastUserMessage={lastUserMessage}
-            isStreaming={isStreaming}
-            searchValue={searchValue}
-            onSearchValueChange={setSearchValue}
-            templateId={templateId}
-            onTemplateIdChange={setTemplateId}
-            roleTemplates={ROLE_TEMPLATES.map((t) => ({ id: t.id, label: `Template: ${t.label}` }))}
-            quickPrompts={QUICK_PROMPTS}
-            quickActions={QUICK_ACTIONS.map((a) => ({ id: a.id, label: a.label, prompt: a.prompt }))}
-            onSelectConversation={selectConversation}
-            onDispatchPrompt={dispatchPrompt}
-            onInsertToDraft={handleInsertToDraft}
-            onCreateTasks={handleCreateTasks}
-            onSourceClick={handleSourceClick}
-            onFeedback={handleFeedback}
-            onAskVariant={askForVariant}
-            onRegenerate={regenerate}
-            onStop={stopCurrent}
-          />
+        {workspaceTab === "ai" ? (
+          uiMode === "assistant" ? (
+            <ChatAssistantView
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              activeConversation={active}
+              lastAssistantMessage={lastAssistantMessage}
+              lastUserMessage={lastUserMessage}
+              isStreaming={isStreaming}
+              searchValue={searchValue}
+              onSearchValueChange={setSearchValue}
+              templateId={templateId}
+              onTemplateIdChange={setTemplateId}
+              roleTemplates={ROLE_TEMPLATES.map((t) => ({ id: t.id, label: `Template: ${t.label}` }))}
+              quickPrompts={QUICK_PROMPTS}
+              quickActions={QUICK_ACTIONS.map((a) => ({ id: a.id, label: a.label, prompt: a.prompt }))}
+              onSelectConversation={selectConversation}
+              onDispatchPrompt={dispatchPrompt}
+              onInsertToDraft={handleInsertToDraft}
+              onCreateTasks={handleCreateTasks}
+              onSourceClick={handleSourceClick}
+              onFeedback={handleFeedback}
+              onAskVariant={askForVariant}
+              onRegenerate={regenerate}
+              onStop={stopCurrent}
+            />
+          ) : (
+            <ChatExpertView
+              traceEvents={traceEvents}
+              traceStats={traceStats}
+              onClearTrace={clearTrace}
+              sessionId={sessionId}
+              sessionKey={sessionKey}
+              folderLabel={chatContext.currentFolder ?? "(none)"}
+              onCopySessionContext={() => void copySessionContext()}
+              persona={persona}
+              onPersonaChange={(next) => {
+                const updated = {
+                  tone: next.tone as PersonaPreset["tone"],
+                  length: next.length as PersonaPreset["length"],
+                  language: next.language as PersonaPreset["language"],
+                };
+                setPersona(updated);
+                window.localStorage.setItem(personaKey, JSON.stringify(updated));
+              }}
+              memoryNote={memoryNote}
+              onMemoryNoteChange={setMemoryNote}
+              onSaveMemoryNote={() => window.localStorage.setItem(memoryKey, memoryNote)}
+              onClearMemoryNote={() => {
+                setMemoryNote("");
+                window.localStorage.removeItem(memoryKey);
+              }}
+              taskItems={taskItems}
+              onToggleTask={toggleTask}
+              onExecuteTask={(id) => void executeTaskOnBackend(id)}
+              lastExecError={lastExecError}
+              analytics={analytics}
+              lastLatencyMs={lastLatencyMs}
+              isAdmin={isAdmin}
+              opsDryRun={opsDryRun}
+              onToggleOpsDryRun={() => setOpsDryRun((v) => !v)}
+              onRunAdminAction={runAdminAction}
+              opsHistory={opsHistory}
+            />
+          )
+        ) : workspaceTab === "agenda" ? (
+          <div className="h-full overflow-auto rounded-xl border border-[#242427] bg-[#121214] p-3">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#E0E0E0]">
+              <CalendarClock className="h-4 w-4 text-[#C49B66]" />
+              Agenda prioritaire
+            </div>
+            <div className="space-y-2">
+              {agendaEmails.length === 0 ? (
+                <p className="text-xs text-[#71717A]">Aucun email agenda détecté.</p>
+              ) : (
+                agendaEmails.map((email) => (
+                  <button
+                    key={email.id}
+                    type="button"
+                    onClick={() => selectEmail(email.id)}
+                    className="w-full rounded-lg border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-left hover:border-[#C49B66]/50"
+                  >
+                    <div className="text-xs font-medium text-[#E0E0E0]">{email.subject}</div>
+                    <div className="mt-0.5 line-clamp-2 text-[11px] text-[#71717A]">{email.preview}</div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
         ) : (
-          <ChatExpertView
-            traceEvents={traceEvents}
-            traceStats={traceStats}
-            onClearTrace={clearTrace}
-            sessionId={sessionId}
-            sessionKey={sessionKey}
-            folderLabel={chatContext.currentFolder ?? "(none)"}
-            onCopySessionContext={() => void copySessionContext()}
-            persona={persona}
-            onPersonaChange={(next) => {
-              const updated = {
-                tone: next.tone as PersonaPreset["tone"],
-                length: next.length as PersonaPreset["length"],
-                language: next.language as PersonaPreset["language"],
-              };
-              setPersona(updated);
-              window.localStorage.setItem(personaKey, JSON.stringify(updated));
-            }}
-            memoryNote={memoryNote}
-            onMemoryNoteChange={setMemoryNote}
-            onSaveMemoryNote={() => window.localStorage.setItem(memoryKey, memoryNote)}
-            onClearMemoryNote={() => {
-              setMemoryNote("");
-              window.localStorage.removeItem(memoryKey);
-            }}
-            taskItems={taskItems}
-            onToggleTask={toggleTask}
-            onExecuteTask={(id) => void executeTaskOnBackend(id)}
-            lastExecError={lastExecError}
-            analytics={analytics}
-            lastLatencyMs={lastLatencyMs}
-            isAdmin={isAdmin}
-            opsDryRun={opsDryRun}
-            onToggleOpsDryRun={() => setOpsDryRun((v) => !v)}
-            onRunAdminAction={runAdminAction}
-            opsHistory={opsHistory}
-          />
+          <div className="h-full overflow-auto rounded-xl border border-[#242427] bg-[#121214] p-3">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#E0E0E0]">
+              <ListTodo className="h-4 w-4 text-[#C49B66]" />
+              Tâches Hermes
+            </div>
+            <div className="space-y-2">
+              {pendingTasks.length === 0 ? (
+                <p className="text-xs text-[#71717A]">Aucune tâche en attente.</p>
+              ) : (
+                pendingTasks.map((task) => (
+                  <label
+                    key={task.id}
+                    className="flex items-start gap-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-xs text-[#D4D4D8]"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={task.done}
+                      onChange={() => toggleTask(task.id)}
+                      className="mt-0.5"
+                    />
+                    <span className="flex-1">{task.text}</span>
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
         )}
       </div>
 
-      <div className="border-t border-[var(--color-border)] p-3">
+      <div className="border-t border-[#242427] bg-[#121214] p-3">
         <div className="mb-2 flex items-center gap-2">
           <Button onClick={insertLatestToDraft} disabled={!lastAssistantMessage?.content} className="flex-1">
             Action principale: Insérer la dernière réponse dans le brouillon
@@ -642,7 +739,7 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Demander à Hermes..."
-            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-500)]"
+            className="flex-1 rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-sm text-white placeholder-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#C49B66]"
           />
           <Button size="icon" onClick={handleSend} disabled={isStreaming || !input.trim()}>
             <Send className="h-4 w-4" />

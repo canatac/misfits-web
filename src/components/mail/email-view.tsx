@@ -414,13 +414,13 @@ export function EmailView({ className }: EmailViewProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col bg-[var(--color-bg)]",
+        "flex h-full flex-col bg-[#0A0A0B] text-[#E0E0E0]",
         className,
       )}
       data-testid="email-view"
     >
       {/* Action toolbar */}
-      <div className="flex items-center gap-1 border-b border-[var(--color-border)] px-3 py-2">
+      <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
         <Button variant="ghost" size="icon" onClick={handleArchive} aria-label="Archive">
           <Archive className="h-4 w-4" />
         </Button>
