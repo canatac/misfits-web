@@ -20,7 +20,7 @@ jobs:
   # ============================================================
   quality:
     name: Lint + Typecheck + Test
-    runs-on: [self-hosted, linux, x64, scw-rust-large]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
