@@ -287,8 +287,8 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
     >
       {/* Header / action bar */}
       <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
-        <span className="text-sm font-medium text-[var(--color-muted-fg)]">
-          {isDirty ? "Unsaved draft" : "Draft saved"}
+        <span className="text-sm font-medium text-[#A1A1AA]">
+          {isDirty ? "Brouillon non sauvegardé" : "Brouillon sauvegardé"}
         </span>
         <div className="ml-auto flex items-center gap-1">
           <AIToolbarButton
@@ -300,9 +300,9 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           {/* Send later */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5">
+              <Button variant="ghost" size="sm" className="gap-1.5 border border-[#242427] bg-[#1D1D20] text-[#E0E0E0] hover:border-[#C49B66]/50 hover:bg-[#242427]">
                 <Clock className="h-4 w-4" />
-                <span className="hidden sm:inline">Send later</span>
+                <span className="hidden sm:inline">Programmer</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72">
@@ -516,7 +516,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           ) : (
             <>
               <Send className="h-4 w-4" />
-              Send
+              Envoyer
             </>
           )}
         </Button>

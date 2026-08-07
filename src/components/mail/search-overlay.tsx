@@ -237,7 +237,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
           <Input
             ref={inputRef}
             type="search"
-            placeholder="Search mail... (from:, to:, subject:, is:unread, has:attachment, before:, after:, ...)"
+            placeholder="Recherche avancée (from:, to:, subject:, is:unread, has:attachment, before:, after:)"
             value={query}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -268,8 +268,8 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         {/* Operator autocomplete */}
         {showOperatorHints && (
           <div className="border-b border-[#242427] bg-[#121214]/80 p-2">
-            <div className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
-              Operators
+            <div className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-[#A1A1AA]">
+              Opérateurs intelligents
             </div>
             <div className="flex flex-wrap gap-1">
               {filteredOperators.map((op) => (
@@ -354,7 +354,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
           {showRecentSearches && (
             <div className="p-2">
               <div className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
-                Recent
+                Récentes
               </div>
               {searchHistory.slice(0, 8).map((entry) => (
                 <button
@@ -376,7 +376,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
           {showSavedSearches && (
             <div className="p-2">
               <div className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
-                Saved
+                Sauvegardées
               </div>
               {savedSearches.map((saved) => (
                 <div
@@ -416,7 +416,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
               <div>
-                <p className="text-sm font-medium text-[var(--color-fg)]">No results found</p>
+                <p className="text-sm font-medium text-[var(--color-fg)]">Aucun résultat</p>
                 <p className="text-xs text-[var(--color-muted-fg)]">
                   No emails match &ldquo;{query}&rdquo;. Try different keywords or operators.
                 </p>
@@ -429,7 +429,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
               <div>
-                <p className="text-sm font-medium text-[var(--color-fg)]">Search your mail</p>
+                <p className="text-sm font-medium text-[var(--color-fg)]">Rechercher dans votre mail</p>
                 <p className="text-xs text-[var(--color-muted-fg)]">
                   Use operators like <span className="font-mono">from:</span>,{" "}
                   <span className="font-mono">subject:</span>,{" "}
@@ -443,25 +443,25 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
 
         {/* Footer */}
         {hasQuery && results.length > 0 && (
-          <div className="flex items-center justify-between border-t border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-muted-fg)]">
+          <div className="flex items-center justify-between border-t border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#A1A1AA]">
             <span>
-              {results.length} {results.length === 1 ? "result" : "results"}
+              {results.length} {results.length === 1 ? "résultat" : "résultats"}
             </span>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 gap-1"
+                className="h-6 gap-1 border border-[#242427] bg-[#1D1D20] text-[#E0E0E0] hover:border-[#C49B66]/50"
                 onClick={() => saveSearch(query, query)}
               >
-                <Save className="h-3 w-3" />
-                Save search
+                <Save className="h-3 w-3 text-[#C49B66]" />
+                Sauvegarder la recherche
               </Button>
               <span className="flex items-center gap-1">
-                <kbd className="rounded border border-[var(--color-border)] px-1">↑↓</kbd>
-                navigate
-                <kbd className="rounded border border-[var(--color-border)] px-1">↵</kbd>
-                open
+                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">↑↓</kbd>
+                naviguer
+                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">↵</kbd>
+                ouvrir
               </span>
             </div>
           </div>

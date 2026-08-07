@@ -17,36 +17,38 @@ import {
   Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/provider";
+import { SUPPORTED_LOCALES, type Locale } from "@/i18n/config";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: ComponentType<{ className?: string }>;
   matchPrefix?: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/mail", label: "Mail", icon: Mail, matchPrefix: "/mail" },
-  { href: "/compose", label: "Compose", icon: PenSquare, matchPrefix: "/compose" },
-  { href: "/contacts", label: "Contacts", icon: Contact, matchPrefix: "/contacts" },
-  { href: "/calendar", label: "Calendar", icon: Calendar, matchPrefix: "/calendar" },
-  { href: "/newsletters", label: "Newsletters", icon: Newspaper, matchPrefix: "/newsletters" },
-  { href: "/translation", label: "Translation", icon: Languages, matchPrefix: "/translation" },
-  { href: "/docs", label: "Docs", icon: BookOpen, matchPrefix: "/docs" },
+  { href: "/mail", labelKey: "nav.mail", icon: Mail, matchPrefix: "/mail" },
+  { href: "/compose", labelKey: "nav.compose", icon: PenSquare, matchPrefix: "/compose" },
+  { href: "/contacts", labelKey: "nav.contacts", icon: Contact, matchPrefix: "/contacts" },
+  { href: "/calendar", labelKey: "nav.calendar", icon: Calendar, matchPrefix: "/calendar" },
+  { href: "/newsletters", labelKey: "nav.newsletters", icon: Newspaper, matchPrefix: "/newsletters" },
+  { href: "/translation", labelKey: "nav.translation", icon: Languages, matchPrefix: "/translation" },
+  { href: "/docs", labelKey: "nav.docs", icon: BookOpen, matchPrefix: "/docs" },
   {
     href: "/dashboard/monitoring",
-    label: "Monitoring",
+    labelKey: "nav.monitoring",
     icon: LayoutDashboard,
     matchPrefix: "/dashboard/monitoring",
   },
   {
     href: "/dashboard/security",
-    label: "Security",
+    labelKey: "nav.security",
     icon: ShieldAlert,
     matchPrefix: "/dashboard/security",
   },
-  { href: "/admin", label: "Admin", icon: Wrench, matchPrefix: "/admin" },
-  { href: "/settings/ai", label: "Settings", icon: Settings2, matchPrefix: "/settings" },
+  { href: "/admin", labelKey: "nav.admin", icon: Wrench, matchPrefix: "/admin" },
+  { href: "/settings/ai", labelKey: "nav.settings", icon: Settings2, matchPrefix: "/settings" },
 ];
 
 interface AppSwitcherProps {
@@ -60,6 +62,7 @@ function isActivePath(pathname: string, item: NavItem): boolean {
 
 export function AppSwitcher({ className }: AppSwitcherProps) {
   const pathname = usePathname();
+  const { locale, setLocale, t } = useI18n();
 
   return (
     <nav
@@ -69,27 +72,44 @@ export function AppSwitcher({ className }: AppSwitcherProps) {
       )}
       aria-label="Primary navigation"
     >
-      <div className="mx-auto flex w-full max-w-[1500px] gap-1 overflow-x-auto">
-        {NAV_ITEMS.map((item) => {
-          const active = isActivePath(pathname, item);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
-                active
-                  ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
-                  : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
-              )}
-              aria-current={active ? "page" : undefined}
-            >
-              <Icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <div className="mx-auto flex w-full max-w-[1500px] items-center gap-2 overflow-x-auto">
+        <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+          {NAV_ITEMS.map((item) => {
+            const active = isActivePath(pathname, item);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
+                  active
+                    ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
+                    : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon className="h-4 w-4" />
+                {t(item.labelKey)}
+              </Link>
+            );
+          })}
+        </div>
+
+        <label className="ml-2 inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#242427] bg-[#121214] px-2 py-1 text-xs text-[#A1A1AA]">
+          <span>{t("nav.language")}</span>
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as Locale)}
+            className="rounded border border-[#242427] bg-[#0A0A0B] px-1.5 py-0.5 text-xs text-[#E0E0E0]"
+          >
+            {SUPPORTED_LOCALES.map((value) => (
+              <option key={value} value={value}>
+                {value.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
     </nav>
   );
