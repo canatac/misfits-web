@@ -31,6 +31,7 @@ import { ChatTrigger } from "@/components/mail/chat-trigger";
 import { ReminderBanner } from "@/components/mail/reminder-banner";
 import { TerminalConsole } from "@/components/mail/terminal-console";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
+import { NovaMailIconRail } from "@/components/mail/novamail-icon-rail";
 import {
   Modal,
   ModalContent,
@@ -329,6 +330,8 @@ export default function MailPage() {
         )}
 
         {/* VSCode-like layout controls moved to top desktop navigation */}
+
+        {!desktopSidebarOpen && <NovaMailIconRail onCompose={handleCompose} />}
 
         {/* Sidebar — desktop docked with smooth collapse */}
         <div
