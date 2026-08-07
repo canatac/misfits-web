@@ -32,6 +32,7 @@ import { ReminderBanner } from "@/components/mail/reminder-banner";
 import { TerminalConsole } from "@/components/mail/terminal-console";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
 import { NovaMailIconRail } from "@/components/mail/novamail-icon-rail";
+import { NovamailShellHeader } from "@/components/navigation/novamail-shell-header";
 import {
   Modal,
   ModalContent,
@@ -57,6 +58,7 @@ export default function MailPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [activeVibe, setActiveVibe] = useState("Formal");
 
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
@@ -248,52 +250,23 @@ export default function MailPage() {
 
       {/* Desktop navigation (NovaMail-style) */}
       {desktopHeaderOpen && (
-        <div className="hidden border-b border-[#242427] bg-[#0A0A0B]/90 px-4 py-3 text-[#E0E0E0] backdrop-blur lg:block">
-          <div className="mx-auto flex max-w-[1920px] items-center gap-3">
-            <div className="flex items-center gap-2 pl-2 pr-2.5 border-r border-[#242427] animate-in fade-in duration-200">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C49B66]/60 bg-[#1D1D20] font-serif text-[10px] font-bold text-[#C49B66]">
-                M
-              </div>
-            </div>
-
-            <VscodeLayoutControls
-              isSidebarCollapsed={!desktopSidebarOpen}
-              onToggleSidebar={toggleDesktopSidebar}
-              isHeaderCollapsed={!desktopHeaderOpen}
-              onToggleHeader={toggleDesktopHeader}
-              isBottomConsoleOpen={desktopConsoleOpen}
-              onToggleBottomConsole={toggleDesktopConsole}
-              isRightPanelOpen={desktopChatOpen}
-              onToggleRightPanel={() => {
-                const next = !desktopChatOpen;
-                setDesktopChatOpen(next);
-                setChatOpen(next);
-              }}
-            />
-
-            <button
-              type="button"
-              onClick={handleSearchFocus}
-              className="group ml-2 flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
-            >
-              <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
-              <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
-              <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-              </span>
-              <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
-            </button>
-
-            <button
-              type="button"
-              className="flex items-center gap-1 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#C49B66] hover:bg-[#1D1D20]"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              {t("mailShell.proMode")}
-              <ChevronDown className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
+        <NovamailShellHeader
+          onOpenSearch={handleSearchFocus}
+          isSidebarCollapsed={!desktopSidebarOpen}
+          onToggleSidebar={toggleDesktopSidebar}
+          isHeaderCollapsed={!desktopHeaderOpen}
+          onToggleHeader={toggleDesktopHeader}
+          isBottomConsoleOpen={desktopConsoleOpen}
+          onToggleBottomConsole={toggleDesktopConsole}
+          isRightPanelOpen={desktopChatOpen}
+          onToggleRightPanel={() => {
+            const next = !desktopChatOpen;
+            setDesktopChatOpen(next);
+            setChatOpen(next);
+          }}
+          activeVibe={activeVibe}
+          onChangeVibe={setActiveVibe}
+        />
       )}
 
       {/* 3-column layout */}
@@ -304,40 +277,42 @@ export default function MailPage() {
         )}
       >
         {!desktopHeaderOpen && (
-          <div className="pointer-events-none absolute left-5 right-5 top-4 z-30 hidden items-center gap-3 lg:flex">
-            <div className="pointer-events-auto flex items-center gap-2 pl-2 pr-2.5 border-r border-[#242427] animate-in fade-in duration-200">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C49B66]/60 bg-[#1D1D20] font-serif text-[10px] font-bold text-[#C49B66]">
-                M
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-30 hidden lg:block">
+            <div className="mx-auto flex max-w-[1920px] items-center gap-3">
+              <div className="pointer-events-auto flex items-center gap-2 border-r border-[#242427] pl-2 pr-2.5 animate-in fade-in duration-200">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#C49B66]/60 bg-[#1D1D20] font-serif text-[10px] font-bold text-[#C49B66]">
+                  M
+                </div>
               </div>
+              <div className="pointer-events-auto">
+                <VscodeLayoutControls
+                  isSidebarCollapsed={!desktopSidebarOpen}
+                  onToggleSidebar={toggleDesktopSidebar}
+                  isHeaderCollapsed={!desktopHeaderOpen}
+                  onToggleHeader={toggleDesktopHeader}
+                  isBottomConsoleOpen={desktopConsoleOpen}
+                  onToggleBottomConsole={toggleDesktopConsole}
+                  isRightPanelOpen={desktopChatOpen}
+                  onToggleRightPanel={() => {
+                    const next = !desktopChatOpen;
+                    setDesktopChatOpen(next);
+                    setChatOpen(next);
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleSearchFocus}
+                className="pointer-events-auto group ml-2 flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
+              >
+                <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
+                <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
+                <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                </span>
+                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
+              </button>
             </div>
-            <div className="pointer-events-auto">
-              <VscodeLayoutControls
-                isSidebarCollapsed={!desktopSidebarOpen}
-                onToggleSidebar={toggleDesktopSidebar}
-                isHeaderCollapsed={!desktopHeaderOpen}
-                onToggleHeader={toggleDesktopHeader}
-                isBottomConsoleOpen={desktopConsoleOpen}
-                onToggleBottomConsole={toggleDesktopConsole}
-                isRightPanelOpen={desktopChatOpen}
-                onToggleRightPanel={() => {
-                  const next = !desktopChatOpen;
-                  setDesktopChatOpen(next);
-                  setChatOpen(next);
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={handleSearchFocus}
-              className="pointer-events-auto group ml-2 flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
-            >
-              <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
-              <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
-              <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-              </span>
-              <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
-            </button>
           </div>
         )}
 
