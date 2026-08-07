@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/provider";
 import { useAuthStore } from "@/stores/auth-store";
 import { mockEmails, mockFolders } from "@/lib/mock-emails";
+import { useEmailList } from "@/hooks/use-emails";
 
 const INBOX_SCORES = [95, 82, 68, 98] as const;
 
@@ -269,6 +270,8 @@ export default function DashboardIndexPage() {
     setTimeout(() => setCleanupDoneMessage(null), 4500);
   };
 
+  const inboxQuery = useEmailList({ folder: "inbox", page: 1, pageSize: 8, sortBy: "date" });
+
   const firstName = useMemo(() => {
     const raw = user?.displayName ?? user?.email?.split("@")[0] ?? "Joey";
     return raw.split(/[\s.]/)[0] ?? raw;
@@ -297,16 +300,19 @@ export default function DashboardIndexPage() {
     return `${date} • ${time}`;
   }, [now, locale]);
 
-  const inboxEmails = useMemo(
-    () =>
-      mockEmails
-        .filter((e) => e.folder === "inbox")
-        .slice(0, 4)
-        .map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 })),
-    [],
-  );
+  const inboxEmails = useMemo(() => {
+    const source =
+      inboxQuery.data?.emails && inboxQuery.data.emails.length > 0
+        ? inboxQuery.data.emails
+        : mockEmails.filter((e) => e.folder === "inbox");
 
-  const unreadCount = mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0;
+    return source.slice(0, 4).map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 }));
+  }, [inboxQuery.data?.emails]);
+
+  const unreadCount =
+    inboxQuery.data?.emails && inboxQuery.data.emails.length > 0
+      ? inboxQuery.data.emails.filter((e) => !e.isRead).length
+      : mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0;
   const highSignalNewsletters = VEILLE.filter((v) => v.signal >= 80).length;
   const pendingTasks = TASKS.filter((task) => !doneIds.has(task.id)).length;
   const urgentTasks = 2;
