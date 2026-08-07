@@ -341,7 +341,10 @@ export default function DashboardIndexPage() {
     {
       label: t("dashboard.metrics.actions"),
       value: String(pendingTasks),
-      note: `${urgentTasks} urgentes`,
+      note:
+        locale === "fr"
+          ? `${urgentTasks} urgentes`
+          : `${urgentTasks} urgent${urgentTasks === 1 ? "" : "s"}`,
       icon: CheckSquare,
       tone: "text-[#38BDF8]",
     },
