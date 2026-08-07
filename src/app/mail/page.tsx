@@ -7,7 +7,16 @@
  * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
-import { Layers, Mail as MailIcon, Menu, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  ChevronDown,
+  Layers,
+  Mail as MailIcon,
+  Menu,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
