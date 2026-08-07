@@ -26,6 +26,8 @@ import {
   Newspaper,
   Languages,
   BookOpen,
+  LayoutDashboard,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
@@ -108,6 +110,49 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
         </Button>
       </div>
 
+      {/* Workspace navigation parity with compact rail */}
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/dashboard"))}
+          data-testid="dashboard-link"
+        >
+          <Link href="/dashboard">
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Link>
+        </Button>
+      </div>
+
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/docs"))}
+          data-testid="docs-link"
+        >
+          <Link href="/docs">
+            <BookOpen className="h-4 w-4" />
+            Docs
+          </Link>
+        </Button>
+      </div>
+
+      <div className="px-3 pb-2">
+        <Button
+          asChild
+          variant="outline"
+          className={navClass(isActivePath("/admin"))}
+          data-testid="admin-link"
+        >
+          <Link href="/admin">
+            <ShieldCheck className="h-4 w-4" />
+            Console Admin
+          </Link>
+        </Button>
+      </div>
+
       {/* Calendar link (Issue #153) — opens the integrated calendar */}
       <div className="px-3 pb-2">
         <Button
@@ -151,21 +196,6 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           </Link>
         </Button>
       </div>
-
-      <div className="px-3 pb-2">
-        <Button
-          asChild
-          variant="outline"
-          className={navClass(isActivePath("/docs"))}
-          data-testid="docs-link"
-        >
-          <Link href="/docs">
-            <BookOpen className="h-4 w-4" />
-            Docs
-          </Link>
-        </Button>
-      </div>
-
 
       <Separator />
 
