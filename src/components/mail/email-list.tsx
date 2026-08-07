@@ -46,10 +46,10 @@ import { ThreadHeader } from "@/components/mail/thread-header";
 import type { FilterType, SortBy } from "@/types/email";
 
 const FILTER_TABS: { value: FilterType; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "unread", label: "Unread" },
-  { value: "starred", label: "Starred" },
-  { value: "attachments", label: "Attachments" },
+  { value: "all", label: "Focus" },
+  { value: "unread", label: "Non lus" },
+  { value: "starred", label: "VIP" },
+  { value: "attachments", label: "Pièces jointes" },
 ];
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
@@ -202,6 +202,10 @@ export function EmailList({ className }: EmailListProps) {
     >
       {/* Toolbar */}
       <div className="flex flex-col gap-2 border-b border-[#242427] bg-[#121214] p-3">
+        <div className="flex items-center justify-between rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-xs">
+          <span className="font-semibold text-[#E0E0E0]">Focus Inbox</span>
+          <span className="font-mono text-[#C49B66]">Signal trié IA</span>
+        </div>
         {/* Search + Sort */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">

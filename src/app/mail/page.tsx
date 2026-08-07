@@ -8,6 +8,7 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Layers,
@@ -18,6 +19,8 @@ import {
   PanelRight,
   PenSquare,
   Search,
+  SlidersHorizontal,
+  Sparkles,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -47,10 +50,12 @@ import { useComposerStore } from "@/stores/composer-store";
 import { useAccountStore } from "@/stores/account-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useMailLayoutStore } from "@/stores/mail-layout-store";
+import { useI18n } from "@/i18n/provider";
 
 type MobileView = "list" | "view";
 
 export default function MailPage() {
+  const { t } = useI18n();
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
@@ -249,8 +254,44 @@ export default function MailPage() {
         </label>
       </div>
 
+      {/* Desktop navigation (NovaMail-style) */}
+      <div className="hidden border-b border-[#242427] bg-[#0A0A0B]/90 px-4 py-3 text-[#E0E0E0] backdrop-blur lg:block">
+        <div className="mx-auto flex max-w-[1920px] items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileView("list")}
+            className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#C49B66]/80 bg-[#121214] text-xl font-extrabold text-[#C49B66] shadow-lg shadow-[#C49B66]/10"
+            title="Dashboard mail"
+          >
+            M
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSearchFocus}
+            className="group flex flex-1 items-center gap-2 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-left text-sm text-[#A1A1AA] hover:border-[#C49B66]/60"
+          >
+            <Search className="h-4 w-4 text-[#71717A] group-hover:text-[#C49B66]" />
+            <span className="flex-1">{t("mailShell.searchPlaceholder")}</span>
+            <span className="rounded-lg bg-[#1D1D20] p-1 text-[#71717A]">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+            </span>
+            <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">⌘K</kbd>
+          </button>
+
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded-xl border border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#C49B66] hover:bg-[#1D1D20]"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {t("mailShell.proMode")}
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
       {/* 3-column layout */}
-      <div className="relative flex h-full w-full overflow-hidden p-2 lg:p-3">
+      <div className="relative flex h-full w-full overflow-hidden p-2 lg:h-[calc(100%-72px)] lg:p-3">
         {/* Desktop panel toggles */}
         <div className="pointer-events-none absolute left-5 right-5 top-4 z-30 hidden items-center justify-between lg:flex">
           <Button
@@ -411,7 +452,7 @@ export default function MailPage() {
       <Modal open={composerOpen} onOpenChange={(o) => { if (!o) closeComposer(); }}>
         <ModalContent className="max-w-3xl gap-0 p-0">
           <ModalHeader className="sr-only">
-            <ModalTitle>Compose email</ModalTitle>
+            <ModalTitle>{t("nav.compose")}</ModalTitle>
           </ModalHeader>
           <ModalBody>
             <ComposerPanel onClose={closeComposer} />

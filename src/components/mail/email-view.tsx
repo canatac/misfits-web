@@ -421,6 +421,9 @@ export function EmailView({ className }: EmailViewProps) {
     >
       {/* Action toolbar */}
       <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
+        <div className="mr-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-1 text-[10px] font-mono text-[#C49B66]">
+          Focus reader
+        </div>
         <Button variant="ghost" size="icon" onClick={handleArchive} aria-label="Archive">
           <Archive className="h-4 w-4" />
         </Button>

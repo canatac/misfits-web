@@ -577,6 +577,21 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             Tâches
           </button>
         </div>
+
+        <div className="mt-2 grid grid-cols-3 gap-2 text-[10px]">
+          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
+            <div className="text-[#71717A]">Conversations</div>
+            <div className="font-mono text-[#E0E0E0]">{conversations.length}</div>
+          </div>
+          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
+            <div className="text-[#71717A]">Agenda détecté</div>
+            <div className="font-mono text-[#E0E0E0]">{agendaEmails.length}</div>
+          </div>
+          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
+            <div className="text-[#71717A]">TODO actifs</div>
+            <div className="font-mono text-[#E0E0E0]">{pendingTasks.length}</div>
+          </div>
+        </div>
       </div>
 
       {pendingSensitivePrompt && (
