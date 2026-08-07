@@ -26,6 +26,8 @@ import {
   Newspaper,
   Languages,
   BookOpen,
+  Zap,
+  BellRing,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLogoutAction } from "@/hooks/use-auth";
