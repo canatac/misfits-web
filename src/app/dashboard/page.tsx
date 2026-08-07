@@ -321,7 +321,7 @@ export default function DashboardIndexPage() {
     (mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0);
   const highSignalNewsletters = VEILLE.filter((v) => v.signal >= 80).length;
   const pendingTasks = TASKS.filter((task) => !doneIds.has(task.id)).length;
-  const urgentTasks = 2;
+  const urgentTasks: number = 2;
 
   const metrics = [
     {
