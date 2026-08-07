@@ -309,10 +309,16 @@ export default function DashboardIndexPage() {
     return source.slice(0, 4).map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 }));
   }, [inboxQuery.data?.emails]);
 
+  const unreadCountQuery = useEmailList({
+    folder: "inbox",
+    filterType: "unread",
+    page: 1,
+    pageSize: 1,
+  });
+
   const unreadCount =
-    inboxQuery.data?.emails && inboxQuery.data.emails.length > 0
-      ? inboxQuery.data.emails.filter((e) => !e.isRead).length
-      : mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0;
+    unreadCountQuery.data?.total ??
+    (mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0);
   const highSignalNewsletters = VEILLE.filter((v) => v.signal >= 80).length;
   const pendingTasks = TASKS.filter((task) => !doneIds.has(task.id)).length;
   const urgentTasks = 2;
