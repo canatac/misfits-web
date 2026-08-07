@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { ChatPanel } from "@/components/mail/chat-panel";
 import { TerminalConsole } from "@/components/mail/terminal-console";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
-import { DashboardLeftRail } from "@/components/dashboard/dashboard-left-rail";
+import { MailSidebar } from "@/components/mail/sidebar";
 import { NovaMailIconRail } from "@/components/mail/novamail-icon-rail";
 import { NovamailShellHeader } from "@/components/navigation/novamail-shell-header";
 import { useChatStore } from "@/stores/chat-store";
@@ -74,7 +74,14 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
         )}
 
         {!desktopSidebarOpen && <NovaMailIconRail onCompose={() => router.push("/mail")} />}
-        {desktopSidebarOpen && <DashboardLeftRail />}
+        <div
+          className={cn(
+            "hidden h-full shrink-0 overflow-hidden border-r border-[#242427] bg-[#101012]/95 transition-all duration-200 ease-out lg:block",
+            desktopSidebarOpen ? "lg:w-80" : "lg:w-0",
+          )}
+        >
+          {desktopSidebarOpen && <MailSidebar onCompose={() => router.push("/compose")} className="h-full" />}
+        </div>
 
         <main className={cn("flex-1 overflow-y-auto p-4 md:p-6", contentClassName)}>{children}</main>
 
