@@ -8,7 +8,7 @@
  */
 import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { AppSwitcher } from "@/components/navigation/app-switcher";
+import { NovamailWorkspaceShell } from "@/components/navigation/novamail-workspace-shell";
 import { ComposerPanel } from "@/components/mail/composer-panel";
 import { useComposerStore, uid, type ComposerPrefill } from "@/stores/composer-store";
 import { getMockEmailById } from "@/lib/mock-emails";
@@ -87,9 +87,8 @@ function ComposePageContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#E4E4E7]" data-testid="compose-page">
-      <AppSwitcher className="border-[#242427] bg-[#111113]/95 text-[#E4E4E7]" />
-      <div className="mx-auto flex h-[calc(100vh-56px)] w-full max-w-4xl flex-col p-4">
+    <NovamailWorkspaceShell contentClassName="p-4">
+      <div className="mx-auto flex h-[calc(100vh-56px)] w-full max-w-4xl flex-col" data-testid="compose-page">
         <ComposerPanel variant="page" />
         {prefill && replyId && (
           <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
@@ -102,7 +101,7 @@ function ComposePageContent() {
           </p>
         )}
       </div>
-    </div>
+    </NovamailWorkspaceShell>
   );
 }
 
