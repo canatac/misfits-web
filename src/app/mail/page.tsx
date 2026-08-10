@@ -7,6 +7,7 @@
  * Opens the email composer in a modal when Compose is clicked or 'c' pressed.
  */
 import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Layers, Mail as MailIcon, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ type MobileView = "list" | "view";
 
 export default function MailPage() {
   const { t } = useI18n();
+  const router = useRouter();
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
@@ -128,13 +130,14 @@ export default function MailPage() {
     }
   }, [selectedEmailId]);
 
-  // Compose handler — opens the composer modal (fresh draft).
+  // Compose handler — route to dedicated /compose page.
   const openComposer = useComposerStore((s) => s.openComposer);
   const composerOpen = useComposerStore((s) => s.composerOpen);
   const closeComposer = useComposerStore((s) => s.closeComposer);
   const handleCompose = useCallback(() => {
     openComposer(null);
-  }, [openComposer]);
+    router.push("/compose");
+  }, [openComposer, router]);
 
   // Keyboard shortcut handlers (delegate to EmailList via window hooks)
   const handleSearchFocus = useCallback(() => {
