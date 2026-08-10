@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Activity, ShieldCheck, Clock3 } from "lucide-react";
 import {
   useMonitoringAlerts,
@@ -30,6 +30,71 @@ const SEVERITY_OPTIONS: Array<SecuritySeverity | "all"> = [
   "high",
   "critical",
 ];
+
+type AdminSecurityPostureResponse = {
+  security?: {
+    tls?: {
+      smtp_starttls_required?: boolean;
+      smtps_listener?: string;
+      imaps_listener?: string;
+    };
+    authentication?: {
+      sasl_mechanisms?: string[];
+      oauth2_enabled?: boolean;
+      admin_mfa_required?: boolean;
+    };
+    anti_abuse?: {
+      rate_limit_enabled?: boolean;
+      rate_limit_per_minute?: number;
+      fail2ban_enabled?: boolean;
+      bruteforce_signals_24h?: number;
+      auth_policy_signals_24h?: number;
+    };
+    mail_auth_dns?: {
+      domain?: string;
+      spf_expected?: string;
+      dkim_selector?: string;
+      dmarc_expected?: string;
+      ptr_rdns_note?: string;
+    };
+  };
+};
+
+type AdminDeliverabilityDiagnosticsResponse = {
+  total_events?: number;
+  bounces_total?: number;
+  auth_policy_alerts?: number;
+  top_bounce_reasons?: Array<{ reason: string; count: number }>;
+  rbl?: {
+    sources?: string[];
+    status?: string;
+  };
+};
+
+type AdminObservabilityOverviewResponse = {
+  smtp?: {
+    queue_depth_estimate?: number;
+    failure_events?: number;
+    p95_total_ms?: number;
+  };
+  imap?: {
+    active_connections?: number | null;
+  };
+  realtime_alerts?: {
+    monitoring_active?: number;
+    security_active?: number;
+  };
+  exports?: {
+    prometheus_enabled?: boolean;
+    siem_webhook_configured?: boolean;
+  };
+  per_domain?: Array<{
+    domain: string;
+    count: number;
+    delivered: number;
+    bounced: number;
+  }>;
+};
 
 function percent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
@@ -99,6 +164,75 @@ export function AdminConsolePage({
     severity: securitySeverityFilter,
   });
   const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
+
+  const [securityPosture, setSecurityPosture] =
+    useState<AdminSecurityPostureResponse | null>(null);
+  const [deliverability, setDeliverability] =
+    useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
+  const [observability, setObservability] =
+    useState<AdminObservabilityOverviewResponse | null>(null);
+  const [adminDataLoading, setAdminDataLoading] = useState(false);
+  const [adminDataError, setAdminDataError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAdminData() {
+      setAdminDataLoading(true);
+      setAdminDataError(null);
+      try {
+        const [securityRes, deliverabilityRes, observabilityRes] =
+          await Promise.all([
+            fetch(`/api/admin/security/posture?window=${windowRange}`, {
+              cache: "no-store",
+            }),
+            fetch(
+              `/api/admin/deliverability/diagnostics?window=${windowRange}`,
+              {
+                cache: "no-store",
+              }
+            ),
+            fetch(`/api/admin/observability/overview?window=${windowRange}`, {
+              cache: "no-store",
+            }),
+          ]);
+
+        if (!securityRes.ok || !deliverabilityRes.ok || !observabilityRes.ok) {
+          throw new Error(
+            `admin_api_status=${securityRes.status}/${deliverabilityRes.status}/${observabilityRes.status}`
+          );
+        }
+
+        const [securityData, deliverabilityData, observabilityData] =
+          await Promise.all([
+            securityRes.json(),
+            deliverabilityRes.json(),
+            observabilityRes.json(),
+          ]);
+
+        if (cancelled) return;
+
+        setSecurityPosture(securityData);
+        setDeliverability(deliverabilityData);
+        setObservability(observabilityData);
+      } catch (error) {
+        if (cancelled) return;
+        setAdminDataError(
+          error instanceof Error ? error.message : "admin_data_load_failed"
+        );
+      } finally {
+        if (!cancelled) {
+          setAdminDataLoading(false);
+        }
+      }
+    }
+
+    void loadAdminData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [windowRange]);
 
   const summaryCards = useMemo(() => {
     const summary = monitoringSummary.data;
@@ -232,6 +366,137 @@ export function AdminConsolePage({
             </article>
           ))}
         </section>
+      )}
+
+      {(activeTab === "overview" ||
+        activeTab === "monitoring" ||
+        activeTab === "security") && (
+        <section className="grid gap-3 xl:grid-cols-3">
+          <article className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
+            <h2 className="mb-2 text-sm font-semibold text-[#E4E4E7]">
+              Sécurité renforcée
+            </h2>
+            <p className="text-xs text-[#71717A]">
+              TLS obligatoire, auth forte et anti-abus.
+            </p>
+            <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
+              <p>
+                STARTTLS SMTP:{" "}
+                {securityPosture?.security?.tls?.smtp_starttls_required
+                  ? "required"
+                  : "optional"}
+              </p>
+              <p>
+                SMTPS: {securityPosture?.security?.tls?.smtps_listener ?? "—"}
+              </p>
+              <p>
+                IMAPS: {securityPosture?.security?.tls?.imaps_listener ?? "—"}
+              </p>
+              <p>
+                Auth:{" "}
+                {(
+                  securityPosture?.security?.authentication
+                    ?.sasl_mechanisms ?? ["PLAIN", "LOGIN"]
+                ).join(" + ")}
+                {securityPosture?.security?.authentication?.oauth2_enabled
+                  ? " + OAuth2"
+                  : ""}
+              </p>
+              <p>
+                MFA admin:{" "}
+                {securityPosture?.security?.authentication?.admin_mfa_required
+                  ? "required"
+                  : "not enforced"}
+              </p>
+              <p>
+                Rate limiting:{" "}
+                {securityPosture?.security?.anti_abuse?.rate_limit_enabled
+                  ? `on (${securityPosture.security.anti_abuse?.rate_limit_per_minute ?? "?"}/min)`
+                  : "off"}
+              </p>
+              <p>
+                Fail2ban:{" "}
+                {securityPosture?.security?.anti_abuse?.fail2ban_enabled
+                  ? "enabled"
+                  : "disabled"}
+              </p>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
+            <h2 className="mb-2 text-sm font-semibold text-[#E4E4E7]">
+              Délivrabilité & réputation
+            </h2>
+            <p className="text-xs text-[#71717A]">
+              SPF/DKIM/DMARC/PTR + diagnostics spam.
+            </p>
+            <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
+              <p>Events analysés: {asInt(deliverability?.total_events ?? 0)}</p>
+              <p>Bounces: {asInt(deliverability?.bounces_total ?? 0)}</p>
+              <p>
+                Alertes auth policy:{" "}
+                {asInt(deliverability?.auth_policy_alerts ?? 0)}
+              </p>
+              <p>
+                Top bounce:{" "}
+                {deliverability?.top_bounce_reasons?.[0]?.reason ?? "—"}
+              </p>
+              <p>
+                RBL status: {deliverability?.rbl?.status ?? "—"} (
+                {(deliverability?.rbl?.sources ?? []).join(", ") || "no source"}
+                )
+              </p>
+            </div>
+          </article>
+
+          <article className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
+            <h2 className="mb-2 text-sm font-semibold text-[#E4E4E7]">
+              Supervision centralisée
+            </h2>
+            <p className="text-xs text-[#71717A]">
+              Queues, latence, alertes temps réel, exports observabilité.
+            </p>
+            <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
+              <p>
+                Queue SMTP:{" "}
+                {asInt(observability?.smtp?.queue_depth_estimate ?? 0)}
+              </p>
+              <p>Failures: {asInt(observability?.smtp?.failure_events ?? 0)}</p>
+              <p>
+                P95 latency: {asInt(observability?.smtp?.p95_total_ms ?? 0)} ms
+              </p>
+              <p>
+                Connexions IMAP:{" "}
+                {observability?.imap?.active_connections ?? "n/a"}
+              </p>
+              <p>
+                Alertes live: monitor{" "}
+                {asInt(observability?.realtime_alerts?.monitoring_active ?? 0)}{" "}
+                · sec{" "}
+                {asInt(observability?.realtime_alerts?.security_active ?? 0)}
+              </p>
+              <p>
+                Exports: Prometheus{" "}
+                {observability?.exports?.prometheus_enabled ? "on" : "off"} ·
+                SIEM{" "}
+                {observability?.exports?.siem_webhook_configured
+                  ? "configured"
+                  : "not configured"}
+              </p>
+            </div>
+          </article>
+        </section>
+      )}
+
+      {adminDataLoading && (
+        <p className="text-xs text-[#A1A1AA]">
+          Chargement des données admin backend…
+        </p>
+      )}
+      {adminDataError && (
+        <p className="text-xs text-[#FCA5A5]">
+          Erreur backend admin: {adminDataError}
+        </p>
       )}
 
       {(activeTab === "overview" || activeTab === "monitoring") && (
