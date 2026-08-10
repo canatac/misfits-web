@@ -177,7 +177,12 @@ function LoginInner() {
 
   function handleGithubOAuthClick() {
     setOauthPending("github");
-    initiateGithubLogin();
+    const redirect = searchParams.get("redirect");
+    const safeRedirect =
+      redirect && redirect.startsWith("/") && !redirect.startsWith("//")
+        ? redirect
+        : undefined;
+    initiateGithubLogin(safeRedirect);
   }
 
   const submitting = loginMutation.isPending || twoFactorMutation.isPending;
