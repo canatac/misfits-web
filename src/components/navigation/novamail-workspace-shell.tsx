@@ -54,7 +54,7 @@ export function NovamailWorkspaceShell({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#09090B] text-[#E4E4E7]">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#09090B] text-[#E4E4E7]">
       {desktopHeaderOpen && (
         <NovamailShellHeader
           onOpenSearch={() => router.push("/mail")}
@@ -71,7 +71,7 @@ export function NovamailWorkspaceShell({
         />
       )}
 
-      <div className="relative flex flex-1 overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
         {!desktopHeaderOpen && (
           <div className="absolute top-3 right-3 z-30 hidden lg:block">
             <VscodeLayoutControls
