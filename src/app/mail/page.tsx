@@ -68,15 +68,23 @@ export default function MailPage() {
 
   // Desktop layout state (persistent)
   const desktopSidebarOpen = useMailLayoutStore((s) => s.desktopSidebarOpen);
-  const setDesktopSidebarOpen = useMailLayoutStore((s) => s.setDesktopSidebarOpen);
-  const toggleDesktopSidebar = useMailLayoutStore((s) => s.toggleDesktopSidebar);
+  const setDesktopSidebarOpen = useMailLayoutStore(
+    (s) => s.setDesktopSidebarOpen
+  );
+  const toggleDesktopSidebar = useMailLayoutStore(
+    (s) => s.toggleDesktopSidebar
+  );
   const desktopChatOpen = useMailLayoutStore((s) => s.desktopChatOpen);
   const setDesktopChatOpen = useMailLayoutStore((s) => s.setDesktopChatOpen);
   const desktopHeaderOpen = useMailLayoutStore((s) => s.desktopHeaderOpen);
   const toggleDesktopHeader = useMailLayoutStore((s) => s.toggleDesktopHeader);
   const desktopConsoleOpen = useMailLayoutStore((s) => s.desktopConsoleOpen);
-  const setDesktopConsoleOpen = useMailLayoutStore((s) => s.setDesktopConsoleOpen);
-  const toggleDesktopConsole = useMailLayoutStore((s) => s.toggleDesktopConsole);
+  const setDesktopConsoleOpen = useMailLayoutStore(
+    (s) => s.setDesktopConsoleOpen
+  );
+  const toggleDesktopConsole = useMailLayoutStore(
+    (s) => s.toggleDesktopConsole
+  );
 
   // Chat global open state
   const chatOpen = useChatStore((s) => s.isOpen);
@@ -112,7 +120,6 @@ export default function MailPage() {
       setDesktopChatOpen(chatOpen);
     }
   }, [chatOpen, desktopChatOpen, isDesktop, setDesktopChatOpen]);
-
 
   // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
@@ -198,7 +205,13 @@ export default function MailPage() {
       return;
     }
     toggleChatOpen();
-  }, [desktopChatOpen, isDesktop, setChatOpen, setDesktopChatOpen, toggleChatOpen]);
+  }, [
+    desktopChatOpen,
+    isDesktop,
+    setChatOpen,
+    setDesktopChatOpen,
+    toggleChatOpen,
+  ]);
 
   useMailShortcuts({
     onNext: handleNavNext,
@@ -214,7 +227,7 @@ export default function MailPage() {
   });
 
   return (
-    <>
+    <div className="flex h-screen flex-col overflow-hidden bg-[#09090B] text-[#E4E4E7]">
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b border-[#242427] bg-[#111113]/95 px-3 py-2.5 text-[#E4E4E7] backdrop-blur-xl lg:hidden">
         <Button
@@ -224,14 +237,21 @@ export default function MailPage() {
           aria-label="Ouvrir/fermer le menu"
           title={mobileSidebarOpen ? "Replier le menu" : "Afficher le menu"}
         >
-          {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {mobileSidebarOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </Button>
         <div className="flex items-center gap-2">
           <MailIcon className="h-5 w-5 text-[#C49B66]" />
           <span className="font-semibold">misfits.ai Mail</span>
         </div>
         {/* Unified inbox toggle (mobile) — Issue #154 */}
-        <label className="flex items-center gap-1.5 text-xs" title="Toggle unified inbox">
+        <label
+          className="flex items-center gap-1.5 text-xs"
+          title="Toggle unified inbox"
+        >
           <Layers className="h-4 w-4 text-[var(--color-brand-500)]" />
           <Switch
             checked={isUnifiedInbox}
@@ -266,12 +286,11 @@ export default function MailPage() {
       {/* 3-column layout */}
       <div
         className={cn(
-          "relative flex h-full w-full overflow-hidden p-2 lg:p-3",
-          desktopHeaderOpen ? "lg:h-[calc(100%-72px)]" : "lg:h-full",
+          "relative flex min-h-0 flex-1 w-full overflow-hidden p-2 lg:p-3"
         )}
       >
         {!desktopHeaderOpen && (
-          <div className="absolute right-3 top-3 z-30 hidden lg:block">
+          <div className="absolute top-3 right-3 z-30 hidden lg:block">
             <VscodeLayoutControls
               isSidebarCollapsed={!desktopSidebarOpen}
               onToggleSidebar={toggleDesktopSidebar}
@@ -297,10 +316,12 @@ export default function MailPage() {
         <div
           className={cn(
             "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
-            desktopSidebarOpen ? "lg:w-64" : "lg:w-0",
+            desktopSidebarOpen ? "lg:w-64" : "lg:w-0"
           )}
         >
-          {desktopSidebarOpen && <MailSidebar onCompose={handleCompose} className="lg:pt-12" />}
+          {desktopSidebarOpen && (
+            <MailSidebar onCompose={handleCompose} className="lg:pt-12" />
+          )}
         </div>
 
         {/* Mobile sidebar overlay */}
@@ -322,7 +343,7 @@ export default function MailPage() {
           className={cn(
             "h-full w-full overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
             hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
-            mobileView === "list" ? "block" : "hidden lg:block",
+            mobileView === "list" ? "block" : "hidden lg:block"
           )}
         >
           <EmailList />
@@ -338,7 +359,7 @@ export default function MailPage() {
                 : "block lg:hidden"
               : hasDesktopSelection
                 ? "hidden lg:block"
-                : "hidden lg:hidden",
+                : "hidden lg:hidden"
           )}
         >
           {threadingEnabled && selectedThread ? (
@@ -352,7 +373,7 @@ export default function MailPage() {
         <div
           className={cn(
             "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
-            desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0",
+            desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0"
           )}
         >
           {desktopChatOpen && (
@@ -368,7 +389,12 @@ export default function MailPage() {
       </div>
 
       {/* Composer modal */}
-      <Modal open={composerOpen} onOpenChange={(o) => { if (!o) closeComposer(); }}>
+      <Modal
+        open={composerOpen}
+        onOpenChange={(o) => {
+          if (!o) closeComposer();
+        }}
+      >
         <ModalContent className="max-w-3xl gap-0 p-0">
           <ModalHeader className="sr-only">
             <ModalTitle>{t("nav.compose")}</ModalTitle>
@@ -380,7 +406,10 @@ export default function MailPage() {
       </Modal>
 
       {/* Search overlay */}
-      <SearchOverlay open={searchOverlayOpen} onOpenChange={setSearchOverlayOpen} />
+      <SearchOverlay
+        open={searchOverlayOpen}
+        onOpenChange={setSearchOverlayOpen}
+      />
 
       {/* Mobile chat overlay + trigger */}
       {!isDesktop && chatOpen && (
@@ -390,7 +419,10 @@ export default function MailPage() {
             onClick={() => setChatOpen(false)}
             aria-hidden="true"
           />
-          <ChatPanel layout="overlay" onRequestClose={() => setChatOpen(false)} />
+          <ChatPanel
+            layout="overlay"
+            onRequestClose={() => setChatOpen(false)}
+          />
         </>
       )}
       {!isDesktop && <ChatTrigger />}
@@ -402,6 +434,6 @@ export default function MailPage() {
 
       {/* Follow-up reminder banner (Issue #151) */}
       <ReminderBanner />
-    </>
+    </div>
   );
 }
