@@ -83,7 +83,15 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
           {desktopSidebarOpen && <MailSidebar onCompose={() => router.push("/compose")} className="h-full" />}
         </div>
 
-        <main className={cn("flex-1 overflow-y-auto p-4 md:p-6", contentClassName)}>{children}</main>
+        <main
+          className={cn(
+            "flex-1 overflow-y-auto p-4 transition-[padding] duration-200 md:p-6",
+            contentClassName,
+            desktopConsoleOpen && "pb-[18rem]",
+          )}
+        >
+          {children}
+        </main>
 
         <div
           className={cn(
