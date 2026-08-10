@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { AdminConsolePage } from "@/components/admin/admin-console-page";
 
 export default function AdminChangelogPage() {
-  redirect("/mail");
+  return <AdminConsolePage initialTab="changelog" />;
 }
