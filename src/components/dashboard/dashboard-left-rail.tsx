@@ -6,5 +6,5 @@ import { NovaMailIconRail } from "@/components/mail/novamail-icon-rail";
 export function DashboardLeftRail() {
   const router = useRouter();
 
-  return <NovaMailIconRail onCompose={() => router.push("/mail")} />;
+  return <NovaMailIconRail onCompose={() => router.push("/compose")} />;
 }
