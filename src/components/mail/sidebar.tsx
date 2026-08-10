@@ -7,7 +7,7 @@
  */
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Inbox,
   Send,
@@ -61,6 +61,7 @@ interface SidebarProps {
 
 export function MailSidebar({ className, onCompose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const folders = useEmailStore((s) => s.folders);
   const currentFolder = useEmailStore((s) => s.currentFolder);
   const setFolder = useEmailStore((s) => s.setFolder);
@@ -79,7 +80,8 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
   const navClass = (active: boolean) =>
     cn(
       "w-full justify-start gap-2 border border-[#262629] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]",
-      active && "border-[#C49B66]/50 bg-[#1E1A15] text-[#F2D5A7] hover:bg-[#1E1A15]",
+      active &&
+        "border-[#C49B66]/50 bg-[#1E1A15] text-[#F2D5A7] hover:bg-[#1E1A15]"
     );
 
   const isActivePath = (prefix: string) =>
@@ -89,7 +91,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
     <aside
       className={cn(
         "flex h-full w-full flex-col border-r border-[#242427] bg-[#101012]/95 text-[#E4E4E7] backdrop-blur",
-        className,
+        className
       )}
       data-testid="mail-sidebar"
     >
@@ -208,12 +210,17 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
             return (
               <button
                 key={folder.id}
-                onClick={() => setFolder(folder.id as Folder)}
+                onClick={() => {
+                  setFolder(folder.id as Folder);
+                  if (!pathname.startsWith("/mail")) {
+                    router.push("/mail");
+                  }
+                }}
                 className={cn(
                   "flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-sm transition-colors",
                   isActive
-                    ? "border-[#C49B66]/50 bg-[#1E1A15] text-[#F2D5A7] font-medium"
-                    : "text-[#D4D4D8] hover:border-[#2A2A2D] hover:bg-[#1A1A1E]",
+                    ? "border-[#C49B66]/50 bg-[#1E1A15] font-medium text-[#F2D5A7]"
+                    : "text-[#D4D4D8] hover:border-[#2A2A2D] hover:bg-[#1A1A1E]"
                 )}
                 aria-current={isActive ? "page" : undefined}
               >
@@ -233,7 +240,7 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
 
         <div className="p-3">
           <div className="mb-2 flex items-center justify-between px-3">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+            <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
               <Tag className="h-3 w-3" />
               Labels
             </div>
@@ -277,19 +284,27 @@ export function MailSidebar({ className, onCompose }: SidebarProps) {
           <>
             <Separator />
             <div className="p-3">
-              <div className="mb-1 flex items-center gap-2 px-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <div className="mb-1 flex items-center gap-2 px-3 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                 <Clock className="h-3 w-3" />
                 Snoozed
               </div>
-              <SnoozePicker triggerLabel={`Snoozed (${snoozedCount})`} className="w-full justify-start" />
+              <SnoozePicker
+                triggerLabel={`Snoozed (${snoozedCount})`}
+                className="w-full justify-start"
+              />
             </div>
           </>
         )}
-
       </ScrollArea>
 
-      <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
-      <FilterEditor open={filterEditorOpen} onOpenChange={setFilterEditorOpen} />
+      <LabelManager
+        open={labelManagerOpen}
+        onOpenChange={setLabelManagerOpen}
+      />
+      <FilterEditor
+        open={filterEditorOpen}
+        onOpenChange={setFilterEditorOpen}
+      />
 
       <Separator />
       <div className="p-3">
@@ -345,7 +360,12 @@ function LabelTreeNode({
             }}
             className="flex h-4 w-4 items-center justify-center text-[var(--color-muted-fg)]"
           >
-            <ChevronDown className={cn("h-3 w-3 transition-transform", !expanded && "-rotate-90")} />
+            <ChevronDown
+              className={cn(
+                "h-3 w-3 transition-transform",
+                !expanded && "-rotate-90"
+              )}
+            />
           </button>
         ) : (
           <span className="h-4 w-4" />
@@ -366,7 +386,12 @@ function LabelTreeNode({
       {hasChildren && expanded && (
         <div>
           {node.children.map((child) => (
-            <LabelTreeNode key={child.id} node={child} depth={depth + 1} onFilter={onFilter} />
+            <LabelTreeNode
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              onFilter={onFilter}
+            />
           ))}
         </div>
       )}

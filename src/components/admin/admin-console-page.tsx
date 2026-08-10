@@ -226,6 +226,13 @@ export function AdminConsolePage({
   const [adminDataLoading, setAdminDataLoading] = useState(false);
   const [adminDataError, setAdminDataError] = useState<string | null>(null);
 
+  const [assistantPrompt, setAssistantPrompt] = useState(
+    "Fais-moi un résumé de la situation actuelle et les actions prioritaires à lancer dans les 2 prochaines heures."
+  );
+  const [assistantAnswer, setAssistantAnswer] = useState<string>("");
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  const [assistantError, setAssistantError] = useState<string | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -325,6 +332,102 @@ export function AdminConsolePage({
     windowRange,
   ]);
 
+  const adminAssistantSnapshot = useMemo(
+    () => ({
+      window: windowRange,
+      severity,
+      summary: monitoringSummary.data ?? null,
+      monitoring_alerts: monitoringAlerts.data?.alerts?.slice(0, 15) ?? [],
+      security_alerts: securityActive.data?.alerts?.slice(0, 15) ?? [],
+      providers: monitoringProviders.data?.providers?.slice(0, 10) ?? [],
+      bounces: monitoringBounces.data?.bounces?.slice(0, 10) ?? [],
+      monitoring_live: monitoringLive.events.slice(0, 12),
+      security_live: securityLive.alerts.slice(0, 12),
+      observability,
+      deliverability,
+      security_posture: securityPosture,
+      admin_data_loading: adminDataLoading,
+      admin_data_error: adminDataError,
+    }),
+    [
+      windowRange,
+      severity,
+      monitoringSummary.data,
+      monitoringAlerts.data,
+      securityActive.data,
+      monitoringProviders.data,
+      monitoringBounces.data,
+      monitoringLive.events,
+      securityLive.alerts,
+      observability,
+      deliverability,
+      securityPosture,
+      adminDataLoading,
+      adminDataError,
+    ]
+  );
+
+  async function askHermesForAdminPlan() {
+    const prompt = assistantPrompt.trim();
+    if (!prompt) {
+      setAssistantError("Merci de saisir une demande.");
+      return;
+    }
+
+    setAssistantLoading(true);
+    setAssistantError(null);
+
+    try {
+      const response = await fetch("/api/hermes/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "Tu es Hermes, copilote SRE/DevOps de la console admin misfits.ai Mail. Réponds en français, de façon actionnable et concise. Donne exactement deux sections: 1) Résumé opérationnel (4-6 puces), 2) Actions à réaliser (checklist priorisée P0/P1/P2 avec commandes/étapes de vérification). Si des données sont absentes ou incohérentes, indique clairement les vérifications à lancer.",
+            },
+            {
+              role: "user",
+              content: `Contexte observabilité/sécurité (JSON):\n${JSON.stringify(
+                adminAssistantSnapshot
+              )}\n\nDemande opérateur:\n${prompt}`,
+            },
+          ],
+          sessionId: "admin-console-operations",
+          sessionKey: "misfits-admin-console",
+          temperature: 0.2,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          errorText || `hermes_request_failed_${response.status}`
+        );
+      }
+
+      const data = await response.json();
+      const content =
+        data?.choices?.[0]?.message?.content ??
+        data?.content ??
+        "Aucune réponse Hermes reçue.";
+
+      setAssistantAnswer(
+        typeof content === "string" ? content : JSON.stringify(content)
+      );
+    } catch (error) {
+      setAssistantError(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de l’appel Hermes."
+      );
+    } finally {
+      setAssistantLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
       <header className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
@@ -397,6 +500,72 @@ export function AdminConsolePage({
           ))}
         </div>
       </header>
+
+      {(activeTab === "overview" ||
+        activeTab === "monitoring" ||
+        activeTab === "security") && (
+        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-[#E4E4E7]">
+              Assistant Hermes — administration serveur
+            </h2>
+            <Badge tone={assistantLoading ? "warn" : "ok"}>
+              {assistantLoading ? "analyse…" : "prêt"}
+            </Badge>
+          </div>
+          <p className="mb-3 text-xs text-[#A1A1AA]">
+            Décris ton besoin (résumé incident, plan d’action, priorisation) et
+            Hermes te renvoie un résumé + une checklist d’actions à exécuter.
+          </p>
+
+          <form
+            className="space-y-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void askHermesForAdminPlan();
+            }}
+          >
+            <textarea
+              value={assistantPrompt}
+              onChange={(event) => setAssistantPrompt(event.target.value)}
+              placeholder="Ex: Résume la situation et propose les actions P0/P1 pour stabiliser SMTP/IMAP dans les 2h."
+              className="min-h-[96px] w-full rounded-xl border border-[#2B2B31] bg-[#151518] px-3 py-2 text-sm text-[#E4E4E7] outline-none placeholder:text-[#71717A] focus:border-[#C49B66]"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="submit"
+                disabled={assistantLoading}
+                className={cn(
+                  "rounded-lg border px-3 py-1.5 text-xs font-medium",
+                  assistantLoading
+                    ? "cursor-not-allowed border-[#3A3A42] bg-[#1B1B1F] text-[#71717A]"
+                    : "border-[#C49B66] bg-[#2A2218] text-[#F2D5A7] hover:bg-[#312718]"
+                )}
+              >
+                {assistantLoading ? "Hermes réfléchit…" : "Demander à Hermes"}
+              </button>
+              {assistantError && (
+                <span className="text-xs text-[#FCA5A5]">{assistantError}</span>
+              )}
+            </div>
+          </form>
+
+          <div className="mt-3 rounded-xl border border-[#232327] bg-[#151518] p-3">
+            <p className="mb-2 text-xs font-semibold tracking-wide text-[#A1A1AA] uppercase">
+              Réponse Hermes
+            </p>
+            {assistantAnswer ? (
+              <pre className="text-xs leading-relaxed break-words whitespace-pre-wrap text-[#D4D4D8]">
+                {assistantAnswer}
+              </pre>
+            ) : (
+              <p className="text-xs text-[#71717A]">
+                Aucune réponse pour le moment.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {(activeTab === "overview" ||
         activeTab === "monitoring" ||
