@@ -64,18 +64,70 @@ type AdminDeliverabilityDiagnosticsResponse = {
   total_events?: number;
   bounces_total?: number;
   auth_policy_alerts?: number;
+  spf?: { failures?: number; failure_rate?: number };
+  dkim?: { failures?: number; failure_rate?: number };
+  dmarc?: { failures?: number; failure_rate?: number };
+  reputation?: {
+    avg_risk_score?: number;
+    high_risk_events?: number;
+    ip_domain_status?: string;
+  };
   top_bounce_reasons?: Array<{ reason: string; count: number }>;
   rbl?: {
     sources?: string[];
+    listed_by?: string[];
     status?: string;
   };
 };
 
 type AdminObservabilityOverviewResponse = {
   smtp?: {
-    queue_depth_estimate?: number;
+    total_events?: number;
     failure_events?: number;
     p95_total_ms?: number;
+  };
+  health_realtime?: {
+    queue?: {
+      depth?: number;
+      oldest_age_seconds?: number | null;
+    };
+    throughput?: {
+      incoming_per_min?: number;
+      outgoing_per_min?: number;
+    };
+    delivery?: {
+      success_rate?: number;
+      smtp_4xx_rate?: number;
+      smtp_5xx_rate?: number;
+      p95_total_ms?: number;
+    };
+  };
+  proactive_alerting?: {
+    threshold_alerts?: {
+      queue_growth?: number;
+      auth_failures?: number;
+      imap_latency_alert?: boolean;
+    };
+    anomaly_detection?: {
+      anomaly_alerts?: number;
+      spam_or_volume_spike?: boolean;
+      sudden_bounce_signal?: boolean;
+    };
+    correlation?: {
+      smtp?: { events?: number; smtp_4xx?: number; smtp_5xx?: number };
+      imap?: { active_connections?: number | null; p95_ms?: number | null };
+      dns?: { lookup_issue_events?: number };
+      blacklist?: {
+        sources?: string[];
+        listed_by?: string[];
+        listed?: boolean;
+      };
+    };
+  };
+  security_deliverability?: {
+    suspicious_logins_top?: Array<{ ip?: string; attempts?: number }>;
+    active_security_alerts?: number;
+    active_monitoring_alerts?: number;
   };
   imap?: {
     active_connections?: number | null;
@@ -434,8 +486,15 @@ export function AdminConsolePage({
               <p>Events analysés: {asInt(deliverability?.total_events ?? 0)}</p>
               <p>Bounces: {asInt(deliverability?.bounces_total ?? 0)}</p>
               <p>
-                Alertes auth policy:{" "}
-                {asInt(deliverability?.auth_policy_alerts ?? 0)}
+                SPF fail: {percent(deliverability?.spf?.failure_rate ?? 0)} ·
+                DKIM fail: {percent(deliverability?.dkim?.failure_rate ?? 0)} ·
+                DMARC fail: {percent(deliverability?.dmarc?.failure_rate ?? 0)}
+              </p>
+              <p>
+                Réputation: score{" "}
+                {deliverability?.reputation?.avg_risk_score ?? 0}
+                /100 · high-risk{" "}
+                {asInt(deliverability?.reputation?.high_risk_events ?? 0)}
               </p>
               <p>
                 Top bounce:{" "}
@@ -443,8 +502,7 @@ export function AdminConsolePage({
               </p>
               <p>
                 RBL status: {deliverability?.rbl?.status ?? "—"} (
-                {(deliverability?.rbl?.sources ?? []).join(", ") || "no source"}
-                )
+                {(deliverability?.rbl?.listed_by ?? []).join(", ") || "clean"})
               </p>
             </div>
           </article>
@@ -459,21 +517,83 @@ export function AdminConsolePage({
             <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
               <p>
                 Queue SMTP:{" "}
-                {asInt(observability?.smtp?.queue_depth_estimate ?? 0)}
-              </p>
-              <p>Failures: {asInt(observability?.smtp?.failure_events ?? 0)}</p>
-              <p>
-                P95 latency: {asInt(observability?.smtp?.p95_total_ms ?? 0)} ms
-              </p>
-              <p>
-                Connexions IMAP:{" "}
-                {observability?.imap?.active_connections ?? "n/a"}
+                {asInt(observability?.health_realtime?.queue?.depth ?? 0)}
+                {" · "}âge max{" "}
+                {asInt(
+                  observability?.health_realtime?.queue?.oldest_age_seconds ?? 0
+                )}
+                s
               </p>
               <p>
-                Alertes live: monitor{" "}
-                {asInt(observability?.realtime_alerts?.monitoring_active ?? 0)}{" "}
-                · sec{" "}
-                {asInt(observability?.realtime_alerts?.security_active ?? 0)}
+                Débit in/out:{" "}
+                {observability?.health_realtime?.throughput?.incoming_per_min?.toFixed(
+                  2
+                ) ?? "0.00"}
+                /min ·{" "}
+                {observability?.health_realtime?.throughput?.outgoing_per_min?.toFixed(
+                  2
+                ) ?? "0.00"}
+                /min
+              </p>
+              <p>
+                Succès:{" "}
+                {percent(
+                  observability?.health_realtime?.delivery?.success_rate ?? 0
+                )}{" "}
+                · 4xx{" "}
+                {percent(
+                  observability?.health_realtime?.delivery?.smtp_4xx_rate ?? 0
+                )}{" "}
+                · 5xx{" "}
+                {percent(
+                  observability?.health_realtime?.delivery?.smtp_5xx_rate ?? 0
+                )}
+              </p>
+              <p>
+                P95 delivery:{" "}
+                {asInt(
+                  observability?.health_realtime?.delivery?.p95_total_ms ?? 0
+                )}{" "}
+                ms
+              </p>
+              <p>
+                Alertes seuils: queue{" "}
+                {asInt(
+                  observability?.proactive_alerting?.threshold_alerts
+                    ?.queue_growth ?? 0
+                )}{" "}
+                · auth{" "}
+                {asInt(
+                  observability?.proactive_alerting?.threshold_alerts
+                    ?.auth_failures ?? 0
+                )}{" "}
+                · IMAP{" "}
+                {observability?.proactive_alerting?.threshold_alerts
+                  ?.imap_latency_alert
+                  ? "high"
+                  : "ok"}
+              </p>
+              <p>
+                Corrélation: DNS issues{" "}
+                {asInt(
+                  observability?.proactive_alerting?.correlation?.dns
+                    ?.lookup_issue_events ?? 0
+                )}{" "}
+                · RBL{" "}
+                {(
+                  observability?.proactive_alerting?.correlation?.blacklist
+                    ?.listed_by ?? []
+                ).join(",") || "clean"}
+              </p>
+              <p>
+                Login suspects:{" "}
+                {(
+                  observability?.security_deliverability
+                    ?.suspicious_logins_top ?? []
+                )
+                  .slice(0, 2)
+                  .map((x) => `${x.ip ?? "?"}(${x.attempts ?? 0})`)
+                  .join(" · ") || "none"}
               </p>
               <p>
                 Exports: Prometheus{" "}
