@@ -4,10 +4,12 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 interface MailLayoutState {
+  hydrated: boolean;
   desktopSidebarOpen: boolean;
   desktopChatOpen: boolean;
   desktopHeaderOpen: boolean;
   desktopConsoleOpen: boolean;
+  setHydrated: (hydrated: boolean) => void;
   setDesktopSidebarOpen: (open: boolean) => void;
   toggleDesktopSidebar: () => void;
   setDesktopChatOpen: (open: boolean) => void;
@@ -21,10 +23,12 @@ interface MailLayoutState {
 export const useMailLayoutStore = create<MailLayoutState>()(
   persist(
     (set) => ({
+      hydrated: false,
       desktopSidebarOpen: false,
       desktopChatOpen: false,
       desktopHeaderOpen: true,
       desktopConsoleOpen: false,
+      setHydrated: (hydrated) => set({ hydrated }),
       setDesktopSidebarOpen: (open) => set({ desktopSidebarOpen: open }),
       toggleDesktopSidebar: () =>
         set((s) => ({ desktopSidebarOpen: !s.desktopSidebarOpen })),
@@ -44,6 +48,9 @@ export const useMailLayoutStore = create<MailLayoutState>()(
         desktopHeaderOpen: state.desktopHeaderOpen,
         desktopConsoleOpen: state.desktopConsoleOpen,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated(true);
+      },
     },
   ),
 );
