@@ -22,6 +22,7 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
 
   const [activeVibe, setActiveVibe] = useState("Formal");
 
+  const hydrated = useMailLayoutStore((s) => s.hydrated);
   const desktopSidebarOpen = useMailLayoutStore((s) => s.desktopSidebarOpen);
   const toggleDesktopSidebar = useMailLayoutStore((s) => s.toggleDesktopSidebar);
   const desktopHeaderOpen = useMailLayoutStore((s) => s.desktopHeaderOpen);
@@ -38,6 +39,10 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
     setDesktopChatOpen(next);
     setChatOpen(next);
   };
+
+  if (!hydrated) {
+    return <div className="min-h-screen bg-[#09090B]" />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#09090B] text-[#E4E4E7]">
