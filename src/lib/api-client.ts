@@ -315,8 +315,25 @@ export async function apiResetPassword(
 }
 
 /** Redirects the browser to the backend to initiate OAuth with GitHub. */
-export function initiateGithubLogin(): void {
-  window.location.href = `${BASE_URL}/auth/oauth/github`;
+export function initiateGithubLogin(redirectPath?: string): void {
+  const safeRedirect =
+    redirectPath && redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+      ? redirectPath
+      : null;
+
+  try {
+    if (safeRedirect) {
+      document.cookie = `mfa_post_login_redirect=${encodeURIComponent(safeRedirect)}; Path=/; Max-Age=600; SameSite=Lax`;
+    }
+  } catch {
+    // ignore cookie write failures
+  }
+
+  const url = new URL(`${BASE_URL}/auth/oauth/github`);
+  if (safeRedirect) {
+    url.searchParams.set("redirect", safeRedirect);
+  }
+  window.location.href = url.toString();
 }
 
 /** Used by the store's `refreshSession` action when a manual refresh is needed. */

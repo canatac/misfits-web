@@ -54,12 +54,29 @@ function normalizeSession(raw: Record<string, unknown>): Session {
  * GET /api/auth/callback
  * ------------------------------------------------------------------ */
 
+function resolveRedirectPath(req: NextRequest): string {
+  const fromQuery = req.nextUrl.searchParams.get("redirect");
+  const fromCookieRaw = req.cookies.get("mfa_post_login_redirect")?.value;
+  let fromCookie: string | null = null;
+  if (fromCookieRaw) {
+    try {
+      fromCookie = decodeURIComponent(fromCookieRaw);
+    } catch {
+      fromCookie = fromCookieRaw;
+    }
+  }
+  const raw = fromQuery ?? fromCookie ?? "/dashboard";
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/dashboard";
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl;
   const sessionParam = searchParams.get("session");
   const provider = searchParams.get("provider") ?? "unknown";
   const errorParam = searchParams.get("error");
   const isSecure = req.nextUrl.protocol === "https:";
+  const redirectPath = resolveRedirectPath(req);
 
   // ── Case 0: Backend / OAuth provider returned an error ──
   if (!sessionParam && errorParam) {
@@ -90,7 +107,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
       const pendingPayload = JSON.stringify({ session, provider });
 
-      const res = NextResponse.redirect(new URL("/dashboard", req.url));
+      const res = NextResponse.redirect(new URL(redirectPath, req.url));
 
       // httpOnly session cookie — read by Edge middleware for route protection.
       res.cookies.set("mfa_session", session.id, {
@@ -111,6 +128,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         secure: isSecure,
       });
 
+      // Cleanup transient redirect hint cookie.
+      res.cookies.set("mfa_post_login_redirect", "", {
+        httpOnly: false,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 0,
+        secure: isSecure,
+      });
+
       return res;
     } catch {
       return NextResponse.redirect(
@@ -121,7 +147,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   // ── Case 2: Backend already set the mfa_session cookie — just redirect ──
   if (req.cookies.get("mfa_session")) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    const res = NextResponse.redirect(new URL(redirectPath, req.url));
+    res.cookies.set("mfa_post_login_redirect", "", {
+      httpOnly: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+      secure: isSecure,
+    });
+    return res;
   }
 
   // ── Case 3: Nothing to work with — send back to login ──
