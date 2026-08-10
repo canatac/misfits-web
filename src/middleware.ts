@@ -13,14 +13,24 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED_PREFIXES = ["/mail", "/compose", "/settings", "/dashboard", "/monitoring", "/security"];
+const PROTECTED_PREFIXES = [
+  "/mail",
+  "/compose",
+  "/settings",
+  "/dashboard",
+  "/admin",
+  "/monitoring",
+  "/security",
+];
 const PUBLIC_EXACT = new Set(["/", "/login", "/reset-password"]);
 const SESSION_COOKIE = "mfa_session";
 
 function isProtected(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return false;
   if (pathname.startsWith("/api")) return false;
-  return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return PROTECTED_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 }
 
 export function middleware(request: NextRequest): NextResponse {
@@ -45,5 +55,7 @@ export function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   // Match all routes except static assets and Next internals.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
