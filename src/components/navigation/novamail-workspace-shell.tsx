@@ -17,19 +17,28 @@ interface NovamailWorkspaceShellProps {
   contentClassName?: string;
 }
 
-export function NovamailWorkspaceShell({ children, contentClassName }: NovamailWorkspaceShellProps) {
+export function NovamailWorkspaceShell({
+  children,
+  contentClassName,
+}: NovamailWorkspaceShellProps) {
   const router = useRouter();
 
   const [activeVibe, setActiveVibe] = useState("Formal");
 
   const hydrated = useMailLayoutStore((s) => s.hydrated);
   const desktopSidebarOpen = useMailLayoutStore((s) => s.desktopSidebarOpen);
-  const toggleDesktopSidebar = useMailLayoutStore((s) => s.toggleDesktopSidebar);
+  const toggleDesktopSidebar = useMailLayoutStore(
+    (s) => s.toggleDesktopSidebar
+  );
   const desktopHeaderOpen = useMailLayoutStore((s) => s.desktopHeaderOpen);
   const toggleDesktopHeader = useMailLayoutStore((s) => s.toggleDesktopHeader);
   const desktopConsoleOpen = useMailLayoutStore((s) => s.desktopConsoleOpen);
-  const setDesktopConsoleOpen = useMailLayoutStore((s) => s.setDesktopConsoleOpen);
-  const toggleDesktopConsole = useMailLayoutStore((s) => s.toggleDesktopConsole);
+  const setDesktopConsoleOpen = useMailLayoutStore(
+    (s) => s.setDesktopConsoleOpen
+  );
+  const toggleDesktopConsole = useMailLayoutStore(
+    (s) => s.toggleDesktopConsole
+  );
   const desktopChatOpen = useMailLayoutStore((s) => s.desktopChatOpen);
   const setDesktopChatOpen = useMailLayoutStore((s) => s.setDesktopChatOpen);
   const setChatOpen = useChatStore((s) => s.setOpen);
@@ -64,7 +73,7 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
 
       <div className="relative flex flex-1 overflow-hidden">
         {!desktopHeaderOpen && (
-          <div className="absolute right-3 top-3 z-30 hidden lg:block">
+          <div className="absolute top-3 right-3 z-30 hidden lg:block">
             <VscodeLayoutControls
               isSidebarCollapsed={!desktopSidebarOpen}
               onToggleSidebar={toggleDesktopSidebar}
@@ -78,21 +87,28 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
           </div>
         )}
 
-        {!desktopSidebarOpen && <NovaMailIconRail onCompose={() => router.push("/mail")} />}
+        {!desktopSidebarOpen && (
+          <NovaMailIconRail onCompose={() => router.push("/compose")} />
+        )}
         <div
           className={cn(
             "hidden h-full shrink-0 overflow-hidden border-r border-[#242427] bg-[#101012]/95 transition-all duration-200 ease-out lg:block",
-            desktopSidebarOpen ? "lg:w-80" : "lg:w-0",
+            desktopSidebarOpen ? "lg:w-80" : "lg:w-0"
           )}
         >
-          {desktopSidebarOpen && <MailSidebar onCompose={() => router.push("/compose")} className="h-full" />}
+          {desktopSidebarOpen && (
+            <MailSidebar
+              onCompose={() => router.push("/compose")}
+              className="h-full"
+            />
+          )}
         </div>
 
         <main
           className={cn(
             "flex-1 overflow-y-auto p-4 transition-[padding] duration-200 md:p-6",
             contentClassName,
-            desktopConsoleOpen && "pb-[18rem]",
+            desktopConsoleOpen && "pb-[18rem]"
           )}
         >
           {children}
@@ -101,7 +117,7 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
         <div
           className={cn(
             "hidden h-full shrink-0 overflow-hidden border-l border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
-            desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0",
+            desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0"
           )}
         >
           {desktopChatOpen && (
@@ -116,7 +132,10 @@ export function NovamailWorkspaceShell({ children, contentClassName }: NovamailW
         </div>
       </div>
 
-      <TerminalConsole isOpen={desktopConsoleOpen} onClose={() => setDesktopConsoleOpen(false)} />
+      <TerminalConsole
+        isOpen={desktopConsoleOpen}
+        onClose={() => setDesktopConsoleOpen(false)}
+      />
     </div>
   );
 }
