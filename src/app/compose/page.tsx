@@ -87,9 +87,14 @@ function ComposePageContent() {
   }, []);
 
   return (
-    <NovamailWorkspaceShell contentClassName="p-4">
-      <div className="mx-auto flex h-[calc(100vh-56px)] w-full max-w-4xl flex-col" data-testid="compose-page">
-        <ComposerPanel variant="page" />
+    <NovamailWorkspaceShell contentClassName="overflow-hidden p-0">
+      <div
+        className="mx-auto flex h-full w-full max-w-4xl flex-col p-4"
+        data-testid="compose-page"
+      >
+        <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl">
+          <ComposerPanel variant="page" className="h-full" />
+        </div>
         {prefill && replyId && (
           <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
             Replying to email {replyId}.
