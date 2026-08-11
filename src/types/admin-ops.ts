@@ -101,3 +101,36 @@ export interface AdminChangelogResponse {
   repositories: AdminChangelogRepository[];
   workflowReleases: AdminWorkflowRelease[];
 }
+
+export type AdminUserStatus = "active" | "restricted";
+
+export interface AdminUserActivity {
+  at: string;
+  label: string;
+  kind: "login" | "change_request" | "role_change" | "admin_action";
+}
+
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  displayName?: string;
+  role: "user" | "admin" | "support";
+  status: AdminUserStatus;
+  twoFactorEnabled: boolean;
+  lastLoginAt?: string;
+  lastActivityAt?: string;
+  sessions24h: number;
+  actions7d: number;
+  changeRequests30d: number;
+  recentActivity: AdminUserActivity[];
+}
+
+export interface AdminUsersResponse {
+  generatedAt: string;
+  users: AdminUserRecord[];
+}
+
+export interface UpdateAdminUserRoleInput {
+  id: string;
+  role: AdminUserRecord["role"];
+}

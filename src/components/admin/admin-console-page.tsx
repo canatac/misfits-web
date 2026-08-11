@@ -16,21 +16,29 @@ import {
 } from "@/hooks/use-security-dashboard";
 import {
   useAdminChangelog,
+  useAdminUsers,
   useChangeRequests,
   useCreateChangeRequest,
   useTransitionChangeRequest,
+  useUpdateAdminUserRole,
 } from "@/hooks/use-admin-ops";
 import type {
   ChangeRequestItem,
   CreateChangeRequestInput,
   WorkflowStatus,
+  AdminUserRecord,
 } from "@/types/admin-ops";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
 import { cn } from "@/lib/utils";
 
 type AdminTab =
-  "overview" | "monitoring" | "security" | "changelog" | "change-requests";
+  | "overview"
+  | "monitoring"
+  | "security"
+  | "changelog"
+  | "change-requests"
+  | "users";
 
 const WINDOW_OPTIONS: MonitoringWindow[] = ["15m", "1h", "6h", "24h", "7d"];
 const SEVERITY_OPTIONS: Array<SecuritySeverity | "all"> = [
@@ -266,8 +274,10 @@ export function AdminConsolePage({
 
   const adminChangelog = useAdminChangelog();
   const changeRequests = useChangeRequests();
+  const adminUsers = useAdminUsers();
   const createChangeRequest = useCreateChangeRequest();
   const transitionChangeRequest = useTransitionChangeRequest();
+  const updateAdminUserRole = useUpdateAdminUserRole();
 
   const [newRequest, setNewRequest] = useState<CreateChangeRequestInput>({
     title: "",
@@ -512,6 +522,13 @@ export function AdminConsolePage({
     });
   }
 
+  async function handleUserRoleChange(
+    id: string,
+    role: AdminUserRecord["role"],
+  ) {
+    await updateAdminUserRole.mutateAsync({ id, role });
+  }
+
   const requestsByStatus = useMemo(() => {
     const grouped = Object.fromEntries(
       WORKFLOW_STATUS_COLUMNS.map((status) => [
@@ -581,6 +598,7 @@ export function AdminConsolePage({
               ["security", "Sécurité"],
               ["changelog", "Changelog"],
               ["change-requests", "Change requests"],
+              ["users", "Utilisateurs"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -1447,6 +1465,116 @@ export function AdminConsolePage({
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "users" && (
+        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Gestion des utilisateurs
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Pilotage des rôles et activité opérationnelle récente.
+              </p>
+            </div>
+            <Badge tone={adminUsers.isFetching ? "warn" : "ok"}>
+              {adminUsers.isFetching ? "syncing" : "live"}
+            </Badge>
+          </div>
+
+          <div className="mb-4 grid gap-3 md:grid-cols-4">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Utilisateurs</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(adminUsers.data?.users.length ?? 0)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Admins</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt((adminUsers.data?.users ?? []).filter((u) => u.role === "admin").length)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Support</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt((adminUsers.data?.users ?? []).filter((u) => u.role === "support").length)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">2FA activée</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt((adminUsers.data?.users ?? []).filter((u) => u.twoFactorEnabled).length)}
+              </p>
+            </article>
+          </div>
+
+          <div className="space-y-3">
+            {(adminUsers.data?.users ?? []).map((user) => (
+              <article
+                key={user.id}
+                className="rounded-xl border border-[#232327] bg-[#151518] p-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-[#E4E4E7]">
+                      {user.displayName || user.email}
+                    </p>
+                    <p className="text-xs text-[#71717A]">{user.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge tone={user.status === "active" ? "ok" : "warn"}>
+                      {user.status}
+                    </Badge>
+                    <Badge tone={user.twoFactorEnabled ? "ok" : "warn"}>
+                      2FA {user.twoFactorEnabled ? "on" : "off"}
+                    </Badge>
+                    <select
+                      value={user.role}
+                      onChange={(e) =>
+                        void handleUserRoleChange(
+                          user.id,
+                          e.target.value as AdminUserRecord["role"],
+                        )
+                      }
+                      disabled={updateAdminUserRole.isPending}
+                      className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
+                    >
+                      <option value="user">user</option>
+                      <option value="support">support</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-2 grid gap-2 text-xs text-[#A1A1AA] md:grid-cols-4">
+                  <p>Dernier login: {asDate(user.lastLoginAt || "")}</p>
+                  <p>Dernière activité: {asDate(user.lastActivityAt || "")}</p>
+                  <p>Sessions 24h: {asInt(user.sessions24h)}</p>
+                  <p>Actions 7j: {asInt(user.actions7d)}</p>
+                </div>
+
+                <div className="mt-2">
+                  <p className="text-xs text-[#A1A1AA]">Activité récente</p>
+                  <div className="mt-1 space-y-1">
+                    {user.recentActivity.slice(0, 3).map((evt, index) => (
+                      <p key={`${user.id}_${index}`} className="text-xs text-[#D4D4D8]">
+                        {asDate(evt.at)} · {evt.kind} · {evt.label}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+
+            {adminUsers.isError && (
+              <p className="text-sm text-[#FCA5A5]">
+                Erreur users: {adminUsers.error.message}
+              </p>
+            )}
           </div>
         </section>
       )}

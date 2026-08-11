@@ -5,12 +5,15 @@ import { toast } from "sonner";
 import {
   createAdminChangeRequest,
   getAdminChangelog,
+  getAdminUsers,
   getChangeRequests,
   transitionAdminChangeRequest,
+  updateAdminUserRole,
 } from "@/lib/admin-ops-api";
 import type {
   CreateChangeRequestInput,
   TransitionChangeRequestInput,
+  UpdateAdminUserRoleInput,
 } from "@/types/admin-ops";
 
 const REFRESH_30S = 30_000;
@@ -64,6 +67,30 @@ export function useTransitionChangeRequest() {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Transition impossible.");
+    },
+  });
+}
+
+export function useAdminUsers() {
+  return useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: getAdminUsers,
+    refetchInterval: REFRESH_30S,
+    staleTime: 10_000,
+  });
+}
+
+export function useUpdateAdminUserRole() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateAdminUserRoleInput) => updateAdminUserRole(payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      toast.success("Rôle utilisateur mis à jour.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Mise à jour du rôle impossible.");
     },
   });
 }
