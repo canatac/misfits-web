@@ -15,15 +15,19 @@ import {
   useSecurityLive,
 } from "@/hooks/use-security-dashboard";
 import {
+  useAdminAiActivity,
   useAdminChangelog,
   useAdminUsers,
   useChangeRequests,
+  useCreateAdminUser,
   useCreateChangeRequest,
+  useDeleteAdminUser,
   useTransitionChangeRequest,
-  useUpdateAdminUserRole,
+  useUpdateAdminUser,
 } from "@/hooks/use-admin-ops";
 import type {
   ChangeRequestItem,
+  CreateAdminUserInput,
   CreateChangeRequestInput,
   WorkflowStatus,
   AdminUserRecord,
@@ -323,9 +327,12 @@ export function AdminConsolePage({
   const adminChangelog = useAdminChangelog();
   const changeRequests = useChangeRequests();
   const adminUsers = useAdminUsers();
+  const adminAiActivity = useAdminAiActivity(50);
   const createChangeRequest = useCreateChangeRequest();
   const transitionChangeRequest = useTransitionChangeRequest();
-  const updateAdminUserRole = useUpdateAdminUserRole();
+  const updateAdminUser = useUpdateAdminUser();
+  const createAdminUser = useCreateAdminUser();
+  const deleteAdminUser = useDeleteAdminUser();
 
   const [newRequest, setNewRequest] = useState<CreateChangeRequestInput>({
     title: "",
@@ -336,6 +343,13 @@ export function AdminConsolePage({
     impact: "medium",
     requestedBy: "admin",
     linkedRepo: "cross-repo",
+  });
+  const [newAdminUser, setNewAdminUser] = useState<CreateAdminUserInput>({
+    email: "",
+    displayName: "",
+    role: "user",
+    status: "active",
+    twoFactorEnabled: false,
   });
 
   const [transitionNote, setTransitionNote] = useState("");
@@ -762,7 +776,44 @@ export function AdminConsolePage({
     id: string,
     role: AdminUserRecord["role"]
   ) {
-    await updateAdminUserRole.mutateAsync({ id, role });
+    await updateAdminUser.mutateAsync({ id, role });
+  }
+
+  async function handleUserStatusChange(
+    id: string,
+    status: AdminUserRecord["status"]
+  ) {
+    await updateAdminUser.mutateAsync({ id, status });
+  }
+
+  async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const email = newAdminUser.email?.trim() || "";
+    if (!email) return;
+
+    await createAdminUser.mutateAsync({
+      email,
+      displayName: newAdminUser.displayName?.trim() || undefined,
+      role: newAdminUser.role,
+      status: newAdminUser.status,
+      twoFactorEnabled: newAdminUser.twoFactorEnabled,
+    });
+
+    setNewAdminUser({
+      email: "",
+      displayName: "",
+      role: "user",
+      status: "active",
+      twoFactorEnabled: false,
+    });
+  }
+
+  async function handleDeleteUser(id: string) {
+    const confirmed = window.confirm(
+      "Supprimer cet utilisateur du répertoire admin ?"
+    );
+    if (!confirmed) return;
+    await deleteAdminUser.mutateAsync({ id });
   }
 
   const qualityChecks = useMemo(() => {
@@ -2060,6 +2111,112 @@ export function AdminConsolePage({
             </article>
           </div>
 
+          <form
+            onSubmit={(e) => void handleCreateUser(e)}
+            className="mb-4 rounded-xl border border-[#232327] bg-[#151518] p-3"
+          >
+            <p className="text-xs text-[#A1A1AA]">Créer un utilisateur</p>
+            <div className="mt-2 grid gap-2 md:grid-cols-5">
+              <input
+                value={newAdminUser.email}
+                onChange={(e) =>
+                  setNewAdminUser((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }))
+                }
+                required
+                type="email"
+                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+                placeholder="email@misfits.ai"
+              />
+              <input
+                value={newAdminUser.displayName || ""}
+                onChange={(e) =>
+                  setNewAdminUser((prev) => ({
+                    ...prev,
+                    displayName: e.target.value,
+                  }))
+                }
+                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+                placeholder="Nom affiché"
+              />
+              <select
+                value={newAdminUser.role}
+                onChange={(e) =>
+                  setNewAdminUser((prev) => ({
+                    ...prev,
+                    role: e.target.value as AdminUserRecord["role"],
+                  }))
+                }
+                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+              >
+                <option value="user">user</option>
+                <option value="support">support</option>
+                <option value="admin">admin</option>
+              </select>
+              <select
+                value={newAdminUser.status}
+                onChange={(e) =>
+                  setNewAdminUser((prev) => ({
+                    ...prev,
+                    status: e.target.value as AdminUserRecord["status"],
+                  }))
+                }
+                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+              >
+                <option value="active">active</option>
+                <option value="restricted">restricted</option>
+              </select>
+              <button
+                type="submit"
+                disabled={createAdminUser.isPending}
+                className="rounded-lg border border-[#3A3A42] px-2 py-1.5 text-xs text-[#E4E4E7] disabled:opacity-50"
+              >
+                {createAdminUser.isPending ? "Création..." : "Créer"}
+              </button>
+            </div>
+          </form>
+
+          <div className="mb-4 rounded-xl border border-[#232327] bg-[#151518] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs text-[#A1A1AA]">Activité IA</p>
+              <Badge tone={adminAiActivity.isFetching ? "warn" : "ok"}>
+                {adminAiActivity.isFetching ? "syncing" : "live"}
+              </Badge>
+            </div>
+            <div className="grid gap-2 md:grid-cols-5">
+              <p className="text-xs text-[#D4D4D8]">
+                Runs: {asInt(adminAiActivity.data?.metrics.totalRuns ?? 0)}
+              </p>
+              <p className="text-xs text-[#D4D4D8]">
+                Success:{" "}
+                {percent(adminAiActivity.data?.metrics.successRate ?? 0)}
+              </p>
+              <p className="text-xs text-[#D4D4D8]">
+                Tokens: {asInt(adminAiActivity.data?.metrics.totalTokens ?? 0)}
+              </p>
+              <p className="text-xs text-[#D4D4D8]">
+                Prompt/Completion:{" "}
+                {asInt(adminAiActivity.data?.metrics.promptTokens ?? 0)} /{" "}
+                {asInt(adminAiActivity.data?.metrics.completionTokens ?? 0)}
+              </p>
+              <p className="text-xs text-[#D4D4D8]">
+                Latence avg/p95:{" "}
+                {asInt(adminAiActivity.data?.metrics.avgLatencyMs ?? 0)}ms /{" "}
+                {asInt(adminAiActivity.data?.metrics.p95LatencyMs ?? 0)}ms
+              </p>
+            </div>
+            <div className="mt-2 space-y-1">
+              {(adminAiActivity.data?.runs ?? []).slice(0, 6).map((run) => (
+                <p key={run.id} className="text-[11px] text-[#A1A1AA]">
+                  {asDate(run.startedAt || "")} · {run.status} · {run.model} ·
+                  tok={asInt(run.totalTokens)} · {asInt(run.latencyMs ?? 0)}ms
+                </p>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3">
             {(adminUsers.data?.users ?? []).map((user) => (
               <article
@@ -2074,9 +2231,20 @@ export function AdminConsolePage({
                     <p className="text-xs text-[#71717A]">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge tone={user.status === "active" ? "ok" : "warn"}>
-                      {user.status}
-                    </Badge>
+                    <select
+                      value={user.status}
+                      onChange={(e) =>
+                        void handleUserStatusChange(
+                          user.id,
+                          e.target.value as AdminUserRecord["status"]
+                        )
+                      }
+                      disabled={updateAdminUser.isPending}
+                      className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
+                    >
+                      <option value="active">active</option>
+                      <option value="restricted">restricted</option>
+                    </select>
                     <Badge tone={user.twoFactorEnabled ? "ok" : "warn"}>
                       2FA {user.twoFactorEnabled ? "on" : "off"}
                     </Badge>
@@ -2088,13 +2256,21 @@ export function AdminConsolePage({
                           e.target.value as AdminUserRecord["role"]
                         )
                       }
-                      disabled={updateAdminUserRole.isPending}
+                      disabled={updateAdminUser.isPending}
                       className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
                     >
                       <option value="user">user</option>
                       <option value="support">support</option>
                       <option value="admin">admin</option>
                     </select>
+                    <button
+                      type="button"
+                      onClick={() => void handleDeleteUser(user.id)}
+                      disabled={deleteAdminUser.isPending}
+                      className="rounded-md border border-[#5B1F27] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
+                    >
+                      Supprimer
+                    </button>
                   </div>
                 </div>
 
@@ -2124,6 +2300,11 @@ export function AdminConsolePage({
             {adminUsers.isError && (
               <p className="text-sm text-[#FCA5A5]">
                 Erreur users: {adminUsers.error.message}
+              </p>
+            )}
+            {adminAiActivity.isError && (
+              <p className="text-sm text-[#FCA5A5]">
+                Erreur activité IA: {adminAiActivity.error.message}
               </p>
             )}
           </div>

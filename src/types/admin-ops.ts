@@ -143,7 +143,56 @@ export interface AdminUsersResponse {
   users: AdminUserRecord[];
 }
 
-export interface UpdateAdminUserRoleInput {
-  id: string;
+export interface CreateAdminUserInput {
+  id?: string;
+  email: string;
+  displayName?: string;
   role: AdminUserRecord["role"];
+  status?: AdminUserStatus;
+  twoFactorEnabled?: boolean;
+}
+
+export interface UpdateAdminUserInput {
+  id: string;
+  role?: AdminUserRecord["role"];
+  status?: AdminUserStatus;
+}
+
+export interface DeleteAdminUserInput {
+  id: string;
+}
+
+export interface AdminAiRunItem {
+  id: string;
+  status: string;
+  model: string;
+  startedAt?: string;
+  completedAt?: string;
+  latencyMs?: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  sessionId?: string;
+  userId?: string;
+  error?: string;
+}
+
+export interface AdminAiActivityMetrics {
+  totalRuns: number;
+  completedRuns: number;
+  failedRuns: number;
+  successRate: number;
+  avgLatencyMs: number;
+  p95LatencyMs: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  avgTokensPerRun: number;
+}
+
+export interface AdminAiActivityResponse {
+  generatedAt: string;
+  limit: number;
+  metrics: AdminAiActivityMetrics;
+  runs: AdminAiRunItem[];
 }
