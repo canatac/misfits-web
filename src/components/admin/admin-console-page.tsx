@@ -509,6 +509,10 @@ export function AdminConsolePage({
 
   async function handleCreateChangeRequest(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (qualityChecks.score < 4) {
+      return;
+    }
+
     await createChangeRequest.mutateAsync(newRequest);
     setNewRequest((prev) => ({
       ...prev,
@@ -544,7 +548,7 @@ export function AdminConsolePage({
 
   async function handleUserRoleChange(
     id: string,
-    role: AdminUserRecord["role"],
+    role: AdminUserRecord["role"]
   ) {
     await updateAdminUserRole.mutateAsync({ id, role });
   }
@@ -558,19 +562,19 @@ export function AdminConsolePage({
       {
         label: "Impact utilisateur/business explicite",
         ok: /impact|client|utilisateur|business|latence|erreur/i.test(
-          `${newRequest.problem} ${harnessImpact}`,
+          `${newRequest.problem} ${harnessImpact}`
         ),
       },
       {
         label: "Critères de succès mesurables",
         ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
-          `${newRequest.desiredOutcome} ${harnessQuality}`,
+          `${newRequest.desiredOutcome} ${harnessQuality}`
         ),
       },
       {
         label: "Plan de rollback / mitigation",
         ok: /rollback|revert|fallback|mitigation/i.test(
-          `${newRequest.desiredOutcome} ${harnessRollback}`,
+          `${newRequest.desiredOutcome} ${harnessRollback}`
         ),
       },
       {
@@ -1332,7 +1336,10 @@ export function AdminConsolePage({
                 <input
                   value={newRequest.title}
                   onChange={(e) =>
-                    setNewRequest((prev) => ({ ...prev, title: e.target.value }))
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
                   placeholder="Titre (ex: Flux changelog + CR admin)"
@@ -1358,7 +1365,8 @@ export function AdminConsolePage({
                   onChange={(e) =>
                     setNewRequest((prev) => ({
                       ...prev,
-                      scope: e.target.value as CreateChangeRequestInput["scope"],
+                      scope: e.target
+                        .value as CreateChangeRequestInput["scope"],
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
@@ -1412,14 +1420,19 @@ export function AdminConsolePage({
                   className="w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
                 >
                   <option value="misfits-web">Repo: misfits-web</option>
-                  <option value="reimagined-guide">Repo: reimagined-guide</option>
+                  <option value="reimagined-guide">
+                    Repo: reimagined-guide
+                  </option>
                   <option value="cross-repo">Repo: cross-repo</option>
                 </select>
               </div>
               <textarea
                 value={newRequest.problem}
                 onChange={(e) =>
-                  setNewRequest((prev) => ({ ...prev, problem: e.target.value }))
+                  setNewRequest((prev) => ({
+                    ...prev,
+                    problem: e.target.value,
+                  }))
                 }
                 className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
                 placeholder="Problème à résoudre"
@@ -1442,12 +1455,18 @@ export function AdminConsolePage({
               <button
                 type="submit"
                 className="mt-2 rounded-lg border border-[#C49B66] bg-[#2A2218] px-3 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
-                disabled={createChangeRequest.isPending}
+                disabled={createChangeRequest.isPending || qualityChecks.score < 4}
               >
                 {createChangeRequest.isPending
                   ? "Création..."
                   : "Créer et lancer le workflow"}
               </button>
+              {qualityChecks.score < 4 && (
+                <p className="mt-2 text-xs text-[#FCD34D]">
+                  Complète au moins 4/5 critères qualité via le harnais avant
+                  soumission.
+                </p>
+              )}
             </form>
 
             <aside className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
@@ -1460,8 +1479,9 @@ export function AdminConsolePage({
                 </Badge>
               </div>
               <p className="text-xs text-[#A1A1AA]">
-                Dialogue guidé pour cadrer la demande selon les standards de dev et
-                de qualité: problème, impact, critères mesurables et rollback.
+                Dialogue guidé pour cadrer la demande selon les standards de dev
+                et de qualité: problème, impact, critères mesurables et
+                rollback.
               </p>
 
               <div className="mt-3 space-y-2">
@@ -1500,14 +1520,16 @@ export function AdminConsolePage({
               </div>
 
               <div className="mt-3 rounded-lg border border-[#2A2A30] bg-[#111114] p-2">
-                <p className="mb-1 text-[11px] text-[#A1A1AA]">Checklist qualité</p>
+                <p className="mb-1 text-[11px] text-[#A1A1AA]">
+                  Checklist qualité
+                </p>
                 <div className="space-y-1">
                   {qualityChecks.checks.map((check) => (
                     <p
                       key={check.label}
                       className={cn(
                         "text-xs",
-                        check.ok ? "text-[#86EFAC]" : "text-[#FCD34D]",
+                        check.ok ? "text-[#86EFAC]" : "text-[#FCD34D]"
                       )}
                     >
                       {check.ok ? "✓" : "•"} {check.label}
@@ -1631,19 +1653,31 @@ export function AdminConsolePage({
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">Admins</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
-                {asInt((adminUsers.data?.users ?? []).filter((u) => u.role === "admin").length)}
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.role === "admin"
+                  ).length
+                )}
               </p>
             </article>
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">Support</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
-                {asInt((adminUsers.data?.users ?? []).filter((u) => u.role === "support").length)}
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.role === "support"
+                  ).length
+                )}
               </p>
             </article>
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">2FA activée</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
-                {asInt((adminUsers.data?.users ?? []).filter((u) => u.twoFactorEnabled).length)}
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.twoFactorEnabled
+                  ).length
+                )}
               </p>
             </article>
           </div>
@@ -1673,7 +1707,7 @@ export function AdminConsolePage({
                       onChange={(e) =>
                         void handleUserRoleChange(
                           user.id,
-                          e.target.value as AdminUserRecord["role"],
+                          e.target.value as AdminUserRecord["role"]
                         )
                       }
                       disabled={updateAdminUserRole.isPending}
@@ -1697,7 +1731,10 @@ export function AdminConsolePage({
                   <p className="text-xs text-[#A1A1AA]">Activité récente</p>
                   <div className="mt-1 space-y-1">
                     {user.recentActivity.slice(0, 3).map((evt, index) => (
-                      <p key={`${user.id}_${index}`} className="text-xs text-[#D4D4D8]">
+                      <p
+                        key={`${user.id}_${index}`}
+                        className="text-xs text-[#D4D4D8]"
+                      >
                         {asDate(evt.at)} · {evt.kind} · {evt.label}
                       </p>
                     ))}
