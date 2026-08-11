@@ -186,6 +186,35 @@ type AdminObservabilityOverviewResponse = {
   }>;
 };
 
+type ChangeRequestChatField =
+  "problemRoot" | "impact" | "successCriteria" | "rollbackPlan" | "none";
+
+type ChangeRequestChatMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
+
+type ChangeRequestGuideDraft = {
+  problemRoot: string;
+  impact: string;
+  successCriteria: string;
+  rollbackPlan: string;
+};
+
+const CHANGE_REQUEST_GUIDE_ORDER: Array<
+  Exclude<ChangeRequestChatField, "none">
+> = ["problemRoot", "impact", "successCriteria", "rollbackPlan"];
+
+const CHANGE_REQUEST_GUIDE_LABEL: Record<
+  Exclude<ChangeRequestChatField, "none">,
+  string
+> = {
+  problemRoot: "problème racine",
+  impact: "impact utilisateur/business",
+  successCriteria: "critères de succès mesurables",
+  rollbackPlan: "plan de rollback/mitigation",
+};
+
 function percent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
@@ -291,10 +320,25 @@ export function AdminConsolePage({
   });
 
   const [transitionNote, setTransitionNote] = useState("");
-  const [harnessProblem, setHarnessProblem] = useState("");
-  const [harnessImpact, setHarnessImpact] = useState("");
-  const [harnessQuality, setHarnessQuality] = useState("");
-  const [harnessRollback, setHarnessRollback] = useState("");
+  const [crGuideDraft, setCrGuideDraft] = useState<ChangeRequestGuideDraft>({
+    problemRoot: "",
+    impact: "",
+    successCriteria: "",
+    rollbackPlan: "",
+  });
+  const [crGuideStepIndex, setCrGuideStepIndex] = useState(0);
+  const [crGuideMessages, setCrGuideMessages] = useState<
+    ChangeRequestChatMessage[]
+  >([
+    {
+      role: "assistant",
+      content:
+        "Je t’aide à remplir la change request. Commence par décrire le problème racine (symptôme + cause probable).",
+    },
+  ]);
+  const [crGuideInput, setCrGuideInput] = useState("");
+  const [crGuideLoading, setCrGuideLoading] = useState(false);
+  const [crGuideError, setCrGuideError] = useState<string | null>(null);
 
   const [securityPosture, setSecurityPosture] =
     useState<AdminSecurityPostureResponse | null>(null);
@@ -530,20 +574,168 @@ export function AdminConsolePage({
     });
   }
 
-  function applyHarnessToForm() {
-    const fusedProblem = [harnessProblem.trim(), harnessImpact.trim()]
+  function applyGuideToForm(nextDraft?: ChangeRequestGuideDraft) {
+    const draft = nextDraft ?? crGuideDraft;
+    const fusedProblem = [
+      draft.problemRoot.trim(),
+      draft.impact.trim() && `Impact: ${draft.impact.trim()}`,
+    ]
       .filter(Boolean)
-      .join("\n\nImpact: ");
+      .join("\n\n");
 
-    const fusedOutcome = [harnessQuality.trim(), harnessRollback.trim()]
+    const fusedOutcome = [
+      draft.successCriteria.trim(),
+      draft.rollbackPlan.trim() &&
+        `Rollback/mitigation: ${draft.rollbackPlan.trim()}`,
+    ]
       .filter(Boolean)
-      .join("\n\nRollback/mitigation: ");
+      .join("\n\n");
 
     setNewRequest((prev) => ({
       ...prev,
       problem: fusedProblem || prev.problem,
       desiredOutcome: fusedOutcome || prev.desiredOutcome,
     }));
+  }
+
+  function parseGuideResponse(raw: string): {
+    assistantReply?: string;
+    field?: ChangeRequestChatField;
+    fieldValue?: string;
+    nextQuestion?: string;
+  } {
+    const cleaned = raw
+      .trim()
+      .replace(/^```json\s*/i, "")
+      .replace(/```$/i, "");
+    try {
+      return JSON.parse(cleaned) as {
+        assistantReply?: string;
+        field?: ChangeRequestChatField;
+        fieldValue?: string;
+        nextQuestion?: string;
+      };
+    } catch {
+      return { assistantReply: raw };
+    }
+  }
+
+  async function handleGuideChatSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const prompt = crGuideInput.trim();
+    if (!prompt || crGuideLoading) return;
+
+    const field =
+      CHANGE_REQUEST_GUIDE_ORDER[
+        Math.min(crGuideStepIndex, CHANGE_REQUEST_GUIDE_ORDER.length - 1)
+      ];
+
+    setCrGuideError(null);
+    setCrGuideInput("");
+    setCrGuideMessages((prev) => [...prev, { role: "user", content: prompt }]);
+    setCrGuideLoading(true);
+
+    try {
+      const response = await fetch("/api/hermes/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                'Tu es assistant de formulation de change request. Réponds strictement en JSON sans markdown: {"assistantReply":string,"field":"problemRoot"|"impact"|"successCriteria"|"rollbackPlan"|"none","fieldValue":string,"nextQuestion":string}. fieldValue doit reformuler la réponse utilisateur en version exploitable et concise. nextQuestion doit poser la prochaine question utile pour compléter le formulaire.',
+            },
+            {
+              role: "user",
+              content: JSON.stringify({
+                currentField: field,
+                userMessage: prompt,
+                draft: crGuideDraft,
+                form: newRequest,
+                remainingFields: CHANGE_REQUEST_GUIDE_ORDER.slice(
+                  Math.min(
+                    crGuideStepIndex + 1,
+                    CHANGE_REQUEST_GUIDE_ORDER.length
+                  )
+                ).map((k) => CHANGE_REQUEST_GUIDE_LABEL[k]),
+              }),
+            },
+          ],
+          sessionId: "admin-change-request-guide",
+          sessionKey: "misfits-admin-change-request-guide",
+          temperature: 0.2,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`guide_chat_failed_${response.status}`);
+      }
+
+      const data = await response.json();
+      const raw =
+        data?.choices?.[0]?.message?.content ??
+        data?.content ??
+        "Réponse indisponible.";
+
+      const parsed = parseGuideResponse(
+        typeof raw === "string" ? raw : JSON.stringify(raw)
+      );
+
+      const targetField =
+        parsed.field && parsed.field !== "none" ? parsed.field : field;
+      const normalized = (parsed.fieldValue || prompt).trim();
+      const updatedDraft: ChangeRequestGuideDraft = {
+        ...crGuideDraft,
+        [targetField]: normalized,
+      };
+
+      setCrGuideDraft(updatedDraft);
+
+      setCrGuideStepIndex((prev) =>
+        Math.min(prev + 1, CHANGE_REQUEST_GUIDE_ORDER.length)
+      );
+
+      applyGuideToForm(updatedDraft);
+
+      const reply =
+        parsed.assistantReply ||
+        `Bien reçu pour ${CHANGE_REQUEST_GUIDE_LABEL[targetField]}.`;
+      const next =
+        parsed.nextQuestion ||
+        (crGuideStepIndex + 1 >= CHANGE_REQUEST_GUIDE_ORDER.length
+          ? "Parfait, on a les éléments clés. Clique sur “Appliquer au formulaire” puis soumets la request."
+          : "Continue avec le prochain point pour compléter la request.");
+
+      setCrGuideMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `${reply}\n\n${next}` },
+      ]);
+    } catch (error) {
+      setCrGuideError(
+        error instanceof Error ? error.message : "assistant_chat_unavailable"
+      );
+
+      const fallbackDraft: ChangeRequestGuideDraft = {
+        ...crGuideDraft,
+        [field]: prompt,
+      };
+      setCrGuideDraft(fallbackDraft);
+      setCrGuideStepIndex((prev) =>
+        Math.min(prev + 1, CHANGE_REQUEST_GUIDE_ORDER.length)
+      );
+      setCrGuideMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Je n’ai pas pu reformuler automatiquement cette réponse. Je l’ai quand même prise en compte, tu peux continuer.",
+        },
+      ]);
+      applyGuideToForm(fallbackDraft);
+    } finally {
+      setCrGuideLoading(false);
+    }
   }
 
   async function handleUserRoleChange(
@@ -562,19 +754,19 @@ export function AdminConsolePage({
       {
         label: "Impact utilisateur/business explicite",
         ok: /impact|client|utilisateur|business|latence|erreur/i.test(
-          `${newRequest.problem} ${harnessImpact}`
+          `${newRequest.problem} ${crGuideDraft.impact}`
         ),
       },
       {
         label: "Critères de succès mesurables",
         ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
-          `${newRequest.desiredOutcome} ${harnessQuality}`
+          `${newRequest.desiredOutcome} ${crGuideDraft.successCriteria}`
         ),
       },
       {
         label: "Plan de rollback / mitigation",
         ok: /rollback|revert|fallback|mitigation/i.test(
-          `${newRequest.desiredOutcome} ${harnessRollback}`
+          `${newRequest.desiredOutcome} ${crGuideDraft.rollbackPlan}`
         ),
       },
       {
@@ -595,9 +787,9 @@ export function AdminConsolePage({
     newRequest.desiredOutcome,
     newRequest.linkedRepo,
     newRequest.scope,
-    harnessImpact,
-    harnessQuality,
-    harnessRollback,
+    crGuideDraft.impact,
+    crGuideDraft.successCriteria,
+    crGuideDraft.rollbackPlan,
   ]);
 
   const requestsByStatus = useMemo(() => {
@@ -1455,7 +1647,9 @@ export function AdminConsolePage({
               <button
                 type="submit"
                 className="mt-2 rounded-lg border border-[#C49B66] bg-[#2A2218] px-3 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
-                disabled={createChangeRequest.isPending || qualityChecks.score < 4}
+                disabled={
+                  createChangeRequest.isPending || qualityChecks.score < 4
+                }
               >
                 {createChangeRequest.isPending
                   ? "Création..."
@@ -1463,61 +1657,71 @@ export function AdminConsolePage({
               </button>
               {qualityChecks.score < 4 && (
                 <p className="mt-2 text-xs text-[#FCD34D]">
-                  Complète au moins 4/5 critères qualité via le harnais avant
-                  soumission.
+                  Complète au moins 4/5 critères qualité via l&apos;assistant
+                  chat avant soumission.
                 </p>
               )}
             </form>
 
             <aside className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
-                  Harnais de formulation
+                  Assistant chat — formulation CR
                 </h3>
                 <Badge tone={qualityChecks.score >= 4 ? "ok" : "warn"}>
                   qualité {qualityChecks.score}/5
                 </Badge>
               </div>
               <p className="text-xs text-[#A1A1AA]">
-                Dialogue guidé pour cadrer la demande selon les standards de dev
-                et de qualité: problème, impact, critères mesurables et
-                rollback.
+                Discute avec Hermes pour structurer la demande. Il reformule et
+                alimente automatiquement le formulaire.
               </p>
 
-              <div className="mt-3 space-y-2">
-                <textarea
-                  value={harnessProblem}
-                  onChange={(e) => setHarnessProblem(e.target.value)}
-                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
-                  placeholder="1) Quel est le problème racine observé ?"
-                />
-                <textarea
-                  value={harnessImpact}
-                  onChange={(e) => setHarnessImpact(e.target.value)}
-                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
-                  placeholder="2) Quel impact utilisateur/business/opérations ?"
-                />
-                <textarea
-                  value={harnessQuality}
-                  onChange={(e) => setHarnessQuality(e.target.value)}
-                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
-                  placeholder="3) Quels critères de succès mesurables (SLO/KPI/tests) ?"
-                />
-                <textarea
-                  value={harnessRollback}
-                  onChange={(e) => setHarnessRollback(e.target.value)}
-                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
-                  placeholder="4) Quel plan de rollback/fallback si régression ?"
-                />
-
-                <button
-                  type="button"
-                  onClick={applyHarnessToForm}
-                  className="rounded-lg border border-[#3A3A42] px-2.5 py-1.5 text-xs text-[#D4D4D8]"
-                >
-                  Injecter dans le formulaire
-                </button>
+              <div className="mt-3 h-64 space-y-2 overflow-y-auto rounded-lg border border-[#2A2A30] bg-[#111114] p-2">
+                {crGuideMessages.map((message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={cn(
+                      "max-w-[92%] rounded-md px-2 py-1.5 text-xs leading-relaxed",
+                      message.role === "assistant"
+                        ? "border border-[#2A2A30] bg-[#151518] text-[#D4D4D8]"
+                        : "ml-auto border border-[#4A3921] bg-[#2A2218] text-[#F2D5A7]"
+                    )}
+                  >
+                    {message.content}
+                  </div>
+                ))}
               </div>
+
+              <form className="mt-2 space-y-2" onSubmit={handleGuideChatSubmit}>
+                <textarea
+                  value={crGuideInput}
+                  onChange={(e) => setCrGuideInput(e.target.value)}
+                  className="h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="Réponds au message Hermes (ex: impact, KPI, rollback, etc.)"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={crGuideLoading || !crGuideInput.trim()}
+                    className="rounded-lg border border-[#C49B66] bg-[#2A2218] px-2.5 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
+                  >
+                    {crGuideLoading ? "Hermes rédige…" : "Envoyer"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyGuideToForm()}
+                    className="rounded-lg border border-[#3A3A42] px-2.5 py-1.5 text-xs text-[#D4D4D8]"
+                  >
+                    Appliquer au formulaire
+                  </button>
+                </div>
+                {crGuideError && (
+                  <p className="text-xs text-[#FCA5A5]">
+                    Assistant indisponible: {crGuideError}
+                  </p>
+                )}
+              </form>
 
               <div className="mt-3 rounded-lg border border-[#2A2A30] bg-[#111114] p-2">
                 <p className="mb-1 text-[11px] text-[#A1A1AA]">
