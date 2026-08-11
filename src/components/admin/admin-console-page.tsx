@@ -233,6 +233,25 @@ function asDate(ts: string): string {
   });
 }
 
+function minutesBetween(fromIso?: string, toIso?: string): number | null {
+  if (!fromIso || !toIso) return null;
+  const from = new Date(fromIso).getTime();
+  const to = new Date(toIso).getTime();
+  if (!Number.isFinite(from) || !Number.isFinite(to) || to < from) return null;
+  return Math.round((to - from) / 60000);
+}
+
+function formatDurationMinutes(minutes: number | null): string {
+  if (minutes === null) return "—";
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h < 24) return `${h}h ${m.toString().padStart(2, "0")}`;
+  const d = Math.floor(h / 24);
+  const remH = h % 24;
+  return `${d}j ${remH}h`;
+}
+
 function Badge({
   children,
   tone = "neutral",
@@ -571,6 +590,7 @@ export function AdminConsolePage({
       id,
       action,
       note: transitionNote.trim() || undefined,
+      actor: "hermes",
     });
   }
 
@@ -805,6 +825,56 @@ export function AdminConsolePage({
     }
 
     return grouped;
+  }, [changeRequests.data?.items]);
+
+  const changeRequestMonitoring = useMemo(() => {
+    const items = changeRequests.data?.items ?? [];
+    const nowIso = new Date().toISOString();
+
+    const taken = items.filter((item) => !!item.takenInChargeAt);
+    const triageMinutes = taken
+      .map((item) => minutesBetween(item.createdAt, item.takenInChargeAt))
+      .filter((v): v is number => v !== null);
+
+    const avgTriageMinutes = triageMinutes.length
+      ? Math.round(
+          triageMinutes.reduce((acc, value) => acc + value, 0) /
+            triageMinutes.length
+        )
+      : null;
+
+    const wip = items.filter(
+      (item) => item.status !== "released" && item.status !== "rejected"
+    ).length;
+
+    const stalled = items
+      .map((item) => ({
+        item,
+        ageMinutes: minutesBetween(item.updatedAt, nowIso) ?? 0,
+      }))
+      .filter((entry) => entry.item.status !== "released")
+      .sort((a, b) => b.ageMinutes - a.ageMinutes)
+      .slice(0, 3);
+
+    const latestEvents = items
+      .flatMap((item) =>
+        (item.workflowEvents ?? []).map((event) => ({
+          ...event,
+          requestId: item.id,
+          requestTitle: item.title,
+        }))
+      )
+      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+      .slice(0, 10);
+
+    return {
+      total: items.length,
+      wip,
+      takenCount: taken.length,
+      avgTriageMinutes,
+      stalled,
+      latestEvents,
+    };
   }, [changeRequests.data?.items]);
 
   return (
@@ -1516,6 +1586,106 @@ export function AdminConsolePage({
             </Badge>
           </div>
 
+          <div className="mb-3 grid gap-2 md:grid-cols-4">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">CR totales</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(changeRequestMonitoring.total)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">
+                En cours (hors released/rejected)
+              </p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(changeRequestMonitoring.wip)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">
+                Prises en charge par Hermes
+              </p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(changeRequestMonitoring.takenCount)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">
+                Délai moyen prise en charge
+              </p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {formatDurationMinutes(
+                  changeRequestMonitoring.avgTriageMinutes
+                )}
+              </p>
+            </article>
+          </div>
+
+          <div className="mb-3 grid gap-3 xl:grid-cols-2">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Dernières prises en charge / transitions
+              </h3>
+              <div className="mt-2 space-y-2">
+                {changeRequestMonitoring.latestEvents.map((event) => (
+                  <div
+                    key={`${event.requestId}-${event.at}-${event.action}`}
+                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                  >
+                    <p className="text-xs text-[#E4E4E7]">
+                      {event.requestId} · {event.fromStatus} → {event.toStatus}
+                    </p>
+                    <p className="text-[11px] text-[#A1A1AA]">
+                      {event.actor} · {asDate(event.at)}
+                    </p>
+                    {event.note && (
+                      <p className="mt-1 text-[11px] text-[#71717A]">
+                        {event.note}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {!changeRequestMonitoring.latestEvents.length && (
+                  <p className="text-xs text-[#71717A]">
+                    Aucun événement workflow pour le moment.
+                  </p>
+                )}
+              </div>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                État des lieux (CR les plus anciennes)
+              </h3>
+              <div className="mt-2 space-y-2">
+                {changeRequestMonitoring.stalled.map(({ item, ageMinutes }) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-[#E4E4E7]">{item.id}</p>
+                      <Badge tone={statusTone(item.status)}>
+                        {item.status}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                      Inactif depuis {formatDurationMinutes(ageMinutes)}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#71717A]">
+                      prise en charge: {item.takenInChargeBy || "—"} ·{" "}
+                      {asDate(item.takenInChargeAt || "")}
+                    </p>
+                  </div>
+                ))}
+                {!changeRequestMonitoring.stalled.length && (
+                  <p className="text-xs text-[#71717A]">
+                    Aucune CR en attente prolongée.
+                  </p>
+                )}
+              </div>
+            </article>
+          </div>
+
           <div className="grid gap-3 xl:grid-cols-5">
             <form
               onSubmit={handleCreateChangeRequest}
@@ -1788,6 +1958,10 @@ export function AdminConsolePage({
                       <p className="mt-1 text-[11px] text-[#71717A]">
                         {item.linkedRepo} · {item.targetReleaseWindow} ·{" "}
                         {item.id}
+                      </p>
+                      <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                        prise en charge: {item.takenInChargeBy || "—"} ·{" "}
+                        {asDate(item.takenInChargeAt || "")}
                       </p>
                       <div className="mt-2 flex gap-2">
                         <button
