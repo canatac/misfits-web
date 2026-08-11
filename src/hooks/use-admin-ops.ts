@@ -4,16 +4,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   createAdminChangeRequest,
+  createAdminUser,
+  deleteAdminUser,
+  getAdminAiActivity,
   getAdminChangelog,
   getAdminUsers,
   getChangeRequests,
   transitionAdminChangeRequest,
-  updateAdminUserRole,
+  updateAdminUser,
 } from "@/lib/admin-ops-api";
 import type {
+  CreateAdminUserInput,
   CreateChangeRequestInput,
+  DeleteAdminUserInput,
   TransitionChangeRequestInput,
-  UpdateAdminUserRoleInput,
+  UpdateAdminUserInput,
 } from "@/types/admin-ops";
 
 const REFRESH_30S = 30_000;
@@ -80,17 +85,56 @@ export function useAdminUsers() {
   });
 }
 
-export function useUpdateAdminUserRole() {
+export function useUpdateAdminUser() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateAdminUserRoleInput) => updateAdminUserRole(payload),
+    mutationFn: (payload: UpdateAdminUserInput) => updateAdminUser(payload),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
-      toast.success("Rôle utilisateur mis à jour.");
+      toast.success("Utilisateur mis à jour.");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Mise à jour du rôle impossible.");
+      toast.error(error.message || "Mise à jour utilisateur impossible.");
     },
+  });
+}
+
+export function useCreateAdminUser() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateAdminUserInput) => createAdminUser(payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      toast.success("Utilisateur créé.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Création utilisateur impossible.");
+    },
+  });
+}
+
+export function useDeleteAdminUser() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: DeleteAdminUserInput) => deleteAdminUser(payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      toast.success("Utilisateur supprimé.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Suppression utilisateur impossible.");
+    },
+  });
+}
+
+export function useAdminAiActivity(limit = 40) {
+  return useQuery({
+    queryKey: ["admin", "ai-activity", limit],
+    queryFn: () => getAdminAiActivity(limit),
+    refetchInterval: REFRESH_30S,
+    staleTime: 10_000,
   });
 }
