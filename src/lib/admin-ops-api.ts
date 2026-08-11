@@ -35,9 +35,11 @@ export function createAdminChangeRequest(payload: CreateChangeRequestInput) {
 export function transitionAdminChangeRequest(
   payload: TransitionChangeRequestInput
 ) {
+  const { id, ...rest } = payload;
+  const encodedId = encodeURIComponent(id);
   return apiClient.patch<TransitionChangeRequestResponse>(
-    "/admin/change-requests",
-    payload,
+    `/admin/change-requests/${encodedId}`,
+    rest,
     { skipAuth: true }
   );
 }
