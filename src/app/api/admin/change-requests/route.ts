@@ -23,7 +23,8 @@ async function proxy(
     cache: "no-store",
   });
 
-  const contentType = upstream.headers.get("content-type") || "application/json";
+  const contentType =
+    upstream.headers.get("content-type") || "application/json";
   const text = await upstream.text().catch(() => "");
   return new NextResponse(text, {
     status: upstream.status,
@@ -76,6 +77,7 @@ export async function PATCH(request: Request) {
   for (const key of [
     "action",
     "note",
+    "actor",
     "title",
     "problem",
     "desiredOutcome",
@@ -100,5 +102,8 @@ export async function DELETE(request: Request) {
       { status: 400 }
     );
   }
-  return proxy(`/api/admin/change-requests/${encodeURIComponent(id)}`, "DELETE");
+  return proxy(
+    `/api/admin/change-requests/${encodeURIComponent(id)}`,
+    "DELETE"
+  );
 }

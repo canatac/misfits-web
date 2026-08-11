@@ -18,6 +18,15 @@ export interface WorkflowStage {
   doneAt?: string;
 }
 
+export interface WorkflowEvent {
+  at: string;
+  actor: string;
+  action: string;
+  fromStatus: WorkflowStatus;
+  toStatus: WorkflowStatus;
+  note?: string;
+}
+
 export interface ChangeRequestItem {
   id: string;
   title: string;
@@ -30,9 +39,12 @@ export interface ChangeRequestItem {
   linkedRepo: "misfits-web" | "reimagined-guide" | "cross-repo";
   createdAt: string;
   updatedAt: string;
+  takenInChargeAt?: string;
+  takenInChargeBy?: string;
   targetReleaseWindow: string;
   acceptanceCriteria: string[];
   workflow: WorkflowStage[];
+  workflowEvents: WorkflowEvent[];
   changelogEntry?: {
     title: string;
     summary: string;
@@ -61,6 +73,7 @@ export interface TransitionChangeRequestInput {
   id: string;
   action: "advance" | "reject";
   note?: string;
+  actor?: string;
 }
 
 export interface TransitionChangeRequestResponse {
