@@ -1,58 +1,92 @@
 import { NextResponse } from "next/server";
-import { listAdminUsers, updateAdminUserRole } from "@/lib/admin-user-directory";
-import type { UpdateAdminUserRoleInput } from "@/types/admin-ops";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function badRequest(message: string) {
-  return NextResponse.json({ error: { message } }, { status: 400 });
+function resolveBackendBaseUrl(): string {
+  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
 }
 
-function validateRolePatchPayload(payload: unknown): UpdateAdminUserRoleInput | null {
-  if (!payload || typeof payload !== "object") return null;
-  const data = payload as Record<string, unknown>;
-  const id = String(data.id ?? "").trim();
-  const role = String(data.role ?? "").trim();
-
-  if (!id || !["user", "admin", "support"].includes(role)) {
-    return null;
-  }
-
-  return {
-    id,
-    role: role as UpdateAdminUserRoleInput["role"],
-  };
-}
-
-export async function GET() {
-  return NextResponse.json(
-    {
-      generatedAt: new Date().toISOString(),
-      users: listAdminUsers(),
+async function proxy(
+  path: string,
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  body?: unknown
+) {
+  const upstream = await fetch(`${resolveBackendBaseUrl()}${path}`, {
+    method,
+    headers: {
+      Accept: "application/json",
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
     },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  const contentType = upstream.headers.get("content-type") || "application/json";
+  const text = await upstream.text().catch(() => "");
+  return new NextResponse(text, {
+    status: upstream.status,
+    headers: {
+      "Content-Type": contentType,
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id")?.trim();
+  if (id) {
+    return proxy(`/api/admin/users/${encodeURIComponent(id)}`, "GET");
+  }
+  return proxy("/api/admin/users", "GET");
+}
+
+export async function POST(request: Request) {
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload !== "object") {
+    return NextResponse.json(
+      { error: { message: "Invalid payload" } },
+      { status: 400 }
+    );
+  }
+  return proxy("/api/admin/users", "POST", payload);
 }
 
 export async function PATCH(request: Request) {
   const payload = await request.json().catch(() => null);
-  const parsed = validateRolePatchPayload(payload);
-
-  if (!parsed) {
-    return badRequest("Invalid payload. Expected id + role(user|admin|support). ");
+  if (!payload || typeof payload !== "object") {
+    return NextResponse.json(
+      { error: { message: "Invalid payload" } },
+      { status: 400 }
+    );
   }
 
-  const user = updateAdminUserRole(parsed.id, parsed.role);
-  if (!user) {
-    return NextResponse.json({ error: { message: "User not found" } }, { status: 404 });
+  const data = payload as Record<string, unknown>;
+  const id = String(data.id ?? "").trim();
+  if (!id) {
+    return NextResponse.json(
+      { error: { message: "Invalid payload. Expected id." } },
+      { status: 400 }
+    );
   }
 
-  return NextResponse.json(
-    {
-      user,
-      users: listAdminUsers(),
-    },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+  const patchBody: Record<string, unknown> = {};
+  if (typeof data.role === "string") patchBody.role = data.role;
+  if (typeof data.status === "string") patchBody.status = data.status;
+
+  return proxy(`/api/admin/users/${encodeURIComponent(id)}`, "PATCH", patchBody);
+}
+
+export async function DELETE(request: Request) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id")?.trim();
+  if (!id) {
+    return NextResponse.json(
+      { error: { message: "Missing id query parameter" } },
+      { status: 400 }
+    );
+  }
+  return proxy(`/api/admin/users/${encodeURIComponent(id)}`, "DELETE");
 }
