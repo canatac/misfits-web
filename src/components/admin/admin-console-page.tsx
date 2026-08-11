@@ -291,6 +291,10 @@ export function AdminConsolePage({
   });
 
   const [transitionNote, setTransitionNote] = useState("");
+  const [harnessProblem, setHarnessProblem] = useState("");
+  const [harnessImpact, setHarnessImpact] = useState("");
+  const [harnessQuality, setHarnessQuality] = useState("");
+  const [harnessRollback, setHarnessRollback] = useState("");
 
   const [securityPosture, setSecurityPosture] =
     useState<AdminSecurityPostureResponse | null>(null);
@@ -522,12 +526,75 @@ export function AdminConsolePage({
     });
   }
 
+  function applyHarnessToForm() {
+    const fusedProblem = [harnessProblem.trim(), harnessImpact.trim()]
+      .filter(Boolean)
+      .join("\n\nImpact: ");
+
+    const fusedOutcome = [harnessQuality.trim(), harnessRollback.trim()]
+      .filter(Boolean)
+      .join("\n\nRollback/mitigation: ");
+
+    setNewRequest((prev) => ({
+      ...prev,
+      problem: fusedProblem || prev.problem,
+      desiredOutcome: fusedOutcome || prev.desiredOutcome,
+    }));
+  }
+
   async function handleUserRoleChange(
     id: string,
     role: AdminUserRecord["role"],
   ) {
     await updateAdminUserRole.mutateAsync({ id, role });
   }
+
+  const qualityChecks = useMemo(() => {
+    const checks = [
+      {
+        label: "Problème explicite (cause + symptôme)",
+        ok: newRequest.problem.trim().length >= 40,
+      },
+      {
+        label: "Impact utilisateur/business explicite",
+        ok: /impact|client|utilisateur|business|latence|erreur/i.test(
+          `${newRequest.problem} ${harnessImpact}`,
+        ),
+      },
+      {
+        label: "Critères de succès mesurables",
+        ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
+          `${newRequest.desiredOutcome} ${harnessQuality}`,
+        ),
+      },
+      {
+        label: "Plan de rollback / mitigation",
+        ok: /rollback|revert|fallback|mitigation/i.test(
+          `${newRequest.desiredOutcome} ${harnessRollback}`,
+        ),
+      },
+      {
+        label: "Portée repo + priorité cohérentes",
+        ok:
+          (newRequest.linkedRepo === "cross-repo" &&
+            newRequest.scope === "fullstack") ||
+          newRequest.linkedRepo !== "cross-repo",
+      },
+    ];
+
+    return {
+      checks,
+      score: checks.filter((c) => c.ok).length,
+    };
+  }, [
+    newRequest.problem,
+    newRequest.desiredOutcome,
+    newRequest.linkedRepo,
+    newRequest.scope,
+    harnessImpact,
+    harnessQuality,
+    harnessRollback,
+  ]);
 
   const requestsByStatus = useMemo(() => {
     const grouped = Object.fromEntries(
@@ -1253,134 +1320,203 @@ export function AdminConsolePage({
             </Badge>
           </div>
 
-          <form
-            onSubmit={handleCreateChangeRequest}
-            className="rounded-xl border border-[#232327] bg-[#151518] p-3"
-          >
-            <h3 className="mb-3 text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
-              Nouvelle demande
-            </h3>
-            <div className="grid gap-2 md:grid-cols-2">
-              <input
-                value={newRequest.title}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({ ...prev, title: e.target.value }))
-                }
-                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
-                placeholder="Titre (ex: Flux changelog + CR admin)"
-                required
-                minLength={8}
-              />
-              <input
-                value={newRequest.requestedBy}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({
-                    ...prev,
-                    requestedBy: e.target.value,
-                  }))
-                }
-                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
-                placeholder="Requested by"
-                required
-              />
-            </div>
-            <div className="mt-2 grid gap-2 md:grid-cols-3">
-              <select
-                value={newRequest.scope}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({
-                    ...prev,
-                    scope: e.target.value as CreateChangeRequestInput["scope"],
-                  }))
-                }
-                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
-              >
-                <option value="ux">Scope UX</option>
-                <option value="backend">Scope Backend</option>
-                <option value="fullstack">Scope Fullstack</option>
-                <option value="security">Scope Security</option>
-              </select>
-              <select
-                value={newRequest.urgency}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({
-                    ...prev,
-                    urgency: e.target
-                      .value as CreateChangeRequestInput["urgency"],
-                  }))
-                }
-                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
-              >
-                <option value="low">Urgence low</option>
-                <option value="medium">Urgence medium</option>
-                <option value="high">Urgence high</option>
-              </select>
-              <select
-                value={newRequest.impact}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({
-                    ...prev,
-                    impact: e.target
-                      .value as CreateChangeRequestInput["impact"],
-                  }))
-                }
-                className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
-              >
-                <option value="small">Impact small</option>
-                <option value="medium">Impact medium</option>
-                <option value="high">Impact high</option>
-              </select>
-            </div>
-            <div className="mt-2">
-              <select
-                value={newRequest.linkedRepo}
-                onChange={(e) =>
-                  setNewRequest((prev) => ({
-                    ...prev,
-                    linkedRepo: e.target
-                      .value as CreateChangeRequestInput["linkedRepo"],
-                  }))
-                }
-                className="w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
-              >
-                <option value="misfits-web">Repo: misfits-web</option>
-                <option value="reimagined-guide">Repo: reimagined-guide</option>
-                <option value="cross-repo">Repo: cross-repo</option>
-              </select>
-            </div>
-            <textarea
-              value={newRequest.problem}
-              onChange={(e) =>
-                setNewRequest((prev) => ({ ...prev, problem: e.target.value }))
-              }
-              className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
-              placeholder="Problème à résoudre"
-              minLength={16}
-              required
-            />
-            <textarea
-              value={newRequest.desiredOutcome}
-              onChange={(e) =>
-                setNewRequest((prev) => ({
-                  ...prev,
-                  desiredOutcome: e.target.value,
-                }))
-              }
-              className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
-              placeholder="Résultat attendu + critères de succès"
-              minLength={16}
-              required
-            />
-            <button
-              type="submit"
-              className="mt-2 rounded-lg border border-[#C49B66] bg-[#2A2218] px-3 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
-              disabled={createChangeRequest.isPending}
+          <div className="grid gap-3 xl:grid-cols-5">
+            <form
+              onSubmit={handleCreateChangeRequest}
+              className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-3"
             >
-              {createChangeRequest.isPending
-                ? "Création..."
-                : "Créer et lancer le workflow"}
-            </button>
-          </form>
+              <h3 className="mb-3 text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Nouvelle demande
+              </h3>
+              <div className="grid gap-2 md:grid-cols-2">
+                <input
+                  value={newRequest.title}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({ ...prev, title: e.target.value }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                  placeholder="Titre (ex: Flux changelog + CR admin)"
+                  required
+                  minLength={8}
+                />
+                <input
+                  value={newRequest.requestedBy}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      requestedBy: e.target.value,
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                  placeholder="Requested by"
+                  required
+                />
+              </div>
+              <div className="mt-2 grid gap-2 md:grid-cols-3">
+                <select
+                  value={newRequest.scope}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      scope: e.target.value as CreateChangeRequestInput["scope"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="ux">Scope UX</option>
+                  <option value="backend">Scope Backend</option>
+                  <option value="fullstack">Scope Fullstack</option>
+                  <option value="security">Scope Security</option>
+                </select>
+                <select
+                  value={newRequest.urgency}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      urgency: e.target
+                        .value as CreateChangeRequestInput["urgency"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="low">Urgence low</option>
+                  <option value="medium">Urgence medium</option>
+                  <option value="high">Urgence high</option>
+                </select>
+                <select
+                  value={newRequest.impact}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      impact: e.target
+                        .value as CreateChangeRequestInput["impact"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="small">Impact small</option>
+                  <option value="medium">Impact medium</option>
+                  <option value="high">Impact high</option>
+                </select>
+              </div>
+              <div className="mt-2">
+                <select
+                  value={newRequest.linkedRepo}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      linkedRepo: e.target
+                        .value as CreateChangeRequestInput["linkedRepo"],
+                    }))
+                  }
+                  className="w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="misfits-web">Repo: misfits-web</option>
+                  <option value="reimagined-guide">Repo: reimagined-guide</option>
+                  <option value="cross-repo">Repo: cross-repo</option>
+                </select>
+              </div>
+              <textarea
+                value={newRequest.problem}
+                onChange={(e) =>
+                  setNewRequest((prev) => ({ ...prev, problem: e.target.value }))
+                }
+                className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                placeholder="Problème à résoudre"
+                minLength={16}
+                required
+              />
+              <textarea
+                value={newRequest.desiredOutcome}
+                onChange={(e) =>
+                  setNewRequest((prev) => ({
+                    ...prev,
+                    desiredOutcome: e.target.value,
+                  }))
+                }
+                className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                placeholder="Résultat attendu + critères de succès"
+                minLength={16}
+                required
+              />
+              <button
+                type="submit"
+                className="mt-2 rounded-lg border border-[#C49B66] bg-[#2A2218] px-3 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
+                disabled={createChangeRequest.isPending}
+              >
+                {createChangeRequest.isPending
+                  ? "Création..."
+                  : "Créer et lancer le workflow"}
+              </button>
+            </form>
+
+            <aside className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Harnais de formulation
+                </h3>
+                <Badge tone={qualityChecks.score >= 4 ? "ok" : "warn"}>
+                  qualité {qualityChecks.score}/5
+                </Badge>
+              </div>
+              <p className="text-xs text-[#A1A1AA]">
+                Dialogue guidé pour cadrer la demande selon les standards de dev et
+                de qualité: problème, impact, critères mesurables et rollback.
+              </p>
+
+              <div className="mt-3 space-y-2">
+                <textarea
+                  value={harnessProblem}
+                  onChange={(e) => setHarnessProblem(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="1) Quel est le problème racine observé ?"
+                />
+                <textarea
+                  value={harnessImpact}
+                  onChange={(e) => setHarnessImpact(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="2) Quel impact utilisateur/business/opérations ?"
+                />
+                <textarea
+                  value={harnessQuality}
+                  onChange={(e) => setHarnessQuality(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="3) Quels critères de succès mesurables (SLO/KPI/tests) ?"
+                />
+                <textarea
+                  value={harnessRollback}
+                  onChange={(e) => setHarnessRollback(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="4) Quel plan de rollback/fallback si régression ?"
+                />
+
+                <button
+                  type="button"
+                  onClick={applyHarnessToForm}
+                  className="rounded-lg border border-[#3A3A42] px-2.5 py-1.5 text-xs text-[#D4D4D8]"
+                >
+                  Injecter dans le formulaire
+                </button>
+              </div>
+
+              <div className="mt-3 rounded-lg border border-[#2A2A30] bg-[#111114] p-2">
+                <p className="mb-1 text-[11px] text-[#A1A1AA]">Checklist qualité</p>
+                <div className="space-y-1">
+                  {qualityChecks.checks.map((check) => (
+                    <p
+                      key={check.label}
+                      className={cn(
+                        "text-xs",
+                        check.ok ? "text-[#86EFAC]" : "text-[#FCD34D]",
+                      )}
+                    >
+                      {check.ok ? "✓" : "•"} {check.label}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
 
           <div className="mt-3 rounded-xl border border-[#232327] bg-[#151518] p-3">
             <label className="text-xs text-[#A1A1AA]">
