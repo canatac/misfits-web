@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getWorkflowReleaseEntries } from "@/lib/admin-change-workflow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +34,32 @@ type RepoPayload = {
   commits: CommitItem[];
 };
 
+type WorkflowRelease = {
+  id: string;
+  title: string;
+  summary: string;
+  releasedAt: string;
+  sourceChangeRequestId: string;
+  priority: "P0" | "P1" | "P2";
+  scope: "ux" | "backend" | "fullstack" | "security";
+};
+
+type ChangeRequestsPayload = {
+  items?: Array<{
+    id: string;
+    title: string;
+    desiredOutcome: string;
+    status: string;
+    priority: "P0" | "P1" | "P2";
+    scope: "ux" | "backend" | "fullstack" | "security";
+    updatedAt?: string;
+    changelogEntry?: {
+      summary?: string;
+      releasedAt?: string;
+    };
+  }>;
+};
+
 const REPOS: RepoDef[] = [
   { key: "web", owner: "canatac", repo: "misfits-web" },
   { key: "backend", owner: "canatac", repo: "reimagined-guide" },
@@ -43,6 +68,42 @@ const REPOS: RepoDef[] = [
 function firstLine(message: string | undefined): string {
   if (!message) return "(no message)";
   return message.split("\n")[0]?.trim() || "(no message)";
+}
+
+function resolveBackendBaseUrl(): string {
+  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+async function fetchWorkflowReleases(): Promise<WorkflowRelease[]> {
+  const res = await fetch(
+    `${resolveBackendBaseUrl()}/api/admin/change-requests`,
+    {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    return [];
+  }
+
+  const payload = (await res.json().catch(() => ({}))) as ChangeRequestsPayload;
+  const items = payload.items || [];
+
+  return items
+    .filter((item) => item.status === "released")
+    .map((item) => ({
+      id: `release_${item.id}`,
+      title: item.title,
+      summary: item.changelogEntry?.summary || item.desiredOutcome,
+      releasedAt:
+        item.changelogEntry?.releasedAt || item.updatedAt || new Date().toISOString(),
+      sourceChangeRequestId: item.id,
+      priority: item.priority,
+      scope: item.scope,
+    }))
+    .sort((a, b) => b.releasedAt.localeCompare(a.releasedAt));
 }
 
 async function githubGet(path: string): Promise<any> {
@@ -126,7 +187,7 @@ async function fetchRepoChangelog(repoDef: RepoDef): Promise<RepoPayload> {
 export async function GET() {
   try {
     const repositories = await Promise.all(REPOS.map(fetchRepoChangelog));
-    const workflowReleases = getWorkflowReleaseEntries();
+    const workflowReleases = await fetchWorkflowReleases();
 
     return NextResponse.json(
       {
