@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getWorkflowReleaseEntries } from "@/lib/admin-change-workflow";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,11 +76,11 @@ async function githubGet(path: string): Promise<any> {
 
 async function fetchRepoChangelog(repoDef: RepoDef): Promise<RepoPayload> {
   const commits = (await githubGet(
-    `/repos/${repoDef.owner}/${repoDef.repo}/commits?per_page=30`,
+    `/repos/${repoDef.owner}/${repoDef.repo}/commits?per_page=30`
   )) as any[];
 
   const runsData = await githubGet(
-    `/repos/${repoDef.owner}/${repoDef.repo}/actions/runs?per_page=100`,
+    `/repos/${repoDef.owner}/${repoDef.repo}/actions/runs?per_page=100`
   );
   const runs = (runsData?.workflow_runs || []) as WorkflowRun[];
 
@@ -93,11 +94,12 @@ async function fetchRepoChangelog(repoDef: RepoDef): Promise<RepoPayload> {
   const items: CommitItem[] = commits.slice(0, 20).map((c) => {
     const sha = String(c.sha || "");
     const shortSha = sha.slice(0, 8);
-    const author =
-      c?.author?.login || c?.commit?.author?.name || "unknown";
+    const author = c?.author?.login || c?.commit?.author?.name || "unknown";
     const committedAt = c?.commit?.author?.date || "";
     const message = firstLine(c?.commit?.message);
-    const commitUrl = c?.html_url || `https://github.com/${repoDef.owner}/${repoDef.repo}/commit/${sha}`;
+    const commitUrl =
+      c?.html_url ||
+      `https://github.com/${repoDef.owner}/${repoDef.repo}/commit/${sha}`;
     const workflow = runBySha.get(sha);
 
     return {
@@ -124,18 +126,22 @@ async function fetchRepoChangelog(repoDef: RepoDef): Promise<RepoPayload> {
 export async function GET() {
   try {
     const repositories = await Promise.all(REPOS.map(fetchRepoChangelog));
+    const workflowReleases = getWorkflowReleaseEntries();
+
     return NextResponse.json(
       {
         generatedAt: new Date().toISOString(),
         repositories,
+        workflowReleases,
       },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to load changelog";
+    const message =
+      error instanceof Error ? error.message : "Unable to load changelog";
     return NextResponse.json(
       { error: { message } },
-      { status: 502, headers: { "Cache-Control": "no-store" } },
+      { status: 502, headers: { "Cache-Control": "no-store" } }
     );
   }
 }

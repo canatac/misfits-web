@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AlertTriangle, Activity, ShieldCheck, Clock3 } from "lucide-react";
 import {
   useMonitoringAlerts,
@@ -14,12 +14,31 @@ import {
   useSecurityIncidents,
   useSecurityLive,
 } from "@/hooks/use-security-dashboard";
+import {
+  useAdminChangelog,
+  useAdminUsers,
+  useChangeRequests,
+  useCreateChangeRequest,
+  useTransitionChangeRequest,
+  useUpdateAdminUserRole,
+} from "@/hooks/use-admin-ops";
+import type {
+  ChangeRequestItem,
+  CreateChangeRequestInput,
+  WorkflowStatus,
+  AdminUserRecord,
+} from "@/types/admin-ops";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
 import { cn } from "@/lib/utils";
 
 type AdminTab =
-  "overview" | "monitoring" | "security" | "changelog" | "change-requests";
+  | "overview"
+  | "monitoring"
+  | "security"
+  | "changelog"
+  | "change-requests"
+  | "users";
 
 const WINDOW_OPTIONS: MonitoringWindow[] = ["15m", "1h", "6h", "24h", "7d"];
 const SEVERITY_OPTIONS: Array<SecuritySeverity | "all"> = [
@@ -30,6 +49,25 @@ const SEVERITY_OPTIONS: Array<SecuritySeverity | "all"> = [
   "high",
   "critical",
 ];
+const WORKFLOW_STATUS_COLUMNS: WorkflowStatus[] = [
+  "submitted",
+  "triaged",
+  "planned",
+  "in_progress",
+  "qa",
+  "released",
+  "rejected",
+];
+
+const STATUS_LABEL: Record<WorkflowStatus, string> = {
+  submitted: "Soumise",
+  triaged: "Triage",
+  planned: "Planifiée",
+  in_progress: "En cours",
+  qa: "QA",
+  released: "Released",
+  rejected: "Rejetée",
+};
 
 type AdminSecurityPostureResponse = {
   security?: {
@@ -188,6 +226,23 @@ function Badge({
   );
 }
 
+function priorityTone(
+  priority: ChangeRequestItem["priority"]
+): "danger" | "warn" | "ok" {
+  if (priority === "P0") return "danger";
+  if (priority === "P1") return "warn";
+  return "ok";
+}
+
+function statusTone(
+  status: WorkflowStatus
+): "danger" | "warn" | "ok" | "neutral" {
+  if (status === "rejected") return "danger";
+  if (status === "released") return "ok";
+  if (status === "submitted" || status === "triaged") return "warn";
+  return "neutral";
+}
+
 export function AdminConsolePage({
   initialTab = "overview",
 }: {
@@ -216,6 +271,30 @@ export function AdminConsolePage({
     severity: securitySeverityFilter,
   });
   const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
+
+  const adminChangelog = useAdminChangelog();
+  const changeRequests = useChangeRequests();
+  const adminUsers = useAdminUsers();
+  const createChangeRequest = useCreateChangeRequest();
+  const transitionChangeRequest = useTransitionChangeRequest();
+  const updateAdminUserRole = useUpdateAdminUserRole();
+
+  const [newRequest, setNewRequest] = useState<CreateChangeRequestInput>({
+    title: "",
+    problem: "",
+    desiredOutcome: "",
+    scope: "fullstack",
+    urgency: "medium",
+    impact: "medium",
+    requestedBy: "admin",
+    linkedRepo: "cross-repo",
+  });
+
+  const [transitionNote, setTransitionNote] = useState("");
+  const [harnessProblem, setHarnessProblem] = useState("");
+  const [harnessImpact, setHarnessImpact] = useState("");
+  const [harnessQuality, setHarnessQuality] = useState("");
+  const [harnessRollback, setHarnessRollback] = useState("");
 
   const [securityPosture, setSecurityPosture] =
     useState<AdminSecurityPostureResponse | null>(null);
@@ -428,6 +507,114 @@ export function AdminConsolePage({
     }
   }
 
+  async function handleCreateChangeRequest(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (qualityChecks.score < 4) {
+      return;
+    }
+
+    await createChangeRequest.mutateAsync(newRequest);
+    setNewRequest((prev) => ({
+      ...prev,
+      title: "",
+      problem: "",
+      desiredOutcome: "",
+    }));
+  }
+
+  async function handleTransition(id: string, action: "advance" | "reject") {
+    await transitionChangeRequest.mutateAsync({
+      id,
+      action,
+      note: transitionNote.trim() || undefined,
+    });
+  }
+
+  function applyHarnessToForm() {
+    const fusedProblem = [harnessProblem.trim(), harnessImpact.trim()]
+      .filter(Boolean)
+      .join("\n\nImpact: ");
+
+    const fusedOutcome = [harnessQuality.trim(), harnessRollback.trim()]
+      .filter(Boolean)
+      .join("\n\nRollback/mitigation: ");
+
+    setNewRequest((prev) => ({
+      ...prev,
+      problem: fusedProblem || prev.problem,
+      desiredOutcome: fusedOutcome || prev.desiredOutcome,
+    }));
+  }
+
+  async function handleUserRoleChange(
+    id: string,
+    role: AdminUserRecord["role"]
+  ) {
+    await updateAdminUserRole.mutateAsync({ id, role });
+  }
+
+  const qualityChecks = useMemo(() => {
+    const checks = [
+      {
+        label: "Problème explicite (cause + symptôme)",
+        ok: newRequest.problem.trim().length >= 40,
+      },
+      {
+        label: "Impact utilisateur/business explicite",
+        ok: /impact|client|utilisateur|business|latence|erreur/i.test(
+          `${newRequest.problem} ${harnessImpact}`
+        ),
+      },
+      {
+        label: "Critères de succès mesurables",
+        ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
+          `${newRequest.desiredOutcome} ${harnessQuality}`
+        ),
+      },
+      {
+        label: "Plan de rollback / mitigation",
+        ok: /rollback|revert|fallback|mitigation/i.test(
+          `${newRequest.desiredOutcome} ${harnessRollback}`
+        ),
+      },
+      {
+        label: "Portée repo + priorité cohérentes",
+        ok:
+          (newRequest.linkedRepo === "cross-repo" &&
+            newRequest.scope === "fullstack") ||
+          newRequest.linkedRepo !== "cross-repo",
+      },
+    ];
+
+    return {
+      checks,
+      score: checks.filter((c) => c.ok).length,
+    };
+  }, [
+    newRequest.problem,
+    newRequest.desiredOutcome,
+    newRequest.linkedRepo,
+    newRequest.scope,
+    harnessImpact,
+    harnessQuality,
+    harnessRollback,
+  ]);
+
+  const requestsByStatus = useMemo(() => {
+    const grouped = Object.fromEntries(
+      WORKFLOW_STATUS_COLUMNS.map((status) => [
+        status,
+        [] as ChangeRequestItem[],
+      ])
+    ) as Record<WorkflowStatus, ChangeRequestItem[]>;
+
+    for (const item of changeRequests.data?.items ?? []) {
+      grouped[item.status].push(item);
+    }
+
+    return grouped;
+  }, [changeRequests.data?.items]);
+
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
       <header className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
@@ -482,6 +669,7 @@ export function AdminConsolePage({
               ["security", "Sécurité"],
               ["changelog", "Changelog"],
               ["change-requests", "Change requests"],
+              ["users", "Utilisateurs"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -1000,27 +1188,567 @@ export function AdminConsolePage({
 
       {activeTab === "changelog" && (
         <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
-          <h2 className="text-sm font-semibold text-[#E4E4E7]">
-            Changelog Admin
-          </h2>
-          <p className="mt-2 text-sm text-[#A1A1AA]">
-            Écran prêt côté frontend. Brancher une source backend
-            `admin.changelog` pour afficher les releases, migrations et
-            incidents marquants (voir contrat backend ci-dessous dans le PR).
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Changelog Admin
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Flux consolidé GitHub + releases issues du workflow Change
+                Request.
+              </p>
+            </div>
+            <Badge tone={adminChangelog.isFetching ? "warn" : "ok"}>
+              {adminChangelog.isFetching ? "refreshing" : "live"}
+            </Badge>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-3">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-1">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Releases issues du workflow
+              </h3>
+              <div className="mt-3 space-y-2">
+                {(adminChangelog.data?.workflowReleases ?? []).map(
+                  (release) => (
+                    <div
+                      key={release.id}
+                      className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm text-[#E4E4E7]">
+                          {release.title}
+                        </p>
+                        <Badge tone={priorityTone(release.priority)}>
+                          {release.priority}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-[#A1A1AA]">
+                        {release.summary}
+                      </p>
+                      <p className="mt-1 text-[11px] text-[#71717A]">
+                        {asDate(release.releasedAt)} · {release.scope} ·{" "}
+                        {release.sourceChangeRequestId}
+                      </p>
+                    </div>
+                  )
+                )}
+                {!adminChangelog.data?.workflowReleases?.length && (
+                  <p className="text-xs text-[#71717A]">
+                    Aucune release issue d&apos;une change request pour le
+                    moment.
+                  </p>
+                )}
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Commits récents
+              </h3>
+              <div className="mt-3 space-y-3">
+                {(adminChangelog.data?.repositories ?? []).map((repo) => (
+                  <div
+                    key={repo.key}
+                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-3"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-sm text-[#E4E4E7]">
+                        {repo.owner}/{repo.repo}
+                      </p>
+                      <Badge>{repo.latestShortSha}</Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {repo.commits.slice(0, 6).map((commit) => (
+                        <div
+                          key={commit.sha}
+                          className="rounded-md border border-[#242429] bg-[#141419] p-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <a
+                              href={commit.commitUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="truncate text-xs font-medium text-[#F2D5A7] hover:underline"
+                            >
+                              {commit.shortSha} · {commit.message}
+                            </a>
+                            {commit.workflowUrl ? (
+                              <a
+                                href={commit.workflowUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-[11px] text-[#86EFAC] hover:underline"
+                              >
+                                {commit.workflowName || "workflow"}
+                              </a>
+                            ) : (
+                              <span className="text-[11px] text-[#71717A]">
+                                no run
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-[11px] text-[#71717A]">
+                            {commit.author} · {asDate(commit.committedAt)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {adminChangelog.isError && (
+                  <p className="text-sm text-[#FCA5A5]">
+                    Erreur changelog: {adminChangelog.error.message}
+                  </p>
+                )}
+              </div>
+            </article>
+          </div>
         </section>
       )}
 
       {activeTab === "change-requests" && (
         <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
-          <h2 className="text-sm font-semibold text-[#E4E4E7]">
-            Change Requests
-          </h2>
-          <p className="mt-2 text-sm text-[#A1A1AA]">
-            Écran prêt côté frontend. Brancher une source backend
-            `admin.change_requests` pour piloter les demandes, approbations et
-            rollbacks.
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Change Requests
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Point d&apos;entrée unique des évolutions produit. Soumission →
+                triage → plan → build → QA → release.
+              </p>
+            </div>
+            <Badge tone={changeRequests.isFetching ? "warn" : "ok"}>
+              {changeRequests.isFetching ? "syncing" : "workflow live"}
+            </Badge>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-5">
+            <form
+              onSubmit={handleCreateChangeRequest}
+              className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-3"
+            >
+              <h3 className="mb-3 text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Nouvelle demande
+              </h3>
+              <div className="grid gap-2 md:grid-cols-2">
+                <input
+                  value={newRequest.title}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                  placeholder="Titre (ex: Flux changelog + CR admin)"
+                  required
+                  minLength={8}
+                />
+                <input
+                  value={newRequest.requestedBy}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      requestedBy: e.target.value,
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                  placeholder="Requested by"
+                  required
+                />
+              </div>
+              <div className="mt-2 grid gap-2 md:grid-cols-3">
+                <select
+                  value={newRequest.scope}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      scope: e.target
+                        .value as CreateChangeRequestInput["scope"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="ux">Scope UX</option>
+                  <option value="backend">Scope Backend</option>
+                  <option value="fullstack">Scope Fullstack</option>
+                  <option value="security">Scope Security</option>
+                </select>
+                <select
+                  value={newRequest.urgency}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      urgency: e.target
+                        .value as CreateChangeRequestInput["urgency"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="low">Urgence low</option>
+                  <option value="medium">Urgence medium</option>
+                  <option value="high">Urgence high</option>
+                </select>
+                <select
+                  value={newRequest.impact}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      impact: e.target
+                        .value as CreateChangeRequestInput["impact"],
+                    }))
+                  }
+                  className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="small">Impact small</option>
+                  <option value="medium">Impact medium</option>
+                  <option value="high">Impact high</option>
+                </select>
+              </div>
+              <div className="mt-2">
+                <select
+                  value={newRequest.linkedRepo}
+                  onChange={(e) =>
+                    setNewRequest((prev) => ({
+                      ...prev,
+                      linkedRepo: e.target
+                        .value as CreateChangeRequestInput["linkedRepo"],
+                    }))
+                  }
+                  className="w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
+                >
+                  <option value="misfits-web">Repo: misfits-web</option>
+                  <option value="reimagined-guide">
+                    Repo: reimagined-guide
+                  </option>
+                  <option value="cross-repo">Repo: cross-repo</option>
+                </select>
+              </div>
+              <textarea
+                value={newRequest.problem}
+                onChange={(e) =>
+                  setNewRequest((prev) => ({
+                    ...prev,
+                    problem: e.target.value,
+                  }))
+                }
+                className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                placeholder="Problème à résoudre"
+                minLength={16}
+                required
+              />
+              <textarea
+                value={newRequest.desiredOutcome}
+                onChange={(e) =>
+                  setNewRequest((prev) => ({
+                    ...prev,
+                    desiredOutcome: e.target.value,
+                  }))
+                }
+                className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+                placeholder="Résultat attendu + critères de succès"
+                minLength={16}
+                required
+              />
+              <button
+                type="submit"
+                className="mt-2 rounded-lg border border-[#C49B66] bg-[#2A2218] px-3 py-1.5 text-xs font-semibold text-[#F2D5A7] disabled:opacity-50"
+                disabled={createChangeRequest.isPending || qualityChecks.score < 4}
+              >
+                {createChangeRequest.isPending
+                  ? "Création..."
+                  : "Créer et lancer le workflow"}
+              </button>
+              {qualityChecks.score < 4 && (
+                <p className="mt-2 text-xs text-[#FCD34D]">
+                  Complète au moins 4/5 critères qualité via le harnais avant
+                  soumission.
+                </p>
+              )}
+            </form>
+
+            <aside className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Harnais de formulation
+                </h3>
+                <Badge tone={qualityChecks.score >= 4 ? "ok" : "warn"}>
+                  qualité {qualityChecks.score}/5
+                </Badge>
+              </div>
+              <p className="text-xs text-[#A1A1AA]">
+                Dialogue guidé pour cadrer la demande selon les standards de dev
+                et de qualité: problème, impact, critères mesurables et
+                rollback.
+              </p>
+
+              <div className="mt-3 space-y-2">
+                <textarea
+                  value={harnessProblem}
+                  onChange={(e) => setHarnessProblem(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="1) Quel est le problème racine observé ?"
+                />
+                <textarea
+                  value={harnessImpact}
+                  onChange={(e) => setHarnessImpact(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="2) Quel impact utilisateur/business/opérations ?"
+                />
+                <textarea
+                  value={harnessQuality}
+                  onChange={(e) => setHarnessQuality(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="3) Quels critères de succès mesurables (SLO/KPI/tests) ?"
+                />
+                <textarea
+                  value={harnessRollback}
+                  onChange={(e) => setHarnessRollback(e.target.value)}
+                  className="h-16 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                  placeholder="4) Quel plan de rollback/fallback si régression ?"
+                />
+
+                <button
+                  type="button"
+                  onClick={applyHarnessToForm}
+                  className="rounded-lg border border-[#3A3A42] px-2.5 py-1.5 text-xs text-[#D4D4D8]"
+                >
+                  Injecter dans le formulaire
+                </button>
+              </div>
+
+              <div className="mt-3 rounded-lg border border-[#2A2A30] bg-[#111114] p-2">
+                <p className="mb-1 text-[11px] text-[#A1A1AA]">
+                  Checklist qualité
+                </p>
+                <div className="space-y-1">
+                  {qualityChecks.checks.map((check) => (
+                    <p
+                      key={check.label}
+                      className={cn(
+                        "text-xs",
+                        check.ok ? "text-[#86EFAC]" : "text-[#FCD34D]"
+                      )}
+                    >
+                      {check.ok ? "✓" : "•"} {check.label}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <div className="mt-3 rounded-xl border border-[#232327] bg-[#151518] p-3">
+            <label className="text-xs text-[#A1A1AA]">
+              Note de transition (optionnelle)
+            </label>
+            <input
+              value={transitionNote}
+              onChange={(e) => setTransitionNote(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
+              placeholder="Ex: spec validée, passage en build"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-3 xl:grid-cols-4">
+            {WORKFLOW_STATUS_COLUMNS.map((status) => (
+              <article
+                key={status}
+                className="rounded-xl border border-[#232327] bg-[#151518] p-3"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                    {STATUS_LABEL[status]}
+                  </h3>
+                  <Badge tone={statusTone(status)}>
+                    {requestsByStatus[status].length}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  {requestsByStatus[status].map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm text-[#E4E4E7]">{item.title}</p>
+                        <Badge tone={priorityTone(item.priority)}>
+                          {item.priority}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-[#A1A1AA]">
+                        {item.desiredOutcome}
+                      </p>
+                      <p className="mt-1 text-[11px] text-[#71717A]">
+                        {item.linkedRepo} · {item.targetReleaseWindow} ·{" "}
+                        {item.id}
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#3A3A42] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
+                          disabled={
+                            item.status === "released" ||
+                            item.status === "rejected" ||
+                            transitionChangeRequest.isPending
+                          }
+                          onClick={() =>
+                            void handleTransition(item.id, "advance")
+                          }
+                        >
+                          Advance
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#5B1F27] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
+                          disabled={
+                            item.status === "released" ||
+                            item.status === "rejected" ||
+                            transitionChangeRequest.isPending
+                          }
+                          onClick={() =>
+                            void handleTransition(item.id, "reject")
+                          }
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {!requestsByStatus[status].length && (
+                    <p className="text-xs text-[#71717A]">Aucune demande.</p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "users" && (
+        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Gestion des utilisateurs
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Pilotage des rôles et activité opérationnelle récente.
+              </p>
+            </div>
+            <Badge tone={adminUsers.isFetching ? "warn" : "ok"}>
+              {adminUsers.isFetching ? "syncing" : "live"}
+            </Badge>
+          </div>
+
+          <div className="mb-4 grid gap-3 md:grid-cols-4">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Utilisateurs</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(adminUsers.data?.users.length ?? 0)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Admins</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.role === "admin"
+                  ).length
+                )}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">Support</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.role === "support"
+                  ).length
+                )}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <p className="text-xs text-[#A1A1AA]">2FA activée</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(
+                  (adminUsers.data?.users ?? []).filter(
+                    (u) => u.twoFactorEnabled
+                  ).length
+                )}
+              </p>
+            </article>
+          </div>
+
+          <div className="space-y-3">
+            {(adminUsers.data?.users ?? []).map((user) => (
+              <article
+                key={user.id}
+                className="rounded-xl border border-[#232327] bg-[#151518] p-3"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-[#E4E4E7]">
+                      {user.displayName || user.email}
+                    </p>
+                    <p className="text-xs text-[#71717A]">{user.email}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge tone={user.status === "active" ? "ok" : "warn"}>
+                      {user.status}
+                    </Badge>
+                    <Badge tone={user.twoFactorEnabled ? "ok" : "warn"}>
+                      2FA {user.twoFactorEnabled ? "on" : "off"}
+                    </Badge>
+                    <select
+                      value={user.role}
+                      onChange={(e) =>
+                        void handleUserRoleChange(
+                          user.id,
+                          e.target.value as AdminUserRecord["role"]
+                        )
+                      }
+                      disabled={updateAdminUserRole.isPending}
+                      className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
+                    >
+                      <option value="user">user</option>
+                      <option value="support">support</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-2 grid gap-2 text-xs text-[#A1A1AA] md:grid-cols-4">
+                  <p>Dernier login: {asDate(user.lastLoginAt || "")}</p>
+                  <p>Dernière activité: {asDate(user.lastActivityAt || "")}</p>
+                  <p>Sessions 24h: {asInt(user.sessions24h)}</p>
+                  <p>Actions 7j: {asInt(user.actions7d)}</p>
+                </div>
+
+                <div className="mt-2">
+                  <p className="text-xs text-[#A1A1AA]">Activité récente</p>
+                  <div className="mt-1 space-y-1">
+                    {user.recentActivity.slice(0, 3).map((evt, index) => (
+                      <p
+                        key={`${user.id}_${index}`}
+                        className="text-xs text-[#D4D4D8]"
+                      >
+                        {asDate(evt.at)} · {evt.kind} · {evt.label}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            ))}
+
+            {adminUsers.isError && (
+              <p className="text-sm text-[#FCA5A5]">
+                Erreur users: {adminUsers.error.message}
+              </p>
+            )}
+          </div>
         </section>
       )}
     </div>
