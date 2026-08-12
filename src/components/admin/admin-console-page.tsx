@@ -322,15 +322,23 @@ function runStateLabel(state: ReturnType<typeof runStateFromStatus>): string {
   return "failed";
 }
 
-function hasTechnicalExecutionSignal(
-  events: Array<{ action: string; note?: string | null }>
-): boolean {
-  return events.some((event) => {
-    const haystack = `${event.action} ${event.note ?? ""}`.toLowerCase();
-    return /(build|test|ci|deploy|restart|rollout|release|commit|pr|merge|docker)/.test(
-      haystack
-    );
-  });
+function executionStateTone(
+  state: ChangeRequestItem["executionState"]
+): "danger" | "warn" | "ok" | "neutral" {
+  if (state === "failed") return "danger";
+  if (state === "success") return "ok";
+  if (state === "queued" || state === "running") return "warn";
+  return "neutral";
+}
+
+function executionStateLabel(
+  state: ChangeRequestItem["executionState"]
+): string {
+  if (state === "running") return "running";
+  if (state === "queued") return "queued";
+  if (state === "success") return "success";
+  if (state === "failed") return "failed";
+  return "idle";
 }
 
 export function AdminConsolePage({
@@ -643,7 +651,17 @@ export function AdminConsolePage({
 
   async function handleTransition(
     id: string,
-    action: "advance" | "reject" | "stop" | "cancel",
+    action:
+      | "advance"
+      | "reject"
+      | "stop"
+      | "cancel"
+      | "execution_queue"
+      | "execution_start"
+      | "execution_heartbeat"
+      | "execution_fail"
+      | "execution_success"
+      | "execution_reset",
     currentStatus: WorkflowStatus
   ) {
     await transitionChangeRequest.mutateAsync({
@@ -970,13 +988,21 @@ export function AdminConsolePage({
           )[0];
         const lastEventAt = latestEvent?.at || item.updatedAt;
         const lastEventAgeMinutes = minutesBetween(lastEventAt, nowIso);
-        const hasExecutionSignal = hasTechnicalExecutionSignal(
-          item.workflowEvents ?? []
+        const executionState = item.executionState ?? "idle";
+        const executionHeartbeatAt = item.executionLastHeartbeatAt || null;
+        const executionHeartbeatAgeMinutes = minutesBetween(
+          executionHeartbeatAt || undefined,
+          nowIso
         );
+        const hasExecutionSignal =
+          executionState === "running" ||
+          executionState === "success" ||
+          executionState === "failed";
         const appearsWorkflowOnly =
           runState === "running" &&
-          !hasExecutionSignal &&
-          (lastEventAgeMinutes === null || lastEventAgeMinutes > 5);
+          (executionState === "idle" || executionState === "queued") &&
+          (executionHeartbeatAgeMinutes === null ||
+            executionHeartbeatAgeMinutes > 5);
 
         return {
           item,
@@ -988,6 +1014,9 @@ export function AdminConsolePage({
           elapsedMinutes,
           lastEventAt,
           lastEventAgeMinutes,
+          executionState,
+          executionHeartbeatAt,
+          executionHeartbeatAgeMinutes,
           hasExecutionSignal,
           appearsWorkflowOnly,
         };
@@ -2043,6 +2072,16 @@ export function AdminConsolePage({
                         ? "signal: workflow uniquement"
                         : "signal: activité technique détectée"}
                     </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1">
+                      <Badge tone={executionStateTone(run.executionState)}>
+                        exec {executionStateLabel(run.executionState)}
+                      </Badge>
+                      {run.item.executionRunId && (
+                        <span className="text-[10px] text-[#71717A]">
+                          run {run.item.executionRunId}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))}
                 {!workflowRunMonitoring.runs.length && (
@@ -2097,6 +2136,27 @@ export function AdminConsolePage({
                         selectedWorkflowRun.elapsedMinutes
                       )}
                     </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[#A1A1AA]">
+                      <Badge
+                        tone={executionStateTone(
+                          selectedWorkflowRun.executionState
+                        )}
+                      >
+                        execution{" "}
+                        {executionStateLabel(
+                          selectedWorkflowRun.executionState
+                        )}
+                      </Badge>
+                      <span>
+                        heartbeat:{" "}
+                        {asDate(selectedWorkflowRun.executionHeartbeatAt || "")}
+                      </span>
+                      {selectedWorkflowRun.item.executionLastError && (
+                        <span className="text-[#FCA5A5]">
+                          error: {selectedWorkflowRun.item.executionLastError}
+                        </span>
+                      )}
+                    </div>
 
                     {selectedWorkflowRun.appearsWorkflowOnly && (
                       <div className="mt-2 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
@@ -2170,6 +2230,83 @@ export function AdminConsolePage({
                             cancel run
                           </button>
                         )}
+                      {(selectedWorkflowRun.item.status === "in_progress" ||
+                        selectedWorkflowRun.item.status === "qa") && (
+                        <>
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#3A3A42] bg-[#17171B] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                selectedWorkflowRun.item.id,
+                                "execution_start",
+                                selectedWorkflowRun.item.status
+                              )
+                            }
+                          >
+                            signaler start backend
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#3A3A42] bg-[#17171B] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                selectedWorkflowRun.item.id,
+                                "execution_heartbeat",
+                                selectedWorkflowRun.item.status
+                              )
+                            }
+                          >
+                            heartbeat
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#1F4D3E] bg-[#132C24] px-2 py-1 text-[11px] text-[#86EFAC] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                selectedWorkflowRun.item.id,
+                                "execution_success",
+                                selectedWorkflowRun.item.status
+                              )
+                            }
+                          >
+                            signaler success
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#5B1F27] bg-[#2B1419] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                selectedWorkflowRun.item.id,
+                                "execution_fail",
+                                selectedWorkflowRun.item.status
+                              )
+                            }
+                          >
+                            signaler échec
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     <div className="mt-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">

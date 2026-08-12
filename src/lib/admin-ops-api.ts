@@ -63,6 +63,13 @@ export function transitionAdminChangeRequest(
     body.action = action;
   }
 
+  if (payload.executionRunId) {
+    body.executionRunId = payload.executionRunId;
+  }
+  if (payload.executionError) {
+    body.executionError = payload.executionError;
+  }
+
   return apiClient.patch<TransitionChangeRequestResponse>(
     `/admin/change-requests/${encodedId}`,
     body,
