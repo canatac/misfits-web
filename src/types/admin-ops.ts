@@ -71,7 +71,15 @@ export interface CreateChangeRequestInput {
 
 export interface TransitionChangeRequestInput {
   id: string;
-  action: "advance" | "reject";
+  action: "advance" | "reject" | "stop" | "cancel";
+  currentStatus?: WorkflowStatus;
+  note?: string;
+  actor?: string;
+}
+
+export interface StartImplementationChangeRequestInput {
+  id: string;
+  currentStatus: WorkflowStatus;
   note?: string;
   actor?: string;
 }

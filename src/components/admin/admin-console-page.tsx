@@ -21,7 +21,9 @@ import {
   useChangeRequests,
   useCreateAdminUser,
   useCreateChangeRequest,
+  useDeleteChangeRequest,
   useDeleteAdminUser,
+  useStartImplementationChangeRequest,
   useTransitionChangeRequest,
   useUpdateAdminUser,
 } from "@/hooks/use-admin-ops";
@@ -330,6 +332,9 @@ export function AdminConsolePage({
   const adminAiActivity = useAdminAiActivity(50);
   const createChangeRequest = useCreateChangeRequest();
   const transitionChangeRequest = useTransitionChangeRequest();
+  const deleteChangeRequest = useDeleteChangeRequest();
+  const startImplementationChangeRequest =
+    useStartImplementationChangeRequest();
   const updateAdminUser = useUpdateAdminUser();
   const createAdminUser = useCreateAdminUser();
   const deleteAdminUser = useDeleteAdminUser();
@@ -599,10 +604,34 @@ export function AdminConsolePage({
     }));
   }
 
-  async function handleTransition(id: string, action: "advance" | "reject") {
+  async function handleTransition(
+    id: string,
+    action: "advance" | "reject" | "stop" | "cancel",
+    currentStatus: WorkflowStatus
+  ) {
     await transitionChangeRequest.mutateAsync({
       id,
       action,
+      currentStatus,
+      note: transitionNote.trim() || undefined,
+      actor: "hermes",
+    });
+  }
+
+  async function handleDeleteChangeRequest(id: string) {
+    if (!window.confirm("Supprimer définitivement cette change request ?")) {
+      return;
+    }
+    await deleteChangeRequest.mutateAsync(id);
+  }
+
+  async function handleStartImplementation(
+    id: string,
+    currentStatus: WorkflowStatus
+  ) {
+    await startImplementationChangeRequest.mutateAsync({
+      id,
+      currentStatus,
       note: transitionNote.trim() || undefined,
       actor: "hermes",
     });
@@ -2014,34 +2043,127 @@ export function AdminConsolePage({
                         prise en charge: {item.takenInChargeBy || "—"} ·{" "}
                         {asDate(item.takenInChargeAt || "")}
                       </p>
-                      <div className="mt-2 flex gap-2">
+                      <div className="mt-2 flex flex-wrap gap-2">
                         <button
                           type="button"
                           className="rounded-md border border-[#3A3A42] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
                           disabled={
                             item.status === "released" ||
                             item.status === "rejected" ||
-                            transitionChangeRequest.isPending
+                            transitionChangeRequest.isPending ||
+                            startImplementationChangeRequest.isPending ||
+                            deleteChangeRequest.isPending
                           }
                           onClick={() =>
-                            void handleTransition(item.id, "advance")
+                            void handleTransition(
+                              item.id,
+                              "advance",
+                              item.status
+                            )
                           }
                         >
                           Advance
                         </button>
+                        {(item.status === "submitted" ||
+                          item.status === "triaged" ||
+                          item.status === "planned") && (
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#1F4D3E] bg-[#132C24] px-2 py-1 text-[11px] text-[#86EFAC] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleStartImplementation(
+                                item.id,
+                                item.status
+                              )
+                            }
+                          >
+                            {startImplementationChangeRequest.isPending
+                              ? "Lancement..."
+                              : "Lancer implémentation"}
+                          </button>
+                        )}
+                        {(item.status === "in_progress" ||
+                          item.status === "qa") && (
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#4A3B1F] bg-[#2B2210] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                item.id,
+                                "stop",
+                                item.status
+                              )
+                            }
+                          >
+                            Arrêter
+                          </button>
+                        )}
+                        {item.status !== "released" &&
+                          item.status !== "rejected" && (
+                            <button
+                              type="button"
+                              className="rounded-md border border-[#5E4A20] bg-[#2B2413] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
+                              disabled={
+                                transitionChangeRequest.isPending ||
+                                startImplementationChangeRequest.isPending ||
+                                deleteChangeRequest.isPending
+                              }
+                              onClick={() =>
+                                void handleTransition(
+                                  item.id,
+                                  "cancel",
+                                  item.status
+                                )
+                              }
+                            >
+                              Annuler
+                            </button>
+                          )}
                         <button
                           type="button"
                           className="rounded-md border border-[#5B1F27] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
                           disabled={
                             item.status === "released" ||
                             item.status === "rejected" ||
-                            transitionChangeRequest.isPending
+                            transitionChangeRequest.isPending ||
+                            startImplementationChangeRequest.isPending ||
+                            deleteChangeRequest.isPending
                           }
                           onClick={() =>
-                            void handleTransition(item.id, "reject")
+                            void handleTransition(
+                              item.id,
+                              "reject",
+                              item.status
+                            )
                           }
                         >
                           Reject
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#60292F] bg-[#2A1418] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
+                          disabled={
+                            transitionChangeRequest.isPending ||
+                            startImplementationChangeRequest.isPending ||
+                            deleteChangeRequest.isPending
+                          }
+                          onClick={() =>
+                            void handleDeleteChangeRequest(item.id)
+                          }
+                        >
+                          {deleteChangeRequest.isPending
+                            ? "Suppression..."
+                            : "Supprimer"}
                         </button>
                       </div>
                     </div>
