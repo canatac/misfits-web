@@ -297,6 +297,31 @@ function statusTone(
   return "neutral";
 }
 
+function runStateFromStatus(
+  status: WorkflowStatus
+): "running" | "queued" | "completed" | "failed" {
+  if (status === "released") return "completed";
+  if (status === "rejected") return "failed";
+  if (status === "in_progress" || status === "qa") return "running";
+  return "queued";
+}
+
+function runStateTone(
+  state: ReturnType<typeof runStateFromStatus>
+): "danger" | "warn" | "ok" | "neutral" {
+  if (state === "failed") return "danger";
+  if (state === "completed") return "ok";
+  if (state === "queued") return "warn";
+  return "neutral";
+}
+
+function runStateLabel(state: ReturnType<typeof runStateFromStatus>): string {
+  if (state === "running") return "running";
+  if (state === "queued") return "queued";
+  if (state === "completed") return "completed";
+  return "failed";
+}
+
 export function AdminConsolePage({
   initialTab = "overview",
 }: {
@@ -358,6 +383,7 @@ export function AdminConsolePage({
   });
 
   const [transitionNote, setTransitionNote] = useState("");
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [crGuideDraft, setCrGuideDraft] = useState<ChangeRequestGuideDraft>({
     problemRoot: "",
     impact: "",
@@ -906,6 +932,93 @@ export function AdminConsolePage({
 
     return grouped;
   }, [changeRequests.data?.items]);
+
+  const workflowRunMonitoring = useMemo(() => {
+    const items = changeRequests.data?.items ?? [];
+    const nowIso = new Date().toISOString();
+
+    const runs = items
+      .map((item) => {
+        const runState = runStateFromStatus(item.status);
+        const totalStages = item.workflow?.length ?? 0;
+        const doneStages = (item.workflow ?? []).filter(
+          (stage) => stage.status === "done"
+        ).length;
+        const progressPct =
+          totalStages > 0 ? Math.round((doneStages / totalStages) * 100) : 0;
+        const currentStage =
+          (item.workflow ?? []).find((stage) => stage.status === "active") ??
+          (item.workflow ?? [])[Math.max(0, doneStages - 1)] ??
+          null;
+        const startedAt = item.takenInChargeAt || item.createdAt;
+        const elapsedMinutes = minutesBetween(startedAt, nowIso);
+
+        return {
+          item,
+          runState,
+          totalStages,
+          doneStages,
+          progressPct,
+          currentStage,
+          elapsedMinutes,
+          lastEventAt:
+            (item.workflowEvents ?? [])
+              .slice()
+              .sort(
+                (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
+              )[0]?.at || item.updatedAt,
+        };
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime()
+      );
+
+    return {
+      runs,
+      running: runs.filter((run) => run.runState === "running").length,
+      queued: runs.filter((run) => run.runState === "queued").length,
+      completed: runs.filter((run) => run.runState === "completed").length,
+      failed: runs.filter((run) => run.runState === "failed").length,
+    };
+  }, [changeRequests.data?.items]);
+
+  useEffect(() => {
+    if (!workflowRunMonitoring.runs.length) {
+      setSelectedRunId(null);
+      return;
+    }
+
+    if (
+      selectedRunId &&
+      workflowRunMonitoring.runs.some((run) => run.item.id === selectedRunId)
+    ) {
+      return;
+    }
+
+    const preferred =
+      workflowRunMonitoring.runs.find((run) => run.runState === "running") ||
+      workflowRunMonitoring.runs.find((run) => run.runState === "queued") ||
+      workflowRunMonitoring.runs[0];
+
+    setSelectedRunId(preferred.item.id);
+  }, [workflowRunMonitoring.runs, selectedRunId]);
+
+  const selectedWorkflowRun = useMemo(() => {
+    if (!workflowRunMonitoring.runs.length) return null;
+    return (
+      workflowRunMonitoring.runs.find((run) => run.item.id === selectedRunId) ||
+      workflowRunMonitoring.runs[0]
+    );
+  }, [workflowRunMonitoring.runs, selectedRunId]);
+
+  const selectedWorkflowRunEvents = useMemo(() => {
+    if (!selectedWorkflowRun) return [];
+    return (selectedWorkflowRun.item.workflowEvents ?? [])
+      .slice()
+      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+      .slice(0, 20);
+  }, [selectedWorkflowRun]);
 
   const changeRequestMonitoring = useMemo(() => {
     const items = changeRequests.data?.items ?? [];
@@ -1666,6 +1779,19 @@ export function AdminConsolePage({
             </Badge>
           </div>
 
+          <div className="mb-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
+            <p className="flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Déploiement requis
+            </p>
+            <p className="mt-1 text-[#E5E7EB]">
+              Une CR peut passer en &quot;implémentée&quot; côté workflow, mais
+              les changements code (misfits-web / reimagined-guide) nécessitent
+              merge + redémarrage/déploiement des services concernés pour être
+              visibles.
+            </p>
+          </div>
+
           <div className="mb-3 grid gap-2 md:grid-cols-4">
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">CR totales</p>
@@ -1763,6 +1889,276 @@ export function AdminConsolePage({
                   </p>
                 )}
               </div>
+            </article>
+          </div>
+
+          <div className="mb-3 grid gap-3 xl:grid-cols-3">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-1">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Runs workflow
+                </h3>
+                <Badge tone={workflowRunMonitoring.running ? "ok" : "neutral"}>
+                  {workflowRunMonitoring.running} running
+                </Badge>
+              </div>
+
+              <div className="mb-2 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#A1A1AA]">
+                  queued: {asInt(workflowRunMonitoring.queued)}
+                </div>
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#A1A1AA]">
+                  failed: {asInt(workflowRunMonitoring.failed)}
+                </div>
+              </div>
+
+              <div className="max-h-[460px] space-y-2 overflow-y-auto pr-1">
+                {workflowRunMonitoring.runs.map((run) => (
+                  <button
+                    key={run.item.id}
+                    type="button"
+                    onClick={() => setSelectedRunId(run.item.id)}
+                    className={cn(
+                      "w-full rounded-lg border p-2 text-left",
+                      selectedWorkflowRun?.item.id === run.item.id
+                        ? "border-[#C49B66] bg-[#2A2218]"
+                        : "border-[#2A2A30] bg-[#111114] hover:border-[#3A3A42]"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-xs font-medium text-[#E4E4E7]">
+                        {run.item.id}
+                      </p>
+                      <Badge tone={runStateTone(run.runState)}>
+                        {runStateLabel(run.runState)}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 truncate text-[11px] text-[#A1A1AA]">
+                      {run.item.title}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#71717A]">
+                      stage: {run.currentStage?.label || "—"} · {run.doneStages}
+                      /{run.totalStages}
+                    </p>
+                    <p className="text-[11px] text-[#71717A]">
+                      elapsed: {formatDurationMinutes(run.elapsedMinutes)}
+                    </p>
+                  </button>
+                ))}
+                {!workflowRunMonitoring.runs.length && (
+                  <p className="text-xs text-[#71717A]">
+                    Aucun run disponible.
+                  </p>
+                )}
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Run details (style GitHub Actions)
+                </h3>
+                {selectedWorkflowRun && (
+                  <Badge tone={runStateTone(selectedWorkflowRun.runState)}>
+                    {selectedWorkflowRun.item.id} ·{" "}
+                    {runStateLabel(selectedWorkflowRun.runState)}
+                  </Badge>
+                )}
+              </div>
+
+              {selectedWorkflowRun ? (
+                <>
+                  <div className="rounded-lg border border-[#2A2A30] bg-[#111114] p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium text-[#E4E4E7]">
+                        {selectedWorkflowRun.item.title}
+                      </p>
+                      <p className="text-[11px] text-[#A1A1AA]">
+                        updated {asDate(selectedWorkflowRun.item.updatedAt)}
+                      </p>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#232327]">
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          selectedWorkflowRun.runState === "failed"
+                            ? "bg-[#FCA5A5]"
+                            : selectedWorkflowRun.runState === "completed"
+                              ? "bg-[#86EFAC]"
+                              : "bg-[#F2D5A7]"
+                        )}
+                        style={{ width: `${selectedWorkflowRun.progressPct}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                      progress {selectedWorkflowRun.progressPct}% · stage actif:{" "}
+                      {selectedWorkflowRun.currentStage?.label || "—"} · elapsed{" "}
+                      {formatDurationMinutes(
+                        selectedWorkflowRun.elapsedMinutes
+                      )}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(selectedWorkflowRun.item.status === "submitted" ||
+                        selectedWorkflowRun.item.status === "triaged" ||
+                        selectedWorkflowRun.item.status === "planned") && (
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#1F4D3E] bg-[#132C24] px-2 py-1 text-[11px] text-[#86EFAC] disabled:opacity-50"
+                          disabled={
+                            transitionChangeRequest.isPending ||
+                            startImplementationChangeRequest.isPending ||
+                            deleteChangeRequest.isPending
+                          }
+                          onClick={() =>
+                            void handleStartImplementation(
+                              selectedWorkflowRun.item.id,
+                              selectedWorkflowRun.item.status
+                            )
+                          }
+                        >
+                          relancer run
+                        </button>
+                      )}
+                      {(selectedWorkflowRun.item.status === "in_progress" ||
+                        selectedWorkflowRun.item.status === "qa") && (
+                        <button
+                          type="button"
+                          className="rounded-md border border-[#4A3B1F] bg-[#2B2210] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
+                          disabled={
+                            transitionChangeRequest.isPending ||
+                            startImplementationChangeRequest.isPending ||
+                            deleteChangeRequest.isPending
+                          }
+                          onClick={() =>
+                            void handleTransition(
+                              selectedWorkflowRun.item.id,
+                              "stop",
+                              selectedWorkflowRun.item.status
+                            )
+                          }
+                        >
+                          stop run
+                        </button>
+                      )}
+                      {selectedWorkflowRun.item.status !== "released" &&
+                        selectedWorkflowRun.item.status !== "rejected" && (
+                          <button
+                            type="button"
+                            className="rounded-md border border-[#5E4A20] bg-[#2B2413] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
+                            disabled={
+                              transitionChangeRequest.isPending ||
+                              startImplementationChangeRequest.isPending ||
+                              deleteChangeRequest.isPending
+                            }
+                            onClick={() =>
+                              void handleTransition(
+                                selectedWorkflowRun.item.id,
+                                "cancel",
+                                selectedWorkflowRun.item.status
+                              )
+                            }
+                          >
+                            cancel run
+                          </button>
+                        )}
+                    </div>
+
+                    <div className="mt-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
+                      <p className="flex items-center gap-1">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Déploiement requis
+                      </p>
+                      <p className="mt-1 text-[#E5E7EB]">
+                        Les transitions CR pilotent le workflow produit, mais
+                        les changements de code (misfits-web / reimagined-guide)
+                        ne sont visibles qu&apos;après merge +
+                        déploiement/restart des services concernés.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                    <div className="rounded-lg border border-[#2A2A30] bg-[#111114] p-3">
+                      <p className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                        Jobs
+                      </p>
+                      <div className="mt-2 space-y-2">
+                        {(selectedWorkflowRun.item.workflow ?? []).map(
+                          (stage) => (
+                            <div
+                              key={stage.key}
+                              className="rounded-md border border-[#2A2A30] bg-[#151518] p-2"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-xs text-[#E4E4E7]">
+                                  {stage.label}
+                                </p>
+                                <Badge
+                                  tone={
+                                    stage.status === "done"
+                                      ? "ok"
+                                      : stage.status === "active"
+                                        ? "warn"
+                                        : "neutral"
+                                  }
+                                >
+                                  {stage.status}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-[11px] text-[#71717A]">
+                                owner: {stage.owner} · done:{" "}
+                                {asDate(stage.doneAt || "")}
+                              </p>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-[#2A2A30] bg-[#111114] p-3">
+                      <p className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                        Logs (latest 20)
+                      </p>
+                      <div className="mt-2 max-h-[280px] space-y-1 overflow-y-auto rounded-md border border-[#2A2A30] bg-[#0D0D10] p-2 font-mono text-[11px]">
+                        {selectedWorkflowRunEvents.map((event) => (
+                          <div
+                            key={`${event.at}-${event.action}-${event.fromStatus}`}
+                          >
+                            <span className="text-[#71717A]">
+                              {asDate(event.at)}
+                            </span>{" "}
+                            <span className="text-[#E4E4E7]">
+                              {event.actor}
+                            </span>{" "}
+                            <span className="text-[#F2D5A7]">
+                              {event.action}
+                            </span>{" "}
+                            <span className="text-[#A1A1AA]">
+                              {event.fromStatus}→{event.toStatus}
+                            </span>
+                            {event.note ? (
+                              <span className="text-[#86EFAC]">
+                                {" "}
+                                · {event.note}
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
+                        {!selectedWorkflowRunEvents.length && (
+                          <p className="text-[#71717A]">
+                            Aucun log pour ce run.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-[#71717A]">
+                  Sélectionne un run pour voir son exécution détaillée.
+                </p>
+              )}
             </article>
           </div>
 
