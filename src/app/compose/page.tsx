@@ -10,7 +10,11 @@ import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { NovamailWorkspaceShell } from "@/components/navigation/novamail-workspace-shell";
 import { ComposerPanel } from "@/components/mail/composer-panel";
-import { useComposerStore, uid, type ComposerPrefill } from "@/stores/composer-store";
+import {
+  useComposerStore,
+  uid,
+  type ComposerPrefill,
+} from "@/stores/composer-store";
 import { getMockEmailById } from "@/lib/mock-emails";
 import type { Recipient } from "@/types/composer";
 import type { Email } from "@/types/email";
@@ -25,11 +29,18 @@ function emailToRecipient(email: string, name?: string): Recipient {
 }
 
 function buildReplyPrefill(email: Email): ComposerPrefill {
-  const to: Recipient[] = [emailToRecipient(email.from.address, email.from.name)];
-  const cc: Recipient[] = (email.cc ?? []).map((a) => emailToRecipient(a.address, a.name));
+  const to: Recipient[] = [
+    emailToRecipient(email.from.address, email.from.name),
+  ];
+  const cc: Recipient[] = (email.cc ?? []).map((a) =>
+    emailToRecipient(a.address, a.name)
+  );
   // Include other "to" recipients for Reply All flavour if not the sender.
   for (const a of email.to) {
-    if (a.address !== email.from.address && !to.some((r) => r.email === a.address.toLowerCase())) {
+    if (
+      a.address !== email.from.address &&
+      !to.some((r) => r.email === a.address.toLowerCase())
+    ) {
       to.push(emailToRecipient(a.address, a.name));
     }
   }
@@ -41,7 +52,9 @@ function buildReplyPrefill(email: Email): ComposerPrefill {
   return {
     to,
     cc,
-    subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+    subject: email.subject.startsWith("Re: ")
+      ? email.subject
+      : `Re: ${email.subject}`,
     body,
     inReplyTo: email.messageId,
     references: [...(email.references ?? []), email.messageId].filter(Boolean),
@@ -52,7 +65,9 @@ function buildForwardPrefill(email: Email): ComposerPrefill {
   const fwdBody = `<p></p><blockquote>---------- Forwarded message ----------<br/>From: ${email.from.name} &lt;${email.from.address}&gt;<br/>Date: ${new Date(email.date).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}<br/>Subject: ${email.subject}<br/><br/>${email.body}</blockquote>`;
   return {
     to: [],
-    subject: email.subject.startsWith("Fwd: ") ? email.subject : `Fwd: ${email.subject}`,
+    subject: email.subject.startsWith("Fwd: ")
+      ? email.subject
+      : `Fwd: ${email.subject}`,
     body: fwdBody,
   };
 }
@@ -112,7 +127,13 @@ function ComposePageContent() {
 
 export default function ComposePage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-[var(--color-muted-fg)]">Loading composer…</div>}>
+    <Suspense
+      fallback={
+        <div className="p-8 text-sm text-[var(--color-muted-fg)]">
+          Loading composer…
+        </div>
+      }
+    >
       <ComposePageContent />
     </Suspense>
   );

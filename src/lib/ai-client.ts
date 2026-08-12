@@ -65,7 +65,9 @@ export class AIError extends Error {
 /** Resolve the API key from the environment (server or public client var). */
 export function getApiKey(): string | null {
   if (typeof process === "undefined" || !process.env) return null;
-  return process.env.OPENROUTER_API_KEY ?? process.env.NEXT_PUBLIC_AI_API_KEY ?? null;
+  return (
+    process.env.OPENROUTER_API_KEY ?? process.env.NEXT_PUBLIC_AI_API_KEY ?? null
+  );
 }
 
 function isBrowser(): boolean {
@@ -101,7 +103,10 @@ function withTimeout(timeoutMs: number, external?: AbortSignal) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   if (external) {
     if (external.aborted) controller.abort();
-    else external.addEventListener("abort", () => controller.abort(), { once: true });
+    else
+      external.addEventListener("abort", () => controller.abort(), {
+        once: true,
+      });
   }
   return {
     signal: controller.signal,
@@ -134,9 +139,14 @@ async function toAIError(res: Response): Promise<never> {
  */
 export async function chatCompletionDirect(
   messages: ChatMessage[],
-  opts: CompletionOptions = {},
+  opts: CompletionOptions = {}
 ): Promise<AIResponse> {
-  const { temperature = 0.7, maxTokens = 1024, signal, model = AI_MODEL } = opts;
+  const {
+    temperature = 0.7,
+    maxTokens = 1024,
+    signal,
+    model = AI_MODEL,
+  } = opts;
   const body = {
     model,
     messages,
@@ -184,9 +194,14 @@ export async function chatCompletionDirect(
  */
 export async function* streamChatCompletionDirect(
   messages: ChatMessage[],
-  opts: CompletionOptions = {},
+  opts: CompletionOptions = {}
 ): AsyncGenerator<AIStreamChunk> {
-  const { temperature = 0.7, maxTokens = 1024, signal, model = AI_MODEL } = opts;
+  const {
+    temperature = 0.7,
+    maxTokens = 1024,
+    signal,
+    model = AI_MODEL,
+  } = opts;
   const body = {
     model,
     messages,
@@ -215,7 +230,8 @@ export async function* streamChatCompletionDirect(
 
   if (!res.ok) await toAIError(res);
   const responseBody = res.body;
-  if (!responseBody) throw new AIError(0, "AI stream returned no body.", "network");
+  if (!responseBody)
+    throw new AIError(0, "AI stream returned no body.", "network");
 
   yield* parseSSEStream(responseBody);
 }
@@ -231,19 +247,30 @@ export async function* streamChatCompletionDirect(
  */
 export async function chatCompletion(
   messages: ChatMessage[],
-  opts: CompletionOptions = {},
+  opts: CompletionOptions = {}
 ): Promise<AIResponse> {
   if (canCallDirectly()) return chatCompletionDirect(messages, opts);
 
   // Browser → proxy. The proxy re-streams / returns JSON with the same shape.
-  const { temperature = 0.7, maxTokens = 1024, signal, model = AI_MODEL } = opts;
+  const {
+    temperature = 0.7,
+    maxTokens = 1024,
+    signal,
+    model = AI_MODEL,
+  } = opts;
   const timeout = withTimeout(REQUEST_TIMEOUT_MS, signal);
   let res: Response;
   try {
     res = await fetch(AI_PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, temperature, maxTokens, model, stream: false }),
+      body: JSON.stringify({
+        messages,
+        temperature,
+        maxTokens,
+        model,
+        stream: false,
+      }),
       signal: timeout.signal,
     });
   } catch (err) {
@@ -265,21 +292,32 @@ export async function chatCompletion(
  */
 export async function* streamChatCompletion(
   messages: ChatMessage[],
-  opts: CompletionOptions = {},
+  opts: CompletionOptions = {}
 ): AsyncGenerator<AIStreamChunk> {
   if (canCallDirectly()) {
     yield* streamChatCompletionDirect(messages, opts);
     return;
   }
 
-  const { temperature = 0.7, maxTokens = 1024, signal, model = AI_MODEL } = opts;
+  const {
+    temperature = 0.7,
+    maxTokens = 1024,
+    signal,
+    model = AI_MODEL,
+  } = opts;
   const timeout = withTimeout(STREAM_TIMEOUT_MS, signal);
   let res: Response;
   try {
     res = await fetch(AI_PROXY_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, temperature, maxTokens, model, stream: true }),
+      body: JSON.stringify({
+        messages,
+        temperature,
+        maxTokens,
+        model,
+        stream: true,
+      }),
       signal: timeout.signal,
     });
   } catch (err) {
@@ -293,7 +331,8 @@ export async function* streamChatCompletion(
 
   if (!res.ok) await toAIError(res);
   const proxyBody = res.body;
-  if (!proxyBody) throw new AIError(0, "AI stream returned no body.", "network");
+  if (!proxyBody)
+    throw new AIError(0, "AI stream returned no body.", "network");
   yield* parseSSEStream(proxyBody);
 }
 
@@ -302,7 +341,7 @@ export async function* streamChatCompletion(
  * OpenRouter emits `data: {json}\n\n` lines, terminated by `data: [DONE]`.
  */
 async function* parseSSEStream(
-  body: ReadableStream<Uint8Array>,
+  body: ReadableStream<Uint8Array>
 ): AsyncGenerator<AIStreamChunk> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
@@ -329,7 +368,7 @@ async function* parseSSEStream(
             throw new AIError(
               502,
               json.error.message ?? "AI stream error.",
-              json.error.code,
+              json.error.code
             );
           }
           const delta = json?.choices?.[0]?.delta?.content ?? "";
@@ -419,12 +458,15 @@ function buildEmailMessages(req: AIComposerRequest): ChatMessage[] {
 
   const userParts: string[] = [];
   if (req.prompt) userParts.push(req.prompt);
-  if (req.context?.subject) userParts.push(`Objet de l'email: ${req.context.subject}`);
+  if (req.context?.subject)
+    userParts.push(`Objet de l'email: ${req.context.subject}`);
   if (req.context?.recipients?.length) {
     userParts.push(`Destinataires: ${req.context.recipients.join(", ")}`);
   }
   if (req.context?.threadContext) {
-    userParts.push(`Contexte de la conversation précédente:\n${req.context.threadContext}`);
+    userParts.push(
+      `Contexte de la conversation précédente:\n${req.context.threadContext}`
+    );
   }
   const user = userParts.join("\n\n") || "Écris un email.";
 
@@ -436,10 +478,14 @@ function buildEmailMessages(req: AIComposerRequest): ChatMessage[] {
 
 function buildRewriteMessages(
   text: string,
-  opts: { tone?: AITone; length?: AILength },
+  opts: { tone?: AITone; length?: AILength }
 ): ChatMessage[] {
-  const tone = opts.tone ? `Ton souhaité: ${TONE_DESCRIPTIONS[opts.tone]}.` : "";
-  const length = opts.length ? `Longueur: ${LENGTH_DESCRIPTIONS[opts.length]}.` : "";
+  const tone = opts.tone
+    ? `Ton souhaité: ${TONE_DESCRIPTIONS[opts.tone]}.`
+    : "";
+  const length = opts.length
+    ? `Longueur: ${LENGTH_DESCRIPTIONS[opts.length]}.`
+    : "";
   const system = [
     "Réécris le texte fourni en conservant son sens et ses informations clés,",
     "en adaptant le ton et la longueur demandés.",
@@ -457,7 +503,7 @@ function buildRewriteMessages(
 
 function buildTranslateMessages(
   text: string,
-  target: AITranslationLang,
+  target: AITranslationLang
 ): ChatMessage[] {
   const system = [
     `Traduis le texte fourni en ${LANG_NAMES[target]}.`,
@@ -511,15 +557,15 @@ function parseSubjects(content: string, count: number): string[] {
 /** Overload set: streaming vs. non-streaming email generation. */
 export function generateEmail(
   req: AIComposerRequest,
-  opts: { stream: true; signal?: AbortSignal },
+  opts: { stream: true; signal?: AbortSignal }
 ): AsyncGenerator<AIStreamChunk>;
 export function generateEmail(
   req: AIComposerRequest,
-  opts?: { stream?: false; signal?: AbortSignal },
+  opts?: { stream?: false; signal?: AbortSignal }
 ): Promise<AIResponse>;
 export function generateEmail(
   req: AIComposerRequest,
-  opts: { stream?: boolean; signal?: AbortSignal } = {},
+  opts: { stream?: boolean; signal?: AbortSignal } = {}
 ): Promise<AIResponse> | AsyncGenerator<AIStreamChunk> {
   const messages = buildEmailMessages(req);
   const maxTokens = lengthToTokens(req.length);
@@ -546,7 +592,7 @@ export function generateEmail(
 /** Rewrite the given text in the requested tone / length. */
 export async function rewriteText(
   text: string,
-  opts: { tone?: AITone; length?: AILength; signal?: AbortSignal } = {},
+  opts: { tone?: AITone; length?: AILength; signal?: AbortSignal } = {}
 ): Promise<AIResponse> {
   const messages = buildRewriteMessages(text, opts);
   const maxTokens = opts.length ? lengthToTokens(opts.length) : 512;
@@ -558,7 +604,7 @@ export async function rewriteText(
 export async function translateText(
   text: string,
   target: AITranslationLang,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<AIResponse> {
   const messages = buildTranslateMessages(text, target);
   const model = await resolveFeatureModel("translate");
@@ -571,7 +617,7 @@ export async function translateText(
  */
 export async function generateSubject(
   body: string,
-  opts: { count?: number; signal?: AbortSignal } = {},
+  opts: { count?: number; signal?: AbortSignal } = {}
 ): Promise<string[]> {
   const count = Math.max(1, Math.min(5, opts.count ?? 3));
   const messages = buildSubjectMessages(body, count);
@@ -594,9 +640,10 @@ export async function generateSubject(
  * Inline smart-completion: given the text typed so far, return a short
  * continuation to display as ghost text.
  */
-export async function smartComplete(
-  req: { textBefore: string; signal?: AbortSignal },
-): Promise<AIResponse> {
+export async function smartComplete(req: {
+  textBefore: string;
+  signal?: AbortSignal;
+}): Promise<AIResponse> {
   const messages = buildSmartCompleteMessages(req.textBefore);
   const model = await resolveFeatureModel("complete");
   return chatCompletion(messages, {

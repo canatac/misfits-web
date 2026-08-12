@@ -20,8 +20,10 @@ export function useTriageBatch() {
   return useMutation({
     mutationFn: (emails: Email[]) => triageBatch(emails),
     onSuccess: (results) => {
-      const map: Record<string, typeof results[0]> = {};
-      results.forEach((r) => { map[r.emailId] = r; });
+      const map: Record<string, (typeof results)[0]> = {};
+      results.forEach((r) => {
+        map[r.emailId] = r;
+      });
       useTriageStore.setState((s) => ({
         triageResults: { ...s.triageResults, ...map },
       }));

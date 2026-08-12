@@ -25,7 +25,10 @@ function getFieldValue(email: Email, field: FilterCondition["field"]): string {
     case "from":
       return `${email.from.name} <${email.from.address}>`.toLowerCase();
     case "to":
-      return email.to.map((t) => `${t.name} <${t.address}>`).join(", ").toLowerCase();
+      return email.to
+        .map((t) => `${t.name} <${t.address}>`)
+        .join(", ")
+        .toLowerCase();
     case "subject":
       return email.subject.toLowerCase();
     case "body":
@@ -85,7 +88,9 @@ export function testRule(rule: Filter, emails: Email[]): Email[] {
 
 /** Apply all enabled rules to a batch of emails (simulate). Returns the updated emails. */
 export function applyRules(rules: Filter[], emails: Email[]): Email[] {
-  const ordered = rules.filter((r) => r.enabled).sort((a, b) => a.priority - b.priority);
+  const ordered = rules
+    .filter((r) => r.enabled)
+    .sort((a, b) => a.priority - b.priority);
   return emails.map((email) => {
     let result = email;
     for (const rule of ordered) {
@@ -175,7 +180,9 @@ export const useFilterStore = create<FilterState>()(
         const rules = get().rules;
         const priority =
           input.priority ??
-          (rules.length > 0 ? Math.max(...rules.map((r) => r.priority)) + 1 : 0);
+          (rules.length > 0
+            ? Math.max(...rules.map((r) => r.priority)) + 1
+            : 0);
         const rule: Filter = {
           id: genId(),
           name: input.name.trim() || "Untitled rule",
@@ -198,7 +205,7 @@ export const useFilterStore = create<FilterState>()(
                   ...input,
                   name: input.name !== undefined ? input.name.trim() : r.name,
                 }
-              : r,
+              : r
           ),
         }));
       },
@@ -213,7 +220,7 @@ export const useFilterStore = create<FilterState>()(
       toggleRule: (id) => {
         set((state) => ({
           rules: state.rules.map((r) =>
-            r.id === id ? { ...r, enabled: !r.enabled } : r,
+            r.id === id ? { ...r, enabled: !r.enabled } : r
           ),
         }));
       },
@@ -249,24 +256,28 @@ export const useFilterStore = create<FilterState>()(
       name: "misfits-filters",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ rules: state.rules }),
-    },
-  ),
+    }
+  )
 );
 
 /* ------------------------------------------------------------------ */
 /* Display helpers for the filter editor UI                            */
 /* ------------------------------------------------------------------ */
 
-export const CONDITION_FIELD_LABELS: Record<FilterCondition["field"], string> = {
-  from: "From",
-  to: "To",
-  subject: "Subject",
-  body: "Body",
-  hasAttachment: "Has attachment",
-  size: "Size (bytes)",
-};
+export const CONDITION_FIELD_LABELS: Record<FilterCondition["field"], string> =
+  {
+    from: "From",
+    to: "To",
+    subject: "Subject",
+    body: "Body",
+    hasAttachment: "Has attachment",
+    size: "Size (bytes)",
+  };
 
-export const CONDITION_OPERATOR_LABELS: Record<FilterCondition["operator"], string> = {
+export const CONDITION_OPERATOR_LABELS: Record<
+  FilterCondition["operator"],
+  string
+> = {
   contains: "contains",
   equals: "equals",
   startsWith: "starts with",
@@ -276,7 +287,10 @@ export const CONDITION_OPERATOR_LABELS: Record<FilterCondition["operator"], stri
   matches: "matches regex",
 };
 
-export const ACTION_TYPE_LABELS: Record<Filter["actions"][number]["type"], string> = {
+export const ACTION_TYPE_LABELS: Record<
+  Filter["actions"][number]["type"],
+  string
+> = {
   markRead: "Mark as read",
   archive: "Archive",
   label: "Apply label",

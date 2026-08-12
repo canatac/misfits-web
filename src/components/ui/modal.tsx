@@ -17,8 +17,8 @@ const ModalOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[var(--z-overlay)] bg-[var(--color-overlay)] backdrop-blur-sm data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)]",
-      className,
+      "fixed inset-0 z-[var(--z-overlay)] bg-[var(--color-overlay)] backdrop-blur-sm data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)]",
+      className
     )}
     {...props}
   />
@@ -34,13 +34,13 @@ const ModalContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-[var(--z-modal)] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-[var(--color-border)] bg-[var(--color-card)] p-6 text-[var(--color-card-fg)] shadow-[var(--shadow-xl)] rounded-[var(--radius-xl)] data-[state=open]:animate-[zoom-in_var(--duration-slow)_var(--ease-spring)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)]",
-        className,
+        "fixed top-[50%] left-[50%] z-[var(--z-modal)] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-card)] p-6 text-[var(--color-card-fg)] shadow-[var(--shadow-xl)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)] data-[state=open]:animate-[zoom-in_var(--duration-slow)_var(--ease-spring)]",
+        className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-[var(--radius-sm)] opacity-70 ring-offset-[var(--color-bg)] transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2 disabled:pointer-events-none">
+      <DialogPrimitive.Close className="absolute top-4 right-4 rounded-[var(--radius-sm)] opacity-70 ring-offset-[var(--color-bg)] transition-opacity hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2 disabled:pointer-events-none">
         <X className="h-4 w-4" aria-hidden="true" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -57,7 +57,7 @@ const ModalHeader = React.forwardRef<
     ref={ref}
     className={cn(
       "flex flex-col space-y-1.5 text-center sm:text-left",
-      className,
+      className
     )}
     {...props}
   />
@@ -72,7 +72,7 @@ const ModalFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className,
+      className
     )}
     {...props}
   />
@@ -86,8 +86,8 @@ const ModalTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className,
+      "text-lg leading-none font-semibold tracking-tight",
+      className
     )}
     {...props}
   />

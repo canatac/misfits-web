@@ -39,7 +39,7 @@ function setCookie(name: string, value: string, maxAgeSeconds: number): void {
   if (!isBrowser()) return;
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${name}=${encodeURIComponent(
-    value,
+    value
   )}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax${secure}`;
 }
 
@@ -75,7 +75,10 @@ export function storeSession(session: Session, remember: boolean): void {
     (session as unknown as Record<string, unknown>).refresh_expires_at;
   const ttlSeconds = Math.max(
     0,
-    Math.round(((typeof rfa === "number" ? rfa : Date.now() + 86_400_000) - Date.now()) / 1000),
+    Math.round(
+      ((typeof rfa === "number" ? rfa : Date.now() + 86_400_000) - Date.now()) /
+        1000
+    )
   );
 
   try {
@@ -146,7 +149,10 @@ export function getRefreshToken(): string | null {
  * ------------------------------------------------------------------ */
 
 /** True when the access token is still valid (with optional skew). */
-export function isAccessTokenValid(session: Session | null, skewMs = 0): boolean {
+export function isAccessTokenValid(
+  session: Session | null,
+  skewMs = 0
+): boolean {
   if (!session) return false;
   return session.expiresAt - skewMs > Date.now();
 }
@@ -228,7 +234,7 @@ export interface AuditEntry {
 export function audit(
   type: AuditEventType,
   detail?: string,
-  origin?: string,
+  origin?: string
 ): AuditEntry {
   const entry: AuditEntry = {
     id:
@@ -275,7 +281,8 @@ export function clearAuditLog(): void {
 
 /** Re-exported for middleware/tests that only need the cookie name. */
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
-export const hasSessionCookie = (): boolean => readCookie(SESSION_COOKIE) !== null;
+export const hasSessionCookie = (): boolean =>
+  readCookie(SESSION_COOKIE) !== null;
 
 /* ------------------------------------------------------------------ *
  * OAuth session handoff

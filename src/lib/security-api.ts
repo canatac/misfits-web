@@ -7,7 +7,10 @@ import type {
   TenantStatusResponse,
 } from "@/types/security";
 
-function withParams(path: string, params: Record<string, string | number | undefined>) {
+function withParams(
+  path: string,
+  params: Record<string, string | number | undefined>
+) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === "") continue;
@@ -36,7 +39,7 @@ export function getSecurityActiveAlerts(filters: SecurityAlertsFilters) {
       window: filters.window,
       severity: filters.severity,
       tenant_id: filters.tenant_id,
-    }),
+    })
   );
 }
 
@@ -47,18 +50,18 @@ export function getSecurityIncidents(filters: SecurityIncidentsFilters) {
       page_size: filters.page_size ?? 20,
       tenant_id: filters.tenant_id,
       severity: filters.severity,
-    }),
+    })
   );
 }
 
 export function getSecurityTenantStatus(tenantId: string) {
   return apiClient.get<TenantStatusResponse>(
-    `/security/tenant/${encodeURIComponent(tenantId)}/status`,
+    `/security/tenant/${encodeURIComponent(tenantId)}/status`
   );
 }
 
 export function rollbackSecurityRemediation(alertId: string) {
   return apiClient.post<RollbackResponse>(
-    `/security/remediation/${encodeURIComponent(alertId)}/rollback`,
+    `/security/remediation/${encodeURIComponent(alertId)}/rollback`
   );
 }

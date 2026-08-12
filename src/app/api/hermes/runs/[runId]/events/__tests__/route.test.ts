@@ -18,15 +18,17 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     process.env.BACKEND_URL = "http://email-api:8000";
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response("event: done\ndata: {\"status\":\"completed\"}\n\n", {
+      new Response('event: done\ndata: {"status":"completed"}\n\n', {
         status: 200,
         headers: { "Content-Type": "text/event-stream" },
-      }),
+      })
     );
     vi.stubGlobal("fetch", fetchMock);
 
     const req = {
-      nextUrl: new URL("http://localhost/api/hermes/runs/run_1/events?stream=true"),
+      nextUrl: new URL(
+        "http://localhost/api/hermes/runs/run_1/events?stream=true"
+      ),
     };
 
     const res = await GET(req as any, {
@@ -36,7 +38,7 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     expect(res.status).toBe(200);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe(
-      "http://email-api:8000/api/hermes/runs/run_1/events?stream=true",
+      "http://email-api:8000/api/hermes/runs/run_1/events?stream=true"
     );
     expect(init.method).toBe("GET");
   });

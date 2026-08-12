@@ -21,7 +21,7 @@ describe("/api/hermes/runs route", () => {
       new Response(JSON.stringify({ id: "run_1", status: "queued" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }),
+      })
     );
     vi.stubGlobal("fetch", fetchMock);
 

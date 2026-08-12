@@ -40,7 +40,7 @@ export async function fetchAiSettings(force = false): Promise<AiSettings> {
 }
 
 export async function saveAiSettings(
-  patch: Partial<AiSettings>,
+  patch: Partial<AiSettings>
 ): Promise<AiSettings> {
   const res = await fetch("/api/settings/ai", {
     method: "PUT",
@@ -75,12 +75,10 @@ function mergeSettings(data: AiSettings): AiSettings {
 }
 
 export async function resolveFeatureModel(
-  feature: AiFeatureKey | string,
+  feature: AiFeatureKey | string
 ): Promise<string> {
   const s = await fetchAiSettings();
   return (
-    s.features?.[feature]?.trim() ||
-    s.defaultModel?.trim() ||
-    DEFAULT_AI_MODEL
+    s.features?.[feature]?.trim() || s.defaultModel?.trim() || DEFAULT_AI_MODEL
   );
 }

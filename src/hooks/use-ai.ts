@@ -101,7 +101,10 @@ export function useSmartComplete() {
       abortRef.current = controller;
       setIsFetching(true);
       try {
-        const res = await smartComplete({ textBefore, signal: controller.signal });
+        const res = await smartComplete({
+          textBefore,
+          signal: controller.signal,
+        });
         if (!controller.signal.aborted) {
           const text = res.content.trim();
           // Avoid echoing the text the user already typed.

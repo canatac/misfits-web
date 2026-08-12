@@ -1,6 +1,12 @@
 "use client";
 
-import { Search, Sparkles, Square, RefreshCw, WandSparkles } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  Square,
+  RefreshCw,
+  WandSparkles,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +19,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChatMessageBubble } from "@/components/mail/chat-message";
 import { ChatTrustBlock } from "@/components/mail/chat-panel/chat-trust-block";
-import type { ChatConversation, ChatMessage, ChatSourceCitation } from "@/types/chat";
+import type {
+  ChatConversation,
+  ChatMessage,
+  ChatSourceCitation,
+} from "@/types/chat";
 
 type QuickAction = {
   id: string;
@@ -135,7 +145,12 @@ export function ChatAssistantView({
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {quickPrompts.map((prompt) => (
-                <Button key={prompt} size="sm" variant="outline" onClick={() => onDispatchPrompt(prompt)}>
+                <Button
+                  key={prompt}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onDispatchPrompt(prompt)}
+                >
                   {prompt}
                 </Button>
               ))}
@@ -147,13 +162,18 @@ export function ChatAssistantView({
           <ChatMessageBubble
             key={i}
             message={msg}
-            onInsertToDraft={msg.role === "assistant" ? onInsertToDraft : undefined}
+            onInsertToDraft={
+              msg.role === "assistant" ? onInsertToDraft : undefined
+            }
             onCreateTasks={msg.role === "assistant" ? onCreateTasks : undefined}
             onFeedback={msg.role === "assistant" ? onFeedback : undefined}
           />
         ))}
 
-        <ChatTrustBlock message={lastAssistantMessage} onSourceClick={onSourceClick} />
+        <ChatTrustBlock
+          message={lastAssistantMessage}
+          onSourceClick={onSourceClick}
+        />
 
         {isStreaming && (
           <div className="flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
@@ -167,17 +187,39 @@ export function ChatAssistantView({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 rounded-md border border-[var(--color-border)] p-2">
-        <span className="text-[11px] text-[var(--color-muted-fg)]">Réécriture</span>
-        <Button size="sm" variant="outline" onClick={() => onAskVariant("court")} disabled={!lastAssistantMessage}>
+        <span className="text-[11px] text-[var(--color-muted-fg)]">
+          Réécriture
+        </span>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onAskVariant("court")}
+          disabled={!lastAssistantMessage}
+        >
           A court
         </Button>
-        <Button size="sm" variant="outline" onClick={() => onAskVariant("professionnel")} disabled={!lastAssistantMessage}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onAskVariant("professionnel")}
+          disabled={!lastAssistantMessage}
+        >
           B pro
         </Button>
-        <Button size="sm" variant="outline" onClick={() => onAskVariant("empathique")} disabled={!lastAssistantMessage}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onAskVariant("empathique")}
+          disabled={!lastAssistantMessage}
+        >
           C empathique
         </Button>
-        <Button size="sm" variant="outline" onClick={onRegenerate} disabled={!lastUserMessage || isStreaming}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onRegenerate}
+          disabled={!lastUserMessage || isStreaming}
+        >
           <RefreshCw className="h-3 w-3" /> Régénérer
         </Button>
 
@@ -191,7 +233,10 @@ export function ChatAssistantView({
             <DropdownMenuLabel>Actions rapides</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {quickActions.map((action) => (
-              <DropdownMenuItem key={action.id} onClick={() => onDispatchPrompt(action.prompt)}>
+              <DropdownMenuItem
+                key={action.id}
+                onClick={() => onDispatchPrompt(action.prompt)}
+              >
                 {action.label}
               </DropdownMenuItem>
             ))}

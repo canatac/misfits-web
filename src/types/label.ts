@@ -50,12 +50,7 @@ export interface LabelTree extends Label {
 /* ------------------------------------------------------------------ */
 
 export type ConditionField =
-  | "from"
-  | "to"
-  | "subject"
-  | "body"
-  | "hasAttachment"
-  | "size";
+  "from" | "to" | "subject" | "body" | "hasAttachment" | "size";
 
 export type ConditionOperator =
   | "contains"
@@ -67,13 +62,7 @@ export type ConditionOperator =
   | "matches";
 
 export type ActionType =
-  | "markRead"
-  | "archive"
-  | "label"
-  | "move"
-  | "forward"
-  | "delete"
-  | "star";
+  "markRead" | "archive" | "label" | "move" | "forward" | "delete" | "star";
 
 export interface FilterCondition {
   field: ConditionField;

@@ -13,7 +13,7 @@ function trimTrailingSlash(value: string) {
 
 function resolveHermesBaseUrl() {
   return trimTrailingSlash(
-    process.env.HERMES_BASE_URL || "http://127.0.0.1:8642/v1",
+    process.env.HERMES_BASE_URL || "http://127.0.0.1:8642/v1"
   );
 }
 
@@ -32,7 +32,7 @@ function shouldUseBackendGateway() {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ runId: string }> },
+  { params }: { params: Promise<{ runId: string }> }
 ) {
   const { runId } = await params;
   if (!runId?.trim()) {
@@ -44,7 +44,7 @@ export async function GET(
     if (!backendBase) {
       return jsonError(
         "Backend Hermes gateway mode is enabled but BACKEND_URL/HERMES_GATEWAY_BASE_URL is missing.",
-        503,
+        503
       );
     }
 
@@ -55,7 +55,7 @@ export async function GET(
         {
           method: "GET",
           cache: "no-store",
-        },
+        }
       );
     } catch {
       return jsonError("Unable to reach backend Hermes gateway.", 502);
@@ -78,7 +78,7 @@ export async function GET(
   if (!apiKey) {
     return jsonError(
       "Hermes service is not configured (missing HERMES_API_KEY).",
-      503,
+      503
     );
   }
 

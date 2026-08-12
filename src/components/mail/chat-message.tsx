@@ -1,7 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { User, Bot, Copy, FilePenLine, ListTodo, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  User,
+  Bot,
+  Copy,
+  FilePenLine,
+  ListTodo,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ChatMessage } from "@/types/chat";
 
@@ -46,7 +54,7 @@ export function ChatMessageBubble({
       : null;
   const feedbackPlaceholder = useMemo(
     () => "Pourquoi ? (optionnel, 120 caractères max)",
-    [],
+    []
   );
   const copy = () => {
     navigator.clipboard.writeText(message.content);
@@ -59,7 +67,7 @@ export function ChatMessageBubble({
       <div
         className={cn(
           "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
-          isUser ? "bg-[var(--color-brand-500)]" : "bg-[var(--color-muted)]",
+          isUser ? "bg-[var(--color-brand-500)]" : "bg-[var(--color-muted)]"
         )}
       >
         {isUser ? (
@@ -74,16 +82,20 @@ export function ChatMessageBubble({
           "max-w-[85%] rounded-lg px-3 py-2 text-sm",
           isUser
             ? "bg-[var(--color-brand-500)] text-white"
-            : "bg-[var(--color-muted)] text-[var(--color-fg)]",
+            : "bg-[var(--color-muted)] text-[var(--color-fg)]"
         )}
       >
         <p className="whitespace-pre-wrap">{message.content}</p>
 
         {!isUser && confidence && (
           <div className="mt-2 rounded border border-[var(--color-border)]/60 bg-[var(--color-bg)]/70 px-2 py-1 text-[11px]">
-            <p className="font-medium">{confidenceLabel[confidence] ?? "Confiance"}</p>
+            <p className="font-medium">
+              {confidenceLabel[confidence] ?? "Confiance"}
+            </p>
             {confidenceReason && (
-              <p className="mt-0.5 text-[var(--color-muted-fg)]">{confidenceReason}</p>
+              <p className="mt-0.5 text-[var(--color-muted-fg)]">
+                {confidenceReason}
+              </p>
             )}
           </div>
         )}
@@ -120,7 +132,8 @@ export function ChatMessageBubble({
                 onClick={() => onInsertToDraft(message.content)}
                 className="opacity-70 hover:opacity-100"
               >
-                <FilePenLine className="mr-1 inline h-3 w-3" /> Insérer brouillon
+                <FilePenLine className="mr-1 inline h-3 w-3" /> Insérer
+                brouillon
               </button>
             )}
 

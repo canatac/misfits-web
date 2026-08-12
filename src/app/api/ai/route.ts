@@ -36,7 +36,10 @@ function jsonError(message: string, status: number) {
 export async function POST(req: NextRequest) {
   // Guard: refuse to run without a configured key.
   if (!process.env.OPENROUTER_API_KEY) {
-    return jsonError("AI service is not configured (missing OPENROUTER_API_KEY).", 503);
+    return jsonError(
+      "AI service is not configured (missing OPENROUTER_API_KEY).",
+      503
+    );
   }
 
   let body: AIBody;
@@ -47,7 +50,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
-    return jsonError("`messages` is required and must be a non-empty array.", 400);
+    return jsonError(
+      "`messages` is required and must be a non-empty array.",
+      400
+    );
   }
 
   const opts = {
@@ -65,17 +71,17 @@ export async function POST(req: NextRequest) {
         try {
           for await (const chunk of stream) {
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+              encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
             );
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         } catch (err) {
           const message =
-            err instanceof AIError
-              ? err.message
-              : "AI streaming failed.";
+            err instanceof AIError ? err.message : "AI streaming failed.";
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ error: { message } })}\n\n`),
+            encoder.encode(
+              `data: ${JSON.stringify({ error: { message } })}\n\n`
+            )
           );
         } finally {
           controller.close();

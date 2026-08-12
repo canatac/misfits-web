@@ -137,13 +137,17 @@ export function AIComposerPanel({
       if (mode === "replace") {
         editor.chain().focus().setContent(html).run();
       } else {
-        editor.chain().focus().insertContentAt(editor.state.doc.content.size, html).run();
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(editor.state.doc.content.size, html)
+          .run();
       }
       toast.success(
-        mode === "replace" ? "Texte remplacé." : "Texte ajouté à l'email.",
+        mode === "replace" ? "Texte remplacé." : "Texte ajouté à l'email."
       );
     },
-    [editor],
+    [editor]
   );
 
   const handleGenerate = useCallback(async () => {
@@ -177,7 +181,12 @@ export function AIComposerPanel({
       });
       if (editor) {
         const { from, to } = editor.state.selection;
-        editor.chain().focus().deleteRange({ from, to }).insertContent(response.content).run();
+        editor
+          .chain()
+          .focus()
+          .deleteRange({ from, to })
+          .insertContent(response.content)
+          .run();
       }
       toast.success("Sélection réécrite.");
     } catch {
@@ -198,9 +207,16 @@ export function AIComposerPanel({
       });
       if (editor) {
         const { from, to } = editor.state.selection;
-        editor.chain().focus().deleteRange({ from, to }).insertContent(response.content).run();
+        editor
+          .chain()
+          .focus()
+          .deleteRange({ from, to })
+          .insertContent(response.content)
+          .run();
       }
-      toast.success(`Sélection traduite en ${LANG_OPTIONS.find((l) => l.value === language)?.label}.`);
+      toast.success(
+        `Sélection traduite en ${LANG_OPTIONS.find((l) => l.value === language)?.label}.`
+      );
     } catch {
       // surfaced via store
     }
@@ -212,7 +228,7 @@ export function AIComposerPanel({
         .map((c) => c.messages.find((m) => m.role === "user")?.content ?? "")
         .filter((s) => s.length > 0)
         .slice(0, 8),
-    [history],
+    [history]
   );
 
   const output = streamingOutput || generateMutation.data?.content || "";
@@ -221,7 +237,7 @@ export function AIComposerPanel({
     <div
       className={cn(
         "absolute inset-y-0 right-0 z-[var(--z-popover)] flex w-80 max-w-[85vw] flex-col border-l border-[var(--color-border)] bg-[var(--color-card)] text-[var(--color-card-fg)] shadow-[var(--shadow-xl)] transition-transform duration-200 ease-out",
-        open ? "translate-x-0" : "pointer-events-none translate-x-full",
+        open ? "translate-x-0" : "pointer-events-none translate-x-full"
       )}
       data-testid="ai-composer-panel"
       aria-hidden={!open}
@@ -264,7 +280,11 @@ export function AIComposerPanel({
               <label className="text-xs font-medium text-[var(--color-muted-fg)]">
                 Ton
               </label>
-              <Select value={tone} onValueChange={(v) => setTone(v as AITone)} disabled={isGenerating}>
+              <Select
+                value={tone}
+                onValueChange={(v) => setTone(v as AITone)}
+                disabled={isGenerating}
+              >
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
@@ -281,7 +301,11 @@ export function AIComposerPanel({
               <label className="text-xs font-medium text-[var(--color-muted-fg)]">
                 Longueur
               </label>
-              <Select value={length} onValueChange={(v) => setLength(v as AILength)} disabled={isGenerating}>
+              <Select
+                value={length}
+                onValueChange={(v) => setLength(v as AILength)}
+                disabled={isGenerating}
+              >
                 <SelectTrigger className="h-9">
                   <SelectValue />
                 </SelectTrigger>
@@ -301,7 +325,11 @@ export function AIComposerPanel({
             <label className="text-xs font-medium text-[var(--color-muted-fg)]">
               Langue
             </label>
-            <Select value={language} onValueChange={(v) => setLanguage(v as AITranslationLang)} disabled={isGenerating}>
+            <Select
+              value={language}
+              onValueChange={(v) => setLanguage(v as AITranslationLang)}
+              disabled={isGenerating}
+            >
               <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
@@ -421,7 +449,9 @@ export function AIComposerPanel({
             </div>
             {!hasSelection && (
               <p className="text-xs text-[var(--color-muted-fg)]">
-                {"Sélectionne du texte dans l'éditeur pour le réécrire ou le traduire."}
+                {
+                  "Sélectionne du texte dans l'éditeur pour le réécrire ou le traduire."
+                }
               </p>
             )}
           </div>

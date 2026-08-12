@@ -36,15 +36,11 @@ const DefaultFallback: React.FC<ErrorBoundaryFallbackProps> = ({
       <h2 className="text-lg font-semibold text-[var(--color-fg)]">
         Something went wrong
       </h2>
-      <p className="text-sm text-[var(--color-muted-fg)] max-w-md">
+      <p className="max-w-md text-sm text-[var(--color-muted-fg)]">
         {error.message || "An unexpected error occurred. Please try again."}
       </p>
     </div>
-    <Button
-      variant="outline"
-      size="default"
-      onClick={resetErrorBoundary}
-    >
+    <Button variant="outline" size="default" onClick={resetErrorBoundary}>
       Try again
     </Button>
   </div>

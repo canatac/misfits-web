@@ -55,7 +55,7 @@ function getParticipants(emails: Email[]): EmailAddress[] {
 /** Build a Thread object from a list of emails (sorted chronologically). */
 function buildThread(threadId: string, emails: Email[]): Thread {
   const sorted = [...emails].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
   const last = sorted[sorted.length - 1];
   const first = sorted[0];
@@ -144,7 +144,7 @@ function threadByReferences(emails: Email[]): Thread[] {
 
   let threadIdx = 0;
   return [...groups.values()].map((msgs) =>
-    buildThread(msgs[0].threadId ?? `thread-refs-${threadIdx++}`, msgs),
+    buildThread(msgs[0].threadId ?? `thread-refs-${threadIdx++}`, msgs)
   );
 }
 
@@ -161,7 +161,7 @@ function threadBySubject(emails: Email[]): Thread[] {
 
   let threadIdx = 0;
   return [...groups.values()].map((msgs) =>
-    buildThread(msgs[0].threadId ?? `thread-subj-${threadIdx++}`, msgs),
+    buildThread(msgs[0].threadId ?? `thread-subj-${threadIdx++}`, msgs)
   );
 }
 
@@ -180,7 +180,7 @@ function threadByParticipants(emails: Email[]): Thread[] {
 
   let threadIdx = 0;
   return [...groups.values()].map((msgs) =>
-    buildThread(msgs[0].threadId ?? `thread-part-${threadIdx++}`, msgs),
+    buildThread(msgs[0].threadId ?? `thread-part-${threadIdx++}`, msgs)
   );
 }
 
@@ -230,7 +230,7 @@ function threadSmart(emails: Email[]): Thread[] {
 /** Group emails into threads using the specified strategy. */
 export function buildThreads(
   emails: Email[],
-  mode: ThreadingMode = "smart",
+  mode: ThreadingMode = "smart"
 ): Thread[] {
   if (emails.length === 0) return [];
   switch (mode) {
@@ -249,7 +249,10 @@ export function buildThreads(
 /** Remove an email from all threads and place it in its own singleton thread. */
 export function detachEmail(email: Email, threads: Thread[]): Thread[] {
   const updated = threads
-    .map((t) => ({ ...t, messages: t.messages.filter((m) => m.id !== email.id) }))
+    .map((t) => ({
+      ...t,
+      messages: t.messages.filter((m) => m.id !== email.id),
+    }))
     .filter((t) => t.messages.length > 0);
 
   updated.push(buildThread(`thread-detached-${email.id}`, [email]));
@@ -260,11 +263,14 @@ export function detachEmail(email: Email, threads: Thread[]): Thread[] {
 export function rethreadEmail(
   email: Email,
   targetThreadId: string,
-  threads: Thread[],
+  threads: Thread[]
 ): Thread[] {
   // Remove from all existing threads
   const updated = threads
-    .map((t) => ({ ...t, messages: t.messages.filter((m) => m.id !== email.id) }))
+    .map((t) => ({
+      ...t,
+      messages: t.messages.filter((m) => m.id !== email.id),
+    }))
     .filter((t) => t.messages.length > 0);
 
   const target = updated.find((t) => t.id === targetThreadId);
@@ -272,7 +278,7 @@ export function rethreadEmail(
     target.messages = [...target.messages, email];
     // Rebuild the target thread's metadata
     return updated.map((t) =>
-      t.id === targetThreadId ? buildThread(t.id, t.messages) : t,
+      t.id === targetThreadId ? buildThread(t.id, t.messages) : t
     );
   }
 

@@ -32,21 +32,89 @@ export interface OperatorMeta {
 }
 
 export const OPERATOR_META: OperatorMeta[] = [
-  { operator: "from", label: "from:", description: "Sender name or email", example: 'from:"John Doe"', hasValue: true },
-  { operator: "to", label: "to:", description: "Recipient name or email", example: "to:alice@example.com", hasValue: true },
-  { operator: "subject", label: "subject:", description: "Words in the subject line", example: "subject:roadmap", hasValue: true },
-  { operator: "has", label: "has:", description: "Has attachment", example: "has:attachment", hasValue: true, suggestions: ["attachment"] },
-  { operator: "before", label: "before:", description: "Received before a date", example: "before:2024/01/01", hasValue: true },
-  { operator: "after", label: "after:", description: "Received after a date", example: "after:2024/06/01", hasValue: true },
-  { operator: "is", label: "is:", description: "Email state", example: "is:unread", hasValue: true, suggestions: ["unread", "starred", "read"] },
-  { operator: "label", label: "label:", description: "Has a label", example: "label:work", hasValue: true },
-  { operator: "filename", label: "filename:", description: "Attachment filename", example: "filename:report.pdf", hasValue: true },
-  { operator: "larger", label: "larger:", description: "Larger than a size (e.g. 5M, 200K)", example: "larger:5M", hasValue: true },
-  { operator: "smaller", label: "smaller:", description: "Smaller than a size", example: "smaller:1M", hasValue: true },
+  {
+    operator: "from",
+    label: "from:",
+    description: "Sender name or email",
+    example: 'from:"John Doe"',
+    hasValue: true,
+  },
+  {
+    operator: "to",
+    label: "to:",
+    description: "Recipient name or email",
+    example: "to:alice@example.com",
+    hasValue: true,
+  },
+  {
+    operator: "subject",
+    label: "subject:",
+    description: "Words in the subject line",
+    example: "subject:roadmap",
+    hasValue: true,
+  },
+  {
+    operator: "has",
+    label: "has:",
+    description: "Has attachment",
+    example: "has:attachment",
+    hasValue: true,
+    suggestions: ["attachment"],
+  },
+  {
+    operator: "before",
+    label: "before:",
+    description: "Received before a date",
+    example: "before:2024/01/01",
+    hasValue: true,
+  },
+  {
+    operator: "after",
+    label: "after:",
+    description: "Received after a date",
+    example: "after:2024/06/01",
+    hasValue: true,
+  },
+  {
+    operator: "is",
+    label: "is:",
+    description: "Email state",
+    example: "is:unread",
+    hasValue: true,
+    suggestions: ["unread", "starred", "read"],
+  },
+  {
+    operator: "label",
+    label: "label:",
+    description: "Has a label",
+    example: "label:work",
+    hasValue: true,
+  },
+  {
+    operator: "filename",
+    label: "filename:",
+    description: "Attachment filename",
+    example: "filename:report.pdf",
+    hasValue: true,
+  },
+  {
+    operator: "larger",
+    label: "larger:",
+    description: "Larger than a size (e.g. 5M, 200K)",
+    example: "larger:5M",
+    hasValue: true,
+  },
+  {
+    operator: "smaller",
+    label: "smaller:",
+    description: "Smaller than a size",
+    example: "smaller:1M",
+    hasValue: true,
+  },
 ];
 
 export const OPERATOR_MAP: Record<string, OperatorMeta> = Object.fromEntries(
-  OPERATOR_META.map((m) => [m.operator, m]),
+  OPERATOR_META.map((m) => [m.operator, m])
 );
 
 /** Structured filter values extracted from operator syntax. */

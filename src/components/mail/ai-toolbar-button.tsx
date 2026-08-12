@@ -43,7 +43,7 @@ export function AIToolbarButton({
           className={cn(
             "h-8 w-8",
             active && "bg-[var(--color-accent)] text-[var(--color-accent-fg)]",
-            className,
+            className
           )}
           aria-label={label}
           aria-pressed={active}
@@ -52,7 +52,7 @@ export function AIToolbarButton({
           <Sparkles
             className={cn(
               "h-4 w-4 text-[var(--color-brand-500)]",
-              loading && "animate-pulse",
+              loading && "animate-pulse"
             )}
           />
         </Button>

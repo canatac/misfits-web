@@ -5,11 +5,7 @@
  * invalidation, plus a debounced search hook for the contacts page.
  */
 import { useMemo, useEffect, useState } from "react";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContactStore } from "@/stores/contact-store";
 import type {
   Contact,
@@ -42,7 +38,8 @@ export function useContactGroups() {
 export function useContact(id: string | null) {
   return useQuery<Contact | undefined>({
     queryKey: ["contacts", id],
-    queryFn: () => (id ? useContactStore.getState().getContactById(id) : undefined),
+    queryFn: () =>
+      id ? useContactStore.getState().getContactById(id) : undefined,
     enabled: !!id,
     staleTime: Infinity,
   });
@@ -74,7 +71,7 @@ export function useSearchContacts(initial = "") {
     () => useContactStore.getState().searchContacts(debounced),
     // Re-run whenever the store contacts change OR the debounce fires.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debounced, useContactStore.getState().contacts],
+    [debounced, useContactStore.getState().contacts]
   );
 
   return { query, setQuery, results };
@@ -93,11 +90,16 @@ export function useContactMutations() {
   };
 
   const addContact = useMutation<Contact, Error, ContactInput>({
-    mutationFn: (input) => Promise.resolve(useContactStore.getState().addContact(input)),
+    mutationFn: (input) =>
+      Promise.resolve(useContactStore.getState().addContact(input)),
     onSuccess: invalidate,
   });
 
-  const updateContact = useMutation<void, Error, { id: string; input: Partial<ContactInput> }>({
+  const updateContact = useMutation<
+    void,
+    Error,
+    { id: string; input: Partial<ContactInput> }
+  >({
     mutationFn: ({ id, input }) => {
       useContactStore.getState().updateContact(id, input);
       return Promise.resolve();
@@ -113,7 +115,11 @@ export function useContactMutations() {
     onSuccess: invalidate,
   });
 
-  const mergeContacts = useMutation<void, Error, { primaryId: string; duplicateId: string }>({
+  const mergeContacts = useMutation<
+    void,
+    Error,
+    { primaryId: string; duplicateId: string }
+  >({
     mutationFn: ({ primaryId, duplicateId }) => {
       useContactStore.getState().mergeContacts(primaryId, duplicateId);
       return Promise.resolve();
@@ -122,24 +128,37 @@ export function useContactMutations() {
   });
 
   const importContacts = useMutation<number, Error, ContactImport[]>({
-    mutationFn: (imports) => Promise.resolve(useContactStore.getState().importContacts(imports)),
+    mutationFn: (imports) =>
+      Promise.resolve(useContactStore.getState().importContacts(imports)),
     onSuccess: invalidate,
   });
 
-  return { addContact, updateContact, deleteContact, mergeContacts, importContacts };
+  return {
+    addContact,
+    updateContact,
+    deleteContact,
+    mergeContacts,
+    importContacts,
+  };
 }
 
 /** Group CRUD mutations. */
 export function useContactGroupMutations() {
   const queryClient = useQueryClient();
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["contacts", "groups"] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["contacts", "groups"] });
 
   const addGroup = useMutation<ContactGroup, Error, ContactGroupInput>({
-    mutationFn: (input) => Promise.resolve(useContactStore.getState().addGroup(input)),
+    mutationFn: (input) =>
+      Promise.resolve(useContactStore.getState().addGroup(input)),
     onSuccess: invalidate,
   });
 
-  const updateGroup = useMutation<void, Error, { id: string; input: Partial<ContactGroupInput> }>({
+  const updateGroup = useMutation<
+    void,
+    Error,
+    { id: string; input: Partial<ContactGroupInput> }
+  >({
     mutationFn: ({ id, input }) => {
       useContactStore.getState().updateGroup(id, input);
       return Promise.resolve();

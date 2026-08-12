@@ -143,7 +143,9 @@ function parseTaskCandidates(text: string): string[] {
   return text
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => /^(-|\*|\d+\.)\s+/.test(line) || /TODO|action/i.test(line))
+    .filter(
+      (line) => /^(-|\*|\d+\.)\s+/.test(line) || /TODO|action/i.test(line)
+    )
     .map((line) => line.replace(/^(-|\*|\d+\.)\s+/, ""))
     .slice(0, 8);
 }
@@ -157,11 +159,15 @@ function redactPii(input: string): { sanitized: string; count: number } {
     });
 
   let out = input;
-  out = apply(out, /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[REDACTED_EMAIL]");
+  out = apply(
+    out,
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
+    "[REDACTED_EMAIL]"
+  );
   out = apply(
     out,
     /\b(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?){2,5}\d{2,4}\b/g,
-    "[REDACTED_PHONE]",
+    "[REDACTED_PHONE]"
   );
   out = apply(out, /\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/gi, "[REDACTED_IBAN]");
   out = apply(out, /\b(?:sk|ghp|ops)_[A-Za-z0-9]{10,}\b/g, "[REDACTED_TOKEN]");
@@ -183,7 +189,11 @@ interface ChatPanelProps {
   onRequestClose?: () => void;
 }
 
-export function ChatPanel({ layout = "overlay", className, onRequestClose }: ChatPanelProps) {
+export function ChatPanel({
+  layout = "overlay",
+  className,
+  onRequestClose,
+}: ChatPanelProps) {
   const {
     isOpen,
     setOpen,
@@ -202,10 +212,14 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   } = useChatStore();
 
   const [uiMode, setUiMode] = useState<"assistant" | "expert">("assistant");
-  const [workspaceTab, setWorkspaceTab] = useState<"ai" | "agenda" | "tasks">("ai");
+  const [workspaceTab, setWorkspaceTab] = useState<"ai" | "agenda" | "tasks">(
+    "ai"
+  );
   const [input, setInput] = useState("");
   const [searchValue, setSearchValue] = useState("");
-  const [pendingSensitivePrompt, setPendingSensitivePrompt] = useState<string | null>(null);
+  const [pendingSensitivePrompt, setPendingSensitivePrompt] = useState<
+    string | null
+  >(null);
   const [opsDryRun, setOpsDryRun] = useState(true);
   const [opsHistory, setOpsHistory] = useState<OpsAction[]>([]);
   const [memoryNote, setMemoryNote] = useState("");
@@ -225,11 +239,12 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   const user = useAuthStore((s) => s.user);
   const openComposer = useComposerStore((s) => s.openComposer);
 
-  const active = conversations.find((c) => c.id === activeConversationId) ?? null;
+  const active =
+    conversations.find((c) => c.id === activeConversationId) ?? null;
   const isAdmin = user?.role === "admin";
   const selectedEmail = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
-    [emails, selectedEmailId],
+    [emails, selectedEmailId]
   );
 
   const chatContext = useMemo(
@@ -238,17 +253,38 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
       currentFolder,
       threadId: selectedThreadId ?? selectedEmailId ?? undefined,
       userId: user?.id ? String(user.id) : undefined,
-      attachmentNames: (selectedEmail?.attachments ?? []).slice(0, 8).map((a) => a.filename),
+      attachmentNames: (selectedEmail?.attachments ?? [])
+        .slice(0, 8)
+        .map((a) => a.filename),
     }),
-    [selectedEmailId, currentFolder, selectedThreadId, user?.id, selectedEmail?.attachments],
+    [
+      selectedEmailId,
+      currentFolder,
+      selectedThreadId,
+      user?.id,
+      selectedEmail?.attachments,
+    ]
   );
 
-  const sessionId = chatContext.threadId ? `mail-thread-${chatContext.threadId}` : "(none)";
-  const sessionKey = chatContext.userId ? `user-${chatContext.userId}` : "(none)";
-  const memoryKey = useMemo(() => `mfa.chat.memory.${sessionKey}`, [sessionKey]);
+  const sessionId = chatContext.threadId
+    ? `mail-thread-${chatContext.threadId}`
+    : "(none)";
+  const sessionKey = chatContext.userId
+    ? `user-${chatContext.userId}`
+    : "(none)";
+  const memoryKey = useMemo(
+    () => `mfa.chat.memory.${sessionKey}`,
+    [sessionKey]
+  );
   const tasksKey = useMemo(() => `mfa.chat.tasks.${sessionKey}`, [sessionKey]);
-  const personaKey = useMemo(() => `mfa.chat.persona.${sessionKey}`, [sessionKey]);
-  const analyticsKey = useMemo(() => `mfa.chat.analytics.${sessionKey}`, [sessionKey]);
+  const personaKey = useMemo(
+    () => `mfa.chat.persona.${sessionKey}`,
+    [sessionKey]
+  );
+  const analyticsKey = useMemo(
+    () => `mfa.chat.analytics.${sessionKey}`,
+    [sessionKey]
+  );
 
   const traceStats = useMemo(() => {
     const info = traceEvents.filter((e) => e.level === "info").length;
@@ -258,23 +294,35 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   }, [traceEvents]);
 
   const lastAssistantMessage = useMemo(
-    () => [...(active?.messages ?? [])].reverse().find((m) => m.role === "assistant") ?? null,
-    [active],
+    () =>
+      [...(active?.messages ?? [])]
+        .reverse()
+        .find((m) => m.role === "assistant") ?? null,
+    [active]
   );
   const lastUserMessage = useMemo(
-    () => [...(active?.messages ?? [])].reverse().find((m) => m.role === "user") ?? null,
-    [active],
+    () =>
+      [...(active?.messages ?? [])].reverse().find((m) => m.role === "user") ??
+      null,
+    [active]
   );
 
   const agendaEmails = useMemo(
     () =>
       emails
-        .filter((e) => /meeting|call|deadline|rdv|agenda|today|tomorrow/i.test(`${e.subject} ${e.preview}`))
+        .filter((e) =>
+          /meeting|call|deadline|rdv|agenda|today|tomorrow/i.test(
+            `${e.subject} ${e.preview}`
+          )
+        )
         .slice(0, 6),
-    [emails],
+    [emails]
   );
 
-  const pendingTasks = useMemo(() => taskItems.filter((t) => !t.done).slice(0, 8), [taskItems]);
+  const pendingTasks = useMemo(
+    () => taskItems.filter((t) => !t.done).slice(0, 8),
+    [taskItems]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -320,7 +368,7 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
         Object.entries(patch).map(([k, v]) => [
           k,
           ((analytics as Record<string, number>)[k] ?? 0) + (v ?? 0),
-        ]),
+        ])
       ),
     } as Analytics;
     setAnalytics(next);
@@ -328,8 +376,14 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   };
 
   const dispatchPrompt = (prompt: string) => {
-    const templatePrompt = ROLE_TEMPLATES.find((t) => t.id === templateId)?.prompt;
-    const finalPrompt = [buildPersonaInstruction(persona), templatePrompt, prompt]
+    const templatePrompt = ROLE_TEMPLATES.find(
+      (t) => t.id === templateId
+    )?.prompt;
+    const finalPrompt = [
+      buildPersonaInstruction(persona),
+      templatePrompt,
+      prompt,
+    ]
       .filter(Boolean)
       .join("\n\n");
 
@@ -341,7 +395,7 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   const askForVariant = (tone: "court" | "professionnel" | "empathique") => {
     if (!lastAssistantMessage) return;
     dispatchPrompt(
-      `Reformule la dernière proposition en ton ${tone}. Réponse directement exploitable en email.\n\nTexte source:\n${lastAssistantMessage.content}`,
+      `Reformule la dernière proposition en ton ${tone}. Réponse directement exploitable en email.\n\nTexte source:\n${lastAssistantMessage.content}`
     );
   };
 
@@ -405,7 +459,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
   };
 
   const toggleTask = (id: string) => {
-    const next = taskItems.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+    const next = taskItems.map((t) =>
+      t.id === id ? { ...t, done: !t.done } : t
+    );
     updateTasks(next);
   };
 
@@ -414,7 +470,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
     const task = taskItems.find((t) => t.id === taskId);
     if (!task) return;
 
-    updateTasks(taskItems.map((t) => (t.id === taskId ? { ...t, status: "running" } : t)));
+    updateTasks(
+      taskItems.map((t) => (t.id === taskId ? { ...t, status: "running" } : t))
+    );
 
     try {
       const modeHint = opsDryRun ? "DRY-RUN" : "EXECUTE";
@@ -444,12 +502,16 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
 
       updateTasks(
         taskItems.map((t) =>
-          t.id === taskId ? { ...t, status: "done", done: true, runId } : t,
-        ),
+          t.id === taskId ? { ...t, status: "done", done: true, runId } : t
+        )
       );
     } catch (err) {
-      updateTasks(taskItems.map((t) => (t.id === taskId ? { ...t, status: "failed" } : t)));
-      setLastExecError(err instanceof Error ? err.message : "Échec exécution backend");
+      updateTasks(
+        taskItems.map((t) => (t.id === taskId ? { ...t, status: "failed" } : t))
+      );
+      setLastExecError(
+        err instanceof Error ? err.message : "Échec exécution backend"
+      );
     }
   };
 
@@ -479,7 +541,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
 
   const runAdminAction = (action: string, prompt: string) => {
     const mode: OpsAction["mode"] = opsDryRun ? "dry-run" : "execute";
-    setOpsHistory((prev) => [{ at: Date.now(), action, mode }, ...prev].slice(0, 20));
+    setOpsHistory((prev) =>
+      [{ at: Date.now(), action, mode }, ...prev].slice(0, 20)
+    );
     const finalPrompt = opsDryRun
       ? `[DRY-RUN ADMIN] ${prompt}\n\nNe rien exécuter. Produire un plan + commandes de vérification.`
       : `[ADMIN ACTION] ${prompt}`;
@@ -496,7 +560,7 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
     if (!lastUserMessage) return;
     bumpAnalytics({ regenerations: 1 });
     dispatchPrompt(
-      `Régénère une meilleure version de la réponse précédente pour ce prompt:\n${lastUserMessage.content}`,
+      `Régénère une meilleure version de la réponse précédente pour ce prompt:\n${lastUserMessage.content}`
     );
   };
 
@@ -512,9 +576,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
     <div
       className={cn(
         layout === "overlay"
-          ? "fixed right-0 top-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[#242427] bg-[#0A0A0B] shadow-2xl"
+          ? "fixed top-0 right-0 z-50 flex h-screen w-[34rem] max-w-full flex-col border-l border-[#242427] bg-[#0A0A0B] shadow-2xl"
           : "flex h-full w-full flex-col border-l border-[#242427] bg-[#0A0A0B]",
-        className,
+        className
       )}
     >
       <ChatPanelHeader
@@ -533,7 +597,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
 
       <div className="px-3 pt-2">
         <div className="flex items-center gap-2 text-xs text-[var(--color-muted-fg)]">
-          <Badge variant={traceStats.error > 0 ? "destructive" : "secondary"}>{confidenceLabel}</Badge>
+          <Badge variant={traceStats.error > 0 ? "destructive" : "secondary"}>
+            {confidenceLabel}
+          </Badge>
           {uiMode === "assistant" ? (
             <span>
               {selectedEmail?.subject
@@ -551,7 +617,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             onClick={() => setWorkspaceTab("ai")}
             className={cn(
               "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "ai" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+              workspaceTab === "ai"
+                ? "bg-[#1D1D20] text-[#C49B66]"
+                : "text-[#71717A] hover:text-white"
             )}
           >
             IA
@@ -561,7 +629,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             onClick={() => setWorkspaceTab("agenda")}
             className={cn(
               "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "agenda" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+              workspaceTab === "agenda"
+                ? "bg-[#1D1D20] text-[#C49B66]"
+                : "text-[#71717A] hover:text-white"
             )}
           >
             Agenda
@@ -571,7 +641,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             onClick={() => setWorkspaceTab("tasks")}
             className={cn(
               "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "tasks" ? "bg-[#1D1D20] text-[#C49B66]" : "text-[#71717A] hover:text-white",
+              workspaceTab === "tasks"
+                ? "bg-[#1D1D20] text-[#C49B66]"
+                : "text-[#71717A] hover:text-white"
             )}
           >
             Tâches
@@ -581,15 +653,21 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
         <div className="mt-2 grid grid-cols-3 gap-2 text-[10px]">
           <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
             <div className="text-[#71717A]">Conversations</div>
-            <div className="font-mono text-[#E0E0E0]">{conversations.length}</div>
+            <div className="font-mono text-[#E0E0E0]">
+              {conversations.length}
+            </div>
           </div>
           <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
             <div className="text-[#71717A]">Agenda détecté</div>
-            <div className="font-mono text-[#E0E0E0]">{agendaEmails.length}</div>
+            <div className="font-mono text-[#E0E0E0]">
+              {agendaEmails.length}
+            </div>
           </div>
           <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
             <div className="text-[#71717A]">TODO actifs</div>
-            <div className="font-mono text-[#E0E0E0]">{pendingTasks.length}</div>
+            <div className="font-mono text-[#E0E0E0]">
+              {pendingTasks.length}
+            </div>
           </div>
         </div>
       </div>
@@ -605,7 +683,11 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             <Button size="sm" onClick={handleConfirmSensitivePrompt}>
               Confirmer
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setPendingSensitivePrompt(null)}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPendingSensitivePrompt(null)}
+            >
               Annuler
             </Button>
           </div>
@@ -632,9 +714,16 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
               onSearchValueChange={setSearchValue}
               templateId={templateId}
               onTemplateIdChange={setTemplateId}
-              roleTemplates={ROLE_TEMPLATES.map((t) => ({ id: t.id, label: `Template: ${t.label}` }))}
+              roleTemplates={ROLE_TEMPLATES.map((t) => ({
+                id: t.id,
+                label: `Template: ${t.label}`,
+              }))}
               quickPrompts={QUICK_PROMPTS}
-              quickActions={QUICK_ACTIONS.map((a) => ({ id: a.id, label: a.label, prompt: a.prompt }))}
+              quickActions={QUICK_ACTIONS.map((a) => ({
+                id: a.id,
+                label: a.label,
+                prompt: a.prompt,
+              }))}
               onSelectConversation={selectConversation}
               onDispatchPrompt={dispatchPrompt}
               onInsertToDraft={handleInsertToDraft}
@@ -662,11 +751,16 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
                   language: next.language as PersonaPreset["language"],
                 };
                 setPersona(updated);
-                window.localStorage.setItem(personaKey, JSON.stringify(updated));
+                window.localStorage.setItem(
+                  personaKey,
+                  JSON.stringify(updated)
+                );
               }}
               memoryNote={memoryNote}
               onMemoryNoteChange={setMemoryNote}
-              onSaveMemoryNote={() => window.localStorage.setItem(memoryKey, memoryNote)}
+              onSaveMemoryNote={() =>
+                window.localStorage.setItem(memoryKey, memoryNote)
+              }
               onClearMemoryNote={() => {
                 setMemoryNote("");
                 window.localStorage.removeItem(memoryKey);
@@ -692,7 +786,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             </div>
             <div className="space-y-2">
               {agendaEmails.length === 0 ? (
-                <p className="text-xs text-[#71717A]">Aucun email agenda détecté.</p>
+                <p className="text-xs text-[#71717A]">
+                  Aucun email agenda détecté.
+                </p>
               ) : (
                 agendaEmails.map((email) => (
                   <button
@@ -701,8 +797,12 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
                     onClick={() => selectEmail(email.id)}
                     className="w-full rounded-lg border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-left hover:border-[#C49B66]/50"
                   >
-                    <div className="text-xs font-medium text-[#E0E0E0]">{email.subject}</div>
-                    <div className="mt-0.5 line-clamp-2 text-[11px] text-[#71717A]">{email.preview}</div>
+                    <div className="text-xs font-medium text-[#E0E0E0]">
+                      {email.subject}
+                    </div>
+                    <div className="mt-0.5 line-clamp-2 text-[11px] text-[#71717A]">
+                      {email.preview}
+                    </div>
                   </button>
                 ))
               )}
@@ -716,7 +816,9 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             </div>
             <div className="space-y-2">
               {pendingTasks.length === 0 ? (
-                <p className="text-xs text-[#71717A]">Aucune tâche en attente.</p>
+                <p className="text-xs text-[#71717A]">
+                  Aucune tâche en attente.
+                </p>
               ) : (
                 pendingTasks.map((task) => (
                   <label
@@ -740,10 +842,18 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
 
       <div className="border-t border-[#242427] bg-[#121214] p-3">
         <div className="mb-2 flex items-center gap-2">
-          <Button onClick={insertLatestToDraft} disabled={!lastAssistantMessage?.content} className="flex-1">
+          <Button
+            onClick={insertLatestToDraft}
+            disabled={!lastAssistantMessage?.content}
+            className="flex-1"
+          >
             Action principale: Insérer la dernière réponse dans le brouillon
           </Button>
-          <Button variant="outline" onClick={regenerate} disabled={!lastUserMessage || isStreaming}>
+          <Button
+            variant="outline"
+            onClick={regenerate}
+            disabled={!lastUserMessage || isStreaming}
+          >
             Régénérer
           </Button>
         </div>
@@ -754,9 +864,13 @@ export function ChatPanel({ layout = "overlay", className, onRequestClose }: Cha
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Demander à Hermes..."
-            className="flex-1 rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-sm text-white placeholder-[#71717A] focus:outline-none focus:ring-2 focus:ring-[#C49B66]"
+            className="flex-1 rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-sm text-white placeholder-[#71717A] focus:ring-2 focus:ring-[#C49B66] focus:outline-none"
           />
-          <Button size="icon" onClick={handleSend} disabled={isStreaming || !input.trim()}>
+          <Button
+            size="icon"
+            onClick={handleSend}
+            disabled={isStreaming || !input.trim()}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>

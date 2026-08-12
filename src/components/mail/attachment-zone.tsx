@@ -67,13 +67,26 @@ function fileIcon(contentType: string): typeof FileIcon {
   if (contentType === "application/pdf") return FileText;
   if (contentType.startsWith("audio/")) return Music;
   if (contentType.startsWith("video/")) return Video;
-  if (contentType.includes("spreadsheet") || contentType.includes("excel") || contentType === "text/csv")
+  if (
+    contentType.includes("spreadsheet") ||
+    contentType.includes("excel") ||
+    contentType === "text/csv"
+  )
     return FileSpreadsheet;
-  if (contentType.includes("presentation") || contentType.includes("powerpoint"))
+  if (
+    contentType.includes("presentation") ||
+    contentType.includes("powerpoint")
+  )
     return Presentation;
-  if (contentType.includes("zip") || contentType.includes("compressed") || contentType.includes("tar") || contentType.includes("gzip"))
+  if (
+    contentType.includes("zip") ||
+    contentType.includes("compressed") ||
+    contentType.includes("tar") ||
+    contentType.includes("gzip")
+  )
     return ArchiveIcon;
-  if (contentType.startsWith("text/") || contentType === "application/json") return FileText;
+  if (contentType.startsWith("text/") || contentType === "application/json")
+    return FileText;
   return FileIcon;
 }
 
@@ -86,7 +99,7 @@ function formatSize(bytes: number): string {
 /** Simulate an upload with progress. */
 function simulateUpload(
   attachment: Attachment,
-  onUpdate: (id: string, patch: Partial<Attachment>) => void,
+  onUpdate: (id: string, patch: Partial<Attachment>) => void
 ) {
   let progress = 0;
   const interval = setInterval(() => {
@@ -96,7 +109,10 @@ function simulateUpload(
       clearInterval(interval);
       onUpdate(attachment.id, { progress: 100, status: "done" });
     } else {
-      onUpdate(attachment.id, { progress: Math.round(progress), status: "uploading" });
+      onUpdate(attachment.id, {
+        progress: Math.round(progress),
+        status: "uploading",
+      });
     }
   }, 250);
 }
@@ -119,7 +135,7 @@ export function AttachmentZone({
       for (const file of list) {
         if (!isAllowed(file)) {
           setError(
-            `"${file.name}" was skipped — unsupported type or exceeds ${formatSize(MAX_FILE_SIZE)}.`,
+            `"${file.name}" was skipped — unsupported type or exceeds ${formatSize(MAX_FILE_SIZE)}.`
           );
           continue;
         }
@@ -138,7 +154,7 @@ export function AttachmentZone({
         simulateUpload(attachment, onUpdate);
       }
     },
-    [onAdd, onUpdate],
+    [onAdd, onUpdate]
   );
 
   const handleDrop = useCallback(
@@ -147,7 +163,7 @@ export function AttachmentZone({
       setIsDragging(false);
       if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
     },
-    [addFiles],
+    [addFiles]
   );
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -163,7 +179,10 @@ export function AttachmentZone({
   const Icon = fileIcon;
 
   return (
-    <div className={cn("flex flex-col gap-2", className)} data-testid="attachment-zone">
+    <div
+      className={cn("flex flex-col gap-2", className)}
+      data-testid="attachment-zone"
+    >
       {/* Drop zone */}
       <div
         onDrop={handleDrop}
@@ -182,12 +201,14 @@ export function AttachmentZone({
           "flex cursor-pointer items-center justify-center gap-2 rounded-[var(--radius-md)] border-2 border-dashed px-4 py-6 text-sm transition-colors",
           isDragging
             ? "border-[var(--color-brand-500)] bg-[var(--color-brand-500)]/5 text-[var(--color-brand-500)]"
-            : "border-[var(--color-border)] text-[var(--color-muted-fg)] hover:border-[var(--color-brand-500)]/50 hover:bg-[var(--color-muted)]",
+            : "border-[var(--color-border)] text-[var(--color-muted-fg)] hover:border-[var(--color-brand-500)]/50 hover:bg-[var(--color-muted)]"
         )}
       >
         <Upload className="h-5 w-5" />
         <span>
-          <span className="font-medium text-[var(--color-fg)]">Click to upload</span>{" "}
+          <span className="font-medium text-[var(--color-fg)]">
+            Click to upload
+          </span>{" "}
           or drag and drop
         </span>
         <span className="text-xs text-[var(--color-muted-fg)]">

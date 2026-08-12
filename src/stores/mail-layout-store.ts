@@ -33,11 +33,14 @@ export const useMailLayoutStore = create<MailLayoutState>()(
       toggleDesktopSidebar: () =>
         set((s) => ({ desktopSidebarOpen: !s.desktopSidebarOpen })),
       setDesktopChatOpen: (open) => set({ desktopChatOpen: open }),
-      toggleDesktopChat: () => set((s) => ({ desktopChatOpen: !s.desktopChatOpen })),
+      toggleDesktopChat: () =>
+        set((s) => ({ desktopChatOpen: !s.desktopChatOpen })),
       setDesktopHeaderOpen: (open) => set({ desktopHeaderOpen: open }),
-      toggleDesktopHeader: () => set((s) => ({ desktopHeaderOpen: !s.desktopHeaderOpen })),
+      toggleDesktopHeader: () =>
+        set((s) => ({ desktopHeaderOpen: !s.desktopHeaderOpen })),
       setDesktopConsoleOpen: (open) => set({ desktopConsoleOpen: open }),
-      toggleDesktopConsole: () => set((s) => ({ desktopConsoleOpen: !s.desktopConsoleOpen })),
+      toggleDesktopConsole: () =>
+        set((s) => ({ desktopConsoleOpen: !s.desktopConsoleOpen })),
     }),
     {
       name: "misfits-mail-layout",
@@ -51,6 +54,6 @@ export const useMailLayoutStore = create<MailLayoutState>()(
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },
-    },
-  ),
+    }
+  )
 );

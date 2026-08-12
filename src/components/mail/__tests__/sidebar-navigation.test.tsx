@@ -47,7 +47,7 @@ describe("MailSidebar folder navigation", () => {
       vi.fn().mockResolvedValue({
         ok: true,
         json: async () => ({ emails: [], total: 0 }),
-      } as Response),
+      } as Response)
     );
   });
 
@@ -58,11 +58,13 @@ describe("MailSidebar folder navigation", () => {
   it("navigates to /mail when Inbox is clicked outside /mail", async () => {
     pathname = "/dashboard";
 
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     render(
       <QueryClientProvider client={qc}>
         <MailSidebar />
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     await act(async () => {
@@ -75,11 +77,13 @@ describe("MailSidebar folder navigation", () => {
   it("does not force navigation when already on /mail", async () => {
     pathname = "/mail";
 
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     render(
       <QueryClientProvider client={qc}>
         <MailSidebar />
-      </QueryClientProvider>,
+      </QueryClientProvider>
     );
 
     await act(async () => {

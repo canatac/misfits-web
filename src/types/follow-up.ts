@@ -111,5 +111,12 @@ export interface ReminderRule {
  */
 export type FollowUpEmailInput = Pick<
   Email,
-  "id" | "from" | "subject" | "preview" | "body" | "date" | "folder" | "threadId"
+  | "id"
+  | "from"
+  | "subject"
+  | "preview"
+  | "body"
+  | "date"
+  | "folder"
+  | "threadId"
 >;

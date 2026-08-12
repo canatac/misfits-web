@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const messageId = params.get("message_id")?.trim();
 
-  const upstreamUrl = new URL(`${resolveMonitoringBaseUrl()}/api/monitoring/live`);
+  const upstreamUrl = new URL(
+    `${resolveMonitoringBaseUrl()}/api/monitoring/live`
+  );
   if (messageId) upstreamUrl.searchParams.set("message_id", messageId);
 
   let upstream: Response;
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "Unable to reach monitoring stream upstream." },
-      { status: 502 },
+      { status: 502 }
     );
   }
 

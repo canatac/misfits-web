@@ -40,7 +40,7 @@ export function parseDate(value: string): string | undefined {
 
   // YYYY or YYYY/MM or YYYY/MM/DD (with / or - separators)
   const dateMatch = trimmed.match(
-    /^(\d{4})([/\-](\d{1,2}))?([/\-](\d{1,2}))?$/,
+    /^(\d{4})([/\-](\d{1,2}))?([/\-](\d{1,2}))?$/
   );
   if (dateMatch) {
     const year = parseInt(dateMatch[1], 10);
@@ -91,7 +91,7 @@ function tokenize(raw: string): Token[] {
 function applyOperator(
   filters: SearchFilters,
   operator: string,
-  value: string,
+  value: string
 ): void {
   switch (operator) {
     case "from":
@@ -104,7 +104,10 @@ function applyOperator(
       filters.subject = value;
       break;
     case "has":
-      if (value.toLowerCase() === "attachment" || value.toLowerCase() === "attachments") {
+      if (
+        value.toLowerCase() === "attachment" ||
+        value.toLowerCase() === "attachments"
+      ) {
         filters.hasAttachment = true;
       }
       break;
@@ -167,7 +170,7 @@ export function parseSearchQuery(raw: string): SearchQuery {
  */
 export function getActiveOperator(
   raw: string,
-  cursorPos: number,
+  cursorPos: number
 ): { operator: string; partial: string } | null {
   const before = raw.slice(0, cursorPos);
   const match = before.match(/(\w+):(?:"([^"]*)"?|'([^']*)'?|(\S*))$/);

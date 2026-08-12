@@ -36,7 +36,7 @@ function EmptyState({
       className={cn(
         "flex flex-col items-center justify-center gap-4 text-center",
         sizeMap[size],
-        className,
+        className
       )}
       {...props}
     >
@@ -44,7 +44,7 @@ function EmptyState({
         <div
           className={cn(
             "flex items-center justify-center rounded-full bg-[var(--color-muted)] text-[var(--color-muted-fg)]",
-            iconSizeMap[size],
+            iconSizeMap[size]
           )}
         >
           <Icon className="h-1/2 w-1/2" aria-hidden="true" />
@@ -55,7 +55,7 @@ function EmptyState({
           {title}
         </h3>
         {description ? (
-          <p className="text-sm text-[var(--color-muted-fg)] max-w-md">
+          <p className="max-w-md text-sm text-[var(--color-muted-fg)]">
             {description}
           </p>
         ) : null}

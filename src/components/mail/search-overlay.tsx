@@ -22,13 +22,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  Modal,
-  ModalContent,
-} from "@/components/ui/modal";
+import { Modal, ModalContent } from "@/components/ui/modal";
 import { useSearchStore } from "@/stores/search-store";
 import { useEmailStore } from "@/stores/email-store";
-import { OPERATOR_META, type MatchHighlight, type OperatorMeta } from "@/types/search";
+import {
+  OPERATOR_META,
+  type MatchHighlight,
+  type OperatorMeta,
+} from "@/types/search";
 import { getActiveOperator } from "@/lib/search-parser";
 import { searchEmails } from "@/lib/search-engine";
 import { mockEmails } from "@/lib/mock-emails";
@@ -48,15 +49,33 @@ function getInitials(name: string): string {
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (diffDays === 0)
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return date.toLocaleDateString("en-US", { weekday: "short" });
-  if (date.getFullYear() === now.getFullYear()) return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (diffDays < 7)
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  if (date.getFullYear() === now.getFullYear())
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
-function HighlightedText({ text, highlights }: { text: string; highlights: MatchHighlight[] }) {
+function HighlightedText({
+  text,
+  highlights,
+}: {
+  text: string;
+  highlights: MatchHighlight[];
+}) {
   if (highlights.length === 0) return <>{text}</>;
   const sorted = [...highlights].sort((a, b) => a.start - b.start);
   const nonOverlapping: MatchHighlight[] = [];
@@ -78,7 +97,7 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Match
         className="rounded-[var(--radius-sm)] bg-[var(--color-brand-500)]/20 px-0.5 font-semibold text-[var(--color-fg)]"
       >
         {text.slice(h.start, h.end)}
-      </mark>,
+      </mark>
     );
     pos = h.end;
   }
@@ -86,7 +105,10 @@ function HighlightedText({ text, highlights }: { text: string; highlights: Match
   return <>{parts}</>;
 }
 
-function fieldHighlights(highlights: MatchHighlight[], field: MatchHighlight["field"]): MatchHighlight[] {
+function fieldHighlights(
+  highlights: MatchHighlight[],
+  field: MatchHighlight["field"]
+): MatchHighlight[] {
   return highlights.filter((h) => h.field === field);
 }
 
@@ -141,7 +163,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       setShowOperatorHints(!!activeOp && activeOp.partial.length < 5);
       executeSearch();
     },
-    [setSearchQuery, executeSearch],
+    [setSearchQuery, executeSearch]
   );
 
   const handleSelectResult = useCallback(
@@ -150,7 +172,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       addHistoryEntry(query);
       onOpenChange(false);
     },
-    [selectEmail, addHistoryEntry, query, onOpenChange],
+    [selectEmail, addHistoryEntry, query, onOpenChange]
   );
 
   const handleKeyDown = useCallback(
@@ -183,7 +205,14 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         return;
       }
     },
-    [results, activeIndex, handleSelectResult, addHistoryEntry, query, onOpenChange],
+    [
+      results,
+      activeIndex,
+      handleSelectResult,
+      addHistoryEntry,
+      query,
+      onOpenChange,
+    ]
   );
 
   const insertOperator = useCallback(
@@ -203,12 +232,15 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       setShowOperatorHints(false);
       executeSearch();
       requestAnimationFrame(() => {
-        const pos = (match ? cursorPos - match[0].length : cursorPos) + op.operator.length + 1;
+        const pos =
+          (match ? cursorPos - match[0].length : cursorPos) +
+          op.operator.length +
+          1;
         inputRef.current?.focus();
         inputRef.current?.setSelectionRange(pos, pos);
       });
     },
-    [query, setSearchQuery, executeSearch],
+    [query, setSearchQuery, executeSearch]
   );
 
   const activeOperator = (() => {
@@ -218,7 +250,9 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
 
   const filteredOperators = activeOperator
     ? OPERATOR_META.filter(
-        (op) => op.operator.startsWith(activeOperator.operator) || op.operator.includes(activeOperator.operator),
+        (op) =>
+          op.operator.startsWith(activeOperator.operator) ||
+          op.operator.includes(activeOperator.operator)
       )
     : OPERATOR_META;
 
@@ -230,7 +264,10 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent className="max-w-3xl gap-0 overflow-hidden rounded-2xl border border-[#242427] bg-[#0A0A0B] p-0" aria-label="Search mail">
+      <ModalContent
+        className="max-w-3xl gap-0 overflow-hidden rounded-2xl border border-[#242427] bg-[#0A0A0B] p-0"
+        aria-label="Search mail"
+      >
         {/* Search input */}
         <div className="flex items-center gap-2 border-b border-[#242427] bg-[#121214] px-4 py-3">
           <SearchIcon className="h-5 w-5 shrink-0 text-[var(--color-muted-fg)]" />
@@ -268,7 +305,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         {/* Operator autocomplete */}
         {showOperatorHints && (
           <div className="border-b border-[#242427] bg-[#121214]/80 p-2">
-            <div className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-[#A1A1AA]">
+            <div className="mb-1 px-1 text-xs font-semibold tracking-wide text-[#A1A1AA] uppercase">
               Opérateurs intelligents
             </div>
             <div className="flex flex-wrap gap-1">
@@ -281,8 +318,12 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                   }}
                   className="inline-flex items-center gap-1.5 rounded-full border border-[#242427] bg-[#0A0A0B] px-2.5 py-1 text-xs text-[#D4D4D8] transition-colors hover:border-[#C49B66]/40 hover:bg-[#1D1D20]"
                 >
-                  <span className="font-mono font-medium text-[var(--color-brand-500)]">{op.label}</span>
-                  <span className="text-[var(--color-muted-fg)]">{op.description}</span>
+                  <span className="font-mono font-medium text-[var(--color-brand-500)]">
+                    {op.label}
+                  </span>
+                  <span className="text-[var(--color-muted-fg)]">
+                    {op.description}
+                  </span>
                 </button>
               ))}
             </div>
@@ -307,7 +348,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                     onClick={() => handleSelectResult(result.email.id)}
                     className={cn(
                       "flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] px-3 py-2.5 transition-colors",
-                      index === activeIndex && "bg-[var(--color-accent)]",
+                      index === activeIndex && "bg-[var(--color-accent)]"
                     )}
                   >
                     <Avatar className="h-8 w-8 shrink-0">
@@ -318,20 +359,32 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-medium">
-                          <HighlightedText text={result.email.from.name} highlights={fromHL} />
+                          <HighlightedText
+                            text={result.email.from.name}
+                            highlights={fromHL}
+                          />
                         </span>
                         <span className="shrink-0 text-xs text-[var(--color-muted-fg)]">
                           {formatDate(result.email.date)}
                         </span>
                       </div>
                       <span className="truncate text-sm text-[var(--color-fg)]">
-                        <HighlightedText text={result.email.subject} highlights={subjectHL} />
+                        <HighlightedText
+                          text={result.email.subject}
+                          highlights={subjectHL}
+                        />
                       </span>
                       <span className="truncate text-xs text-[var(--color-muted-fg)]">
-                        <HighlightedText text={result.email.preview} highlights={previewHL} />
+                        <HighlightedText
+                          text={result.email.preview}
+                          highlights={previewHL}
+                        />
                       </span>
                       <div className="flex items-center gap-1 pt-0.5">
-                        <Badge variant="outline" className="text-[10px] capitalize">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] capitalize"
+                        >
                           {result.email.folder}
                         </Badge>
                         {result.email.hasAttachments && (
@@ -353,7 +406,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
           {/* Recent searches */}
           {showRecentSearches && (
             <div className="p-2">
-              <div className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <div className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                 Récentes
               </div>
               {searchHistory.slice(0, 8).map((entry) => (
@@ -375,7 +428,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
           {/* Saved searches */}
           {showSavedSearches && (
             <div className="p-2">
-              <div className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <div className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                 Sauvegardées
               </div>
               {savedSearches.map((saved) => (
@@ -392,8 +445,12 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                   >
                     <Bookmark className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted-fg)]" />
                     <div className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm font-medium">{saved.name}</span>
-                      <span className="truncate text-xs text-[var(--color-muted-fg)]">{saved.query}</span>
+                      <span className="truncate text-sm font-medium">
+                        {saved.name}
+                      </span>
+                      <span className="truncate text-xs text-[var(--color-muted-fg)]">
+                        {saved.query}
+                      </span>
                     </div>
                     <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted-fg)]" />
                   </button>
@@ -416,9 +473,12 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
               <div>
-                <p className="text-sm font-medium text-[var(--color-fg)]">Aucun résultat</p>
+                <p className="text-sm font-medium text-[var(--color-fg)]">
+                  Aucun résultat
+                </p>
                 <p className="text-xs text-[var(--color-muted-fg)]">
-                  No emails match &ldquo;{query}&rdquo;. Try different keywords or operators.
+                  No emails match &ldquo;{query}&rdquo;. Try different keywords
+                  or operators.
                 </p>
               </div>
             </div>
@@ -429,7 +489,9 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
               <div>
-                <p className="text-sm font-medium text-[var(--color-fg)]">Rechercher dans votre mail</p>
+                <p className="text-sm font-medium text-[var(--color-fg)]">
+                  Rechercher dans votre mail
+                </p>
                 <p className="text-xs text-[var(--color-muted-fg)]">
                   Use operators like <span className="font-mono">from:</span>,{" "}
                   <span className="font-mono">subject:</span>,{" "}
@@ -458,9 +520,13 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
                 Sauvegarder la recherche
               </Button>
               <span className="flex items-center gap-1">
-                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">↑↓</kbd>
+                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">
+                  ↑↓
+                </kbd>
                 naviguer
-                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">↵</kbd>
+                <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1">
+                  ↵
+                </kbd>
                 ouvrir
               </span>
             </div>

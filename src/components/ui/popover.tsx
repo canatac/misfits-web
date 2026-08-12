@@ -18,8 +18,8 @@ const PopoverContent = React.forwardRef<
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "z-[var(--z-popover)] w-72 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] p-4 text-[var(--color-popover-fg)] shadow-[var(--shadow-lg)] outline-none data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)] data-[side=bottom]:slide-in-from-top data-[side=top]:slide-in-from-bottom data-[side=left]:slide-in-from-right data-[side=right]:slide-in-from-left",
-        className,
+        "data-[side=bottom]:slide-in-from-top data-[side=top]:slide-in-from-bottom data-[side=left]:slide-in-from-right data-[side=right]:slide-in-from-left z-[var(--z-popover)] w-72 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] p-4 text-[var(--color-popover-fg)] shadow-[var(--shadow-lg)] outline-none data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)]",
+        className
       )}
       {...props}
     />

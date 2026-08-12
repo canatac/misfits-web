@@ -30,7 +30,9 @@ export function ChatPanelHeader({
           <Sparkles className="h-4 w-4 text-[var(--color-brand-500)]" />
           <span className="text-sm font-semibold">Assistant Mail</span>
           {isStreaming && <Badge variant="secondary">En cours</Badge>}
-          {lastLatencyMs !== null && <Badge variant="outline">{Math.round(lastLatencyMs)}ms</Badge>}
+          {lastLatencyMs !== null && (
+            <Badge variant="outline">{Math.round(lastLatencyMs)}ms</Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -48,10 +50,19 @@ export function ChatPanelHeader({
           >
             Expert
           </Button>
-          <Button size="sm" variant={traceEnabled ? "secondary" : "outline"} onClick={onToggleTrace}>
+          <Button
+            size="sm"
+            variant={traceEnabled ? "secondary" : "outline"}
+            onClick={onToggleTrace}
+          >
             Trace
           </Button>
-          <Button size="icon" variant="ghost" onClick={onClose} aria-label="Fermer assistant">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onClose}
+            aria-label="Fermer assistant"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>

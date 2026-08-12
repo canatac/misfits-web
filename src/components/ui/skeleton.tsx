@@ -9,7 +9,7 @@ function Skeleton({
     <div
       className={cn(
         "relative overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-muted)]",
-        className,
+        className
       )}
       {...props}
     >

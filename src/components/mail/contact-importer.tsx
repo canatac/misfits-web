@@ -69,7 +69,7 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
         })
         .catch(() => toast.error("Could not read file"));
     },
-    [parse],
+    [parse]
   );
 
   const handlePaste = useCallback(
@@ -78,7 +78,7 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
       setRaw(text);
       parse(text);
     },
-    [parse],
+    [parse]
   );
 
   const reset = () => {
@@ -117,7 +117,8 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
         <ModalHeader>
           <ModalTitle>Import contacts</ModalTitle>
           <ModalDescription>
-            Paste contacts or upload a CSV / vCard file. Duplicates by email are skipped.
+            Paste contacts or upload a CSV / vCard file. Duplicates by email are
+            skipped.
           </ModalDescription>
         </ModalHeader>
 
@@ -147,7 +148,9 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
             <Textarea
               value={raw}
               onChange={handlePaste}
-              placeholder={"Paste vCard or CSV here…\n\nBEGIN:VCARD\nVERSION:3.0\nFN:…\nEMAIL:…\nEND:VCARD"}
+              placeholder={
+                "Paste vCard or CSV here…\n\nBEGIN:VCARD\nVERSION:3.0\nFN:…\nEMAIL:…\nEND:VCARD"
+              }
               className="min-h-[160px] font-mono text-xs"
               aria-label="Paste contacts"
             />
@@ -170,9 +173,10 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
           {/* Preview */}
           {parsed.length > 0 && (
             <div className="mt-4">
-              <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                 <Check className="h-3 w-3" />
-                Preview · {parsed.length} contact{parsed.length === 1 ? "" : "s"}
+                Preview · {parsed.length} contact
+                {parsed.length === 1 ? "" : "s"}
               </div>
               <ScrollArea className="max-h-48 rounded-[var(--radius-md)] border border-[var(--color-border)]">
                 <ul className="divide-y divide-[var(--color-border)]">
@@ -210,8 +214,15 @@ export function ContactImporter({ open, onOpenChange }: ContactImporterProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleImport} disabled={parsed.length === 0} loading={importContacts.isPending}>
-            Import {parsed.length > 0 ? `${parsed.length} contact${parsed.length === 1 ? "" : "s"}` : ""}
+          <Button
+            onClick={handleImport}
+            disabled={parsed.length === 0}
+            loading={importContacts.isPending}
+          >
+            Import{" "}
+            {parsed.length > 0
+              ? `${parsed.length} contact${parsed.length === 1 ? "" : "s"}`
+              : ""}
           </Button>
         </ModalFooter>
       </ModalContent>

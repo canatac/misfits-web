@@ -18,10 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { Thread } from "@/types/thread";
 import type { ThreadingMode } from "@/types/thread";
 
@@ -87,13 +84,19 @@ export function ThreadHeader({
               <ToggleGroupItem value="smart" aria-label="Smart threading">
                 <Sparkles className="h-3.5 w-3.5" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="byReferences" aria-label="Thread by references">
+              <ToggleGroupItem
+                value="byReferences"
+                aria-label="Thread by references"
+              >
                 <GitBranch className="h-3.5 w-3.5" />
               </ToggleGroupItem>
               <ToggleGroupItem value="bySubject" aria-label="Thread by subject">
                 <ListIcon className="h-3.5 w-3.5" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="byParticipants" aria-label="Thread by participants">
+              <ToggleGroupItem
+                value="byParticipants"
+                aria-label="Thread by participants"
+              >
                 <AtSign className="h-3.5 w-3.5" />
               </ToggleGroupItem>
             </ToggleGroup>
@@ -133,7 +136,10 @@ export function ThreadHeader({
             <div className="flex items-center gap-1.5">
               <div className="flex -space-x-2">
                 {thread.participants.slice(0, 5).map((p) => (
-                  <Avatar key={p.address} className="h-6 w-6 border-2 border-[var(--color-bg)]">
+                  <Avatar
+                    key={p.address}
+                    className="h-6 w-6 border-2 border-[var(--color-bg)]"
+                  >
                     <AvatarFallback className="text-[10px]">
                       {getInitials(p.name)}
                     </AvatarFallback>
@@ -149,7 +155,8 @@ export function ThreadHeader({
             {/* Message count */}
             <Badge variant="secondary" className="gap-1">
               <MessagesSquare className="h-3 w-3" />
-              {thread.messageCount} {thread.messageCount === 1 ? "message" : "messages"}
+              {thread.messageCount}{" "}
+              {thread.messageCount === 1 ? "message" : "messages"}
             </Badge>
 
             {/* Unread count */}

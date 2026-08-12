@@ -63,14 +63,52 @@ function sanitizeBody(email: Email): string {
   }
   return DOMPurify.sanitize(email.body, {
     ALLOWED_TAGS: [
-      "p", "br", "div", "span", "a", "img", "ul", "ol", "li",
-      "b", "strong", "i", "em", "u", "s", "del", "blockquote",
-      "pre", "code", "h1", "h2", "h3", "h4", "h5", "h6",
-      "table", "thead", "tbody", "tr", "th", "td", "hr", "sub", "sup",
+      "p",
+      "br",
+      "div",
+      "span",
+      "a",
+      "img",
+      "ul",
+      "ol",
+      "li",
+      "b",
+      "strong",
+      "i",
+      "em",
+      "u",
+      "s",
+      "del",
+      "blockquote",
+      "pre",
+      "code",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "hr",
+      "sub",
+      "sup",
     ],
     ALLOWED_ATTR: [
-      "href", "src", "alt", "title", "style", "class", "id",
-      "target", "colspan", "rowspan",
+      "href",
+      "src",
+      "alt",
+      "title",
+      "style",
+      "class",
+      "id",
+      "target",
+      "colspan",
+      "rowspan",
     ],
     ALLOW_DATA_ATTR: false,
   });
@@ -103,10 +141,7 @@ function ThreadMessageItem({
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [loadImages, setLoadImages] = useState(false);
 
-  const sanitized = useMemo(
-    () => sanitizeBody(email),
-    [email],
-  );
+  const sanitized = useMemo(() => sanitizeBody(email), [email]);
 
   // Reset collapse state when email changes
   useEffect(() => {
@@ -118,10 +153,7 @@ function ThreadMessageItem({
 
   return (
     <div
-      className={cn(
-        "relative",
-        isTimeline && "flex gap-3 pl-2",
-      )}
+      className={cn("relative", isTimeline && "flex gap-3 pl-2")}
       data-testid={`thread-message-${email.id}`}
     >
       {/* Timeline line */}
@@ -139,8 +171,9 @@ function ThreadMessageItem({
       <div
         className={cn(
           "flex-1",
-          isHighlighted && "rounded-[var(--radius-md)] bg-[var(--color-accent)] p-3",
-          !isHighlighted && isTimeline && "pb-4",
+          isHighlighted &&
+            "rounded-[var(--radius-md)] bg-[var(--color-accent)] p-3",
+          !isHighlighted && isTimeline && "pb-4"
         )}
       >
         {/* Message header */}
@@ -160,7 +193,7 @@ function ThreadMessageItem({
                     "text-sm font-medium",
                     !email.isRead
                       ? "font-semibold text-[var(--color-fg)]"
-                      : "text-[var(--color-fg)]",
+                      : "text-[var(--color-fg)]"
                   )}
                 >
                   {email.from.name}
@@ -254,7 +287,7 @@ function QuickReplyBox({ thread, onReply, onForward }: QuickReplyProps) {
       <div
         className={cn(
           "rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] transition-all",
-          expanded ? "p-3" : "p-2",
+          expanded ? "p-3" : "p-2"
         )}
       >
         {expanded ? (
@@ -277,12 +310,20 @@ function QuickReplyBox({ thread, onReply, onForward }: QuickReplyProps) {
               className="min-h-[80px]"
             />
             <div className="mt-2 flex items-center justify-between">
-              <Button variant="ghost" size="sm" onClick={() => onForward(thread)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onForward(thread)}
+              >
                 <Forward className="mr-1.5 h-3.5 w-3.5" />
                 Forward thread
               </Button>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => onReply(thread)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onReply(thread)}
+                >
                   <Reply className="mr-1.5 h-3.5 w-3.5" />
                   Open full composer
                 </Button>
@@ -334,7 +375,7 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
       <div
         className={cn(
           "flex h-full items-center justify-center bg-[var(--color-bg)]",
-          className,
+          className
         )}
         data-testid="thread-view-empty"
       >
@@ -350,10 +391,7 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
 
   return (
     <div
-      className={cn(
-        "flex h-full flex-col bg-[var(--color-bg)]",
-        className,
-      )}
+      className={cn("flex h-full flex-col bg-[var(--color-bg)]", className)}
       data-testid="thread-view"
     >
       {/* Action toolbar */}
@@ -387,13 +425,10 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
                 {idx > 0 && <Separator className="mb-4" />}
                 <ThreadMessageItem
                   email={email}
-                  isHighlighted={
-                    latestUnread?.id === email.id && !email.isRead
-                  }
+                  isHighlighted={latestUnread?.id === email.id && !email.isRead}
                   viewMode={viewMode}
                   defaultCollapsed={
-                    idx < thread.messages.length - 1 &&
-                    email.isRead
+                    idx < thread.messages.length - 1 && email.isRead
                   }
                 />
               </div>

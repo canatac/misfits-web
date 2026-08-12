@@ -59,11 +59,7 @@ function levenshtein(a: string, b: string, maxDist: number): number {
     let rowMin = curr[0];
     for (let j = 1; j <= bl; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      curr[j] = Math.min(
-        curr[j - 1] + 1,
-        prev[j] + 1,
-        prev[j - 1] + cost,
-      );
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
       if (curr[j] < rowMin) rowMin = curr[j];
     }
     if (rowMin > maxDist) return maxDist + 1;
@@ -96,15 +92,14 @@ function matchTerm(text: string, term: string): number {
 }
 
 /** Collect all highlight positions for a set of terms across an email's fields. */
-function collectHighlights(
-  email: Email,
-  terms: string[],
-): MatchHighlight[] {
+function collectHighlights(email: Email, terms: string[]): MatchHighlight[] {
   const highlights: MatchHighlight[] = [];
   const subject = normalize(email.subject);
   const fromName = normalize(email.from.name);
   const fromAddr = normalize(email.from.address);
-  const toStr = normalize(email.to.map((t) => `${t.name} ${t.address}`).join(" "));
+  const toStr = normalize(
+    email.to.map((t) => `${t.name} ${t.address}`).join(" ")
+  );
   const preview = normalize(email.preview);
   const body = normalize(stripHtml(email.body));
 
@@ -114,38 +109,73 @@ function collectHighlights(
 
     let idx = matchTerm(subject, t);
     if (idx >= 0) {
-      highlights.push({ field: "subject", start: idx, end: idx + t.length, term: t });
+      highlights.push({
+        field: "subject",
+        start: idx,
+        end: idx + t.length,
+        term: t,
+      });
     }
 
     idx = matchTerm(fromName, t);
     if (idx >= 0) {
-      highlights.push({ field: "from", start: idx, end: idx + t.length, term: t });
+      highlights.push({
+        field: "from",
+        start: idx,
+        end: idx + t.length,
+        term: t,
+      });
     } else {
       idx = matchTerm(fromAddr, t);
       if (idx >= 0) {
-        highlights.push({ field: "from", start: idx, end: idx + t.length, term: t });
+        highlights.push({
+          field: "from",
+          start: idx,
+          end: idx + t.length,
+          term: t,
+        });
       }
     }
 
     idx = matchTerm(toStr, t);
     if (idx >= 0) {
-      highlights.push({ field: "to", start: idx, end: idx + t.length, term: t });
+      highlights.push({
+        field: "to",
+        start: idx,
+        end: idx + t.length,
+        term: t,
+      });
     }
 
     idx = matchTerm(preview, t);
     if (idx >= 0) {
-      highlights.push({ field: "preview", start: idx, end: idx + t.length, term: t });
+      highlights.push({
+        field: "preview",
+        start: idx,
+        end: idx + t.length,
+        term: t,
+      });
     }
 
     idx = matchTerm(body, t);
     if (idx >= 0) {
-      highlights.push({ field: "body", start: idx, end: idx + t.length, term: t });
+      highlights.push({
+        field: "body",
+        start: idx,
+        end: idx + t.length,
+        term: t,
+      });
     }
 
     for (const att of email.attachments) {
       idx = matchTerm(normalize(att.filename), t);
       if (idx >= 0) {
-        highlights.push({ field: "filename", start: idx, end: idx + t.length, term: t });
+        highlights.push({
+          field: "filename",
+          start: idx,
+          end: idx + t.length,
+          term: t,
+        });
       }
     }
   }
@@ -175,7 +205,7 @@ function applyFilters(email: Email, filters: SearchFilters): boolean {
     const matches = allRecipients.some(
       (r) =>
         matchTerm(normalize(r.name), t) >= 0 ||
-        matchTerm(normalize(r.address), t) >= 0,
+        matchTerm(normalize(r.address), t) >= 0
     );
     if (!matches) return false;
   }
@@ -225,8 +255,8 @@ function applyFilters(email: Email, filters: SearchFilters): boolean {
 
   if (filters.filename) {
     const fn = normalize(filters.filename);
-    const hasFile = email.attachments.some((a) =>
-      matchTerm(normalize(a.filename), fn) >= 0,
+    const hasFile = email.attachments.some(
+      (a) => matchTerm(normalize(a.filename), fn) >= 0
     );
     if (!hasFile) return false;
   }
@@ -246,7 +276,7 @@ function applyFilters(email: Email, filters: SearchFilters): boolean {
 function scoreEmail(
   email: Email,
   terms: string[],
-  highlights: MatchHighlight[],
+  highlights: MatchHighlight[]
 ): number {
   let score = 0;
 
@@ -280,7 +310,8 @@ function scoreEmail(
   if (email.isStarred) score += 1;
 
   // Recency bonus (newer = higher, decays over 30 days)
-  const ageDays = (Date.now() - new Date(email.date).getTime()) / (1000 * 60 * 60 * 24);
+  const ageDays =
+    (Date.now() - new Date(email.date).getTime()) / (1000 * 60 * 60 * 24);
   if (ageDays < 30) {
     score += (30 - ageDays) / 30;
   }
@@ -330,7 +361,10 @@ function computeFacets(emails: Email[]): SearchFacets {
 export class SearchIndex {
   private emails: Email[];
   private index: Map<string, Set<string>>;
-  private queryCache: Map<string, { results: SearchResult[]; facets: SearchFacets }>;
+  private queryCache: Map<
+    string,
+    { results: SearchResult[]; facets: SearchFacets }
+  >;
   private corpusTokens: Map<string, string>; // email.id → concatenated normalized text
 
   constructor(emails: Email[]) {
@@ -371,7 +405,7 @@ export class SearchIndex {
         stripHtml(email.body),
         email.attachments.map((a) => a.filename).join(" "),
         email.labels.join(" "),
-      ].join(" "),
+      ].join(" ")
     );
     return text.split(" ").filter((t) => t.length > 0);
   }
@@ -385,7 +419,10 @@ export class SearchIndex {
    * Search the index. Returns sorted results + facets.
    * Results are memoized by the raw query + sort mode.
    */
-  search(query: string, sort: SearchSort = "relevance"): {
+  search(
+    query: string,
+    sort: SearchSort = "relevance"
+  ): {
     results: SearchResult[];
     facets: SearchFacets;
   } {
@@ -406,7 +443,7 @@ export class SearchIndex {
         // Prefix-match tokens in the inverted index
         for (const [token, ids] of this.index) {
           if (token.includes(term) || term.includes(token)) {
-          for (const id of ids) candidateIds.add(id);
+            for (const id of ids) candidateIds.add(id);
           }
         }
         // Also fallback to scanning corpus (handles multi-word terms not in the token index)
@@ -424,15 +461,12 @@ export class SearchIndex {
     }
 
     // Apply operator filters
-    const filtered = candidates.filter((e) =>
-      applyFilters(e, parsed.filters),
-    );
+    const filtered = candidates.filter((e) => applyFilters(e, parsed.filters));
 
     // Compute highlights and scores
     const results: SearchResult[] = filtered.map((email) => {
-      const highlights = terms.length > 0
-        ? collectHighlights(email, terms)
-        : [];
+      const highlights =
+        terms.length > 0 ? collectHighlights(email, terms) : [];
       const score = scoreEmail(email, terms, highlights);
       return { email, score, highlights };
     });
@@ -441,7 +475,7 @@ export class SearchIndex {
     if (sort === "date") {
       results.sort(
         (a, b) =>
-          new Date(b.email.date).getTime() - new Date(a.email.date).getTime(),
+          new Date(b.email.date).getTime() - new Date(a.email.date).getTime()
       );
     } else {
       // Relevance: score desc, then date desc as tiebreaker
@@ -503,7 +537,7 @@ export function getSearchIndex(): SearchIndex | null {
 export function searchEmails(
   query: string,
   emails: Email[],
-  sort: SearchSort = "relevance",
+  sort: SearchSort = "relevance"
 ): { results: SearchResult[]; facets: SearchFacets } {
   if (globalIndex) {
     return globalIndex.search(query, sort);
@@ -519,15 +553,13 @@ export function searchEmails(
 export function searchParsed(
   parsed: SearchQuery,
   emails: Email[],
-  sort: SearchSort = "relevance",
+  sort: SearchSort = "relevance"
 ): { results: SearchResult[]; facets: SearchFacets } {
   const terms = parsed.textTerms.map(normalize).filter((t) => t.length > 0);
   const filtered = emails.filter((e) => applyFilters(e, parsed.filters));
 
   const results: SearchResult[] = filtered.map((email) => {
-    const highlights = terms.length > 0
-      ? collectHighlights(email, terms)
-      : [];
+    const highlights = terms.length > 0 ? collectHighlights(email, terms) : [];
     const score = scoreEmail(email, terms, highlights);
     return { email, score, highlights };
   });
@@ -535,12 +567,14 @@ export function searchParsed(
   if (sort === "date") {
     results.sort(
       (a, b) =>
-        new Date(b.email.date).getTime() - new Date(a.email.date).getTime(),
+        new Date(b.email.date).getTime() - new Date(a.email.date).getTime()
     );
   } else {
     results.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      return new Date(b.email.date).getTime() - new Date(a.email.date).getTime();
+      return (
+        new Date(b.email.date).getTime() - new Date(a.email.date).getTime()
+      );
     });
   }
 

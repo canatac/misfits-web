@@ -16,7 +16,7 @@ export function getMailUserId(): string {
 
 /** Headers for authenticated mail I/O against email_api. */
 export function mailAuthHeaders(
-  extra?: Record<string, string>,
+  extra?: Record<string, string>
 ): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

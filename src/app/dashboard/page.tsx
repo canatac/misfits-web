@@ -214,7 +214,10 @@ function StorageGauge({
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={`${circumference} ${circumference}`}
-            style={{ strokeDashoffset: offset, transition: "stroke-dashoffset 300ms" }}
+            style={{
+              strokeDashoffset: offset,
+              transition: "stroke-dashoffset 300ms",
+            }}
             r={normalizedRadius}
             cx={radius}
             cy={radius}
@@ -244,7 +247,9 @@ export default function DashboardIndexPage() {
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
   const [storagePercentage, setStoragePercentage] = useState(84.2);
   const [showStorageModal, setShowStorageModal] = useState(false);
-  const [cleanupDoneMessage, setCleanupDoneMessage] = useState<string | null>(null);
+  const [cleanupDoneMessage, setCleanupDoneMessage] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     setNow(new Date());
@@ -264,13 +269,18 @@ export default function DashboardIndexPage() {
   const handleCleanUpStorage = () => {
     setStoragePercentage(68.5);
     setCleanupDoneMessage(
-      "Purge effectuée : 157.3 Go libérés. Le stockage est repassé sous le seuil critique (68.5%).",
+      "Purge effectuée : 157.3 Go libérés. Le stockage est repassé sous le seuil critique (68.5%)."
     );
     setShowStorageModal(false);
     setTimeout(() => setCleanupDoneMessage(null), 4500);
   };
 
-  const inboxQuery = useEmailList({ folder: "inbox", page: 1, pageSize: 8, sortBy: "date" });
+  const inboxQuery = useEmailList({
+    folder: "inbox",
+    page: 1,
+    pageSize: 8,
+    sortBy: "date",
+  });
 
   const firstName = useMemo(() => {
     const raw = user?.displayName ?? user?.email?.split("@")[0] ?? "Joey";
@@ -306,7 +316,9 @@ export default function DashboardIndexPage() {
         ? inboxQuery.data.emails
         : mockEmails.filter((e) => e.folder === "inbox");
 
-    return source.slice(0, 4).map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 }));
+    return source
+      .slice(0, 4)
+      .map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 }));
   }, [inboxQuery.data?.emails]);
 
   const unreadCountQuery = useEmailList({
@@ -318,7 +330,8 @@ export default function DashboardIndexPage() {
 
   const unreadCount =
     unreadCountQuery.data?.total ??
-    (mockFolders.find((f) => f.id === "inbox")?.unreadCount ?? 0);
+    mockFolders.find((f) => f.id === "inbox")?.unreadCount ??
+    0;
   const highSignalNewsletters = VEILLE.filter((v) => v.signal >= 80).length;
   const pendingTasks = TASKS.filter((task) => !doneIds.has(task.id)).length;
   const urgentTasks: number = 2;
@@ -369,7 +382,7 @@ export default function DashboardIndexPage() {
             >
               <ArrowLeft className="h-4 w-4" /> Retour au dashboard
             </button>
-            <span className="rounded-full border border-[#242427] bg-[#1D1D20] px-2.5 py-1 text-[10px] font-bold uppercase text-[#71717A]">
+            <span className="rounded-full border border-[#242427] bg-[#1D1D20] px-2.5 py-1 text-[10px] font-bold text-[#71717A] uppercase">
               {detailItem.type}
             </span>
           </div>
@@ -378,9 +391,15 @@ export default function DashboardIndexPage() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1">
-                  <p className="text-xs text-[#71717A]">{detailItem.data.from.name}</p>
-                  <h2 className="text-xl font-bold text-white">{detailItem.data.subject}</h2>
-                  <p className="text-xs text-[#A1A1AA]">{formatTime(detailItem.data.date)}</p>
+                  <p className="text-xs text-[#71717A]">
+                    {detailItem.data.from.name}
+                  </p>
+                  <h2 className="text-xl font-bold text-white">
+                    {detailItem.data.subject}
+                  </h2>
+                  <p className="text-xs text-[#A1A1AA]">
+                    {formatTime(detailItem.data.date)}
+                  </p>
                 </div>
                 <span className="rounded-sm bg-[#C49B66]/15 px-2 py-1 text-xs font-bold text-[#C49B66]">
                   Score {detailItem.data.score}
@@ -394,7 +413,8 @@ export default function DashboardIndexPage() {
                   href="/mail"
                   className="inline-flex items-center gap-1 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#C49B66]/50"
                 >
-                  Ouvrir dans l’inbox <ExternalLink className="h-3.5 w-3.5 text-[#C49B66]" />
+                  Ouvrir dans l’inbox{" "}
+                  <ExternalLink className="h-3.5 w-3.5 text-[#C49B66]" />
                 </Link>
               </div>
             </div>
@@ -403,12 +423,16 @@ export default function DashboardIndexPage() {
           {detailItem.type === "newsletter" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">{detailItem.data.title}</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {detailItem.data.title}
+                </h2>
                 <span className="rounded-sm bg-[#4ADE80]/15 px-2 py-1 text-xs font-bold text-[#4ADE80]">
                   Signal {detailItem.data.signal}%
                 </span>
               </div>
-              <p className="text-sm text-[#D4D4D8]">{detailItem.data.summary}</p>
+              <p className="text-sm text-[#D4D4D8]">
+                {detailItem.data.summary}
+              </p>
               <ul className="space-y-1 rounded-xl border border-[#242427] bg-[#0A0A0B] p-4 text-sm text-[#A1A1AA]">
                 {detailItem.data.takeaways.map((takeaway) => (
                   <li key={takeaway} className="flex gap-2">
@@ -422,7 +446,8 @@ export default function DashboardIndexPage() {
                   href="/newsletters"
                   className="inline-flex items-center gap-1 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#4ADE80]/50"
                 >
-                  Ouvrir le hub <ExternalLink className="h-3.5 w-3.5 text-[#4ADE80]" />
+                  Ouvrir le hub{" "}
+                  <ExternalLink className="h-3.5 w-3.5 text-[#4ADE80]" />
                 </Link>
               </div>
             </div>
@@ -430,8 +455,12 @@ export default function DashboardIndexPage() {
 
           {detailItem.type === "task" && (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-white">{detailItem.data.label}</h2>
-              <p className="text-xs text-[#71717A]">Source: {detailItem.data.ref}</p>
+              <h2 className="text-xl font-bold text-white">
+                {detailItem.data.label}
+              </h2>
+              <p className="text-xs text-[#71717A]">
+                Source: {detailItem.data.ref}
+              </p>
               <p className="rounded-xl border border-[#242427] bg-[#0A0A0B] p-4 text-sm text-[#D4D4D8]">
                 {detailItem.data.details}
               </p>
@@ -440,7 +469,8 @@ export default function DashboardIndexPage() {
                   href="/calendar"
                   className="inline-flex items-center gap-1 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#38BDF8]/50"
                 >
-                  Voir calendrier <ExternalLink className="h-3.5 w-3.5 text-[#38BDF8]" />
+                  Voir calendrier{" "}
+                  <ExternalLink className="h-3.5 w-3.5 text-[#38BDF8]" />
                 </Link>
               </div>
             </div>
@@ -448,8 +478,12 @@ export default function DashboardIndexPage() {
 
           {detailItem.type === "alert" && (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-white">{detailItem.data.title}</h2>
-              <p className="text-xs text-[#71717A]">Interception: {detailItem.data.time}</p>
+              <h2 className="text-xl font-bold text-white">
+                {detailItem.data.title}
+              </h2>
+              <p className="text-xs text-[#71717A]">
+                Interception: {detailItem.data.time}
+              </p>
               <p className="rounded-xl border border-[#242427] bg-[#0A0A0B] p-4 text-sm text-[#D4D4D8]">
                 {detailItem.data.description}
               </p>
@@ -458,7 +492,8 @@ export default function DashboardIndexPage() {
                   href="/mail"
                   className="inline-flex items-center gap-1 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#F87171]/50"
                 >
-                  Gérer incident <ExternalLink className="h-3.5 w-3.5 text-[#F87171]" />
+                  Gérer incident{" "}
+                  <ExternalLink className="h-3.5 w-3.5 text-[#F87171]" />
                 </Link>
               </div>
             </div>
@@ -483,10 +518,12 @@ export default function DashboardIndexPage() {
       )}
 
       <header className="relative overflow-hidden rounded-2xl border border-[#242427] bg-gradient-to-r from-[#121214] via-[#161619] to-[#121214] p-6 shadow-2xl">
-        <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-[#C49B66]/10 blur-3xl" />
+        <div className="pointer-events-none absolute top-0 right-0 h-72 w-72 rounded-full bg-[#C49B66]/10 blur-3xl" />
         <div className="relative z-10 space-y-3">
           {dateLabel && (
-            <p className="font-mono text-[11px] font-semibold tracking-widest text-[#C49B66]">{dateLabel}</p>
+            <p className="font-mono text-[11px] font-semibold tracking-widest text-[#C49B66]">
+              {dateLabel}
+            </p>
           )}
           <div className="inline-flex items-center gap-2 rounded-full border border-[#3A3126] bg-[#1A1611] px-3 py-1 text-[11px] font-semibold text-[#E9C995]">
             <Sparkles className="h-3.5 w-3.5" />
@@ -495,14 +532,17 @@ export default function DashboardIndexPage() {
           <h1 className="text-2xl font-bold text-white">{greeting}</h1>
           <ul className="space-y-1 pt-1">
             {BRIEFING.map((item) => (
-              <li key={item.category} className="flex items-start gap-2 text-sm">
+              <li
+                key={item.category}
+                className="flex items-start gap-2 text-sm"
+              >
                 <span
                   className="mt-[5px] h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
                 <span>
                   <span className="font-semibold" style={{ color: item.color }}>
-                    {item.category}{" "}:
+                    {item.category} :
                   </span>{" "}
                   <span className="text-[#D4D4D8]">{item.text}</span>
                 </span>
@@ -515,13 +555,18 @@ export default function DashboardIndexPage() {
           {metrics.map((m) => {
             const Icon = m.icon;
             return (
-              <div key={m.label} className="rounded-xl border border-[#242427] bg-[#1D1D20]/70 p-3">
+              <div
+                key={m.label}
+                className="rounded-xl border border-[#242427] bg-[#1D1D20]/70 p-3"
+              >
                 <div className="mb-1 flex items-center justify-between text-[11px] text-[#71717A]">
                   <span>{m.label}</span>
                   <Icon className={cn("h-3.5 w-3.5", m.tone)} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-white">{m.value}</span>
+                  <span className="text-lg font-bold text-white">
+                    {m.value}
+                  </span>
                 </div>
                 <div className="text-[10px] text-[#71717A]">{m.note}</div>
               </div>
@@ -538,7 +583,7 @@ export default function DashboardIndexPage() {
                 <HardDrive className="h-3.5 w-3.5 text-[#F87171]" /> Stockage
               </span>
               {storagePercentage >= 80 && (
-                <span className="rounded-sm bg-[#F87171]/20 px-1 py-0.5 text-[9px] font-bold uppercase text-[#F87171]">
+                <span className="rounded-sm bg-[#F87171]/20 px-1 py-0.5 text-[9px] font-bold text-[#F87171] uppercase">
                   Critique
                 </span>
               )}
@@ -557,7 +602,9 @@ export default function DashboardIndexPage() {
             </div>
             <button
               type="button"
-              onClick={() => setDetailItem({ type: "email", data: inboxEmails[0] })}
+              onClick={() =>
+                setDetailItem({ type: "email", data: inboxEmails[0] })
+              }
               className="flex items-center gap-0.5 text-[11px] font-medium text-[#C49B66] hover:underline"
             >
               Tout voir <ChevronRight className="h-3 w-3" />
@@ -572,11 +619,19 @@ export default function DashboardIndexPage() {
                   className="w-full rounded-xl border border-[#242427] bg-[#0A0A0B] p-3 text-left transition hover:border-[#C49B66]/60"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="truncate text-sm font-medium text-[#E4E4E7]">{email.from.name}</span>
-                    <span className="shrink-0 font-mono text-[11px] text-[#71717A]">{formatTime(email.date)}</span>
+                    <span className="truncate text-sm font-medium text-[#E4E4E7]">
+                      {email.from.name}
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] text-[#71717A]">
+                      {formatTime(email.date)}
+                    </span>
                   </div>
-                  <p className="truncate text-xs font-semibold text-white">{email.subject}</p>
-                  <p className="line-clamp-2 text-[11px] text-[#A1A1AA]">{email.preview}</p>
+                  <p className="truncate text-xs font-semibold text-white">
+                    {email.subject}
+                  </p>
+                  <p className="line-clamp-2 text-[11px] text-[#A1A1AA]">
+                    {email.preview}
+                  </p>
                   <div className="mt-1.5">
                     <span className="rounded-sm bg-[#C49B66]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#C49B66]">
                       Score {email.score}
@@ -591,7 +646,8 @@ export default function DashboardIndexPage() {
               href="/mail"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#C49B66]/50 hover:bg-[#242427]"
             >
-              Traiter dans l’inbox <ArrowUpRight className="h-3.5 w-3.5 text-[#C49B66]" />
+              Traiter dans l’inbox{" "}
+              <ArrowUpRight className="h-3.5 w-3.5 text-[#C49B66]" />
             </Link>
           </div>
         </div>
@@ -602,7 +658,10 @@ export default function DashboardIndexPage() {
               <Newspaper className="h-4 w-4 text-[#4ADE80]" />
               <h2 className="text-sm font-bold text-white">Veille & Presse</h2>
             </div>
-            <Link href="/newsletters" className="flex items-center gap-0.5 text-[11px] font-medium text-[#4ADE80] hover:underline">
+            <Link
+              href="/newsletters"
+              className="flex items-center gap-0.5 text-[11px] font-medium text-[#4ADE80] hover:underline"
+            >
               Consulter le Hub <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
@@ -611,16 +670,22 @@ export default function DashboardIndexPage() {
               <li key={article.id}>
                 <button
                   type="button"
-                  onClick={() => setDetailItem({ type: "newsletter", data: article })}
+                  onClick={() =>
+                    setDetailItem({ type: "newsletter", data: article })
+                  }
                   className="w-full rounded-xl border border-[#242427] bg-[#0A0A0B] p-3 text-left transition hover:border-[#4ADE80]/60"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-sm font-semibold text-white">{article.title}</span>
+                    <span className="text-sm font-semibold text-white">
+                      {article.title}
+                    </span>
                     <span className="shrink-0 rounded-sm bg-[#4ADE80]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#4ADE80]">
                       Signal {article.signal}%
                     </span>
                   </div>
-                  <p className="mt-0.5 line-clamp-2 text-[11px] text-[#A1A1AA]">{article.summary}</p>
+                  <p className="mt-0.5 line-clamp-2 text-[11px] text-[#A1A1AA]">
+                    {article.summary}
+                  </p>
                 </button>
               </li>
             ))}
@@ -630,7 +695,8 @@ export default function DashboardIndexPage() {
               href="/newsletters"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#4ADE80]/50 hover:bg-[#242427]"
             >
-              Ouvrir le hub <ArrowUpRight className="h-3.5 w-3.5 text-[#4ADE80]" />
+              Ouvrir le hub{" "}
+              <ArrowUpRight className="h-3.5 w-3.5 text-[#4ADE80]" />
             </Link>
           </div>
         </div>
@@ -641,7 +707,10 @@ export default function DashboardIndexPage() {
               <CheckSquare className="h-4 w-4 text-[#38BDF8]" />
               <h2 className="text-sm font-bold text-white">Actions & Agenda</h2>
             </div>
-            <Link href="/calendar" className="flex items-center gap-0.5 text-[11px] font-medium text-[#38BDF8] hover:underline">
+            <Link
+              href="/calendar"
+              className="flex items-center gap-0.5 text-[11px] font-medium text-[#38BDF8] hover:underline"
+            >
               Calendrier <ChevronRight className="h-3 w-3" />
             </Link>
           </div>
@@ -662,13 +731,26 @@ export default function DashboardIndexPage() {
                       <span
                         className={cn(
                           "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition",
-                          done ? "border-[#38BDF8] bg-[#38BDF8]" : "border-[#3A3A3F]",
+                          done
+                            ? "border-[#38BDF8] bg-[#38BDF8]"
+                            : "border-[#3A3A3F]"
                         )}
                       >
-                        {done && <span className="h-2 w-2 rounded-sm bg-[#121214]" />}
+                        {done && (
+                          <span className="h-2 w-2 rounded-sm bg-[#121214]" />
+                        )}
                       </span>
                       <div className="min-w-0">
-                        <p className={cn("truncate text-xs font-medium", done ? "text-[#52525B] line-through" : "text-[#D4D4D8]")}>{task.label}</p>
+                        <p
+                          className={cn(
+                            "truncate text-xs font-medium",
+                            done
+                              ? "text-[#52525B] line-through"
+                              : "text-[#D4D4D8]"
+                          )}
+                        >
+                          {task.label}
+                        </p>
                         <p className="text-[10px] text-[#3F3F46]">{task.ref}</p>
                       </div>
                     </button>
@@ -677,15 +759,24 @@ export default function DashboardIndexPage() {
               })}
             </ul>
             <div className="mt-4">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#52525B]">Rendez-vous aujourd’hui</p>
+              <p className="mb-2 text-[10px] font-semibold tracking-widest text-[#52525B] uppercase">
+                Rendez-vous aujourd’hui
+              </p>
               <ul className="space-y-1.5">
                 {RDV.map((r) => (
-                  <li key={r.id} className="flex items-center justify-between rounded-lg bg-[#1D1D20] px-3 py-2">
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between rounded-lg bg-[#1D1D20] px-3 py-2"
+                  >
                     <div className="flex items-center gap-2">
                       <Calendar className="h-3.5 w-3.5 text-[#38BDF8]" />
-                      <span className="text-xs font-medium text-[#E4E4E7]">{r.title}</span>
+                      <span className="text-xs font-medium text-[#E4E4E7]">
+                        {r.title}
+                      </span>
                     </div>
-                    <span className="font-mono text-[11px] text-[#38BDF8]">{r.time}</span>
+                    <span className="font-mono text-[11px] text-[#38BDF8]">
+                      {r.time}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -696,7 +787,8 @@ export default function DashboardIndexPage() {
               href="/calendar"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#242427] bg-[#1D1D20] px-3 py-2 text-xs font-semibold text-white transition hover:border-[#38BDF8]/50 hover:bg-[#242427]"
             >
-              Ouvrir calendrier <ArrowUpRight className="h-3.5 w-3.5 text-[#38BDF8]" />
+              Ouvrir calendrier{" "}
+              <ArrowUpRight className="h-3.5 w-3.5 text-[#38BDF8]" />
             </Link>
           </div>
         </div>
@@ -717,16 +809,30 @@ export default function DashboardIndexPage() {
                 <button
                   type="button"
                   onClick={() => setDetailItem({ type: "alert", data: alert })}
-                  className={cn("w-full rounded-xl border p-3 text-left transition hover:opacity-90", alert.bg, alert.border)}
+                  className={cn(
+                    "w-full rounded-xl border p-3 text-left transition hover:opacity-90",
+                    alert.bg,
+                    alert.border
+                  )}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-bold leading-tight" style={{ color: alert.accent }}>
+                    <span
+                      className="text-xs leading-tight font-bold"
+                      style={{ color: alert.accent }}
+                    >
                       {alert.title}
                     </span>
-                    <span className="shrink-0 font-mono text-[10px] text-[#71717A]">{alert.time}</span>
+                    <span className="shrink-0 font-mono text-[10px] text-[#71717A]">
+                      {alert.time}
+                    </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-[#A1A1AA]">{alert.description}</p>
-                  <p className="mt-1.5 text-[11px] font-medium" style={{ color: alert.accent }}>
+                  <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                    {alert.description}
+                  </p>
+                  <p
+                    className="mt-1.5 text-[11px] font-medium"
+                    style={{ color: alert.accent }}
+                  >
                     {alert.cta} ↗
                   </p>
                 </button>
@@ -734,7 +840,9 @@ export default function DashboardIndexPage() {
             ))}
           </ul>
           <div className="border-t border-[#242427] px-4 py-3">
-            <p className="text-center text-[10px] text-[#3F3F46]">Système autonome sous surveillance continue.</p>
+            <p className="text-center text-[10px] text-[#3F3F46]">
+              Système autonome sous surveillance continue.
+            </p>
           </div>
         </div>
       </div>
@@ -748,7 +856,12 @@ export default function DashboardIndexPage() {
             className="w-full max-w-lg rounded-2xl border border-[#242427] bg-[#121214] p-5 shadow-2xl"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 id="storage-modal-title" className="text-base font-bold text-white">StorageGauge — Nettoyage</h3>
+              <h3
+                id="storage-modal-title"
+                className="text-base font-bold text-white"
+              >
+                StorageGauge — Nettoyage
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowStorageModal(false)}
@@ -769,7 +882,9 @@ export default function DashboardIndexPage() {
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-[#71717A]">Mode critique au-dessus de 80%. Purge recommandée.</p>
+              <p className="text-xs text-[#71717A]">
+                Mode critique au-dessus de 80%. Purge recommandée.
+              </p>
               <button
                 type="button"
                 onClick={handleCleanUpStorage}

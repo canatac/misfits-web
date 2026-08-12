@@ -67,7 +67,11 @@ describe("validateRecipient", () => {
 
 describe("checkAttachmentMention", () => {
   it("detects attachment keywords in HTML", () => {
-    expect(checkAttachmentMention("<p>Please find <strong>attached</strong> the report.</p>")).toBe(true);
+    expect(
+      checkAttachmentMention(
+        "<p>Please find <strong>attached</strong> the report.</p>"
+      )
+    ).toBe(true);
     expect(checkAttachmentMention("I've attached the invoice.")).toBe(true);
   });
   it("returns false when no keywords", () => {

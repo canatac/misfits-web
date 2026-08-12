@@ -60,7 +60,14 @@ import type { Folder } from "@/types/email";
 const FIELDS = Object.keys(CONDITION_FIELD_LABELS) as ConditionField[];
 const OPERATORS = Object.keys(CONDITION_OPERATOR_LABELS) as ConditionOperator[];
 const ACTION_TYPES = Object.keys(ACTION_TYPE_LABELS) as ActionType[];
-const FOLDERS: Folder[] = ["inbox", "sent", "drafts", "archive", "trash", "spam"];
+const FOLDERS: Folder[] = [
+  "inbox",
+  "sent",
+  "drafts",
+  "archive",
+  "trash",
+  "spam",
+];
 
 interface FilterEditorProps {
   open: boolean;
@@ -104,7 +111,11 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
   function startEdit(rule: Filter) {
     setEditingId(rule.id);
     setIsCreating(false);
-    setDraft({ ...rule, conditions: rule.conditions.map((c) => ({ ...c })), actions: rule.actions.map((a) => ({ ...a })) });
+    setDraft({
+      ...rule,
+      conditions: rule.conditions.map((c) => ({ ...c })),
+      actions: rule.actions.map((a) => ({ ...a })),
+    });
     setTestResult(null);
   }
 
@@ -173,7 +184,13 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
   const showForm = isCreating || !!editingId;
 
   return (
-    <Modal open={open} onOpenChange={(o) => { if (!o) cancelEdit(); onOpenChange(o); }}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) cancelEdit();
+        onOpenChange(o);
+      }}
+    >
       <ModalContent className="max-w-3xl">
         <ModalHeader>
           <ModalTitle>Filter rules</ModalTitle>
@@ -190,11 +207,14 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
             className="hidden"
           />
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">
-              Rules ({rules.length})
-            </span>
+            <span className="text-sm font-medium">Rules ({rules.length})</span>
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={handleExport} disabled={rules.length === 0}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleExport}
+                disabled={rules.length === 0}
+              >
                 <Download className="h-4 w-4" />
                 Export
               </Button>
@@ -202,7 +222,12 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
                 <Upload className="h-4 w-4" />
                 Import
               </Button>
-              <Button size="sm" variant="outline" onClick={startCreate} disabled={showForm}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={startCreate}
+                disabled={showForm}
+              >
                 <Plus className="h-4 w-4" />
                 New rule
               </Button>
@@ -236,22 +261,38 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
                       onCheckedChange={() => toggleRule(rule.id)}
                       aria-label={rule.enabled ? "Disable rule" : "Enable rule"}
                     />
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-medium">{rule.name}</span>
+                        <span className="truncate text-sm font-medium">
+                          {rule.name}
+                        </span>
                         {!rule.enabled && (
-                          <Badge variant="secondary" className="text-[10px]">Disabled</Badge>
+                          <Badge variant="secondary" className="text-[10px]">
+                            Disabled
+                          </Badge>
                         )}
                       </div>
                       <p className="truncate text-xs text-[var(--color-muted-fg)]">
-                        {rule.conditions.length} condition{rule.conditions.length !== 1 ? "s" : ""} ·{" "}
-                        {rule.actions.length} action{rule.actions.length !== 1 ? "s" : ""}
+                        {rule.conditions.length} condition
+                        {rule.conditions.length !== 1 ? "s" : ""} ·{" "}
+                        {rule.actions.length} action
+                        {rule.actions.length !== 1 ? "s" : ""}
                       </p>
                     </div>
-                    <Button size="sm" variant="ghost" onClick={() => startEdit(rule)} aria-label="Edit rule">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => startEdit(rule)}
+                      aria-label="Edit rule"
+                    >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => deleteRule(rule.id)} aria-label="Delete rule">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => deleteRule(rule.id)}
+                      aria-label="Delete rule"
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -272,7 +313,9 @@ export function FilterEditor({ open, onOpenChange }: FilterEditorProps) {
               </Button>
             </>
           ) : (
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>Done</Button>
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              Done
+            </Button>
           )}
         </ModalFooter>
       </ModalContent>
@@ -302,25 +345,41 @@ function RuleForm({
   }
 
   function updateCondition(idx: number, patch: Partial<FilterCondition>) {
-    const conditions = draft.conditions.map((c, i) => (i === idx ? { ...c, ...patch } : c));
+    const conditions = draft.conditions.map((c, i) =>
+      i === idx ? { ...c, ...patch } : c
+    );
     onChange({ ...draft, conditions });
   }
 
   function addCondition() {
-    onChange({ ...draft, conditions: [...draft.conditions, { field: "from", operator: "contains", value: "" }] });
+    onChange({
+      ...draft,
+      conditions: [
+        ...draft.conditions,
+        { field: "from", operator: "contains", value: "" },
+      ],
+    });
   }
 
   function removeCondition(idx: number) {
-    onChange({ ...draft, conditions: draft.conditions.filter((_, i) => i !== idx) });
+    onChange({
+      ...draft,
+      conditions: draft.conditions.filter((_, i) => i !== idx),
+    });
   }
 
   function updateAction(idx: number, patch: Partial<FilterAction>) {
-    const actions = draft.actions.map((a, i) => (i === idx ? { ...a, ...patch } : a));
+    const actions = draft.actions.map((a, i) =>
+      i === idx ? { ...a, ...patch } : a
+    );
     onChange({ ...draft, actions });
   }
 
   function addAction() {
-    onChange({ ...draft, actions: [...draft.actions, { type: "label", params: {} }] });
+    onChange({
+      ...draft,
+      actions: [...draft.actions, { type: "label", params: {} }],
+    });
   }
 
   function removeAction(idx: number) {
@@ -330,15 +389,22 @@ function RuleForm({
   return (
     <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] p-4">
       <div className="mb-3 grid gap-2">
-        <label className="text-xs font-medium text-[var(--color-muted-fg)]">Rule name</label>
-        <Input value={draft.name} onChange={(e) => updateName(e.target.value)} placeholder="Rule name" autoFocus />
+        <label className="text-xs font-medium text-[var(--color-muted-fg)]">
+          Rule name
+        </label>
+        <Input
+          value={draft.name}
+          onChange={(e) => updateName(e.target.value)}
+          placeholder="Rule name"
+          autoFocus
+        />
       </div>
 
       <Separator className="my-3" />
 
       {/* Conditions */}
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+        <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
           If all of these match
         </span>
         <Button size="sm" variant="ghost" onClick={addCondition}>
@@ -351,23 +417,35 @@ function RuleForm({
           <div key={idx} className="flex items-center gap-2">
             <Select
               value={cond.field}
-              onValueChange={(v) => updateCondition(idx, { field: v as ConditionField })}
+              onValueChange={(v) =>
+                updateCondition(idx, { field: v as ConditionField })
+              }
             >
-              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {FIELDS.map((f) => (
-                  <SelectItem key={f} value={f}>{CONDITION_FIELD_LABELS[f]}</SelectItem>
+                  <SelectItem key={f} value={f}>
+                    {CONDITION_FIELD_LABELS[f]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select
               value={cond.operator}
-              onValueChange={(v) => updateCondition(idx, { operator: v as ConditionOperator })}
+              onValueChange={(v) =>
+                updateCondition(idx, { operator: v as ConditionOperator })
+              }
             >
-              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {OPERATORS.map((o) => (
-                  <SelectItem key={o} value={o}>{CONDITION_OPERATOR_LABELS[o]}</SelectItem>
+                  <SelectItem key={o} value={o}>
+                    {CONDITION_OPERATOR_LABELS[o]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -377,7 +455,12 @@ function RuleForm({
               placeholder="value"
               className="flex-1"
             />
-            <Button size="sm" variant="ghost" onClick={() => removeCondition(idx)} aria-label="Remove condition">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => removeCondition(idx)}
+              aria-label="Remove condition"
+            >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -388,7 +471,7 @@ function RuleForm({
 
       {/* Actions */}
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+        <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
           Then do this
         </span>
         <Button size="sm" variant="ghost" onClick={addAction}>
@@ -401,17 +484,32 @@ function RuleForm({
           <div key={idx} className="flex items-center gap-2">
             <Select
               value={action.type}
-              onValueChange={(v) => updateAction(idx, { type: v as ActionType, params: {} })}
+              onValueChange={(v) =>
+                updateAction(idx, { type: v as ActionType, params: {} })
+              }
             >
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {ACTION_TYPES.map((a) => (
-                  <SelectItem key={a} value={a}>{ACTION_TYPE_LABELS[a]}</SelectItem>
+                  <SelectItem key={a} value={a}>
+                    {ACTION_TYPE_LABELS[a]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <ActionParams action={action} onChange={(params) => updateAction(idx, { params })} labels={labels} />
-            <Button size="sm" variant="ghost" onClick={() => removeAction(idx)} aria-label="Remove action">
+            <ActionParams
+              action={action}
+              onChange={(params) => updateAction(idx, { params })}
+              labels={labels}
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => removeAction(idx)}
+              aria-label="Remove action"
+            >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -428,8 +526,10 @@ function RuleForm({
         </Button>
         {testResult !== null && (
           <span className="text-sm text-[var(--color-muted-fg)]">
-            <Badge variant={testResult > 0 ? "success" : "secondary"}>{testResult}</Badge>
-            {" "}matching email{testResult !== 1 ? "s" : ""} in the current view
+            <Badge variant={testResult > 0 ? "success" : "secondary"}>
+              {testResult}
+            </Badge>{" "}
+            matching email{testResult !== 1 ? "s" : ""} in the current view
           </span>
         )}
       </div>
@@ -453,10 +553,14 @@ function ActionParams({
           value={action.params.labelId ?? ""}
           onValueChange={(v) => onChange({ labelId: v })}
         >
-          <SelectTrigger className="flex-1"><SelectValue placeholder="Select label" /></SelectTrigger>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select label" />
+          </SelectTrigger>
           <SelectContent>
             {labels.map((l) => (
-              <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+              <SelectItem key={l.id} value={l.id}>
+                {l.name}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -467,10 +571,14 @@ function ActionParams({
           value={action.params.folder ?? ""}
           onValueChange={(v) => onChange({ folder: v })}
         >
-          <SelectTrigger className="flex-1"><SelectValue placeholder="Select folder" /></SelectTrigger>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select folder" />
+          </SelectTrigger>
           <SelectContent>
             {FOLDERS.map((f) => (
-              <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>
+              <SelectItem key={f} value={f} className="capitalize">
+                {f}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -485,6 +593,10 @@ function ActionParams({
         />
       );
     default:
-      return <span className="flex-1 text-xs text-[var(--color-muted-fg)]">No parameters</span>;
+      return (
+        <span className="flex-1 text-xs text-[var(--color-muted-fg)]">
+          No parameters
+        </span>
+      );
   }
 }

@@ -60,7 +60,7 @@ export class ApiError extends Error {
   constructor(
     status: number,
     message: string,
-    opts?: { code?: string; retryAfter?: number; body?: unknown },
+    opts?: { code?: string; retryAfter?: number; body?: unknown }
   ) {
     super(message);
     this.name = "ApiError";
@@ -132,7 +132,7 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
 async function request<T>(
   path: string,
   method: HttpMethod,
-  opts: RequestOptions = {},
+  opts: RequestOptions = {}
 ): Promise<T> {
   const { body, headers, skipAuth, baseUrl, ...rest } = opts;
   const url = `${baseUrl ?? BASE_URL}${path}`;
@@ -151,7 +151,7 @@ async function request<T>(
       finalHeaders.set("x-user-email", email);
       finalHeaders.set(
         "x-user-id",
-        email.includes("@") ? email.split("@")[0]! : email,
+        email.includes("@") ? email.split("@")[0]! : email
       );
     }
   }
@@ -234,7 +234,8 @@ async function parseResponse<T>(response: Response): Promise<T> {
  * ------------------------------------------------------------------ */
 
 export const apiClient = {
-  get: <T>(path: string, opts?: RequestOptions) => request<T>(path, "GET", opts),
+  get: <T>(path: string, opts?: RequestOptions) =>
+    request<T>(path, "GET", opts),
   post: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
     request<T>(path, "POST", { ...opts, body }),
   put: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
@@ -252,12 +253,12 @@ export const apiClient = {
 
 export async function apiLogin(
   email: string,
-  password: string,
+  password: string
 ): Promise<LoginResponse> {
   return apiClient.post<LoginResponse>(
     "/auth/login",
     { email, password },
-    { skipAuth: true },
+    { skipAuth: true }
   );
 }
 
@@ -265,12 +266,12 @@ export async function apiRegister(
   first_name: string,
   last_name: string,
   password: string,
-  condition_accepted: boolean,
+  condition_accepted: boolean
 ): Promise<AuthApiResponse> {
   return apiClient.post<AuthApiResponse>(
     "/auth/register",
     { first_name, last_name, password, condition_accepted },
-    { skipAuth: true },
+    { skipAuth: true }
   );
 }
 
@@ -284,40 +285,42 @@ export async function apiLogout(): Promise<void> {
 
 export async function apiVerify2FA(
   challengeId: string,
-  code: string,
+  code: string
 ): Promise<AuthApiResponse> {
   return apiClient.post<AuthApiResponse>(
     "/auth/2fa/verify",
     { challengeId, code },
-    { skipAuth: true },
+    { skipAuth: true }
   );
 }
 
 export async function apiRequestPasswordReset(
-  email: string,
+  email: string
 ): Promise<{ requested: boolean }> {
   return apiClient.post<{ requested: boolean }>(
     "/auth/password-reset/request",
     { email },
-    { skipAuth: true },
+    { skipAuth: true }
   );
 }
 
 export async function apiResetPassword(
   token: string,
-  newPassword: string,
+  newPassword: string
 ): Promise<{ success: boolean }> {
   return apiClient.post<{ success: boolean }>(
     "/auth/password-reset/confirm",
     { token, newPassword },
-    { skipAuth: true },
+    { skipAuth: true }
   );
 }
 
 /** Redirects the browser to the backend to initiate OAuth with GitHub. */
 export function initiateGithubLogin(redirectPath?: string): void {
   const safeRedirect =
-    redirectPath && redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+    redirectPath &&
+    redirectPath.startsWith("/") &&
+    !redirectPath.startsWith("//")
       ? redirectPath
       : null;
 
@@ -341,7 +344,7 @@ export async function apiRefresh(refreshToken: string): Promise<Session> {
   const res = await apiClient.post<RefreshSessionResponse>(
     "/auth/refresh",
     { refreshToken },
-    { skipAuth: true },
+    { skipAuth: true }
   );
   return res.session;
 }

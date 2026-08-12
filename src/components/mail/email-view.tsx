@@ -85,7 +85,8 @@ function formatFullDate(dateStr: string): string {
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -138,9 +139,8 @@ export function EmailView({ className }: EmailViewProps) {
 
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
-    [emails, selectedEmailId],
+    [emails, selectedEmailId]
   );
-
 
   // List responses omit body for speed — hydrate on select
   useEffect(() => {
@@ -165,7 +165,7 @@ export function EmailView({ className }: EmailViewProps) {
                   body: full.body,
                   bodyType: full.bodyType ?? e.bodyType,
                 }
-              : e,
+              : e
           ),
         }));
       } finally {
@@ -181,7 +181,7 @@ export function EmailView({ className }: EmailViewProps) {
   const emailLabelIds = useMemo(() => {
     if (!email) return [];
     return Array.from(
-      new Set([...email.labels, ...(assignments[email.id] ?? [])]),
+      new Set([...email.labels, ...(assignments[email.id] ?? [])])
     );
   }, [email, assignments]);
 
@@ -213,12 +213,53 @@ export function EmailView({ className }: EmailViewProps) {
     }
     return DOMPurify.sanitize(email.body, {
       ALLOWED_TAGS: [
-        "p", "br", "div", "span", "a", "img", "ul", "ol", "li",
-        "b", "strong", "i", "em", "u", "s", "del", "blockquote",
-        "pre", "code", "h1", "h2", "h3", "h4", "h5", "h6",
-        "table", "thead", "tbody", "tr", "th", "td", "hr", "sub", "sup",
+        "p",
+        "br",
+        "div",
+        "span",
+        "a",
+        "img",
+        "ul",
+        "ol",
+        "li",
+        "b",
+        "strong",
+        "i",
+        "em",
+        "u",
+        "s",
+        "del",
+        "blockquote",
+        "pre",
+        "code",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "table",
+        "thead",
+        "tbody",
+        "tr",
+        "th",
+        "td",
+        "hr",
+        "sub",
+        "sup",
       ],
-      ALLOWED_ATTR: ["href", "src", "alt", "title", "style", "class", "id", "target", "colspan", "rowspan"],
+      ALLOWED_ATTR: [
+        "href",
+        "src",
+        "alt",
+        "title",
+        "style",
+        "class",
+        "id",
+        "target",
+        "colspan",
+        "rowspan",
+      ],
       ALLOW_DATA_ATTR: false,
     });
   }, [email]);
@@ -230,15 +271,27 @@ export function EmailView({ className }: EmailViewProps) {
       // Replace img src with data attribute to block loading
       body = body.replace(
         /<img([^>]*?)\ssrc=(["']?)(https?:\/\/[^"'\s>]+)(["']?)([^>]*)>/gi,
-        (_match, pre: string, _q1: string, src: string, _q2: string, post: string) =>
-          `<img${pre} data-blocked-src="${src}" alt="Image blocked" ${post}>`,
+        (
+          _match,
+          pre: string,
+          _q1: string,
+          src: string,
+          _q2: string,
+          post: string
+        ) => `<img${pre} data-blocked-src="${src}" alt="Image blocked" ${post}>`
       );
     } else {
       // Restore blocked images
       body = body.replace(
         /<img([^>]*?)\sdata-blocked-src=(["']?)([^"'\s>]+)(["']?)([^>]*)>/gi,
-        (_match, pre: string, _q1: string, src: string, _q2: string, post: string) =>
-          `<img${pre} src="${src}" ${post}>`,
+        (
+          _match,
+          pre: string,
+          _q1: string,
+          src: string,
+          _q2: string,
+          post: string
+        ) => `<img${pre} src="${src}" ${post}>`
       );
     }
 
@@ -248,7 +301,7 @@ export function EmailView({ className }: EmailViewProps) {
         if (pattern.test(body)) {
           body = body.replace(
             pattern,
-            '<div class="quoted-collapsed" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0.5rem 1rem;color:var(--color-muted-fg);font-size:0.875rem;cursor:pointer;">... Show quoted text ...</div>',
+            '<div class="quoted-collapsed" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0.5rem 1rem;color:var(--color-muted-fg);font-size:0.875rem;cursor:pointer;">... Show quoted text ...</div>'
           );
           break;
         }
@@ -264,13 +317,17 @@ export function EmailView({ className }: EmailViewProps) {
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   const toRecipient = useCallback(
-    (address: string, name: string, type: Recipient["type"] = "to"): Recipient => ({
+    (
+      address: string,
+      name: string,
+      type: Recipient["type"] = "to"
+    ): Recipient => ({
       id: uid("rcpt"),
       email: address.toLowerCase(),
       name: name && name !== "me" ? name : undefined,
       type,
     }),
-    [],
+    []
   );
 
   const buildReplyBody = useCallback((em: Email) => {
@@ -286,10 +343,14 @@ export function EmailView({ className }: EmailViewProps) {
     openComposer({
       to: [toRecipient(email.from.address, email.from.name)],
       cc: (email.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
-      subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+      subject: email.subject.startsWith("Re: ")
+        ? email.subject
+        : `Re: ${email.subject}`,
       body: buildReplyBody(email),
       inReplyTo: email.messageId,
-      references: [...(email.references ?? []), email.messageId].filter(Boolean),
+      references: [...(email.references ?? []), email.messageId].filter(
+        Boolean
+      ),
     });
   }, [email, openComposer, toRecipient, buildReplyBody]);
 
@@ -297,20 +358,27 @@ export function EmailView({ className }: EmailViewProps) {
     if (!email) return;
     const to: Recipient[] = [toRecipient(email.from.address, email.from.name)];
     for (const a of email.to) {
-      if (a.address !== email.from.address && !to.some((r) => r.email === a.address.toLowerCase())) {
+      if (
+        a.address !== email.from.address &&
+        !to.some((r) => r.email === a.address.toLowerCase())
+      ) {
         to.push(toRecipient(a.address, a.name));
       }
     }
     const ccRecipients: Recipient[] = (email.cc ?? []).map((a) =>
-      toRecipient(a.address, a.name, "cc"),
+      toRecipient(a.address, a.name, "cc")
     );
     openComposer({
       to,
       cc: ccRecipients,
-      subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+      subject: email.subject.startsWith("Re: ")
+        ? email.subject
+        : `Re: ${email.subject}`,
       body: buildReplyBody(email),
       inReplyTo: email.messageId,
-      references: [...(email.references ?? []), email.messageId].filter(Boolean),
+      references: [...(email.references ?? []), email.messageId].filter(
+        Boolean
+      ),
     });
   }, [email, openComposer, toRecipient, buildReplyBody]);
 
@@ -319,7 +387,9 @@ export function EmailView({ className }: EmailViewProps) {
     const fwdBody = `<p></p><blockquote>---------- Forwarded message ----------<br/>From: ${email.from.name} &lt;${email.from.address}&gt;<br/>Date: ${new Date(email.date).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}<br/>Subject: ${email.subject}<br/><br/>${email.body}</blockquote>`;
     openComposer({
       to: [],
-      subject: email.subject.startsWith("Fwd: ") ? email.subject : `Fwd: ${email.subject}`,
+      subject: email.subject.startsWith("Fwd: ")
+        ? email.subject
+        : `Fwd: ${email.subject}`,
       body: fwdBody,
     });
   }, [email, openComposer]);
@@ -343,7 +413,10 @@ export function EmailView({ className }: EmailViewProps) {
   const askHermesAboutEmail = useCallback(
     (instruction: string) => {
       if (!email) return;
-      const bodyPreview = toPlainText(email.body, email.bodyType).slice(0, 4000);
+      const bodyPreview = toPlainText(email.body, email.bodyType).slice(
+        0,
+        4000
+      );
       const prompt = [
         instruction,
         "",
@@ -363,37 +436,40 @@ export function EmailView({ className }: EmailViewProps) {
         userId: userId ? String(userId) : undefined,
       });
     },
-    [email, openChatPanel, sendChatMessage, userId],
+    [email, openChatPanel, sendChatMessage, userId]
   );
 
   const handleHermesSummarize = useCallback(() => {
     askHermesAboutEmail(
-      "Résume cet email en 5 puces maximum (FR), puis donne niveau d'urgence (faible/moyen/élevé).",
+      "Résume cet email en 5 puces maximum (FR), puis donne niveau d'urgence (faible/moyen/élevé)."
     );
   }, [askHermesAboutEmail]);
 
   const handleHermesReplyDraft = useCallback(() => {
     askHermesAboutEmail(
-      "Propose une réponse email professionnelle en français: objet suggéré + corps prêt à envoyer.",
+      "Propose une réponse email professionnelle en français: objet suggéré + corps prêt à envoyer."
     );
   }, [askHermesAboutEmail]);
 
   const handleHermesTranslate = useCallback(() => {
     askHermesAboutEmail(
-      "Traduis cet email en français clair en gardant le sens exact. Si déjà en français, fournis une version plus concise.",
+      "Traduis cet email en français clair en gardant le sens exact. Si déjà en français, fournis une version plus concise."
     );
   }, [askHermesAboutEmail]);
 
   const handleHermesTodos = useCallback(() => {
     askHermesAboutEmail(
-      "Extrais les TODO/action items: owner suggéré, échéance si détectée, et priorité.",
+      "Extrais les TODO/action items: owner suggéré, échéance si détectée, et priorité."
     );
   }, [askHermesAboutEmail]);
 
   if (!email) {
     return (
       <div
-        className={cn("flex h-full items-center justify-center bg-[var(--color-bg)]", className)}
+        className={cn(
+          "flex h-full items-center justify-center bg-[var(--color-bg)]",
+          className
+        )}
         data-testid="email-view-empty"
       >
         <EmptyState
@@ -410,19 +486,29 @@ export function EmailView({ className }: EmailViewProps) {
     <div
       className={cn(
         "flex h-full flex-col bg-[#0A0A0B] text-[#E0E0E0]",
-        className,
+        className
       )}
       data-testid="email-view"
     >
       {/* Action toolbar */}
       <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
-        <div className="mr-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-1 text-[10px] font-mono text-[#C49B66]">
+        <div className="mr-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-1 font-mono text-[10px] text-[#C49B66]">
           Focus reader
         </div>
-        <Button variant="ghost" size="icon" onClick={handleArchive} aria-label="Archive">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleArchive}
+          aria-label="Archive"
+        >
           <Archive className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={handleDelete} aria-label="Delete">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleDelete}
+          aria-label="Delete"
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
         <Button
@@ -434,21 +520,41 @@ export function EmailView({ className }: EmailViewProps) {
           <MailOpen className="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" className="mx-1 h-6" />
-        <Button variant="ghost" size="sm" onClick={handleReply} className="gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleReply}
+          className="gap-1.5"
+        >
           <Reply className="h-4 w-4" />
           Reply
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleReplyAll} className="gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleReplyAll}
+          className="gap-1.5"
+        >
           <ReplyAll className="h-4 w-4" />
           Reply All
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleForward} className="gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleForward}
+          className="gap-1.5"
+        >
           <Forward className="h-4 w-4" />
           Forward
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="gap-1.5" aria-label="Demander à Hermes">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5"
+              aria-label="Demander à Hermes"
+            >
               <Sparkles className="h-4 w-4" />
               Demander à Hermes
             </Button>
@@ -456,10 +562,18 @@ export function EmailView({ className }: EmailViewProps) {
           <DropdownMenuContent align="start">
             <DropdownMenuLabel>Actions Hermes</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleHermesSummarize}>Résumer</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesReplyDraft}>Proposer réponse</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesTranslate}>Traduire</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesTodos}>Extraire TODO</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesSummarize}>
+              Résumer
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesReplyDraft}>
+              Proposer réponse
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesTranslate}>
+              Traduire
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleHermesTodos}>
+              Extraire TODO
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button
@@ -473,7 +587,7 @@ export function EmailView({ className }: EmailViewProps) {
               "h-4 w-4",
               email.isStarred
                 ? "fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
-                : "",
+                : ""
             )}
           />
         </Button>
@@ -493,7 +607,10 @@ export function EmailView({ className }: EmailViewProps) {
               Archive
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleDelete} className="text-[var(--color-danger-500)]">
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="text-[var(--color-danger-500)]"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -534,7 +651,9 @@ export function EmailView({ className }: EmailViewProps) {
                   <DropdownMenuLabel>Assign a label</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {labels.length === 0 && (
-                    <DropdownMenuItem disabled>No labels available</DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      No labels available
+                    </DropdownMenuItem>
                   )}
                   {labels.map((label) => {
                     const alreadyAssigned = emailLabelIds.includes(label.id);
@@ -551,12 +670,17 @@ export function EmailView({ className }: EmailViewProps) {
                           aria-hidden="true"
                         />
                         <span className="flex-1">{label.name}</span>
-                        {alreadyAssigned && <ChevronDown className="h-3 w-3 rotate-[-90deg]" />}
+                        {alreadyAssigned && (
+                          <ChevronDown className="h-3 w-3 rotate-[-90deg]" />
+                        )}
                       </DropdownMenuItem>
                     );
                   })}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setLabelManagerOpen(true)} className="gap-2">
+                  <DropdownMenuItem
+                    onClick={() => setLabelManagerOpen(true)}
+                    className="gap-2"
+                  >
                     <Plus className="h-3.5 w-3.5" />
                     Manage labels
                   </DropdownMenuItem>
@@ -608,7 +732,25 @@ export function EmailView({ className }: EmailViewProps) {
           <Separator className="mb-4" />
 
           {/* Security / phishing banner */}
-          <SecurityBanner result={{ emailId: email.id, threatLevel: "safe", score: 0, reasons: [], indicators: [], suspiciousLinks: [], headers: { spf: "none", dkim: "none", dmarc: "none", details: [] }, scannedAt: new Date().toISOString(), aiAssisted: false }} emailId={email.id} />
+          <SecurityBanner
+            result={{
+              emailId: email.id,
+              threatLevel: "safe",
+              score: 0,
+              reasons: [],
+              indicators: [],
+              suspiciousLinks: [],
+              headers: {
+                spf: "none",
+                dkim: "none",
+                dmarc: "none",
+                details: [],
+              },
+              scannedAt: new Date().toISOString(),
+              aiAssisted: false,
+            }}
+            emailId={email.id}
+          />
 
           {/* Image blocking toggle */}
           {!loadImages && email.bodyType === "html" && (
@@ -690,7 +832,10 @@ export function EmailView({ className }: EmailViewProps) {
       </ScrollArea>
 
       {/* Label manager modal (opened from the Add label dropdown) */}
-      <LabelManager open={labelManagerOpen} onOpenChange={setLabelManagerOpen} />
+      <LabelManager
+        open={labelManagerOpen}
+        onOpenChange={setLabelManagerOpen}
+      />
     </div>
   );
 }
@@ -713,11 +858,7 @@ function AttachmentCard({ attachment }: { attachment: EmailAttachment }) {
           {formatFileSize(attachment.size)} · {attachment.type.toUpperCase()}
         </span>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-      >
+      <Button variant="ghost" size="sm" asChild>
         <a
           href={attachment.downloadUrl ?? "#"}
           download={attachment.filename}

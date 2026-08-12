@@ -1,11 +1,7 @@
 /**
  * Filter/rule data hooks using TanStack Query + Zustand store.
  */
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFilterStore, testRule } from "@/stores/filter-store";
 import type {
   Filter,

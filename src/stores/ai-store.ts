@@ -44,7 +44,10 @@ function loadHistory(): AIConversation[] {
 function saveHistory(history: AIConversation[]): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+    window.localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify(history.slice(0, MAX_HISTORY))
+    );
   } catch {
     // storage full or unavailable — ignore
   }
@@ -68,17 +71,20 @@ export interface AIStore {
    */
   generateEmail: (
     req: AIComposerRequest,
-    onChunk?: (chunk: string, full: string) => void,
+    onChunk?: (chunk: string, full: string) => void
   ) => Promise<AIResponse>;
 
   /** Rewrite the given text in the requested tone / length. */
   rewriteText: (
     text: string,
-    opts: { tone?: AITone; length?: AILength },
+    opts: { tone?: AITone; length?: AILength }
   ) => Promise<AIResponse>;
 
   /** Translate the given text into the target language. */
-  translateText: (text: string, target: AITranslationLang) => Promise<AIResponse>;
+  translateText: (
+    text: string,
+    target: AITranslationLang
+  ) => Promise<AIResponse>;
 
   /** Generate subject-line suggestions from the email body. */
   generateSubject: (body: string) => Promise<string[]>;
@@ -90,7 +96,10 @@ export interface AIStore {
   clearError: () => void;
 }
 
-function recordInteraction(userContent: string, assistantContent: string): AIConversation[] {
+function recordInteraction(
+  userContent: string,
+  assistantContent: string
+): AIConversation[] {
   const entry: AIConversation = {
     id: uid("conv"),
     messages: [
@@ -124,15 +133,16 @@ export const useAIStore = create<AIStore>((set, get) => ({
         role: "assistant",
         model: "streamed",
       };
-      const history = [...recordInteraction(req.prompt, full), ...get().history].slice(
-        0,
-        MAX_HISTORY,
-      );
+      const history = [
+        ...recordInteraction(req.prompt, full),
+        ...get().history,
+      ].slice(0, MAX_HISTORY);
       saveHistory(history);
       set({ isGenerating: false, lastResponse: response, history });
       return response;
     } catch (err) {
-      const message = err instanceof AIError ? err.message : "AI generation failed.";
+      const message =
+        err instanceof AIError ? err.message : "AI generation failed.";
       set({ isGenerating: false, error: message });
       throw err;
     }
@@ -145,7 +155,7 @@ export const useAIStore = create<AIStore>((set, get) => ({
       const history = [
         ...recordInteraction(
           `Réécrire (${opts.tone ?? "—"} / ${opts.length ?? "—"}): ${text.slice(0, 120)}`,
-          response.content,
+          response.content
         ),
         ...get().history,
       ].slice(0, MAX_HISTORY);
@@ -153,7 +163,8 @@ export const useAIStore = create<AIStore>((set, get) => ({
       set({ isGenerating: false, lastResponse: response, history });
       return response;
     } catch (err) {
-      const message = err instanceof AIError ? err.message : "AI rewrite failed.";
+      const message =
+        err instanceof AIError ? err.message : "AI rewrite failed.";
       set({ isGenerating: false, error: message });
       throw err;
     }
@@ -164,14 +175,18 @@ export const useAIStore = create<AIStore>((set, get) => ({
     try {
       const response = await clientTranslateText(text, target);
       const history = [
-        ...recordInteraction(`Traduire en ${target}: ${text.slice(0, 120)}`, response.content),
+        ...recordInteraction(
+          `Traduire en ${target}: ${text.slice(0, 120)}`,
+          response.content
+        ),
         ...get().history,
       ].slice(0, MAX_HISTORY);
       saveHistory(history);
       set({ isGenerating: false, lastResponse: response, history });
       return response;
     } catch (err) {
-      const message = err instanceof AIError ? err.message : "AI translation failed.";
+      const message =
+        err instanceof AIError ? err.message : "AI translation failed.";
       set({ isGenerating: false, error: message });
       throw err;
     }
@@ -184,7 +199,8 @@ export const useAIStore = create<AIStore>((set, get) => ({
       set({ isGenerating: false });
       return subjects;
     } catch (err) {
-      const message = err instanceof AIError ? err.message : "AI subject generation failed.";
+      const message =
+        err instanceof AIError ? err.message : "AI subject generation failed.";
       set({ isGenerating: false, error: message });
       throw err;
     }

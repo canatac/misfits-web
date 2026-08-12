@@ -50,7 +50,7 @@ export function SmartCompose({ editor }: SmartComposeProps) {
       const textBefore = editor.state.doc.textBetween(
         Math.max(0, from - 200),
         from,
-        "\n",
+        "\n"
       );
       const lastChar = textBefore.slice(-1);
       // Only request a completion right after actual typing (non-whitespace).
@@ -80,14 +80,19 @@ export function SmartCompose({ editor }: SmartComposeProps) {
     editor.on("selectionUpdate", handleSelectionUpdate);
     editor.on("blur", handleBlur);
     dom.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+      capture: true,
+    });
 
     return () => {
       editor.off("update", handleUpdate);
       editor.off("selectionUpdate", handleSelectionUpdate);
       editor.off("blur", handleBlur);
       dom.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("scroll", handleScroll, { capture: true } as EventListenerOptions);
+      window.removeEventListener("scroll", handleScroll, {
+        capture: true,
+      } as EventListenerOptions);
     };
   }, [editor, fetch, clear]);
 
@@ -132,16 +137,14 @@ export function SmartCompose({ editor }: SmartComposeProps) {
 
   return (
     <span
-      className="smart-compose-ghost pointer-events-none fixed z-[var(--z-popover)] select-none whitespace-pre-wrap text-sm leading-[1.625] text-[var(--color-muted-fg)]/70"
+      className="smart-compose-ghost pointer-events-none fixed z-[var(--z-popover)] text-sm leading-[1.625] whitespace-pre-wrap text-[var(--color-muted-fg)]/70 select-none"
       style={{ left: coords.left, top: coords.top }}
       aria-hidden="true"
       data-testid="smart-compose-ghost"
     >
       {suggestion}
       {isFetching ? null : (
-        <span className="ml-2 text-[0.65rem] opacity-60">
-          Tab ↹ · Esc
-        </span>
+        <span className="ml-2 text-[0.65rem] opacity-60">Tab ↹ · Esc</span>
       )}
     </span>
   );

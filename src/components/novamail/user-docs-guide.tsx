@@ -27,20 +27,28 @@ const sections = [
 
 export function UserDocsGuide() {
   return (
-    <section className="h-full overflow-auto p-4 md:p-6 text-[#E4E4E7]">
+    <section className="h-full overflow-auto p-4 text-[#E4E4E7] md:p-6">
       <header className="mb-4 rounded-2xl border border-[#2A2A2D] bg-[#111113]/90 p-4">
         <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#3A3126] bg-[#1A1611] px-3 py-1 text-xs text-[#E9C995]">
           <BookOpen className="h-3.5 w-3.5" />
           User Docs Guide
         </div>
         <h1 className="text-xl font-bold">Documentation Utilisateur</h1>
-        <p className="text-sm text-[#A1A1AA]">Guide opérationnel rapide pour exploiter la suite mail premium.</p>
+        <p className="text-sm text-[#A1A1AA]">
+          Guide opérationnel rapide pour exploiter la suite mail premium.
+        </p>
       </header>
 
       <div className="space-y-3">
         {sections.map((s) => (
-          <details key={s.title} className="rounded-2xl border border-[#242427] bg-[#101012]/95 p-4" open>
-            <summary className="cursor-pointer list-none text-sm font-semibold text-white">{s.title}</summary>
+          <details
+            key={s.title}
+            className="rounded-2xl border border-[#242427] bg-[#101012]/95 p-4"
+            open
+          >
+            <summary className="cursor-pointer list-none text-sm font-semibold text-white">
+              {s.title}
+            </summary>
             <p className="mt-2 text-sm text-[#C4C4CC]">{s.body}</p>
           </details>
         ))}
@@ -52,7 +60,8 @@ export function UserDocsGuide() {
           Support interne
         </div>
         <p className="mt-1 text-sm text-[#D4D4D8]">
-          En cas de doute produit/ops, ouvre une change request dans Admin pour tracer la décision.
+          En cas de doute produit/ops, ouvre une change request dans Admin pour
+          tracer la décision.
         </p>
       </div>
     </section>

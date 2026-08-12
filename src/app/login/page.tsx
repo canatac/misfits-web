@@ -66,12 +66,15 @@ function formatRetry(retryAfter?: number): string {
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   oauth_failed: "Social login failed. Please try again.",
-  oauth_cancelled: "Login was cancelled. You can try again or use your email and password.",
+  oauth_cancelled:
+    "Login was cancelled. You can try again or use your email and password.",
 };
 
 function getOAuthErrorMessage(code: string | null): string | null {
   if (!code) return null;
-  return OAUTH_ERROR_MESSAGES[code] ?? "Something went wrong. Please try again.";
+  return (
+    OAUTH_ERROR_MESSAGES[code] ?? "Something went wrong. Please try again."
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -91,7 +94,7 @@ function LoginInner() {
   const router = useRouter();
 
   const pendingTwoFactorChallengeId = useAuthStore(
-    (s) => s.pendingTwoFactorChallengeId,
+    (s) => s.pendingTwoFactorChallengeId
   );
   const authError = useAuthStore((s) => s.error);
   const clearError = useAuthStore((s) => s.clearError);
@@ -133,7 +136,9 @@ function LoginInner() {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("error");
       const newSearch = params.toString();
-      router.replace(newSearch ? `/login?${newSearch}` : "/login", { scroll: false });
+      router.replace(newSearch ? `/login?${newSearch}` : "/login", {
+        scroll: false,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -234,7 +239,9 @@ function LoginInner() {
                 role="alert"
                 aria-live="assertive"
                 message={oauthErrorMessage}
-                tone={oauthErrorCode === "oauth_cancelled" ? "warning" : "danger"}
+                tone={
+                  oauthErrorCode === "oauth_cancelled" ? "warning" : "danger"
+                }
               />
             ) : null}
 
@@ -245,7 +252,7 @@ function LoginInner() {
                 message={
                   rateLimited
                     ? `Too many attempts. Try again in ${formatRetry(authError?.retryAfter)}.`
-                    : authError?.message ?? "Login failed."
+                    : (authError?.message ?? "Login failed.")
                 }
                 tone={rateLimited ? "warning" : "danger"}
               />
@@ -254,11 +261,10 @@ function LoginInner() {
             {is2FAStep ? (
               <form onSubmit={handle2FASubmit} className="space-y-4" noValidate>
                 <div className="space-y-2">
-
                   <Label htmlFor="mfa-code">Verification code</Label>
                   <div className="relative">
                     <ShieldCheck
-                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]"
+                      className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]"
                       aria-hidden="true"
                     />
                     <Input
@@ -336,90 +342,96 @@ function LoginInner() {
                   </div>
                 </div>
 
-                <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email or username</Label>
-                  <Input
-                    id="email"
-                    type="text"
-                    autoComplete="username"
-                    placeholder="admin or you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onBlur={() => setEmailTouched(true)}
-                    aria-invalid={emailError ? "true" : "false"}
-                    aria-describedby={emailError ? "email-error" : undefined}
-                    required
-                  />
-                  {emailError ? (
-                    <p
-                      id="email-error"
-                      className="text-xs text-[var(--color-danger-500)]"
-                      role="alert"
-                    >
-                      Enter a username (e.g. admin) or a valid email.
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                      href="/reset-password"
-                      className="text-xs text-[var(--color-brand-500)] underline-offset-4 hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    aria-invalid={
-                      authError?.code === "invalid_credentials" ? "true" : "false"
-                    }
-                    aria-describedby="password-help"
-                    required
-                  />
-                  <PasswordStrengthIndicator password={password} />
-                  <p
-                    id="password-help"
-                    className="sr-only"
-                    aria-live="polite"
-                  >
-                    {password.length === 0
-                      ? "Password is empty."
-                      : `${password.length} characters entered.`}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="remember"
-                    checked={remember}
-                    onCheckedChange={(v) => setRemember(v === true)}
-                  />
-                  <Label htmlFor="remember" className="text-sm font-normal">
-                    Remember me on this device
-                  </Label>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  loading={loginMutation.isPending}
-                  disabled={loginMutation.isPending || rateLimited}
+                <form
+                  onSubmit={handleLoginSubmit}
+                  className="space-y-4"
+                  noValidate
                 >
-                  {rateLimited
-                    ? `Try again in ${formatRetry(authError?.retryAfter)}`
-                    : "Sign in"}
-                </Button>
-              </form>
-            </>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email or username</Label>
+                    <Input
+                      id="email"
+                      type="text"
+                      autoComplete="username"
+                      placeholder="admin or you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => setEmailTouched(true)}
+                      aria-invalid={emailError ? "true" : "false"}
+                      aria-describedby={emailError ? "email-error" : undefined}
+                      required
+                    />
+                    {emailError ? (
+                      <p
+                        id="email-error"
+                        className="text-xs text-[var(--color-danger-500)]"
+                        role="alert"
+                      >
+                        Enter a username (e.g. admin) or a valid email.
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <Link
+                        href="/reset-password"
+                        className="text-xs text-[var(--color-brand-500)] underline-offset-4 hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      aria-invalid={
+                        authError?.code === "invalid_credentials"
+                          ? "true"
+                          : "false"
+                      }
+                      aria-describedby="password-help"
+                      required
+                    />
+                    <PasswordStrengthIndicator password={password} />
+                    <p
+                      id="password-help"
+                      className="sr-only"
+                      aria-live="polite"
+                    >
+                      {password.length === 0
+                        ? "Password is empty."
+                        : `${password.length} characters entered.`}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="remember"
+                      checked={remember}
+                      onCheckedChange={(v) => setRemember(v === true)}
+                    />
+                    <Label htmlFor="remember" className="text-sm font-normal">
+                      Remember me on this device
+                    </Label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    loading={loginMutation.isPending}
+                    disabled={loginMutation.isPending || rateLimited}
+                  >
+                    {rateLimited
+                      ? `Try again in ${formatRetry(authError?.retryAfter)}`
+                      : "Sign in"}
+                  </Button>
+                </form>
+              </>
             )}
           </CardContent>
         </Card>
@@ -460,7 +472,7 @@ function ErrorBanner({
         "mb-4 flex items-start gap-2 rounded-[var(--radius-md)] border p-3 text-sm",
         tone === "danger"
           ? "border-[var(--color-danger-500)] bg-[var(--color-danger-50)] text-[var(--color-danger-700)] dark:bg-[var(--color-danger-900)] dark:text-[var(--color-danger-300)]"
-          : "border-[var(--color-warning-500)] bg-[var(--color-warning-50)] text-[var(--color-warning-700)] dark:bg-[var(--color-warning-900)] dark:text-[var(--color-warning-300)]",
+          : "border-[var(--color-warning-500)] bg-[var(--color-warning-50)] text-[var(--color-warning-700)] dark:bg-[var(--color-warning-900)] dark:text-[var(--color-warning-300)]"
       )}
       {...rest}
     >

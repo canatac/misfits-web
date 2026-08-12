@@ -17,8 +17,15 @@ export function useSecurityResult(emailId: string) {
 export function useSecurityStats() {
   const results = useSecurityStore((s) => s.results);
   return useMemo(() => {
-    const stats: Record<string, number> = { safe: 0, suspicious: 0, dangerous: 0, critical: 0 };
-    Object.values(results).forEach((r) => { stats[r.threatLevel]++; });
+    const stats: Record<string, number> = {
+      safe: 0,
+      suspicious: 0,
+      dangerous: 0,
+      critical: 0,
+    };
+    Object.values(results).forEach((r) => {
+      stats[r.threatLevel]++;
+    });
     return { stats, total: Object.keys(results).length };
   }, [results]);
 }

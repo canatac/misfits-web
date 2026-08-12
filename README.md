@@ -94,6 +94,7 @@ src/
 ## Connection au backend
 
 Le frontend se connecte au backend Rust via l'API Warp :
+
 - **SMTP/IMAP API:** `http://smtp-vm:8080/api` (proxy via Next.js rewrites)
 - **Auth:** SMTP credentials (AUTH LOGIN/PLAIN)
 - **Email storage:** MongoDB (backend) → API → Frontend

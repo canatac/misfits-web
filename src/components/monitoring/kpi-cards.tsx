@@ -37,8 +37,16 @@ function KpiCardSkeleton() {
   );
 }
 
-export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCardsProps) {
-  const deliveryPct = Math.max(0, Math.min(100, (summary?.delivery_rate ?? 0) * 100));
+export function KpiCards({
+  window,
+  onWindowChange,
+  summary,
+  isLoading,
+}: KpiCardsProps) {
+  const deliveryPct = Math.max(
+    0,
+    Math.min(100, (summary?.delivery_rate ?? 0) * 100)
+  );
   const statusBars = Object.entries(summary?.by_status ?? {});
 
   return (
@@ -46,7 +54,9 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">KPIs</h2>
-          <p className="text-sm text-[var(--color-muted-fg)]">Rafraichissement automatique toutes les 30s</p>
+          <p className="text-sm text-[var(--color-muted-fg)]">
+            Rafraichissement automatique toutes les 30s
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -83,13 +93,17 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
                   {deliveryPct.toFixed(1)}%
                 </div>
               </div>
-              <div className="text-xs text-[var(--color-muted-fg)]">Delivery gauge</div>
+              <div className="text-xs text-[var(--color-muted-fg)]">
+                Delivery gauge
+              </div>
             </div>
 
             <div className="space-y-2">
               <div className="text-sm font-medium">Status sparklines</div>
               {statusBars.length === 0 ? (
-                <div className="text-xs text-[var(--color-muted-fg)]">Aucune donnee sur la fenetre selectionnee.</div>
+                <div className="text-xs text-[var(--color-muted-fg)]">
+                  Aucune donnee sur la fenetre selectionnee.
+                </div>
               ) : (
                 statusBars.map(([status, count]) => {
                   const total = Math.max(1, summary?.total_events ?? 1);
@@ -97,7 +111,9 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
                   return (
                     <div key={status} className="space-y-1">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="uppercase tracking-wide">{status}</span>
+                        <span className="tracking-wide uppercase">
+                          {status}
+                        </span>
                         <span>{count}</span>
                       </div>
                       <div className="h-2 rounded-full bg-[var(--color-muted)]">
@@ -129,12 +145,15 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
               <CardHeader className="pb-2">
                 <CardDescription>Delivery Rate</CardDescription>
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Activity className="h-4 w-4 text-[var(--color-success-600)]" /> Delivery
+                  <Activity className="h-4 w-4 text-[var(--color-success-600)]" />{" "}
+                  Delivery
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[var(--color-success-700)]">
-                  {summary ? `${(summary.delivery_rate * 100).toFixed(1)}%` : displayNullable(undefined)}
+                  {summary
+                    ? `${(summary.delivery_rate * 100).toFixed(1)}%`
+                    : displayNullable(undefined)}
                 </div>
               </CardContent>
             </Card>
@@ -143,12 +162,15 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
               <CardHeader className="pb-2">
                 <CardDescription>Bounce Rate</CardDescription>
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <ShieldAlert className="h-4 w-4 text-[var(--color-warning-600)]" /> Bounce
+                  <ShieldAlert className="h-4 w-4 text-[var(--color-warning-600)]" />{" "}
+                  Bounce
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[var(--color-warning-700)]">
-                  {summary ? `${(summary.bounce_rate * 100).toFixed(1)}%` : displayNullable(undefined)}
+                  {summary
+                    ? `${(summary.bounce_rate * 100).toFixed(1)}%`
+                    : displayNullable(undefined)}
                 </div>
               </CardContent>
             </Card>
@@ -157,12 +179,19 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
               <CardHeader className="pb-2">
                 <CardDescription>P95 latency</CardDescription>
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Timer className="h-4 w-4 text-[var(--color-info-600)]" /> Latence
+                  <Timer className="h-4 w-4 text-[var(--color-info-600)]" />{" "}
+                  Latence
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[var(--color-info-700)]">
-                  {summary ? displayNullable(summary.p95_total_ms === null ? null : `${Math.round(summary.p95_total_ms)} ms`) : displayNullable(undefined)}
+                  {summary
+                    ? displayNullable(
+                        summary.p95_total_ms === null
+                          ? null
+                          : `${Math.round(summary.p95_total_ms)} ms`
+                      )
+                    : displayNullable(undefined)}
                 </div>
               </CardContent>
             </Card>
@@ -171,12 +200,17 @@ export function KpiCards({ window, onWindowChange, summary, isLoading }: KpiCard
               <CardHeader className="pb-2">
                 <CardDescription>Avg Risk Score</CardDescription>
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Gauge className="h-4 w-4 text-[var(--color-danger-600)]" /> Risk
+                  <Gauge className="h-4 w-4 text-[var(--color-danger-600)]" />{" "}
+                  Risk
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${riskTextClass(summary?.avg_risk_score)}`}>
-                  {summary ? summary.avg_risk_score.toFixed(1) : displayNullable(undefined)}
+                <div
+                  className={`text-2xl font-bold ${riskTextClass(summary?.avg_risk_score)}`}
+                >
+                  {summary
+                    ? summary.avg_risk_score.toFixed(1)
+                    : displayNullable(undefined)}
                 </div>
               </CardContent>
             </Card>

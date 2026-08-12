@@ -121,12 +121,9 @@ export type SecurityAction =
 export type SecuritySeverity = "info" | "low" | "medium" | "high" | "critical";
 export type SecurityMode = "observe" | "enforce";
 export type SecurityActionType =
-  | "alert"
-  | "throttle"
-  | "quarantine"
-  | "block"
-  | "human_challenge";
-export type SecurityAlertStatus = "active" | "acknowledged" | "resolved" | "rolled_back";
+  "alert" | "throttle" | "quarantine" | "block" | "human_challenge";
+export type SecurityAlertStatus =
+  "active" | "acknowledged" | "resolved" | "rolled_back";
 
 export interface SecurityAlert {
   id: string;

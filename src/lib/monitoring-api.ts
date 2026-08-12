@@ -10,7 +10,10 @@ import type {
   MonitoringWindow,
 } from "@/types/monitoring";
 
-function withParams(path: string, params: Record<string, string | number | undefined>) {
+function withParams(
+  path: string,
+  params: Record<string, string | number | undefined>
+) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === "") continue;
@@ -22,7 +25,7 @@ function withParams(path: string, params: Record<string, string | number | undef
 
 export function getMonitoringSummary(window: MonitoringWindow) {
   return apiClient.get<MonitoringSummary>(
-    withParams("/monitoring/summary", { window }),
+    withParams("/monitoring/summary", { window })
   );
 }
 
@@ -39,28 +42,30 @@ export function getMonitoringEvents(filters: MonitoringEventFilters) {
       message_id: filters.message_id,
       page: filters.page,
       page_size: filters.page_size ?? 50,
-    }),
+    })
   );
 }
 
 export function getMonitoringTrace(messageId: string) {
-  return apiClient.get<MonitoringTrace>(`/monitoring/messages/${encodeURIComponent(messageId)}/trace`);
+  return apiClient.get<MonitoringTrace>(
+    `/monitoring/messages/${encodeURIComponent(messageId)}/trace`
+  );
 }
 
 export function getMonitoringBounces(window: MonitoringWindow) {
   return apiClient.get<MonitoringBouncesResponse>(
-    withParams("/monitoring/bounces", { window }),
+    withParams("/monitoring/bounces", { window })
   );
 }
 
 export function getMonitoringTopProviders(window: MonitoringWindow) {
   return apiClient.get<MonitoringProvidersResponse>(
-    withParams("/monitoring/providers/top", { window }),
+    withParams("/monitoring/providers/top", { window })
   );
 }
 
 export function getMonitoringActiveAlerts(window: MonitoringWindow) {
   return apiClient.get<MonitoringAlertsResponse>(
-    withParams("/monitoring/alerts/active", { window }),
+    withParams("/monitoring/alerts/active", { window })
   );
 }

@@ -41,7 +41,10 @@ export function AlertBanner({ alerts, isLoading }: AlertBannerProps) {
   return (
     <div className="space-y-2">
       {alerts.map((alert, idx) => (
-        <Card key={`${alert.kind}-${alert.ts}-${idx}`} className={severityClass(alert.severity)}>
+        <Card
+          key={`${alert.kind}-${alert.ts}-${idx}`}
+          className={severityClass(alert.severity)}
+        >
           <CardContent className="flex items-start justify-between gap-3 p-4 text-sm">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4" />
@@ -52,7 +55,7 @@ export function AlertBanner({ alerts, isLoading }: AlertBannerProps) {
                 </div>
               </div>
             </div>
-            <div className="whitespace-nowrap text-xs opacity-80">
+            <div className="text-xs whitespace-nowrap opacity-80">
               {formatLocalTimestamp(alert.ts)}
             </div>
           </CardContent>

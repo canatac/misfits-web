@@ -46,9 +46,9 @@ function RailButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-xl p-2.5 transition-all relative hover:bg-[#1D1D20]/50 hover:text-white",
-        active && "bg-[#1D1D20] text-[#C49B66] border border-[#C49B66]/40",
-        danger && "hover:text-rose-400",
+        "relative rounded-xl p-2.5 transition-all hover:bg-[#1D1D20]/50 hover:text-white",
+        active && "border border-[#C49B66]/40 bg-[#1D1D20] text-[#C49B66]",
+        danger && "hover:text-rose-400"
       )}
       title={title}
       aria-label={title}
@@ -75,7 +75,7 @@ export function NovaMailIconRail({ onCompose }: NovaMailIconRailProps) {
       setFolder(folder);
       router.push("/mail");
     },
-    [router, setFilterType, setFolder, setSearchQuery],
+    [router, setFilterType, setFolder, setSearchQuery]
   );
 
   const openPriority = useCallback(() => {
@@ -106,47 +106,111 @@ export function NovaMailIconRail({ onCompose }: NovaMailIconRailProps) {
 
       <div className="my-0.5 h-[1px] w-8 bg-[#242427]" />
 
-      <RailButton active={pathname.startsWith("/dashboard")} title="Dashboard Matinal" onClick={() => router.push("/dashboard")}>
+      <RailButton
+        active={pathname.startsWith("/dashboard")}
+        title="Dashboard Matinal"
+        onClick={() => router.push("/dashboard")}
+      >
         <LayoutDashboard className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/docs")} title="Manuel d'utilisation (Docs)" onClick={() => router.push("/docs")}>
+      <RailButton
+        active={pathname.startsWith("/docs")}
+        title="Manuel d'utilisation (Docs)"
+        onClick={() => router.push("/docs")}
+      >
         <BookOpen className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/admin")} title="Console Admin (Grafana & LLM Builder)" onClick={() => router.push("/admin")}>
+      <RailButton
+        active={pathname.startsWith("/admin")}
+        title="Console Admin (Grafana & LLM Builder)"
+        onClick={() => router.push("/admin")}
+      >
         <ShieldCheck className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
 
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "all"} title="Boîte de réception" onClick={() => openFolder("inbox")}>
+      <RailButton
+        active={
+          pathname.startsWith("/mail") &&
+          currentFolder === "inbox" &&
+          filterType === "all"
+        }
+        title="Boîte de réception"
+        onClick={() => openFolder("inbox")}
+      >
         <Inbox className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "sent"} title="Envoyés" onClick={() => openFolder("sent")}>
+      <RailButton
+        active={pathname.startsWith("/mail") && currentFolder === "sent"}
+        title="Envoyés"
+        onClick={() => openFolder("sent")}
+      >
         <Send className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "drafts"} title="Brouillons" onClick={() => openFolder("drafts")}>
+      <RailButton
+        active={pathname.startsWith("/mail") && currentFolder === "drafts"}
+        title="Brouillons"
+        onClick={() => openFolder("drafts")}
+      >
         <FilePen className="h-5 w-5 text-[#71717A]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "spam"} title="Spam" onClick={() => openFolder("spam")}>
+      <RailButton
+        active={pathname.startsWith("/mail") && currentFolder === "spam"}
+        title="Spam"
+        onClick={() => openFolder("spam")}
+      >
         <ShieldAlert className="h-5 w-5 text-rose-400" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "trash"} title="Corbeille" onClick={() => openFolder("trash")}>
+      <RailButton
+        active={pathname.startsWith("/mail") && currentFolder === "trash"}
+        title="Corbeille"
+        onClick={() => openFolder("trash")}
+      >
         <Trash2 className="h-5 w-5 text-[#71717A]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "unread"} title="Prioritaires" onClick={openPriority}>
+      <RailButton
+        active={
+          pathname.startsWith("/mail") &&
+          currentFolder === "inbox" &&
+          filterType === "unread"
+        }
+        title="Prioritaires"
+        onClick={openPriority}
+      >
         <Sparkles className="h-5 w-5 text-[#C49B66]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/mail") && currentFolder === "inbox" && filterType === "starred"} title="Starred" onClick={openStarred}>
+      <RailButton
+        active={
+          pathname.startsWith("/mail") &&
+          currentFolder === "inbox" &&
+          filterType === "starred"
+        }
+        title="Starred"
+        onClick={openStarred}
+      >
         <Star className="h-5 w-5 text-[#71717A]" />
       </RailButton>
 
       <div className="my-1 h-[1px] w-8 bg-[#242427]" />
 
-      <RailButton active={pathname.startsWith("/calendar")} title="Calendar" onClick={() => router.push("/calendar")}>
+      <RailButton
+        active={pathname.startsWith("/calendar")}
+        title="Calendar"
+        onClick={() => router.push("/calendar")}
+      >
         <Calendar className="h-5 w-5 text-[#71717A]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/files")} title="Files" onClick={() => router.push("/files")}>
+      <RailButton
+        active={pathname.startsWith("/files")}
+        title="Files"
+        onClick={() => router.push("/files")}
+      >
         <Folder className="h-5 w-5 text-[#71717A]" />
       </RailButton>
-      <RailButton active={pathname.startsWith("/newsletters")} title="Newsletters" onClick={() => router.push("/newsletters")}>
+      <RailButton
+        active={pathname.startsWith("/newsletters")}
+        title="Newsletters"
+        onClick={() => router.push("/newsletters")}
+      >
         <Newspaper className="h-5 w-5 text-[#71717A]" />
       </RailButton>
 

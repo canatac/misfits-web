@@ -98,7 +98,7 @@ function ThreadListItemComponent({
         isActive && "bg-[var(--color-accent)]",
         !isActive && hasUnread && "bg-[var(--color-card)]",
         !isActive && !hasUnread && "bg-[var(--color-bg)]",
-        !isActive && "hover:bg-[var(--color-muted)]",
+        !isActive && "hover:bg-[var(--color-muted)]"
       )}
       data-testid={`thread-item-${thread.id}`}
       onMouseEnter={() => setHovered(true)}
@@ -122,7 +122,7 @@ function ThreadListItemComponent({
           <ChevronRight
             className={cn(
               "h-3.5 w-3.5 text-[var(--color-muted-fg)] transition-transform",
-              isExpanded && "rotate-90",
+              isExpanded && "rotate-90"
             )}
           />
         </button>
@@ -150,7 +150,7 @@ function ThreadListItemComponent({
                 "truncate text-sm",
                 hasUnread
                   ? "font-semibold text-[var(--color-fg)]"
-                  : "text-[var(--color-fg)]",
+                  : "text-[var(--color-fg)]"
               )}
             >
               {participantNames || lastMessage.from.name}
@@ -172,7 +172,7 @@ function ThreadListItemComponent({
                 "truncate text-sm",
                 hasUnread
                   ? "font-medium text-[var(--color-fg)]"
-                  : "text-[var(--color-muted-fg)]",
+                  : "text-[var(--color-muted-fg)]"
               )}
             >
               {thread.subject}
@@ -189,7 +189,7 @@ function ThreadListItemComponent({
                   "rounded-full px-1.5 py-0.5 text-[10px] font-medium",
                   hasUnread
                     ? "bg-[var(--color-brand-500)] text-white"
-                    : "bg-[var(--color-muted)] text-[var(--color-muted-fg)]",
+                    : "bg-[var(--color-muted)] text-[var(--color-muted-fg)]"
                 )}
               >
                 {thread.messageCount}
@@ -279,7 +279,7 @@ function ThreadListItemComponent({
                 email.id !== selectedEmailId &&
                   email.isRead &&
                   "bg-transparent",
-                "hover:bg-[var(--color-muted)]",
+                "hover:bg-[var(--color-muted)]"
               )}
               data-testid={`thread-msg-${email.id}`}
             >
@@ -295,7 +295,7 @@ function ThreadListItemComponent({
                       "truncate text-xs",
                       !email.isRead
                         ? "font-semibold text-[var(--color-fg)]"
-                        : "text-[var(--color-fg)]",
+                        : "text-[var(--color-fg)]"
                     )}
                   >
                     {email.from.name}

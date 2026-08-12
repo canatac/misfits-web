@@ -5,10 +5,7 @@ import type { Email, EmailAddress } from "@/types/email";
 
 /** Threading strategy used to group emails into conversations. */
 export type ThreadingMode =
-  | "bySubject"
-  | "byReferences"
-  | "byParticipants"
-  | "smart";
+  "bySubject" | "byReferences" | "byParticipants" | "smart";
 
 /** A single message within a thread (wraps an Email with UI state). */
 export interface ThreadMessage {

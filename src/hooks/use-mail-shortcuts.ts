@@ -104,7 +104,7 @@ export function useMailShortcuts(handlers: MailShortcutHandlers): void {
           break;
       }
     },
-    [handlers],
+    [handlers]
   );
 
   useEffect(() => {

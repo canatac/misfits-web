@@ -122,16 +122,13 @@ const WEEKDAYS = [
  * Try to extract a date from a promise phrase like "by Friday" or
  * "before next Monday" or "on the 15th". Returns an ISO string or null.
  */
-function parsePromiseDate(
-  text: string,
-  emailDate: string,
-): string | null {
+function parsePromiseDate(text: string, emailDate: string): string | null {
   const base = new Date(emailDate);
   const lower = text.toLowerCase();
 
   // "by Friday" / "before Monday" / "on Tuesday"
   const dayMatch = lower.match(
-    /\b(?:by|before|on|until|no later than)\s+(?:next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/,
+    /\b(?:by|before|on|until|no later than)\s+(?:next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/
   );
   if (dayMatch) {
     const targetDay = WEEKDAYS.indexOf(dayMatch[1]);
@@ -147,7 +144,9 @@ function parsePromiseDate(
   }
 
   // "by the 15th" / "on the 3rd"
-  const dateMatch = lower.match(/\b(?:by|before|on|until)\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/);
+  const dateMatch = lower.match(
+    /\b(?:by|before|on|until)\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/
+  );
   if (dateMatch) {
     const day = parseInt(dateMatch[1], 10);
     if (day >= 1 && day <= 31) {
@@ -220,10 +219,10 @@ function parsePromiseDate(
  */
 export function estimateReplyDelay(
   senderAddress: string,
-  history: FollowUpEmailInput[] = [],
+  history: FollowUpEmailInput[] = []
 ): number {
   const fromSender = history.filter(
-    (e) => e.from.address.toLowerCase() === senderAddress.toLowerCase(),
+    (e) => e.from.address.toLowerCase() === senderAddress.toLowerCase()
   );
 
   if (fromSender.length < 2) return 24; // default 1 day
@@ -269,7 +268,7 @@ function genId(): string {
  */
 export function detectFollowUps(
   emails: FollowUpEmailInput[],
-  rules: ReminderRule[] = DEFAULT_RULES,
+  rules: ReminderRule[] = DEFAULT_RULES
 ): FollowUpItem[] {
   const now = new Date().toISOString();
   const enabledRules = rules.filter((r) => r.enabled);
@@ -316,13 +315,15 @@ export function detectFollowUps(
       let dueDate: string;
       if (rule.type === "promise") {
         const parsed = parsePromiseDate(text, email.date);
-        dueDate = parsed ?? new Date(
-          new Date(email.date).getTime() + rule.defaultDelayHours * 3600_000,
-        ).toISOString();
+        dueDate =
+          parsed ??
+          new Date(
+            new Date(email.date).getTime() + rule.defaultDelayHours * 3600_000
+          ).toISOString();
       } else {
         const delay = estimateReplyDelay(email.from.address, emails);
         dueDate = new Date(
-          new Date(email.date).getTime() + delay * 3600_000,
+          new Date(email.date).getTime() + delay * 3600_000
         ).toISOString();
       }
 
@@ -378,7 +379,7 @@ export function detectFollowUps(
  */
 export function generateReminders(
   followUps: FollowUpItem[],
-  now: Date = new Date(),
+  now: Date = new Date()
 ): FollowUpReminder[] {
   const nowMs = now.getTime();
   const reminders: FollowUpReminder[] = [];
@@ -386,7 +387,9 @@ export function generateReminders(
   for (const fu of followUps) {
     if (fu.status === "dismissed" || fu.status === "completed") continue;
     if (fu.status === "snoozed") {
-      const snoozedMs = fu.snoozedUntil ? new Date(fu.snoozedUntil).getTime() : 0;
+      const snoozedMs = fu.snoozedUntil
+        ? new Date(fu.snoozedUntil).getTime()
+        : 0;
       if (snoozedMs > nowMs) continue; // still snoozed
     }
 
@@ -394,7 +397,7 @@ export function generateReminders(
     const emailMs = new Date(fu.emailDate).getTime();
     const daysWaiting = Math.max(
       0,
-      Math.floor((nowMs - emailMs) / (1000 * 60 * 60 * 24)),
+      Math.floor((nowMs - emailMs) / (1000 * 60 * 60 * 24))
     );
     const daysOverdue = Math.floor((nowMs - dueMs) / (1000 * 60 * 60 * 24));
 
@@ -441,9 +444,12 @@ export function generateReminders(
 /**
  * Compute an urgency band for a follow-up item based on days overdue.
  */
-export function getUrgency(fu: FollowUpItem, now: Date = new Date()): "info" | "warning" | "urgent" {
+export function getUrgency(
+  fu: FollowUpItem,
+  now: Date = new Date()
+): "info" | "warning" | "urgent" {
   const daysOverdue = Math.floor(
-    (now.getTime() - new Date(fu.dueDate).getTime()) / (1000 * 60 * 60 * 24),
+    (now.getTime() - new Date(fu.dueDate).getTime()) / (1000 * 60 * 60 * 24)
   );
   if (daysOverdue >= 3) return "urgent";
   if (daysOverdue >= 1) return "warning";

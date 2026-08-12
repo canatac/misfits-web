@@ -8,7 +8,13 @@
  * from mock data, and keyboard navigation (Enter to add, Backspace to remove,
  * Tab to autocomplete).
  */
-import { useState, useRef, useCallback, useMemo, type KeyboardEvent } from "react";
+import {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  type KeyboardEvent,
+} from "react";
 import { X, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { searchContacts, type MockContact } from "@/lib/mock-contacts";
@@ -51,7 +57,7 @@ export function RecipientInput({
   const suggestions = useMemo(() => {
     if (!input.trim()) return [];
     return searchContacts(input, 6).filter(
-      (c) => !recipients.some((r) => r.email === c.email),
+      (c) => !recipients.some((r) => r.email === c.email)
     );
   }, [input, recipients]);
 
@@ -72,14 +78,14 @@ export function RecipientInput({
       setInput("");
       setActiveIndex(-1);
     },
-    [onAdd, type],
+    [onAdd, type]
   );
 
   const selectSuggestion = useCallback(
     (contact: MockContact) => {
       commit(contact.email, contact.name, contact.color);
     },
-    [commit],
+    [commit]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -140,11 +146,17 @@ export function RecipientInput({
   };
 
   const showSuggestions = focused && suggestions.length > 0;
-  const inputInvalid = input.trim().length > 0 && !validateRecipient(input.trim()).valid;
+  const inputInvalid =
+    input.trim().length > 0 && !validateRecipient(input.trim()).valid;
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1.5 px-3 py-1.5", className)}>
-      <span className="shrink-0 select-none text-xs font-medium text-[var(--color-muted-fg)]">
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-1.5 px-3 py-1.5",
+        className
+      )}
+    >
+      <span className="shrink-0 text-xs font-medium text-[var(--color-muted-fg)] select-none">
         {label}
       </span>
       {recipients.map((r) => (
@@ -173,12 +185,12 @@ export function RecipientInput({
           aria-label={`${label} recipient`}
           className={cn(
             "min-w-[120px] flex-1 bg-transparent text-sm text-[var(--color-fg)] outline-none placeholder:text-[var(--color-muted-fg)]",
-            inputInvalid && "text-[var(--color-danger-500)]",
+            inputInvalid && "text-[var(--color-danger-500)]"
           )}
           placeholder={recipients.length === 0 ? "Recipients…" : ""}
         />
         {showSuggestions && (
-          <div className="absolute left-0 top-full z-50 mt-1 max-h-60 w-64 overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] py-1 shadow-[var(--shadow-lg)]">
+          <div className="absolute top-full left-0 z-50 mt-1 max-h-60 w-64 overflow-auto rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] py-1 shadow-[var(--shadow-lg)]">
             {suggestions.map((c, i) => (
               <button
                 key={c.id}
@@ -190,7 +202,7 @@ export function RecipientInput({
                   "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
                   i === activeIndex
                     ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
-                    : "text-[var(--color-popover-fg)] hover:bg-[var(--color-muted)]",
+                    : "text-[var(--color-popover-fg)] hover:bg-[var(--color-muted)]"
                 )}
               >
                 <span
@@ -226,7 +238,7 @@ function RecipientChip({
 
   return (
     <span
-      className="group inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-muted)] py-0.5 pl-1.5 pr-1 text-sm"
+      className="group inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-muted)] py-0.5 pr-1 pl-1.5 text-sm"
       data-testid="recipient-chip"
     >
       {recipient.color && recipient.name ? (

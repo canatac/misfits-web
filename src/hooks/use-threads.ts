@@ -21,7 +21,7 @@ export function useThreads(mode?: ThreadingMode): Thread[] {
 
   return useMemo(
     () => buildThreads(emails, effectiveMode),
-    [emails, effectiveMode],
+    [emails, effectiveMode]
   );
 }
 
@@ -32,7 +32,7 @@ export function useThread(threadId: string | null): Thread | null {
   const threads = useThreads();
   return useMemo(
     () => threads.find((t) => t.id === threadId) ?? null,
-    [threads, threadId],
+    [threads, threadId]
   );
 }
 
@@ -45,24 +45,28 @@ export function useThreadActions() {
   const openComposer = useComposerStore((s) => s.openComposer);
 
   const toRecipient = useCallback(
-    (address: string, name: string, type: Recipient["type"] = "to"): Recipient => ({
+    (
+      address: string,
+      name: string,
+      type: Recipient["type"] = "to"
+    ): Recipient => ({
       id: uid("rcpt"),
       email: address.toLowerCase(),
       name: name && name !== "me" ? name : undefined,
       type,
     }),
-    [],
+    []
   );
 
   const detach = useCallback(
     (email: Email) => detachEmailFromThread(email),
-    [detachEmailFromThread],
+    [detachEmailFromThread]
   );
 
   const rethread = useCallback(
     (email: Email, targetThreadId: string) =>
       rethreadEmailAction(email, targetThreadId),
-    [rethreadEmailAction],
+    [rethreadEmailAction]
   );
 
   /** Forward an entire thread as a single email. */
@@ -75,15 +79,14 @@ export function useThreadActions() {
         });
         return `<p><strong>From:</strong> ${e.from.name} &lt;${e.from.address}&gt;<br/><strong>Date:</strong> ${date}<br/><strong>Subject:</strong> ${e.subject}</p>${e.body}<hr/>`;
       });
-      const body =
-        `<p>---------- Forwarded thread (${thread.messageCount} messages) ----------</p>${bodies.join("")}`;
+      const body = `<p>---------- Forwarded thread (${thread.messageCount} messages) ----------</p>${bodies.join("")}`;
       openComposer({
         to: [],
         subject: `Fwd: ${thread.subject}`,
         body,
       });
     },
-    [openComposer],
+    [openComposer]
   );
 
   /** Reply to the most recent message in a thread. */
@@ -98,18 +101,18 @@ export function useThreadActions() {
       const replyBody = `<p></p><blockquote>On ${replyDate}, ${last.from.name} &lt;${last.from.address}&gt; wrote:<br/>${last.body}</blockquote>`;
       openComposer({
         to: [toRecipient(last.from.address, last.from.name)],
-        cc: (last.cc ?? []).map((a) =>
-          toRecipient(a.address, a.name, "cc"),
-        ),
+        cc: (last.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
         subject: last.subject.startsWith("Re: ")
           ? last.subject
           : `Re: ${last.subject}`,
         body: replyBody,
         inReplyTo: last.messageId,
-        references: [...(last.references ?? []), last.messageId].filter(Boolean),
+        references: [...(last.references ?? []), last.messageId].filter(
+          Boolean
+        ),
       });
     },
-    [openComposer, toRecipient],
+    [openComposer, toRecipient]
   );
 
   return { detach, rethread, forwardThread, replyToThread };

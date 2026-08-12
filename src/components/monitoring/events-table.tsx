@@ -56,7 +56,9 @@ export function EventsTable({
     <Card>
       <CardHeader>
         <CardTitle>Events</CardTitle>
-        <CardDescription>Filtrage status / pays / provider / message_id</CardDescription>
+        <CardDescription>
+          Filtrage status / pays / provider / message_id
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -64,7 +66,11 @@ export function EventsTable({
           <Select
             value={filters.status || "all"}
             onValueChange={(value) =>
-              onFiltersChange({ ...filters, status: value === "all" ? undefined : value, page: 1 })
+              onFiltersChange({
+                ...filters,
+                status: value === "all" ? undefined : value,
+                page: 1,
+              })
             }
           >
             <SelectTrigger>
@@ -83,7 +89,11 @@ export function EventsTable({
           <Select
             value={filters.country || "all"}
             onValueChange={(value) =>
-              onFiltersChange({ ...filters, country: value === "all" ? undefined : value, page: 1 })
+              onFiltersChange({
+                ...filters,
+                country: value === "all" ? undefined : value,
+                page: 1,
+              })
             }
           >
             <SelectTrigger>
@@ -102,7 +112,11 @@ export function EventsTable({
           <Select
             value={filters.provider || "all"}
             onValueChange={(value) =>
-              onFiltersChange({ ...filters, provider: value === "all" ? undefined : value, page: 1 })
+              onFiltersChange({
+                ...filters,
+                provider: value === "all" ? undefined : value,
+                page: 1,
+              })
             }
           >
             <SelectTrigger>
@@ -151,28 +165,53 @@ export function EventsTable({
                   <th className="px-3 py-2 font-medium">company</th>
                   <th className="px-3 py-2 font-medium">status</th>
                   <th className="px-3 py-2 text-right font-medium">total_ms</th>
-                  <th className="px-3 py-2 text-right font-medium">risk_score</th>
+                  <th className="px-3 py-2 text-right font-medium">
+                    risk_score
+                  </th>
                   <th className="px-3 py-2 text-right font-medium">trace</th>
                 </tr>
               </thead>
               <tbody>
                 {events.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-3 py-6 text-center text-[var(--color-muted-fg)]">
+                    <td
+                      colSpan={9}
+                      className="px-3 py-6 text-center text-[var(--color-muted-fg)]"
+                    >
                       Aucun evenement trouve.
                     </td>
                   </tr>
                 ) : (
                   events.map((event) => (
-                    <tr key={event.id} className="border-b border-[var(--color-border)]">
-                      <td className="px-3 py-2 whitespace-nowrap">{formatLocalTimestamp(event.ts)}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{displayNullable(event.from)} - {displayNullable(event.to)}</td>
-                      <td className="px-3 py-2">{displayNullable(event.mx_host)}</td>
-                      <td className="px-3 py-2">{displayNullable(event.country)}</td>
-                      <td className="px-3 py-2">{displayNullable(event.company)}</td>
-                      <td className="px-3 py-2">{displayNullable(event.status)}</td>
-                      <td className="px-3 py-2 text-right">{displayNullable(event.total_ms)}</td>
-                      <td className={`px-3 py-2 text-right font-semibold ${riskTextClass(event.risk_score)}`}>
+                    <tr
+                      key={event.id}
+                      className="border-b border-[var(--color-border)]"
+                    >
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {formatLocalTimestamp(event.ts)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {displayNullable(event.from)} -{" "}
+                        {displayNullable(event.to)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(event.mx_host)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(event.country)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(event.company)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(event.status)}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        {displayNullable(event.total_ms)}
+                      </td>
+                      <td
+                        className={`px-3 py-2 text-right font-semibold ${riskTextClass(event.risk_score)}`}
+                      >
                         {displayNullable(event.risk_score)}
                       </td>
                       <td className="px-3 py-2 text-right">
@@ -193,7 +232,9 @@ export function EventsTable({
         )}
 
         <div className="flex items-center justify-between">
-          <div className="text-xs text-[var(--color-muted-fg)]">{total} total - page {page}</div>
+          <div className="text-xs text-[var(--color-muted-fg)]">
+            {total} total - page {page}
+          </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"

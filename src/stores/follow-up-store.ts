@@ -47,7 +47,7 @@ interface FollowUpState {
 
 function mergeFollowUps(
   existing: FollowUpItem[],
-  detected: FollowUpItem[],
+  detected: FollowUpItem[]
 ): FollowUpItem[] {
   const byEmailType = new Map<string, FollowUpItem>();
   for (const fu of existing) {
@@ -65,7 +65,12 @@ function mergeFollowUps(
     }
     if (prev && prev.status === "snoozed") {
       // Preserve snooze but refresh other fields.
-      byEmailType.set(key, { ...fu, status: "snoozed", snoozedUntil: prev.snoozedUntil, updatedAt: new Date().toISOString() });
+      byEmailType.set(key, {
+        ...fu,
+        status: "snoozed",
+        snoozedUntil: prev.snoozedUntil,
+        updatedAt: new Date().toISOString(),
+      });
     } else {
       byEmailType.set(key, fu);
     }
@@ -103,8 +108,12 @@ export const useFollowUpStore = create<FollowUpState>()(
         set((state) => {
           const followUps = state.followUps.map((fu) =>
             fu.id === id
-              ? { ...fu, status: "dismissed" as const, updatedAt: new Date().toISOString() }
-              : fu,
+              ? {
+                  ...fu,
+                  status: "dismissed" as const,
+                  updatedAt: new Date().toISOString(),
+                }
+              : fu
           );
           return {
             followUps,
@@ -123,7 +132,7 @@ export const useFollowUpStore = create<FollowUpState>()(
                   snoozedUntil: untilISO,
                   updatedAt: new Date().toISOString(),
                 }
-              : fu,
+              : fu
           );
           return {
             followUps,
@@ -136,8 +145,12 @@ export const useFollowUpStore = create<FollowUpState>()(
         set((state) => {
           const followUps = state.followUps.map((fu) =>
             fu.id === id
-              ? { ...fu, status: "completed" as const, updatedAt: new Date().toISOString() }
-              : fu,
+              ? {
+                  ...fu,
+                  status: "completed" as const,
+                  updatedAt: new Date().toISOString(),
+                }
+              : fu
           );
           return {
             followUps,
@@ -159,7 +172,7 @@ export const useFollowUpStore = create<FollowUpState>()(
       toggleRule: (ruleId, enabled) => {
         set((state) => ({
           rules: state.rules.map((r) =>
-            r.id === ruleId ? { ...r, enabled } : r,
+            r.id === ruleId ? { ...r, enabled } : r
           ),
         }));
       },
@@ -172,6 +185,6 @@ export const useFollowUpStore = create<FollowUpState>()(
         rules: state.rules,
         lastScanAt: state.lastScanAt,
       }),
-    },
-  ),
+    }
+  )
 );

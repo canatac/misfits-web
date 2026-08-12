@@ -52,10 +52,7 @@ import {
   storeSession,
 } from "@/lib/session";
 import { useAccountStore } from "@/stores/account-store";
-import {
-  shouldUseDemoMode,
-  createDemoSession,
-} from "@/lib/demo-mode";
+import { shouldUseDemoMode, createDemoSession } from "@/lib/demo-mode";
 
 /* ------------------------------------------------------------------ *
  * Helper: normalize snake_case session from backend to camelCase
@@ -93,7 +90,10 @@ interface RateLimiter {
   blockedUntil: number;
 }
 
-function canAttempt(limiter: RateLimiter): { ok: boolean; retryAfter?: number } {
+function canAttempt(limiter: RateLimiter): {
+  ok: boolean;
+  retryAfter?: number;
+} {
   const now = Date.now();
   if (limiter.windowStart + WINDOW_MS < now) {
     limiter.attempts = 0;
@@ -176,7 +176,7 @@ export interface AuthStore extends AuthState {
 function applySession(
   set: (partial: Partial<AuthStore>) => void,
   session: Session,
-  remember: boolean,
+  remember: boolean
 ): void {
   recordSessionId(session.id);
   storeSession(session, remember);
@@ -196,7 +196,8 @@ function applySession(
   // Sync the primary account with the real user and purge stale demo accounts.
   const accountStore = useAccountStore.getState();
   const { accounts, updateAccount, removeAccount } = accountStore;
-  const primary = accounts.find((a: { isDefault: boolean }) => a.isDefault) ?? accounts[0];
+  const primary =
+    accounts.find((a: { isDefault: boolean }) => a.isDefault) ?? accounts[0];
   if (primary) {
     updateAccount(primary.id, {
       email: session.user.email,
@@ -214,7 +215,7 @@ function applySession(
  * ------------------------------------------------------------------ */
 
 function isTwoFactorChallenge(
-  res: LoginResponse,
+  res: LoginResponse
 ): res is TwoFactorRequiredResponse {
   return (
     typeof (res as TwoFactorRequiredResponse).twoFactorRequired === "boolean" &&
@@ -226,7 +227,11 @@ function isTwoFactorChallenge(
  * Store creation
  * ------------------------------------------------------------------ */
 
-const limiter: RateLimiter = { attempts: 0, windowStart: Date.now(), blockedUntil: 0 };
+const limiter: RateLimiter = {
+  attempts: 0,
+  windowStart: Date.now(),
+  blockedUntil: 0,
+};
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
   /* --- initial state --- */
@@ -276,14 +281,25 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         return;
       }
       // Normalize snake_case from backend to camelCase before applying
-      applySession(set, normalizeSession(res.session as unknown as Record<string, unknown>), credentials.remember ?? false);
+      applySession(
+        set,
+        normalizeSession(res.session as unknown as Record<string, unknown>),
+        credentials.remember ?? false
+      );
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
       // Network error → fall back to demo mode so the UI is still usable.
-      if (err instanceof ApiError && err.isNetworkError && shouldUseDemoMode()) {
+      if (
+        err instanceof ApiError &&
+        err.isNetworkError &&
+        shouldUseDemoMode()
+      ) {
         const session = createDemoSession(credentials.email);
         applySession(set, session, credentials.remember ?? false);
-        audit("login", `Demo login (backend unreachable) as ${credentials.email}`);
+        audit(
+          "login",
+          `Demo login (backend unreachable) as ${credentials.email}`
+        );
         return;
       }
 
@@ -304,7 +320,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         credentials.first_name,
         credentials.last_name,
         credentials.password,
-        credentials.condition_accepted,
+        credentials.condition_accepted
       );
       applySession(set, res.session, /* remember */ true);
       audit("register", `New account ${res.session.user.email}`);
@@ -414,6 +430,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
 /** Selectors for ergonomic consumption. */
 export const selectUser = (s: AuthStore): User | null => s.user;
-export const selectIsAuthenticated = (s: AuthStore): boolean => s.isAuthenticated;
+export const selectIsAuthenticated = (s: AuthStore): boolean =>
+  s.isAuthenticated;
 export const selectAuthError = (s: AuthStore): AuthError | null => s.error;
 export const selectAuthLoading = (s: AuthStore): boolean => s.isLoading;

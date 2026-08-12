@@ -63,12 +63,10 @@ async function postEmailAction(
     | "markUnread"
     | "star"
     | "unstar",
-  targetFolder?: Folder,
+  targetFolder?: Folder
 ): Promise<void> {
   const payload =
-    action === "move" && targetFolder
-      ? { action, targetFolder }
-      : { action };
+    action === "move" && targetFolder ? { action, targetFolder } : { action };
 
   const res = await fetch(`/api/emails/${encodeURIComponent(id)}/action`, {
     method: "POST",
@@ -80,7 +78,9 @@ async function postEmailAction(
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    throw new Error(`Failed to apply email action: ${res.status} ${res.statusText}`);
+    throw new Error(
+      `Failed to apply email action: ${res.status} ${res.statusText}`
+    );
   }
 }
 
@@ -164,7 +164,8 @@ export function useEmailActions() {
       action,
     }: {
       ids: string[];
-      action: "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
+      action:
+        "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
     }) => {
       await Promise.all(ids.map((id) => postEmailAction(id, action)));
       return { ids, action };

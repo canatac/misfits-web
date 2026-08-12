@@ -83,9 +83,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // Propagate recognisable error codes; fall back to oauth_failed.
     const code =
       errorParam === "access_denied" ? "oauth_cancelled" : "oauth_failed";
-    return NextResponse.redirect(
-      new URL(`/login?error=${code}`, req.url),
-    );
+    return NextResponse.redirect(new URL(`/login?error=${code}`, req.url));
   }
 
   // ── Case 1: Backend passed the full session as a base64-encoded JSON param ──
@@ -140,7 +138,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       return res;
     } catch {
       return NextResponse.redirect(
-        new URL("/login?error=oauth_failed", req.url),
+        new URL("/login?error=oauth_failed", req.url)
       );
     }
   }

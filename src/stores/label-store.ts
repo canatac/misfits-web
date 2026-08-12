@@ -97,8 +97,13 @@ export const useLabelStore = create<LabelState>()(
 
       createLabel: (input) => {
         const now = new Date().toISOString();
-        const siblings = get().labels.filter((l) => (l.parentId ?? null) === (input.parentId ?? null));
-        const order = siblings.length > 0 ? Math.max(...siblings.map((s) => s.order)) + 1 : 0;
+        const siblings = get().labels.filter(
+          (l) => (l.parentId ?? null) === (input.parentId ?? null)
+        );
+        const order =
+          siblings.length > 0
+            ? Math.max(...siblings.map((s) => s.order)) + 1
+            : 0;
         const label: Label = {
           id: genId(),
           name: input.name.trim(),
@@ -122,7 +127,7 @@ export const useLabelStore = create<LabelState>()(
                   ...input,
                   name: input.name !== undefined ? input.name.trim() : l.name,
                 }
-              : l,
+              : l
           ),
         }));
       },
@@ -135,7 +140,11 @@ export const useLabelStore = create<LabelState>()(
           while (added) {
             added = false;
             for (const l of state.labels) {
-              if (l.parentId && toDelete.has(l.parentId) && !toDelete.has(l.id)) {
+              if (
+                l.parentId &&
+                toDelete.has(l.parentId) &&
+                !toDelete.has(l.id)
+              ) {
                 toDelete.add(l.id);
                 added = true;
               }
@@ -178,7 +187,10 @@ export const useLabelStore = create<LabelState>()(
           const current = state.assignments[emailId] ?? [];
           if (current.includes(labelId)) return state;
           return {
-            assignments: { ...state.assignments, [emailId]: [...current, labelId] },
+            assignments: {
+              ...state.assignments,
+              [emailId]: [...current, labelId],
+            },
           };
         });
       },
@@ -202,9 +214,12 @@ export const useLabelStore = create<LabelState>()(
     {
       name: "misfits-labels",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ labels: state.labels, assignments: state.assignments }),
-    },
-  ),
+      partialize: (state) => ({
+        labels: state.labels,
+        assignments: state.assignments,
+      }),
+    }
+  )
 );
 
 /* ------------------------------------------------------------------ */

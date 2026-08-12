@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "@/i18n/config";
 import fr from "@/i18n/messages/fr";
 import en from "@/i18n/messages/en";
@@ -66,14 +74,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     (key: string): string => {
       const active = MESSAGES[locale];
       const fallback = MESSAGES[DEFAULT_LOCALE];
-      return getNestedValue(active, key) ?? getNestedValue(fallback, key) ?? key;
+      return (
+        getNestedValue(active, key) ?? getNestedValue(fallback, key) ?? key
+      );
     },
-    [locale],
+    [locale]
   );
 
   const value = useMemo<I18nContextValue>(
     () => ({ locale, setLocale, t }),
-    [locale, setLocale, t],
+    [locale, setLocale, t]
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

@@ -20,10 +20,13 @@ describe("/api/hermes/chat route", () => {
     process.env.HERMES_API_KEY = "test-key";
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -41,7 +44,7 @@ describe("/api/hermes/chat route", () => {
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("http://hermes:8642/v1/chat/completions");
     expect((init.headers as Record<string, string>).Authorization).toBe(
-      "Bearer test-key",
+      "Bearer test-key"
     );
   });
 
@@ -50,10 +53,13 @@ describe("/api/hermes/chat route", () => {
     process.env.BACKEND_URL = "http://email-api:8000";
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -86,10 +92,13 @@ describe("/api/hermes/chat route", () => {
     process.env.BACKEND_URL = "http://email-api:8000";
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -113,10 +122,13 @@ describe("/api/hermes/chat route", () => {
     process.env.BACKEND_URL = "http://email-api:8000";
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 

@@ -107,17 +107,20 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
     const target = updated.find((t) => t.id === targetThreadId);
     if (target) {
       target.messages = [...target.messages, email].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
       // Rebuild target thread metadata
       const rebuilt = updated.map((t) =>
         t.id === targetThreadId
           ? {
               ...t,
-              participants: [...new Map(
-                t.messages.flatMap((e) => [e.from, ...e.to, ...(e.cc ?? [])])
-                  .map((p) => [p.address, p]),
-              ).values()],
+              participants: [
+                ...new Map(
+                  t.messages
+                    .flatMap((e) => [e.from, ...e.to, ...(e.cc ?? [])])
+                    .map((p) => [p.address, p])
+                ).values(),
+              ],
               lastMessageDate: t.messages[t.messages.length - 1].date,
               firstMessageDate: t.messages[0].date,
               unreadCount: t.messages.filter((e) => !e.isRead).length,
@@ -125,7 +128,7 @@ export const useThreadStore = create<ThreadState>((set, get) => ({
               hasAttachments: t.messages.some((e) => e.hasAttachments),
               labels: [...new Set(t.messages.flatMap((e) => e.labels))],
             }
-          : t,
+          : t
       );
       set({ threads: rebuilt });
     } else {
