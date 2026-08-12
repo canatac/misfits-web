@@ -9,6 +9,9 @@ export type WorkflowStatus =
 
 export type WorkflowPriority = "P0" | "P1" | "P2";
 
+export type ExecutionState =
+  "idle" | "queued" | "running" | "failed" | "success";
+
 export interface WorkflowStage {
   key: string;
   label: string;
@@ -45,6 +48,12 @@ export interface ChangeRequestItem {
   acceptanceCriteria: string[];
   workflow: WorkflowStage[];
   workflowEvents: WorkflowEvent[];
+  executionState?: ExecutionState;
+  executionRunId?: string;
+  executionStartedAt?: string;
+  executionLastHeartbeatAt?: string;
+  executionFinishedAt?: string;
+  executionLastError?: string;
   changelogEntry?: {
     title: string;
     summary: string;
@@ -71,10 +80,22 @@ export interface CreateChangeRequestInput {
 
 export interface TransitionChangeRequestInput {
   id: string;
-  action: "advance" | "reject" | "stop" | "cancel";
+  action:
+    | "advance"
+    | "reject"
+    | "stop"
+    | "cancel"
+    | "execution_queue"
+    | "execution_start"
+    | "execution_heartbeat"
+    | "execution_fail"
+    | "execution_success"
+    | "execution_reset";
   currentStatus?: WorkflowStatus;
   note?: string;
   actor?: string;
+  executionRunId?: string;
+  executionError?: string;
 }
 
 export interface StartImplementationChangeRequestInput {
