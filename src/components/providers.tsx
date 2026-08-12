@@ -18,7 +18,7 @@ export function Providers({ children }: { children: ReactNode }) {
             refetchOnWindowFocus: false,
           },
         },
-      }),
+      })
   );
 
   // Rehydrate the auth session from localStorage/cookies once on the client.

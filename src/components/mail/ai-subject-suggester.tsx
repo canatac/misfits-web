@@ -50,7 +50,9 @@ export function AISubjectSuggester({
         toast.error("Aucune suggestion générée. Réessaye.");
       }
     } catch (err) {
-      toast.error((err as Error).message || "Échec de la génération de l'objet.");
+      toast.error(
+        (err as Error).message || "Échec de la génération de l'objet."
+      );
       setOpen(false);
     }
   };
@@ -83,7 +85,7 @@ export function AISubjectSuggester({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-1">
-        <div className="px-2 py-1.5 text-xs font-medium uppercase tracking-wide text-[var(--color-muted-fg)]">
+        <div className="px-2 py-1.5 text-xs font-medium tracking-wide text-[var(--color-muted-fg)] uppercase">
           Suggestions d&apos;objet
         </div>
         {suggestions.length === 0 && !mutation.isPending && (
@@ -97,11 +99,14 @@ export function AISubjectSuggester({
             type="button"
             onClick={() => handleApply(subject)}
             className={cn(
-              "flex w-full items-start gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm text-[var(--color-fg)] outline-none transition-colors",
-              "hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]",
+              "flex w-full items-start gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm text-[var(--color-fg)] transition-colors outline-none",
+              "hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
             )}
           >
-            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-0" aria-hidden="true" />
+            <Check
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-0"
+              aria-hidden="true"
+            />
             <span>{subject}</span>
           </button>
         ))}

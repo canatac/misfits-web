@@ -17,7 +17,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-10 w-full items-center justify-between rounded-[var(--radius-md)] border border-[var(--color-input-border)] bg-[var(--color-input)] px-3 py-2 text-sm text-[var(--color-fg)] shadow-[var(--shadow-xs)] ring-offset-[var(--color-bg)] transition-colors placeholder:text-[var(--color-muted-fg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
-      className,
+      className
     )}
     {...props}
   >
@@ -37,7 +37,7 @@ const SelectScrollUpButton = React.forwardRef<
     ref={ref}
     className={cn(
       "flex cursor-default items-center justify-center py-1",
-      className,
+      className
     )}
     {...props}
   >
@@ -54,7 +54,7 @@ const SelectScrollDownButton = React.forwardRef<
     ref={ref}
     className={cn(
       "flex cursor-default items-center justify-center py-1",
-      className,
+      className
     )}
     {...props}
   >
@@ -72,10 +72,10 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-[var(--z-popover)] max-h-96 min-w-[8rem] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] text-[var(--color-popover-fg)] shadow-[var(--shadow-lg)] data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)]",
+        "relative z-[var(--z-popover)] max-h-96 min-w-[8rem] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] text-[var(--color-popover-fg)] shadow-[var(--shadow-lg)] data-[state=closed]:animate-[fade-out_var(--duration-normal)_var(--ease-out)] data-[state=open]:animate-[fade-in_var(--duration-normal)_var(--ease-out)]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
-        className,
+        className
       )}
       position={position}
       {...props}
@@ -85,7 +85,7 @@ const SelectContent = React.forwardRef<
         className={cn(
           "p-1",
           position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
       >
         {children}
@@ -103,8 +103,8 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn(
-      "py-1.5 pl-8 pr-2 text-xs font-semibold text-[var(--color-muted-fg)]",
-      className,
+      "py-1.5 pr-2 pl-8 text-xs font-semibold text-[var(--color-muted-fg)]",
+      className
     )}
     {...props}
   />
@@ -118,8 +118,8 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-[var(--radius-sm)] py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-[var(--color-accent)] focus:text-[var(--color-accent-fg)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
+      "relative flex w-full cursor-default items-center rounded-[var(--radius-sm)] py-1.5 pr-2 pl-8 text-sm outline-none select-none focus:bg-[var(--color-accent)] focus:text-[var(--color-accent-fg)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
     )}
     {...props}
   >

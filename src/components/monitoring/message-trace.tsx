@@ -31,7 +31,15 @@ const STAGES = [
   "delivered",
 ];
 
-function DurationBar({ dns = 0, connect = 0, tls = 0 }: { dns?: number; connect?: number; tls?: number }) {
+function DurationBar({
+  dns = 0,
+  connect = 0,
+  tls = 0,
+}: {
+  dns?: number;
+  connect?: number;
+  tls?: number;
+}) {
   const total = Math.max(1, dns + connect + tls);
   const dnsPct = (dns / total) * 100;
   const connectPct = (connect / total) * 100;
@@ -41,9 +49,18 @@ function DurationBar({ dns = 0, connect = 0, tls = 0 }: { dns?: number; connect?
     <div className="space-y-1">
       <div className="h-3 w-full overflow-hidden rounded-full bg-[var(--color-muted)]">
         <div className="flex h-full">
-          <div className="bg-[var(--color-info-500)]" style={{ width: `${dnsPct}%` }} />
-          <div className="bg-[var(--color-warning-500)]" style={{ width: `${connectPct}%` }} />
-          <div className="bg-[var(--color-success-500)]" style={{ width: `${tlsPct}%` }} />
+          <div
+            className="bg-[var(--color-info-500)]"
+            style={{ width: `${dnsPct}%` }}
+          />
+          <div
+            className="bg-[var(--color-warning-500)]"
+            style={{ width: `${connectPct}%` }}
+          />
+          <div
+            className="bg-[var(--color-success-500)]"
+            style={{ width: `${tlsPct}%` }}
+          />
         </div>
       </div>
       <div className="flex flex-wrap gap-3 text-xs text-[var(--color-muted-fg)]">
@@ -55,7 +72,12 @@ function DurationBar({ dns = 0, connect = 0, tls = 0 }: { dns?: number; connect?
   );
 }
 
-export function MessageTrace({ open, trace, isLoading, onClose }: MessageTraceProps) {
+export function MessageTrace({
+  open,
+  trace,
+  isLoading,
+  onClose,
+}: MessageTraceProps) {
   return (
     <aside
       className={`fixed inset-y-0 right-0 z-[var(--z-modal)] w-full max-w-xl transform border-l border-[var(--color-border)] bg-[var(--color-card)] shadow-[var(--shadow-xl)] transition-transform duration-300 ${
@@ -67,9 +89,16 @@ export function MessageTrace({ open, trace, isLoading, onClose }: MessageTracePr
         <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
           <div>
             <h3 className="text-base font-semibold">Message Trace</h3>
-            <p className="text-xs text-[var(--color-muted-fg)]">Details de routage SMTP</p>
+            <p className="text-xs text-[var(--color-muted-fg)]">
+              Details de routage SMTP
+            </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fermer">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Fermer"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -92,17 +121,24 @@ export function MessageTrace({ open, trace, isLoading, onClose }: MessageTracePr
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Timeline</CardTitle>
-                  <CardDescription>accepted - dns_lookup - mx_selected - smtp_connect - tls_ok - delivered</CardDescription>
+                  <CardDescription>
+                    accepted - dns_lookup - mx_selected - smtp_connect - tls_ok
+                    - delivered
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {STAGES.map((stage) => {
-                    const item = trace.trace.find((evt) => evt.event_type === stage);
+                    const item = trace.trace.find(
+                      (evt) => evt.event_type === stage
+                    );
                     const done = Boolean(item);
                     return (
                       <div key={stage} className="flex items-start gap-3">
                         <div
                           className={`mt-1 h-3 w-3 rounded-full ${
-                            done ? "bg-[var(--color-success-500)]" : "bg-[var(--color-muted)]"
+                            done
+                              ? "bg-[var(--color-success-500)]"
+                              : "bg-[var(--color-muted)]"
                           }`}
                         />
                         <div className="flex-1 border-l border-[var(--color-border)] pl-3">
@@ -120,13 +156,25 @@ export function MessageTrace({ open, trace, isLoading, onClose }: MessageTracePr
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Waterfall Durations</CardTitle>
-                  <CardDescription>dns_ms / connect_ms / tls_ms</CardDescription>
+                  <CardDescription>
+                    dns_ms / connect_ms / tls_ms
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <DurationBar
-                    dns={trace.trace.find((evt) => evt.event_type === "dns_lookup")?.dns_ms}
-                    connect={trace.trace.find((evt) => evt.event_type === "smtp_connect")?.connect_ms}
-                    tls={trace.trace.find((evt) => evt.event_type === "tls_ok")?.tls_ms}
+                    dns={
+                      trace.trace.find((evt) => evt.event_type === "dns_lookup")
+                        ?.dns_ms
+                    }
+                    connect={
+                      trace.trace.find(
+                        (evt) => evt.event_type === "smtp_connect"
+                      )?.connect_ms
+                    }
+                    tls={
+                      trace.trace.find((evt) => evt.event_type === "tls_ok")
+                        ?.tls_ms
+                    }
                   />
                 </CardContent>
               </Card>
@@ -134,7 +182,9 @@ export function MessageTrace({ open, trace, isLoading, onClose }: MessageTracePr
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm">Diagnostic</CardTitle>
-                  <CardDescription>smtp_code, smtp_reply, bounce_reason, risk_score</CardDescription>
+                  <CardDescription>
+                    smtp_code, smtp_reply, bounce_reason, risk_score
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   {(() => {
@@ -142,20 +192,34 @@ export function MessageTrace({ open, trace, isLoading, onClose }: MessageTracePr
                     return (
                       <>
                         <div className="flex justify-between gap-3">
-                          <span className="text-[var(--color-muted-fg)]">smtp_code</span>
+                          <span className="text-[var(--color-muted-fg)]">
+                            smtp_code
+                          </span>
                           <span>{displayNullable(latest?.smtp_code)}</span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="text-[var(--color-muted-fg)]">smtp_reply</span>
-                          <span className="max-w-[240px] text-right">{displayNullable(latest?.smtp_reply)}</span>
+                          <span className="text-[var(--color-muted-fg)]">
+                            smtp_reply
+                          </span>
+                          <span className="max-w-[240px] text-right">
+                            {displayNullable(latest?.smtp_reply)}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="text-[var(--color-muted-fg)]">bounce_reason</span>
-                          <span className="max-w-[240px] text-right">{displayNullable(latest?.bounce_reason)}</span>
+                          <span className="text-[var(--color-muted-fg)]">
+                            bounce_reason
+                          </span>
+                          <span className="max-w-[240px] text-right">
+                            {displayNullable(latest?.bounce_reason)}
+                          </span>
                         </div>
                         <div className="flex justify-between gap-3">
-                          <span className="text-[var(--color-muted-fg)]">risk_score</span>
-                          <span className={`font-semibold ${riskTextClass(latest?.risk_score)}`}>
+                          <span className="text-[var(--color-muted-fg)]">
+                            risk_score
+                          </span>
+                          <span
+                            className={`font-semibold ${riskTextClass(latest?.risk_score)}`}
+                          >
                             {displayNullable(latest?.risk_score)}
                           </span>
                         </div>

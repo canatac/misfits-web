@@ -28,9 +28,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import {
-  useSearchStore,
-} from "@/stores/search-store";
+import { useSearchStore } from "@/stores/search-store";
 import { useEmailStore } from "@/stores/email-store";
 import type { Email, Folder } from "@/types/email";
 import type { MatchHighlight, SearchSort } from "@/types/search";
@@ -76,7 +74,7 @@ function HighlightedText({
         className="rounded-[var(--radius-sm)] bg-[var(--color-brand-500)]/20 px-0.5 font-semibold text-[var(--color-fg)]"
       >
         {text.slice(h.start, h.end)}
-      </mark>,
+      </mark>
     );
     pos = h.end;
   }
@@ -88,7 +86,10 @@ function HighlightedText({
 }
 
 /** Get highlights for a specific field from a search result. */
-function fieldHighlights(highlights: MatchHighlight[], field: MatchHighlight["field"]): MatchHighlight[] {
+function fieldHighlights(
+  highlights: MatchHighlight[],
+  field: MatchHighlight["field"]
+): MatchHighlight[] {
   return highlights.filter((h) => h.field === field);
 }
 
@@ -103,14 +104,22 @@ function formatDate(dateStr: string): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
   }
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return date.toLocaleDateString("en-US", { weekday: "short" });
+  if (diffDays < 7)
+    return date.toLocaleDateString("en-US", { weekday: "short" });
   if (date.getFullYear() === now.getFullYear()) {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function getInitials(name: string): string {
@@ -131,7 +140,12 @@ interface ResultItemProps {
   onSelect: (id: string) => void;
 }
 
-function ResultItem({ email, highlights, isSelected, onSelect }: ResultItemProps) {
+function ResultItem({
+  email,
+  highlights,
+  isSelected,
+  onSelect,
+}: ResultItemProps) {
   const subjectHL = fieldHighlights(highlights, "subject");
   const fromHL = fieldHighlights(highlights, "from");
   const previewHL = fieldHighlights(highlights, "preview");
@@ -153,7 +167,7 @@ function ResultItem({ email, highlights, isSelected, onSelect }: ResultItemProps
         isSelected && "bg-[var(--color-accent)]",
         !isSelected && email.isRead && "bg-[var(--color-bg)]",
         !isSelected && !email.isRead && "bg-[var(--color-card)]",
-        !isSelected && "hover:bg-[var(--color-muted)]",
+        !isSelected && "hover:bg-[var(--color-muted)]"
       )}
       data-testid={`search-result-${email.id}`}
     >
@@ -180,7 +194,7 @@ function ResultItem({ email, highlights, isSelected, onSelect }: ResultItemProps
               "truncate text-sm",
               !email.isRead
                 ? "font-semibold text-[var(--color-fg)]"
-                : "text-[var(--color-fg)]",
+                : "text-[var(--color-fg)]"
             )}
           >
             <HighlightedText text={email.from.name} highlights={fromHL} />
@@ -196,7 +210,7 @@ function ResultItem({ email, highlights, isSelected, onSelect }: ResultItemProps
               "truncate text-sm",
               !email.isRead
                 ? "font-medium text-[var(--color-fg)]"
-                : "text-[var(--color-muted-fg)]",
+                : "text-[var(--color-muted-fg)]"
             )}
           >
             <HighlightedText text={email.subject} highlights={subjectHL} />
@@ -266,7 +280,9 @@ function FacetPanel() {
 
   if (!facets || !query.trim()) return null;
 
-  const folders = Object.entries(facets.folders).filter(([, count]) => count > 0);
+  const folders = Object.entries(facets.folders).filter(
+    ([, count]) => count > 0
+  );
   const labels = Object.entries(facets.labels).filter(([, count]) => count > 0);
 
   const appendFilter = (operator: string, value: string) => {
@@ -277,7 +293,7 @@ function FacetPanel() {
 
   return (
     <div className="flex flex-col gap-3 border-b border-[var(--color-border)] p-3">
-      <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+      <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
         <Filter className="h-3.5 w-3.5" />
         Refine
       </div>
@@ -339,7 +355,9 @@ function FacetPanel() {
             {labels.map(([label, count]) => (
               <button
                 key={label}
-                onClick={() => appendFilter("label", label.replace(/^label-/, ""))}
+                onClick={() =>
+                  appendFilter("label", label.replace(/^label-/, ""))
+                }
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
               >
                 {label.replace(/^label-/, "")} ({count})
@@ -396,7 +414,10 @@ interface SearchResultsProps {
   onSelectEmail?: (id: string) => void;
 }
 
-export function SearchResults({ className, onSelectEmail }: SearchResultsProps) {
+export function SearchResults({
+  className,
+  onSelectEmail,
+}: SearchResultsProps) {
   const results = useSearchStore((s) => s.results);
   const isSearching = useSearchStore((s) => s.isSearching);
   const query = useSearchStore((s) => s.query);
@@ -416,10 +437,7 @@ export function SearchResults({ className, onSelectEmail }: SearchResultsProps) 
 
   return (
     <div
-      className={cn(
-        "flex h-full flex-col bg-[var(--color-bg)]",
-        className,
-      )}
+      className={cn("flex h-full flex-col bg-[var(--color-bg)]", className)}
       data-testid="search-results"
     >
       {/* Header with sort */}
@@ -427,14 +445,16 @@ export function SearchResults({ className, onSelectEmail }: SearchResultsProps) 
         <div className="flex items-center gap-2">
           <SearchIcon className="h-4 w-4 text-[var(--color-muted-fg)]" />
           <span className="text-sm font-medium">
-            {isSearching ? "Searching..." : `${results.length} ${results.length === 1 ? "result" : "results"}`}
+            {isSearching
+              ? "Searching..."
+              : `${results.length} ${results.length === 1 ? "result" : "results"}`}
           </span>
         </div>
-        <Select
-          value={sort}
-          onValueChange={(v) => setSort(v as SearchSort)}
-        >
-          <SelectTrigger className="h-8 w-[130px]" aria-label="Sort search results">
+        <Select value={sort} onValueChange={(v) => setSort(v as SearchSort)}>
+          <SelectTrigger
+            className="h-8 w-[130px]"
+            aria-label="Sort search results"
+          >
             <ArrowDownUp className="mr-1 h-3.5 w-3.5" />
             <SelectValue />
           </SelectTrigger>
@@ -454,7 +474,10 @@ export function SearchResults({ className, onSelectEmail }: SearchResultsProps) 
       {/* Results list */}
       <ScrollArea className="flex-1">
         {isSearching && results.length === 0 ? (
-          <div className="flex flex-col gap-0" data-testid="search-results-skeleton">
+          <div
+            className="flex flex-col gap-0"
+            data-testid="search-results-skeleton"
+          >
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}

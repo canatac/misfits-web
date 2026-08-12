@@ -7,7 +7,10 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAccountStore } from "@/stores/account-store";
-import type { AddAccountInput, UpdateAccountInput } from "@/stores/account-store";
+import type {
+  AddAccountInput,
+  UpdateAccountInput,
+} from "@/stores/account-store";
 import type { EmailAccount } from "@/types/account";
 
 /** Query all connected accounts from the store. */
@@ -50,7 +53,8 @@ export function useActiveAccountId(): string | null {
 /** Mutations wrapping the store's add/remove/update actions. */
 export function useAccountMutations() {
   const queryClient = useQueryClient();
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["accounts"] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["accounts"] });
 
   const addAccount = useMutation<EmailAccount, Error, AddAccountInput>({
     mutationFn: (input) => {
@@ -68,7 +72,11 @@ export function useAccountMutations() {
     onSuccess: invalidate,
   });
 
-  const updateAccount = useMutation<void, Error, { id: string; input: UpdateAccountInput }>({
+  const updateAccount = useMutation<
+    void,
+    Error,
+    { id: string; input: UpdateAccountInput }
+  >({
     mutationFn: ({ id, input }) => {
       useAccountStore.getState().updateAccount(id, input);
       return Promise.resolve();

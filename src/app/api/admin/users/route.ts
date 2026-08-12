@@ -23,7 +23,8 @@ async function proxy(
     cache: "no-store",
   });
 
-  const contentType = upstream.headers.get("content-type") || "application/json";
+  const contentType =
+    upstream.headers.get("content-type") || "application/json";
   const text = await upstream.text().catch(() => "");
   return new NextResponse(text, {
     status: upstream.status,
@@ -76,7 +77,11 @@ export async function PATCH(request: Request) {
   if (typeof data.role === "string") patchBody.role = data.role;
   if (typeof data.status === "string") patchBody.status = data.status;
 
-  return proxy(`/api/admin/users/${encodeURIComponent(id)}`, "PATCH", patchBody);
+  return proxy(
+    `/api/admin/users/${encodeURIComponent(id)}`,
+    "PATCH",
+    patchBody
+  );
 }
 
 export async function DELETE(request: Request) {

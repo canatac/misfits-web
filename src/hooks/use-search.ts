@@ -52,14 +52,14 @@ export function useSavedSearches() {
     (name: string, query: string) => {
       saveSearch(name, query);
     },
-    [saveSearch],
+    [saveSearch]
   );
 
   const remove = useCallback(
     (id: string) => {
       deleteSavedSearch(id);
     },
-    [deleteSavedSearch],
+    [deleteSavedSearch]
   );
 
   const apply = useCallback(
@@ -67,7 +67,7 @@ export function useSavedSearches() {
       const saved = savedSearches.find((s) => s.id === id);
       if (saved) applySavedSearch(saved);
     },
-    [savedSearches, applySavedSearch],
+    [savedSearches, applySavedSearch]
   );
 
   return {
@@ -90,7 +90,7 @@ export function useSearchHistory() {
     (query: string) => {
       addHistoryEntry(query);
     },
-    [addHistoryEntry],
+    [addHistoryEntry]
   );
 
   const clear = useCallback(() => {
@@ -99,6 +99,6 @@ export function useSearchHistory() {
 
   return useMemo(
     () => ({ searchHistory, add, clear }),
-    [searchHistory, add, clear],
+    [searchHistory, add, clear]
   );
 }

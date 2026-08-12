@@ -32,7 +32,9 @@ describe("label-store getLabelTree selector stability", () => {
 
   it("changes labels reference only when labels mutate", () => {
     const before = useLabelStore.getState().labels;
-    useLabelStore.getState().createLabel({ name: "Temp regression", color: "#000" });
+    useLabelStore
+      .getState()
+      .createLabel({ name: "Temp regression", color: "#000" });
     const after = useLabelStore.getState().labels;
     expect(after).not.toBe(before);
     expect(after.length).toBe(before.length + 1);

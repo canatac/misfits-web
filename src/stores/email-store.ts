@@ -14,7 +14,8 @@ import type {
 import { mockFolders, mockLabels } from "@/lib/mock-emails";
 import { mailAuthHeaders } from "@/lib/mail-api";
 
-export type BulkActionType = "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
+export type BulkActionType =
+  "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
 
 interface EmailState {
   // Data
@@ -54,7 +55,9 @@ function sortEmails(emails: Email[], sortBy: SortBy): Email[] {
   const sorted = [...emails];
   switch (sortBy) {
     case "date":
-      return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return sorted.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
     case "sender":
       return sorted.sort((a, b) => a.from.name.localeCompare(b.from.name));
     case "subject":
@@ -77,13 +80,15 @@ function filterEmails(
   emails: Email[],
   filterType: FilterType,
   searchQuery: string,
-  accountId: string | null,
+  accountId: string | null
 ): Email[] {
   let result = emails;
   // Account filter (Issue #154): null = unified (all accounts). Untagged emails
   // (no accountId) are shown in every account's view so legacy mock data stays visible.
   if (accountId !== null) {
-    result = result.filter((e) => e.accountId === undefined || e.accountId === accountId);
+    result = result.filter(
+      (e) => e.accountId === undefined || e.accountId === accountId
+    );
   }
   switch (filterType) {
     case "unread":
@@ -106,7 +111,7 @@ function filterEmails(
         e.subject.toLowerCase().includes(q) ||
         e.from.name.toLowerCase().includes(q) ||
         e.from.address.toLowerCase().includes(q) ||
-        e.preview.toLowerCase().includes(q),
+        e.preview.toLowerCase().includes(q)
     );
   }
   return result;
@@ -168,15 +173,14 @@ export const useEmailStore = create<EmailState>((set, get) => ({
                   totalCount: data.total ?? emails.length,
                   unreadCount: emails.filter((e) => !e.isRead).length,
                 }
-              : f,
+              : f
           ),
         });
       } catch (err) {
         if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
         set({
           loading: false,
-          error:
-            err instanceof Error ? err.message : "Failed to fetch emails",
+          error: err instanceof Error ? err.message : "Failed to fetch emails",
           emails: [],
         });
       }
@@ -190,7 +194,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
       if (email && !email.isRead) {
         set((state) => ({
           emails: state.emails.map((e) =>
-            e.id === id ? { ...e, isRead: true } : e,
+            e.id === id ? { ...e, isRead: true } : e
           ),
         }));
       }
@@ -200,7 +204,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   toggleStar: (id) => {
     set((state) => ({
       emails: state.emails.map((e) =>
-        e.id === id ? { ...e, isStarred: !e.isStarred } : e,
+        e.id === id ? { ...e, isStarred: !e.isStarred } : e
       ),
     }));
   },
@@ -208,7 +212,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   markRead: (id) => {
     set((state) => ({
       emails: state.emails.map((e) =>
-        e.id === id ? { ...e, isRead: true } : e,
+        e.id === id ? { ...e, isRead: true } : e
       ),
     }));
   },
@@ -216,7 +220,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   markUnread: (id) => {
     set((state) => ({
       emails: state.emails.map((e) =>
-        e.id === id ? { ...e, isRead: false } : e,
+        e.id === id ? { ...e, isRead: false } : e
       ),
     }));
   },
@@ -224,21 +228,25 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   archive: (id) => {
     set((state) => ({
       emails: state.emails.map((e) =>
-        e.id === id ? { ...e, folder: "archive" as Folder } : e,
+        e.id === id ? { ...e, folder: "archive" as Folder } : e
       ),
-      selectedEmailId: state.selectedEmailId === id ? null : state.selectedEmailId,
+      selectedEmailId:
+        state.selectedEmailId === id ? null : state.selectedEmailId,
     }));
     // Re-filter to remove archived email from current view
     const { currentFolder } = get();
     set((state) => ({
-      emails: state.emails.filter((e) => e.folder === currentFolder || e.id !== id),
+      emails: state.emails.filter(
+        (e) => e.folder === currentFolder || e.id !== id
+      ),
     }));
   },
 
   deleteEmail: (id) => {
     set((state) => ({
       emails: state.emails.filter((e) => e.id !== id),
-      selectedEmailId: state.selectedEmailId === id ? null : state.selectedEmailId,
+      selectedEmailId:
+        state.selectedEmailId === id ? null : state.selectedEmailId,
       selectedEmailIds: (() => {
         const next = new Set(state.selectedEmailIds);
         next.delete(id);
@@ -251,25 +259,27 @@ export const useEmailStore = create<EmailState>((set, get) => ({
     const ids = get().selectedEmailIds;
     if (ids.size === 0) return;
     set((state) => ({
-      emails: state.emails.map((e) => {
-        if (!ids.has(e.id)) return e;
-        switch (action) {
-          case "archive":
-            return { ...e, folder: "archive" as Folder };
-          case "delete":
-            return null;
-          case "markRead":
-            return { ...e, isRead: true };
-          case "markUnread":
-            return { ...e, isRead: false };
-          case "star":
-            return { ...e, isStarred: true };
-          case "unstar":
-            return { ...e, isStarred: false };
-          default:
-            return e;
-        }
-      }).filter((e): e is Email => e !== null),
+      emails: state.emails
+        .map((e) => {
+          if (!ids.has(e.id)) return e;
+          switch (action) {
+            case "archive":
+              return { ...e, folder: "archive" as Folder };
+            case "delete":
+              return null;
+            case "markRead":
+              return { ...e, isRead: true };
+            case "markUnread":
+              return { ...e, isRead: false };
+            case "star":
+              return { ...e, isStarred: true };
+            case "unstar":
+              return { ...e, isStarred: false };
+            default:
+              return e;
+          }
+        })
+        .filter((e): e is Email => e !== null),
       selectedEmailIds: new Set(),
     }));
     // Re-filter current folder
@@ -280,13 +290,18 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   },
 
   setFolder: (folder) => {
-    set({ currentFolder: folder, selectedEmailId: null, selectedEmailIds: new Set() });
+    set({
+      currentFolder: folder,
+      selectedEmailId: null,
+      selectedEmailIds: new Set(),
+    });
     get().fetchEmails(folder);
   },
 
   setSortBy: (sortBy) => set({ sortBy }),
 
-  setFilterType: (filterType) => set({ filterType, selectedEmailIds: new Set() }),
+  setFilterType: (filterType) =>
+    set({ filterType, selectedEmailIds: new Set() }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),
 

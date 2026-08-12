@@ -70,7 +70,11 @@ export function AccountSelector({ className }: AccountSelectorProps) {
     <div className={className}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-full justify-start gap-3 px-2" data-testid="account-selector-trigger">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 px-2"
+            data-testid="account-selector-trigger"
+          >
             {isUnifiedInbox ? (
               <span
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-muted)]"
@@ -80,23 +84,32 @@ export function AccountSelector({ className }: AccountSelectorProps) {
               </span>
             ) : (
               <Avatar className="h-8 w-8">
-                <AvatarFallback>{activeAccount?.avatar ?? initialsOf(activeAccount?.email ?? "?")}</AvatarFallback>
+                <AvatarFallback>
+                  {activeAccount?.avatar ??
+                    initialsOf(activeAccount?.email ?? "?")}
+                </AvatarFallback>
               </Avatar>
             )}
             <div className="flex flex-col items-start gap-0">
               <span className="text-sm font-medium">
-                {isUnifiedInbox ? "Unified Inbox" : activeAccount?.name ?? "No account"}
+                {isUnifiedInbox
+                  ? "Unified Inbox"
+                  : (activeAccount?.name ?? "No account")}
               </span>
-              <span className="text-xs text-[var(--color-muted-fg)] truncate max-w-[160px]">
+              <span className="max-w-[160px] truncate text-xs text-[var(--color-muted-fg)]">
                 {isUnifiedInbox
                   ? `${accounts.length} accounts`
-                  : activeAccount?.email ?? "—"}
+                  : (activeAccount?.email ?? "—")}
               </span>
             </div>
             <ChevronDown className="ml-auto h-4 w-4 text-[var(--color-muted-fg)]" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-72" data-testid="account-selector-menu">
+        <DropdownMenuContent
+          align="start"
+          className="w-72"
+          data-testid="account-selector-menu"
+        >
           <DropdownMenuLabel>Accounts</DropdownMenuLabel>
 
           {/* Unified inbox toggle */}
@@ -142,7 +155,10 @@ export function AccountSelector({ className }: AccountSelectorProps) {
                   <span className="flex items-center gap-1.5 text-sm font-medium">
                     {acc.name ?? acc.email.split("@")[0]}
                     {acc.isDefault && (
-                      <Star className="h-3 w-3 fill-[var(--color-warning-500)] text-[var(--color-warning-500)]" aria-label="Default account" />
+                      <Star
+                        className="h-3 w-3 fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
+                        aria-label="Default account"
+                      />
                     )}
                   </span>
                   <span className="truncate text-xs text-[var(--color-muted-fg)]">
@@ -150,9 +166,13 @@ export function AccountSelector({ className }: AccountSelectorProps) {
                   </span>
                 </div>
                 {unread > 0 && (
-                  <Badge variant={isActive ? "default" : "secondary"}>{unread}</Badge>
+                  <Badge variant={isActive ? "default" : "secondary"}>
+                    {unread}
+                  </Badge>
                 )}
-                {isActive && <Check className="h-4 w-4 text-[var(--color-brand-500)]" />}
+                {isActive && (
+                  <Check className="h-4 w-4 text-[var(--color-brand-500)]" />
+                )}
               </DropdownMenuItem>
             );
           })}

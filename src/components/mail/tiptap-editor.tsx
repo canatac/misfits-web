@@ -167,7 +167,7 @@ function ToolbarButton({
           onClick={onClick}
           className={cn(
             "h-8 w-8",
-            active && "bg-[var(--color-accent)] text-[var(--color-accent-fg)]",
+            active && "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
           )}
           aria-label={label}
           aria-pressed={active}
@@ -205,7 +205,10 @@ export function TiptapEditor({
       Link.configure({
         openOnClick: false,
         autolink: true,
-        HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
+        HTMLAttributes: {
+          rel: "noopener noreferrer nofollow",
+          target: "_blank",
+        },
       }),
       Image.configure({ inline: false, allowBase64: true }),
       Placeholder.configure({ placeholder }),
@@ -229,9 +232,11 @@ export function TiptapEditor({
               const reader = new FileReader();
               reader.onload = () => {
                 const src = reader.result as string;
-                view.dispatch(view.state.tr.replaceSelectionWith(
-                  view.state.schema.nodes.image.create({ src }),
-                ));
+                view.dispatch(
+                  view.state.tr.replaceSelectionWith(
+                    view.state.schema.nodes.image.create({ src })
+                  )
+                );
               };
               reader.readAsDataURL(file);
               event.preventDefault();
@@ -248,9 +253,29 @@ export function TiptapEditor({
       // Sanitize output before sending up.
       const clean = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [
-          "p", "br", "div", "span", "a", "img", "ul", "ol", "li",
-          "b", "strong", "i", "em", "u", "s", "del", "blockquote",
-          "pre", "code", "h1", "h2", "h3", "hr",
+          "p",
+          "br",
+          "div",
+          "span",
+          "a",
+          "img",
+          "ul",
+          "ol",
+          "li",
+          "b",
+          "strong",
+          "i",
+          "em",
+          "u",
+          "s",
+          "del",
+          "blockquote",
+          "pre",
+          "code",
+          "h1",
+          "h2",
+          "h3",
+          "hr",
         ],
         ALLOWED_ATTR: ["href", "src", "alt", "title", "target", "rel"],
         ALLOW_DATA_ATTR: false,
@@ -306,7 +331,11 @@ export function TiptapEditor({
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        editor.chain().focus().setImage({ src: reader.result as string }).run();
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: reader.result as string })
+          .run();
       };
       reader.readAsDataURL(file);
     };
@@ -315,7 +344,11 @@ export function TiptapEditor({
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "m") {
+      if (
+        (e.metaKey || e.ctrlKey) &&
+        e.shiftKey &&
+        e.key.toLowerCase() === "m"
+      ) {
         e.preventDefault();
         handleMarkdownConvert();
       }
@@ -330,8 +363,9 @@ export function TiptapEditor({
     <div
       className={cn(
         "flex flex-col rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-input)]",
-        isFullScreen && "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
-        className,
+        isFullScreen &&
+          "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
+        className
       )}
       data-testid="tiptap-editor"
     >
@@ -366,13 +400,17 @@ export function TiptapEditor({
           icon={Heading1}
           label="Heading 1"
           active={editor.isActive("heading", { level: 1 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
         />
         <ToolbarButton
           icon={Heading2}
           label="Heading 2"
           active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
         />
         <Separator orientation="vertical" className="mx-0.5 h-6" />
         <ToolbarButton

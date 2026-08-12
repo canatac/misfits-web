@@ -27,7 +27,12 @@ const COMMON = new Set([
 
 export function evaluatePasswordStrength(password: string): PasswordStrength {
   if (!password) {
-    return { score: 0, label: "Very weak", color: "var(--color-danger-500)", percent: 0 };
+    return {
+      score: 0,
+      label: "Very weak",
+      color: "var(--color-danger-500)",
+      percent: 0,
+    };
   }
 
   let score = 0;
@@ -45,10 +50,12 @@ export function evaluatePasswordStrength(password: string): PasswordStrength {
 
   // Penalise common passwords and obvious sequences
   if (COMMON.has(password.toLowerCase())) score = 0;
-  if (/^(?:0123456789|1234567|abcdef|qwerty)/i.test(password)) score = Math.min(score, 1);
+  if (/^(?:0123456789|1234567|abcdef|qwerty)/i.test(password))
+    score = Math.min(score, 1);
 
   // Clamp to 0–4
-  const clamped = Math.max(0, Math.min(4, score - (len < 8 ? 1 : 0))) as 0 | 1 | 2 | 3 | 4;
+  const clamped = Math.max(0, Math.min(4, score - (len < 8 ? 1 : 0))) as
+    0 | 1 | 2 | 3 | 4;
 
   const map: Record<0 | 1 | 2 | 3 | 4, Omit<PasswordStrength, "score">> = {
     0: { label: "Very weak", color: "var(--color-danger-500)", percent: 10 },

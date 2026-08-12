@@ -36,7 +36,12 @@ export function relativeTime(iso: string | null): string {
   return `${Math.floor(months / 12)}y ago`;
 }
 
-export function ContactCard({ contact, active, onClick, className }: ContactCardProps) {
+export function ContactCard({
+  contact,
+  active,
+  onClick,
+  className,
+}: ContactCardProps) {
   return (
     <button
       type="button"
@@ -48,7 +53,7 @@ export function ContactCard({ contact, active, onClick, className }: ContactCard
         active
           ? "border-[var(--color-brand-500)] bg-[var(--color-accent)]/40"
           : "border-[var(--color-border)] bg-[var(--color-card)] hover:bg-[var(--color-muted)]",
-        className,
+        className
       )}
     >
       <span
@@ -61,7 +66,9 @@ export function ContactCard({ contact, active, onClick, className }: ContactCard
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate font-medium text-[var(--color-fg)]">{contact.name}</span>
+          <span className="truncate font-medium text-[var(--color-fg)]">
+            {contact.name}
+          </span>
           <span className="flex shrink-0 items-center gap-1 text-xs text-[var(--color-muted-fg)]">
             <Clock className="h-3 w-3" />
             {relativeTime(contact.lastContactAt)}
@@ -76,14 +83,20 @@ export function ContactCard({ contact, active, onClick, className }: ContactCard
         {contact.company && (
           <span className="flex items-center gap-1 truncate text-xs text-[var(--color-muted-fg)]">
             <Building2 className="h-3 w-3" />
-            {contact.role ? `${contact.role} · ${contact.company}` : contact.company}
+            {contact.role
+              ? `${contact.role} · ${contact.company}`
+              : contact.company}
           </span>
         )}
 
         {contact.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
             {contact.tags.slice(0, 4).map((tag) => (
-              <Badge key={tag} variant="secondary" className="px-1.5 py-0 text-[10px]">
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="px-1.5 py-0 text-[10px]"
+              >
                 {tag}
               </Badge>
             ))}
@@ -96,7 +109,7 @@ export function ContactCard({ contact, active, onClick, className }: ContactCard
         )}
 
         {contact.contactFrequency !== "never" && (
-          <span className="mt-0.5 text-[10px] uppercase tracking-wide text-[var(--color-muted-fg)]">
+          <span className="mt-0.5 text-[10px] tracking-wide text-[var(--color-muted-fg)] uppercase">
             {FREQUENCY_LABELS[contact.contactFrequency]}
           </span>
         )}

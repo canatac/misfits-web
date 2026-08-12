@@ -43,9 +43,11 @@ describe("MailSidebar — no React max update depth", () => {
   beforeEach(() => {
     errors.length = 0;
     mem.clear();
-    spy = vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
-      errors.push(args.map(String).join(" "));
-    });
+    spy = vi
+      .spyOn(console, "error")
+      .mockImplementation((...args: unknown[]) => {
+        errors.push(args.map(String).join(" "));
+      });
   });
 
   afterEach(() => {
@@ -61,7 +63,7 @@ describe("MailSidebar — no React max update depth", () => {
       render(
         <QueryClientProvider client={qc}>
           <MailSidebar />
-        </QueryClientProvider>,
+        </QueryClientProvider>
       );
     }).not.toThrow();
 

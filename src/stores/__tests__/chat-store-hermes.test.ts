@@ -29,8 +29,8 @@ describe("chat-store Hermes proxy", () => {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        },
-      ),
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -67,8 +67,8 @@ describe("chat-store Hermes proxy", () => {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        },
-      ),
+        }
+      )
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -116,7 +116,7 @@ describe("chat-store Hermes proxy", () => {
           {
             status: 200,
             headers: { "Content-Type": "text/event-stream" },
-          },
+          }
         );
       }
 
@@ -147,7 +147,7 @@ describe("chat-store Hermes proxy", () => {
       new Response(JSON.stringify({ error: { message: "boom" } }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }),
+      })
     );
     vi.stubGlobal("fetch", fetchMock);
 

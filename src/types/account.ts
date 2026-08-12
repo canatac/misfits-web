@@ -7,7 +7,8 @@
  */
 
 /** Email providers supported by the multi-account connector. */
-export type AccountProvider = "gmail" | "outlook" | "proton" | "custom" | "misfits";
+export type AccountProvider =
+  "gmail" | "outlook" | "proton" | "custom" | "misfits";
 
 /** IMAP/SMTP server configuration for a connected account. */
 export interface AccountServerConfig {

@@ -23,9 +23,11 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOUR_HEIGHT = 48; // px per hour
 
 function sameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() &&
+  return (
+    a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+    a.getDate() === b.getDate()
+  );
 }
 
 function getWeekDays(date: string): Date[] {
@@ -68,12 +70,22 @@ function eventStyle(e: CalendarEvent): { top: number; height: number } {
   return { top, height };
 }
 
-function EventChip({ event, onClick }: { event: CalendarEvent; onClick: () => void }) {
+function EventChip({
+  event,
+  onClick,
+}: {
+  event: CalendarEvent;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
-      className="absolute left-1 right-1 rounded px-1.5 py-0.5 text-xs text-white truncate text-left"
-      style={{ backgroundColor: event.color, top: eventStyle(event).top, height: eventStyle(event).height }}
+      className="absolute right-1 left-1 truncate rounded px-1.5 py-0.5 text-left text-xs text-white"
+      style={{
+        backgroundColor: event.color,
+        top: eventStyle(event).top,
+        height: eventStyle(event).height,
+      }}
     >
       {event.title}
     </button>
@@ -86,7 +98,7 @@ function TimeColumn() {
       {HOURS.map((h) => (
         <div
           key={h}
-          className="text-right pr-2 text-xs text-[var(--color-muted-fg)]"
+          className="pr-2 text-right text-xs text-[var(--color-muted-fg)]"
           style={{ height: HOUR_HEIGHT }}
         >
           {h === 0 ? "" : h <= 12 ? `${h} AM` : `${h - 12} PM`}
@@ -97,7 +109,11 @@ function TimeColumn() {
 }
 
 /* --- Day view --- */
-function DayView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps, "view" | "isLoading" | "onDayClick">) {
+function DayView({
+  events,
+  selectedDate,
+  onEventClick,
+}: Omit<CalendarGridProps, "view" | "isLoading" | "onDayClick">) {
   const day = new Date(selectedDate);
   const dayEvents = eventsForDay(events, day);
   return (
@@ -105,7 +121,11 @@ function DayView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps,
       <TimeColumn />
       <div className="relative flex-1">
         {HOURS.map((h) => (
-          <div key={h} className="border-b border-[var(--color-border)]" style={{ height: HOUR_HEIGHT }} />
+          <div
+            key={h}
+            className="border-b border-[var(--color-border)]"
+            style={{ height: HOUR_HEIGHT }}
+          />
         ))}
         {dayEvents.map((e) => (
           <EventChip key={e.id} event={e} onClick={() => onEventClick(e.id)} />
@@ -116,7 +136,11 @@ function DayView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps,
 }
 
 /* --- Week view --- */
-function WeekView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps, "view" | "isLoading" | "onDayClick">) {
+function WeekView({
+  events,
+  selectedDate,
+  onEventClick,
+}: Omit<CalendarGridProps, "view" | "isLoading" | "onDayClick">) {
   const days = getWeekDays(selectedDate);
   return (
     <div className="flex flex-1 overflow-auto">
@@ -125,16 +149,27 @@ function WeekView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps
         {days.map((day) => {
           const dayEvents = eventsForDay(events, day);
           return (
-            <div key={day.toISOString()} className="flex-1 border-r border-[var(--color-border)]">
+            <div
+              key={day.toISOString()}
+              className="flex-1 border-r border-[var(--color-border)]"
+            >
               <div className="border-b border-[var(--color-border)] py-1 text-center text-xs text-[var(--color-muted-fg)]">
                 {WEEKDAYS[day.getDay()]} {day.getDate()}
               </div>
               <div className="relative">
                 {HOURS.map((h) => (
-                  <div key={h} className="border-b border-[var(--color-border)]" style={{ height: HOUR_HEIGHT }} />
+                  <div
+                    key={h}
+                    className="border-b border-[var(--color-border)]"
+                    style={{ height: HOUR_HEIGHT }}
+                  />
                 ))}
                 {dayEvents.map((e) => (
-                  <EventChip key={e.id} event={e} onClick={() => onEventClick(e.id)} />
+                  <EventChip
+                    key={e.id}
+                    event={e}
+                    onClick={() => onEventClick(e.id)}
+                  />
                 ))}
               </div>
             </div>
@@ -146,7 +181,12 @@ function WeekView({ events, selectedDate, onEventClick }: Omit<CalendarGridProps
 }
 
 /* --- Month view --- */
-function MonthView({ events, selectedDate, onEventClick, onDayClick }: Omit<CalendarGridProps, "view" | "isLoading">) {
+function MonthView({
+  events,
+  selectedDate,
+  onEventClick,
+  onDayClick,
+}: Omit<CalendarGridProps, "view" | "isLoading">) {
   const days = getMonthDays(selectedDate);
   const currentMonth = new Date(selectedDate).getMonth();
   return (
@@ -154,7 +194,10 @@ function MonthView({ events, selectedDate, onEventClick, onDayClick }: Omit<Cale
       {/* Weekday headers */}
       <div className="grid grid-cols-7 border-b border-[var(--color-border)]">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="py-2 text-center text-xs font-medium text-[var(--color-muted-fg)]">
+          <div
+            key={d}
+            className="py-2 text-center text-xs font-medium text-[var(--color-muted-fg)]"
+          >
             {d}
           </div>
         ))}
@@ -170,16 +213,23 @@ function MonthView({ events, selectedDate, onEventClick, onDayClick }: Omit<Cale
               key={dateStr}
               onClick={() => onDayClick(dateStr)}
               className={cn(
-                "border-r border-b border-[var(--color-border)] p-1 text-left align-top overflow-hidden",
-                inMonth ? "bg-[var(--color-card)]" : "bg-[var(--color-muted)] opacity-50",
+                "overflow-hidden border-r border-b border-[var(--color-border)] p-1 text-left align-top",
+                inMonth
+                  ? "bg-[var(--color-card)]"
+                  : "bg-[var(--color-muted)] opacity-50"
               )}
             >
-              <span className="text-xs text-[var(--color-muted-fg)]">{day.getDate()}</span>
+              <span className="text-xs text-[var(--color-muted-fg)]">
+                {day.getDate()}
+              </span>
               <div className="mt-1 space-y-0.5">
                 {dayEvents.slice(0, 3).map((e) => (
                   <div
                     key={e.id}
-                    onClick={(ev) => { ev.stopPropagation(); onEventClick(e.id); }}
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      onEventClick(e.id);
+                    }}
                     className="truncate rounded px-1 py-0.5 text-xs text-white"
                     style={{ backgroundColor: e.color }}
                   >
@@ -200,7 +250,14 @@ function MonthView({ events, selectedDate, onEventClick, onDayClick }: Omit<Cale
   );
 }
 
-export function CalendarGrid({ view, selectedDate, events, isLoading, onEventClick, onDayClick }: CalendarGridProps) {
+export function CalendarGrid({
+  view,
+  selectedDate,
+  events,
+  isLoading,
+  onEventClick,
+  onDayClick,
+}: CalendarGridProps) {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center text-[var(--color-muted-fg)]">
@@ -209,7 +266,28 @@ export function CalendarGrid({ view, selectedDate, events, isLoading, onEventCli
     );
   }
 
-  if (view === "day") return <DayView events={events} selectedDate={selectedDate} onEventClick={onEventClick} />;
-  if (view === "week") return <WeekView events={events} selectedDate={selectedDate} onEventClick={onEventClick} />;
-  return <MonthView events={events} selectedDate={selectedDate} onEventClick={onEventClick} onDayClick={onDayClick} />;
+  if (view === "day")
+    return (
+      <DayView
+        events={events}
+        selectedDate={selectedDate}
+        onEventClick={onEventClick}
+      />
+    );
+  if (view === "week")
+    return (
+      <WeekView
+        events={events}
+        selectedDate={selectedDate}
+        onEventClick={onEventClick}
+      />
+    );
+  return (
+    <MonthView
+      events={events}
+      selectedDate={selectedDate}
+      onEventClick={onEventClick}
+      onDayClick={onDayClick}
+    />
+  );
 }

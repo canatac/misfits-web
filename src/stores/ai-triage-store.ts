@@ -33,7 +33,9 @@ export const useTriageStore = create<TriageStore>((set, get) => ({
     set({ isProcessing: true, processingCount: emails.length });
     const results = await triageBatch(emails);
     const map: Record<string, TriageResult> = {};
-    results.forEach((r, i) => { map[emails[i].id] = r; });
+    results.forEach((r, i) => {
+      map[emails[i].id] = r;
+    });
     set((s) => ({
       triageResults: { ...s.triageResults, ...map },
       isProcessing: false,

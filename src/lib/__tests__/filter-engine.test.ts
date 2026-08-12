@@ -65,22 +65,32 @@ describe("filter engine — testRuleAgainstEmail", () => {
       ...baseRule,
       conditions: [{ field: "subject", operator: "contains", value: "HELLO" }],
     };
-    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "hello world" }))).toBe(true);
+    expect(
+      testRuleAgainstEmail(rule, makeEmail({ subject: "hello world" }))
+    ).toBe(true);
   });
 
   it("matches equals operator", () => {
     const rule: Filter = {
       ...baseRule,
-      conditions: [{ field: "subject", operator: "equals", value: "hello world" }],
+      conditions: [
+        { field: "subject", operator: "equals", value: "hello world" },
+      ],
     };
-    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "Hello World" }))).toBe(true);
-    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "hello" }))).toBe(false);
+    expect(
+      testRuleAgainstEmail(rule, makeEmail({ subject: "Hello World" }))
+    ).toBe(true);
+    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "hello" }))).toBe(
+      false
+    );
   });
 
   it("matches startsWith and endsWith", () => {
     const start: Filter = {
       ...baseRule,
-      conditions: [{ field: "subject", operator: "startsWith", value: "hello" }],
+      conditions: [
+        { field: "subject", operator: "startsWith", value: "hello" },
+      ],
     };
     const end: Filter = {
       ...baseRule,
@@ -88,7 +98,9 @@ describe("filter engine — testRuleAgainstEmail", () => {
     };
     expect(testRuleAgainstEmail(start, makeEmail())).toBe(true);
     expect(testRuleAgainstEmail(end, makeEmail())).toBe(true);
-    expect(testRuleAgainstEmail(start, makeEmail({ subject: "nope" }))).toBe(false);
+    expect(testRuleAgainstEmail(start, makeEmail({ subject: "nope" }))).toBe(
+      false
+    );
   });
 
   it("matches greaterThan / lessThan on size", () => {
@@ -108,10 +120,16 @@ describe("filter engine — testRuleAgainstEmail", () => {
   it("matches hasAttachment boolean field", () => {
     const rule: Filter = {
       ...baseRule,
-      conditions: [{ field: "hasAttachment", operator: "equals", value: "true" }],
+      conditions: [
+        { field: "hasAttachment", operator: "equals", value: "true" },
+      ],
     };
-    expect(testRuleAgainstEmail(rule, makeEmail({ hasAttachments: true }))).toBe(true);
-    expect(testRuleAgainstEmail(rule, makeEmail({ hasAttachments: false }))).toBe(false);
+    expect(
+      testRuleAgainstEmail(rule, makeEmail({ hasAttachments: true }))
+    ).toBe(true);
+    expect(
+      testRuleAgainstEmail(rule, makeEmail({ hasAttachments: false }))
+    ).toBe(false);
   });
 
   it("matches regex via matches operator", () => {
@@ -120,7 +138,9 @@ describe("filter engine — testRuleAgainstEmail", () => {
       conditions: [{ field: "subject", operator: "matches", value: "^hello" }],
     };
     expect(testRuleAgainstEmail(rule, makeEmail())).toBe(true);
-    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "nope" }))).toBe(false);
+    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "nope" }))).toBe(
+      false
+    );
   });
 
   it("uses AND logic across multiple conditions", () => {
@@ -132,9 +152,9 @@ describe("filter engine — testRuleAgainstEmail", () => {
       ],
     };
     expect(testRuleAgainstEmail(rule, makeEmail())).toBe(true);
-    expect(
-      testRuleAgainstEmail(rule, makeEmail({ subject: "goodbye" })),
-    ).toBe(false);
+    expect(testRuleAgainstEmail(rule, makeEmail({ subject: "goodbye" }))).toBe(
+      false
+    );
   });
 
   it("handles invalid regex gracefully (no throw)", () => {
@@ -171,8 +191,16 @@ describe("filter engine — applyRules (simulate)", () => {
       actions: [{ type: "markRead", params: {} }],
     };
     const emails = [
-      makeEmail({ id: "a", isRead: false, from: { name: "Alice", address: "alice@x.com" } }),
-      makeEmail({ id: "b", isRead: false, from: { name: "Carol", address: "carol@x.com" } }),
+      makeEmail({
+        id: "a",
+        isRead: false,
+        from: { name: "Alice", address: "alice@x.com" },
+      }),
+      makeEmail({
+        id: "b",
+        isRead: false,
+        from: { name: "Carol", address: "carol@x.com" },
+      }),
     ];
     const result = applyRules([rule], emails);
     expect(result.find((e) => e.id === "a")?.isRead).toBe(true);
@@ -195,7 +223,10 @@ describe("filter engine — applyRules (simulate)", () => {
       conditions: [{ field: "from", operator: "contains", value: "alice" }],
       actions: [{ type: "label", params: { labelId: "label-work" } }],
     };
-    const result = applyRules([rule], [makeEmail({ id: "a", labels: ["label-work"] })]);
+    const result = applyRules(
+      [rule],
+      [makeEmail({ id: "a", labels: ["label-work"] })]
+    );
     expect(result[0].labels.filter((l) => l === "label-work")).toHaveLength(1);
   });
 

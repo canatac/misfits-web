@@ -52,16 +52,26 @@ export function SnoozePicker({
 
   function handlePreset(getUntil: () => string) {
     if (!emailId) return;
-    snoozeEmail(emailId, getUntil(), enableReminder ? reminder || undefined : undefined);
+    snoozeEmail(
+      emailId,
+      getUntil(),
+      enableReminder ? reminder || undefined : undefined
+    );
     setOpen(false);
     setReminder("");
   }
 
   function handleCustomSnooze() {
     if (!emailId || !customDate) return;
-    const iso = new Date(`${customDate}T${customTime || "09:00"}`).toISOString();
+    const iso = new Date(
+      `${customDate}T${customTime || "09:00"}`
+    ).toISOString();
     if (Number.isNaN(new Date(iso).getTime())) return;
-    snoozeEmail(emailId, iso, enableReminder ? reminder || undefined : undefined);
+    snoozeEmail(
+      emailId,
+      iso,
+      enableReminder ? reminder || undefined : undefined
+    );
     setShowCustom(false);
     setCustomDate("");
     setCustomTime("");
@@ -71,7 +81,9 @@ export function SnoozePicker({
 
   // Show snoozed list (used when no specific emailId is provided — manager mode).
   const managerMode = !emailId;
-  const activeSnoozes = managerMode ? snoozedEmails : snoozedEmails.filter((s) => s.emailId === emailId);
+  const activeSnoozes = managerMode
+    ? snoozedEmails
+    : snoozedEmails.filter((s) => s.emailId === emailId);
 
   function emailSubject(id: string): string {
     const em = emails.find((e) => e.id === id);
@@ -81,7 +93,12 @@ export function SnoozePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className={cn("gap-1.5", className)} aria-label="Snooze">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn("gap-1.5", className)}
+          aria-label="Snooze"
+        >
           <Clock className="h-4 w-4" />
           {triggerLabel}
         </Button>
@@ -119,7 +136,9 @@ export function SnoozePicker({
             className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-brand-500)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
           >
             <CalendarClock className="h-4 w-4" />
-            <span className="flex-1">{showCustom ? "Hide custom date" : "Pick a date & time…"}</span>
+            <span className="flex-1">
+              {showCustom ? "Hide custom date" : "Pick a date & time…"}
+            </span>
           </button>
         </div>
 
@@ -128,7 +147,9 @@ export function SnoozePicker({
           <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">Date</label>
+                <label className="text-xs text-[var(--color-muted-fg)]">
+                  Date
+                </label>
                 <Input
                   type="date"
                   value={customDate}
@@ -136,7 +157,9 @@ export function SnoozePicker({
                 />
               </div>
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">Time</label>
+                <label className="text-xs text-[var(--color-muted-fg)]">
+                  Time
+                </label>
                 <Input
                   type="time"
                   value={customTime}
@@ -145,7 +168,11 @@ export function SnoozePicker({
               </div>
             </div>
             <div className="mt-2 flex items-center gap-2">
-              <Switch checked={enableReminder} onCheckedChange={setEnableReminder} aria-label="Enable reminder" />
+              <Switch
+                checked={enableReminder}
+                onCheckedChange={setEnableReminder}
+                aria-label="Enable reminder"
+              />
               <Input
                 value={reminder}
                 onChange={(e) => setReminder(e.target.value)}
@@ -153,7 +180,12 @@ export function SnoozePicker({
                 disabled={!enableReminder}
               />
             </div>
-            <Button size="sm" className="mt-2 w-full" onClick={handleCustomSnooze} disabled={!customDate}>
+            <Button
+              size="sm"
+              className="mt-2 w-full"
+              onClick={handleCustomSnooze}
+              disabled={!customDate}
+            >
               Snooze
             </Button>
           </div>
@@ -163,7 +195,7 @@ export function SnoozePicker({
         {managerMode && activeSnoozes.length > 0 && (
           <>
             <Separator className="my-3" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+            <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
               Snoozed ({activeSnoozes.length})
             </span>
             <div className="mt-2 flex max-h-48 flex-col gap-1 overflow-auto">

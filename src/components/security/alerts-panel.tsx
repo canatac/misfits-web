@@ -9,7 +9,11 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SecurityAlert } from "@/types/security";
-import { actionIcon, formatIsoLocal, securitySeverityClass } from "@/components/security/utils";
+import {
+  actionIcon,
+  formatIsoLocal,
+  securitySeverityClass,
+} from "@/components/security/utils";
 
 interface AlertsPanelProps {
   alerts: SecurityAlert[];
@@ -18,12 +22,19 @@ interface AlertsPanelProps {
   rollingBackAlertId?: string | null;
 }
 
-export function AlertsPanel({ alerts, isLoading, onRollback, rollingBackAlertId }: AlertsPanelProps) {
+export function AlertsPanel({
+  alerts,
+  isLoading,
+  onRollback,
+  rollingBackAlertId,
+}: AlertsPanelProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Alertes actives</CardTitle>
-        <CardDescription>Flux de remediation en cours (observe/enforce)</CardDescription>
+        <CardDescription>
+          Flux de remediation en cours (observe/enforce)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -49,33 +60,58 @@ export function AlertsPanel({ alerts, isLoading, onRollback, rollingBackAlertId 
               <tbody>
                 {alerts.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-[var(--color-muted-fg)]">
+                    <td
+                      colSpan={7}
+                      className="px-3 py-6 text-center text-[var(--color-muted-fg)]"
+                    >
                       Aucune alerte active.
                     </td>
                   </tr>
                 ) : (
                   alerts.map((alert) => {
-                    const rollbackEnabled = alert.mode === "enforce" && alert.status === "active";
+                    const rollbackEnabled =
+                      alert.mode === "enforce" && alert.status === "active";
                     return (
-                      <tr key={alert.id} className="border-b border-[var(--color-border)]">
-                        <td className="px-3 py-2 whitespace-nowrap">{formatIsoLocal(alert.ts)}</td>
+                      <tr
+                        key={alert.id}
+                        className="border-b border-[var(--color-border)]"
+                      >
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {formatIsoLocal(alert.ts)}
+                        </td>
                         <td className="px-3 py-2">
                           <div className="font-medium">{alert.rule_name}</div>
-                          <div className="text-xs text-[var(--color-muted-fg)]">{alert.rule_id}</div>
+                          <div className="text-xs text-[var(--color-muted-fg)]">
+                            {alert.rule_id}
+                          </div>
                         </td>
                         <td className="px-3 py-2">
-                          <Badge className={securitySeverityClass(alert.severity)}>{alert.severity}</Badge>
+                          <Badge
+                            className={securitySeverityClass(alert.severity)}
+                          >
+                            {alert.severity}
+                          </Badge>
                         </td>
-                        <td className="px-3 py-2">{actionIcon(alert.action)} {alert.action}</td>
+                        <td className="px-3 py-2">
+                          {actionIcon(alert.action)} {alert.action}
+                        </td>
                         <td className="px-3 py-2">{alert.tenant_id ?? "—"}</td>
                         <td className="px-3 py-2">{alert.status}</td>
                         <td className="px-3 py-2 text-right">
                           <Button
                             size="sm"
                             variant="outline"
-                            disabled={!rollbackEnabled || rollingBackAlertId === alert.id}
+                            disabled={
+                              !rollbackEnabled ||
+                              rollingBackAlertId === alert.id
+                            }
                             onClick={() => {
-                              if (!window.confirm("Confirmer le rollback de cette remediation ?")) return;
+                              if (
+                                !window.confirm(
+                                  "Confirmer le rollback de cette remediation ?"
+                                )
+                              )
+                                return;
                               onRollback(alert.id);
                             }}
                           >

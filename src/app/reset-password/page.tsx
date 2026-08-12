@@ -26,7 +26,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PasswordStrengthIndicator } from "@/components/password-strength-indicator";
-import { useRequestPasswordReset, useConfirmPasswordReset } from "@/hooks/use-auth";
+import {
+  useRequestPasswordReset,
+  useConfirmPasswordReset,
+} from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,7 +71,9 @@ function ResetPasswordInner() {
         <Card className="animate-fade-in">
           <CardHeader className="space-y-1">
             <CardTitle>
-              {isConfirmPhase ? "Choose a new password" : "Forgot your password?"}
+              {isConfirmPhase
+                ? "Choose a new password"
+                : "Forgot your password?"}
             </CardTitle>
             <CardDescription>
               {isConfirmPhase
@@ -77,11 +82,7 @@ function ResetPasswordInner() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isConfirmPhase ? (
-              <ConfirmForm token={token!} />
-            ) : (
-              <RequestForm />
-            )}
+            {isConfirmPhase ? <ConfirmForm token={token!} /> : <RequestForm />}
           </CardContent>
         </Card>
 
@@ -195,7 +196,9 @@ function ConfirmForm({ token }: { token: string }) {
   const mismatch = confirmTouched && newPassword !== confirmPassword;
   const tooShort = newPassword.length > 0 && newPassword.length < 8;
   const canSubmit =
-    newPassword.length >= 8 && newPassword === confirmPassword && token.length > 0;
+    newPassword.length >= 8 &&
+    newPassword === confirmPassword &&
+    token.length > 0;
 
   const done = confirmMutation.isSuccess;
 
@@ -220,7 +223,8 @@ function ConfirmForm({ token }: { token: string }) {
           aria-hidden="true"
         />
         <p className="text-sm text-[var(--color-fg)]">
-          Your password has been updated. You can sign in with your new password.
+          Your password has been updated. You can sign in with your new
+          password.
         </p>
         <Button asChild variant="outline">
           <Link href="/login">Continue to sign in</Link>
@@ -237,7 +241,10 @@ function ConfirmForm({ token }: { token: string }) {
           role="alert"
           aria-live="assertive"
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <AlertTriangle
+            className="mt-0.5 h-4 w-4 shrink-0"
+            aria-hidden="true"
+          />
           <span>
             {confirmMutation.error instanceof Error
               ? confirmMutation.error.message
@@ -274,7 +281,8 @@ function ConfirmForm({ token }: { token: string }) {
             id="new-password-help"
             className="text-xs text-[var(--color-muted-fg)]"
           >
-            Use at least 8 characters with a mix of letters, numbers and symbols.
+            Use at least 8 characters with a mix of letters, numbers and
+            symbols.
           </p>
         )}
       </div>

@@ -16,7 +16,7 @@ interface AccountBadgeProps {
 
 export function AccountBadge({ accountId, className }: AccountBadgeProps) {
   const account = useAccountStore((s) =>
-    accountId ? s.accounts.find((a) => a.id === accountId) : undefined,
+    accountId ? s.accounts.find((a) => a.id === accountId) : undefined
   );
 
   if (!account) return null;
@@ -25,7 +25,7 @@ export function AccountBadge({ accountId, className }: AccountBadgeProps) {
     <span
       className={cn(
         "inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--color-muted)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-muted-fg)]",
-        className,
+        className
       )}
       title={account.email}
       data-testid={`account-badge-${account.id}`}
@@ -35,7 +35,7 @@ export function AccountBadge({ accountId, className }: AccountBadgeProps) {
         style={{ backgroundColor: account.color }}
         aria-hidden="true"
       />
-      <span className="truncate max-w-[120px]">{account.email}</span>
+      <span className="max-w-[120px] truncate">{account.email}</span>
     </span>
   );
 }

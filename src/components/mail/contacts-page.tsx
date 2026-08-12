@@ -45,7 +45,13 @@ import {
 import { ContactCard } from "@/components/mail/contact-card";
 import { ContactDetail } from "@/components/mail/contact-detail";
 import { ContactImporter } from "@/components/mail/contact-importer";
-import { useContacts, useContactGroups, useContactMutations, useContactGroupMutations, useDuplicateContacts } from "@/hooks/use-contacts";
+import {
+  useContacts,
+  useContactGroups,
+  useContactMutations,
+  useContactGroupMutations,
+  useDuplicateContacts,
+} from "@/hooks/use-contacts";
 import { useSearchContacts } from "@/hooks/use-contacts";
 import { useContactStore } from "@/stores/contact-store";
 import { useEmailStore } from "@/stores/email-store";
@@ -99,7 +105,10 @@ export function ContactsPage() {
 
   const handleExport = (format: "vcard" | "csv") => {
     const store = useContactStore.getState();
-    const content = format === "vcard" ? store.exportContactsVCard() : store.exportContactsCSV();
+    const content =
+      format === "vcard"
+        ? store.exportContactsVCard()
+        : store.exportContactsCSV();
     const blob = new Blob([content], {
       type: format === "vcard" ? "text/vcard" : "text/csv",
     });
@@ -109,7 +118,9 @@ export function ContactsPage() {
     a.download = `contacts.${format === "vcard" ? "vcf" : "csv"}`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Exported ${contacts.length} contacts as ${format.toUpperCase()}`);
+    toast.success(
+      `Exported ${contacts.length} contacts as ${format.toUpperCase()}`
+    );
   };
 
   return (
@@ -120,7 +131,11 @@ export function ContactsPage() {
       {/* Group sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-card)] md:flex">
         <div className="flex items-center gap-2 p-3">
-          <Link href="/mail" className="rounded-md p-1 text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)]" aria-label="Back to mail">
+          <Link
+            href="/mail"
+            className="rounded-md p-1 text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)]"
+            aria-label="Back to mail"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <span className="flex items-center gap-2 text-sm font-semibold">
@@ -139,8 +154,8 @@ export function ContactsPage() {
               className={cn(
                 "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
                 activeGroupId === null
-                  ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)] font-medium"
-                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]",
+                  ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
+                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
               )}
             >
               <span className="flex items-center gap-2">
@@ -155,8 +170,8 @@ export function ContactsPage() {
               className={cn(
                 "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
                 activeGroupId === "__ungrouped__"
-                  ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)] font-medium"
-                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]",
+                  ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
+                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
               )}
             >
               <span>Ungrouped</span>
@@ -164,7 +179,7 @@ export function ContactsPage() {
             </button>
 
             <div className="mt-3 mb-1 flex items-center justify-between px-3">
-              <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                 Groups
               </span>
               <button
@@ -188,12 +203,15 @@ export function ContactsPage() {
                 className={cn(
                   "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
                   activeGroupId === g.id
-                    ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)] font-medium"
-                    : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]",
+                    ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
+                    : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: g.color }}
+                  />
                   {g.name}
                 </span>
                 <Badge variant="secondary">{groupCounts.get(g.id) ?? 0}</Badge>
@@ -202,12 +220,13 @@ export function ContactsPage() {
 
             {duplicates.length > 0 && (
               <>
-                <div className="mt-3 mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+                <div className="mt-3 mb-1 px-3 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                   Cleanup
                 </div>
                 <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-warning-500)]/10 px-3 py-2 text-xs text-[var(--color-warning-500)]">
                   <GitMerge className="h-3.5 w-3.5" />
-                  {duplicates.length} duplicate{duplicates.length === 1 ? "" : "s"} to review
+                  {duplicates.length} duplicate
+                  {duplicates.length === 1 ? "" : "s"} to review
                 </div>
               </>
             )}
@@ -220,7 +239,7 @@ export function ContactsPage() {
         <div className="flex flex-col gap-2 p-3">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+              <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -232,11 +251,20 @@ export function ContactsPage() {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <Button size="sm" className="flex-1 gap-1.5" onClick={() => setAddOpen(true)}>
+            <Button
+              size="sm"
+              className="flex-1 gap-1.5"
+              onClick={() => setAddOpen(true)}
+            >
               <Plus className="h-3.5 w-3.5" />
               Add
             </Button>
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setImporterOpen(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => setImporterOpen(true)}
+            >
               <Upload className="h-3.5 w-3.5" />
               Import
             </Button>
@@ -249,11 +277,17 @@ export function ContactsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport("csv")} className="gap-2">
+                <DropdownMenuItem
+                  onClick={() => handleExport("csv")}
+                  className="gap-2"
+                >
                   <FileText className="h-4 w-4" />
                   Export as CSV
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport("vcard")} className="gap-2">
+                <DropdownMenuItem
+                  onClick={() => handleExport("vcard")}
+                  className="gap-2"
+                >
                   <ContactIcon className="h-4 w-4" />
                   Export as vCard
                 </DropdownMenuItem>
@@ -285,7 +319,10 @@ export function ContactsPage() {
       {/* Detail panel */}
       <section className="hidden flex-1 md:block">
         {selected ? (
-          <ContactDetail contact={selected} onClose={() => setSelectedId(null)} />
+          <ContactDetail
+            contact={selected}
+            onClose={() => setSelectedId(null)}
+          />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-[var(--color-muted-fg)]">
             <ContactIcon className="h-10 w-10" />
@@ -357,7 +394,11 @@ function AddContactModal({
         <ModalBody>
           <div className="flex flex-col gap-3">
             <Field label="Name *">
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Full name"
+              />
             </Field>
             <Field label="Email *">
               <Input
@@ -369,14 +410,26 @@ function AddContactModal({
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Company">
-                <Input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Acme Inc." />
+                <Input
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Acme Inc."
+                />
               </Field>
               <Field label="Role">
-                <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Engineer" />
+                <Input
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="Engineer"
+                />
               </Field>
             </div>
             <Field label="Phone">
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 0100" />
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 555 0100"
+              />
             </Field>
           </div>
         </ModalBody>
@@ -421,7 +474,9 @@ function AddGroupModal({
       <ModalContent>
         <ModalHeader>
           <ModalTitle>Add group</ModalTitle>
-          <ModalDescription>Group contacts for easy filtering.</ModalDescription>
+          <ModalDescription>
+            Group contacts for easy filtering.
+          </ModalDescription>
         </ModalHeader>
         <ModalBody>
           <Field label="Group name">
@@ -460,10 +515,18 @@ function AddGroupModal({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-[var(--color-muted-fg)]">{label}</span>
+      <span className="text-xs font-medium text-[var(--color-muted-fg)]">
+        {label}
+      </span>
       {children}
     </label>
   );

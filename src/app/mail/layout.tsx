@@ -13,7 +13,7 @@ export default function MailLayout({ children }: { children: ReactNode }) {
       data-testid="mail-layout"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_480px_at_80%_-10%,rgba(196,155,102,0.12),transparent),radial-gradient(900px_360px_at_-10%_20%,rgba(59,91,255,0.12),transparent)]" />
-      <div className="relative flex min-h-0 flex-1 w-full overflow-hidden">
+      <div className="relative flex min-h-0 w-full flex-1 overflow-hidden">
         {children}
       </div>
     </div>

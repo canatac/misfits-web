@@ -32,7 +32,8 @@ export type PriorityBand = "low" | "medium" | "high" | "urgent";
 /**
  * A suggested next action for the user, derived from the triage result.
  */
-export type TriageAction = "reply" | "archive" | "follow_up" | "delegate" | "delete";
+export type TriageAction =
+  "reply" | "archive" | "follow_up" | "delegate" | "delete";
 
 /**
  * Full triage result for a single email. Produced by `triageEmail`
@@ -109,7 +110,15 @@ export interface TriageStats {
  */
 export type TriageEmailInput = Pick<
   Email,
-  "id" | "from" | "subject" | "preview" | "body" | "date" | "isRead" | "isStarred" | "isImportant"
+  | "id"
+  | "from"
+  | "subject"
+  | "preview"
+  | "body"
+  | "date"
+  | "isRead"
+  | "isStarred"
+  | "isImportant"
 >;
 
 /**

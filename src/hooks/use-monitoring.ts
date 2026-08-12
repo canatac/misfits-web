@@ -118,7 +118,8 @@ export function useMonitoringLive(options: UseMonitoringLiveOptions = {}) {
   }, []);
 
   useEffect(() => {
-    const supportsSse = typeof window !== "undefined" && "EventSource" in window;
+    const supportsSse =
+      typeof window !== "undefined" && "EventSource" in window;
     if (!enabled || isMobile || !isVisible || !supportsSse) {
       setIsConnected(false);
       return;
@@ -169,7 +170,10 @@ export function useMonitoringLive(options: UseMonitoringLiveOptions = {}) {
         source?.close();
 
         retryRef.current += 1;
-        const delay = Math.min(10_000, 1000 * 2 ** Math.min(retryRef.current, 4));
+        const delay = Math.min(
+          10_000,
+          1000 * 2 ** Math.min(retryRef.current, 4)
+        );
         setLastError(`Reconnexion dans ${Math.round(delay / 1000)}s`);
         cleanupTimer();
         reconnectTimerRef.current = window.setTimeout(connect, delay);

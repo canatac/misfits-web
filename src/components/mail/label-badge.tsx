@@ -30,13 +30,18 @@ function useResolvedLabel(label: string | Label): Label | undefined {
 }
 
 /** Get a Lucide icon component by kebab-case name. */
-function getIcon(name: string): React.ComponentType<{ className?: string }> | undefined {
+function getIcon(
+  name: string
+): React.ComponentType<{ className?: string }> | undefined {
   if (!name) return undefined;
   const pascal = name
     .split(/[-_]/)
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join("");
-  const icons = Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+  const icons = Icons as unknown as Record<
+    string,
+    React.ComponentType<{ className?: string }>
+  >;
   return icons[pascal];
 }
 
@@ -56,7 +61,7 @@ export function LabelBadge({
       <span
         className={cn(
           "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-[var(--color-muted-fg)]",
-          className,
+          className
         )}
       >
         {id.replace("label-", "")}
@@ -95,7 +100,7 @@ export function LabelBadge({
         "inline-flex items-center gap-1 rounded-full font-medium transition-colors",
         size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
         isInteractive && "cursor-pointer hover:opacity-80",
-        className,
+        className
       )}
       style={{
         backgroundColor: `${resolved.color}20`,

@@ -5,12 +5,7 @@
  * delete, and save current search with a custom name.
  */
 import { useState, useCallback } from "react";
-import {
-  Bookmark,
-  Trash2,
-  Search,
-  Plus,
-} from "lucide-react";
+import { Bookmark, Trash2, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,24 +45,21 @@ export function SavedSearches({ className }: SavedSearchesProps) {
     (id: string) => {
       deleteSavedSearch(id);
     },
-    [deleteSavedSearch],
+    [deleteSavedSearch]
   );
 
   const handleApply = useCallback(
     (saved: SavedSearch) => {
       applySavedSearch(saved);
     },
-    [applySavedSearch],
+    [applySavedSearch]
   );
 
   const canSave = query.trim().length > 0;
 
   return (
     <div
-      className={cn(
-        "flex h-full flex-col bg-[var(--color-card)]",
-        className,
-      )}
+      className={cn("flex h-full flex-col bg-[var(--color-card)]", className)}
       data-testid="saved-searches"
     >
       {/* Header */}

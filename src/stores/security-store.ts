@@ -21,13 +21,18 @@ export const useSecurityStore = create<SecurityStore>((set, get) => ({
 
   scanEmail: (email) => {
     const result = detectPhishing(email);
-    set((s) => ({ results: { ...s.results, [email.id]: result }, lastScanId: email.id }));
+    set((s) => ({
+      results: { ...s.results, [email.id]: result },
+      lastScanId: email.id,
+    }));
   },
 
   scanBatch: (emails) => {
     set({ isScanning: true });
     const map: Record<string, PhishingResult> = {};
-    emails.forEach((e) => { map[e.id] = detectPhishing(e); });
+    emails.forEach((e) => {
+      map[e.id] = detectPhishing(e);
+    });
     set((s) => ({ results: { ...s.results, ...map }, isScanning: false }));
   },
 

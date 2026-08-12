@@ -11,7 +11,11 @@ import { Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCalendarStore } from "@/stores/calendar-store";
 import { useCalendarMutations } from "@/hooks/use-calendar";
-import { EVENT_TYPE_COLORS, type EventType, type CalendarEventInput } from "@/types/calendar";
+import {
+  EVENT_TYPE_COLORS,
+  type EventType,
+  type CalendarEventInput,
+} from "@/types/calendar";
 
 interface EventModalProps {
   open: boolean;
@@ -20,7 +24,14 @@ interface EventModalProps {
   defaultDate: string;
 }
 
-const EVENT_TYPES: EventType[] = ["meeting", "deadline", "reminder", "social", "travel", "default"];
+const EVENT_TYPES: EventType[] = [
+  "meeting",
+  "deadline",
+  "reminder",
+  "social",
+  "travel",
+  "default",
+];
 
 function toLocalInput(iso: string): string {
   const d = new Date(iso);
@@ -28,8 +39,15 @@ function toLocalInput(iso: string): string {
   return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
 }
 
-export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventModalProps) {
-  const event = useCalendarStore((s) => (eventId ? s.getEventById(eventId) : undefined));
+export function EventModal({
+  open,
+  onOpenChange,
+  eventId,
+  defaultDate,
+}: EventModalProps) {
+  const event = useCalendarStore((s) =>
+    eventId ? s.getEventById(eventId) : undefined
+  );
   const { createEvent, updateEvent, deleteEvent } = useCalendarMutations();
 
   const [title, setTitle] = useState("");
@@ -96,7 +114,10 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => onOpenChange(false)}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={() => onOpenChange(false)}
+    >
       <div
         className="w-full max-w-md rounded-lg bg-[var(--color-card)] p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
@@ -105,7 +126,10 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
           <h2 className="text-lg font-semibold text-[var(--color-fg)]">
             {eventId ? "Edit Event" : "New Event"}
           </h2>
-          <button onClick={() => onOpenChange(false)} className="text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -130,7 +154,9 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
 
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-[var(--color-muted-fg)]">Start</span>
+              <span className="text-xs text-[var(--color-muted-fg)]">
+                Start
+              </span>
               <input
                 type="datetime-local"
                 value={start}
@@ -163,13 +189,17 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
               className="rounded-md border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-fg)]"
             >
               {EVENT_TYPES.map((t) => (
-                <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                <option key={t} value={t}>
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </option>
               ))}
             </select>
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-[var(--color-muted-fg)]">Location (optional)</span>
+            <span className="text-xs text-[var(--color-muted-fg)]">
+              Location (optional)
+            </span>
             <input
               type="text"
               value={location}
@@ -190,7 +220,12 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
 
           <div className="flex items-center justify-between pt-2">
             {eventId ? (
-              <Button type="button" variant="destructive" size="sm" onClick={handleDelete}>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+              >
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>
@@ -198,7 +233,11 @@ export function EventModal({ open, onOpenChange, eventId, defaultDate }: EventMo
               <span />
             )}
             <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={!title}>

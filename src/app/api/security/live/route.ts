@@ -25,7 +25,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: "Unable to reach security stream upstream." },
-      { status: 502 },
+      { status: 502 }
     );
   }
 

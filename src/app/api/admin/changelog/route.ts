@@ -98,7 +98,9 @@ async function fetchWorkflowReleases(): Promise<WorkflowRelease[]> {
       title: item.title,
       summary: item.changelogEntry?.summary || item.desiredOutcome,
       releasedAt:
-        item.changelogEntry?.releasedAt || item.updatedAt || new Date().toISOString(),
+        item.changelogEntry?.releasedAt ||
+        item.updatedAt ||
+        new Date().toISOString(),
       sourceChangeRequestId: item.id,
       priority: item.priority,
       scope: item.scope,

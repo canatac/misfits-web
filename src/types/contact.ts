@@ -7,7 +7,8 @@
  */
 
 /** How often the user tends to contact this person, derived from history. */
-export type ContactFrequency = "daily" | "weekly" | "monthly" | "rarely" | "never";
+export type ContactFrequency =
+  "daily" | "weekly" | "monthly" | "rarely" | "never";
 
 /** A single contact record. */
 export interface Contact {

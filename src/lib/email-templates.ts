@@ -4,11 +4,7 @@
  */
 
 export type TemplateCategory =
-  | "onboarding"
-  | "meeting"
-  | "follow-up"
-  | "billing"
-  | "marketing";
+  "onboarding" | "meeting" | "follow-up" | "billing" | "marketing";
 
 export interface EmailTemplate {
   id: string;
@@ -69,7 +65,7 @@ export const emailTemplates: EmailTemplate[] = [
  */
 export function applyTemplate(
   template: EmailTemplate,
-  vars: Record<string, string>,
+  vars: Record<string, string>
 ): { subject: string; body: string } {
   const replace = (s: string) =>
     s.replace(/\{\{(\w+)\}\}/g, (_m, key: string) => vars[key] ?? `{{${key}}}`);

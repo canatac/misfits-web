@@ -135,7 +135,10 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
       query: q,
       createdAt: new Date().toISOString(),
     };
-    const updated = [saved, ...get().savedSearches.filter((s) => s.query !== q)];
+    const updated = [
+      saved,
+      ...get().savedSearches.filter((s) => s.query !== q),
+    ];
     set({ savedSearches: updated });
     persistSavedSearches(updated);
   },

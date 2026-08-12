@@ -24,12 +24,37 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, matchPrefix: "/dashboard" },
+  {
+    href: "/dashboard",
+    labelKey: "nav.dashboard",
+    icon: LayoutDashboard,
+    matchPrefix: "/dashboard",
+  },
   { href: "/mail", labelKey: "nav.mail", icon: Mail, matchPrefix: "/mail" },
-  { href: "/compose", labelKey: "nav.compose", icon: PenSquare, matchPrefix: "/compose" },
-  { href: "/calendar", labelKey: "nav.calendar", icon: Calendar, matchPrefix: "/calendar" },
-  { href: "/newsletters", labelKey: "nav.newsletters", icon: Newspaper, matchPrefix: "/newsletters" },
-  { href: "/translation", labelKey: "nav.translation", icon: Languages, matchPrefix: "/translation" },
+  {
+    href: "/compose",
+    labelKey: "nav.compose",
+    icon: PenSquare,
+    matchPrefix: "/compose",
+  },
+  {
+    href: "/calendar",
+    labelKey: "nav.calendar",
+    icon: Calendar,
+    matchPrefix: "/calendar",
+  },
+  {
+    href: "/newsletters",
+    labelKey: "nav.newsletters",
+    icon: Newspaper,
+    matchPrefix: "/newsletters",
+  },
+  {
+    href: "/translation",
+    labelKey: "nav.translation",
+    icon: Languages,
+    matchPrefix: "/translation",
+  },
   { href: "/docs", labelKey: "nav.docs", icon: BookOpen, matchPrefix: "/docs" },
 ];
 
@@ -50,7 +75,7 @@ export function AppSwitcher({ className }: AppSwitcherProps) {
     <nav
       className={cn(
         "sticky top-0 z-[var(--z-sticky)] border-b border-[var(--color-border)] bg-[var(--color-card)]/95 px-3 py-2 backdrop-blur",
-        className,
+        className
       )}
       aria-label="Primary navigation"
     >
@@ -67,7 +92,7 @@ export function AppSwitcher({ className }: AppSwitcherProps) {
                   "inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-md)] px-3 py-1.5 text-sm transition-colors",
                   active
                     ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
-                    : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]",
+                    : "text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)] hover:text-[var(--color-fg)]"
                 )}
                 aria-current={active ? "page" : undefined}
               >

@@ -16,7 +16,11 @@ import type {
   ContactInput,
   DuplicatePair,
 } from "@/types/contact";
-import { mockContactSeeds, mockContactGroups, AVATAR_COLORS } from "@/lib/mock-contacts";
+import {
+  mockContactSeeds,
+  mockContactGroups,
+  AVATAR_COLORS,
+} from "@/lib/mock-contacts";
 import type { Email } from "@/types/email";
 
 /* ------------------------------------------------------------------ */
@@ -145,7 +149,17 @@ function toCSVRow(fields: string[]): string {
 }
 
 function exportCSV(contacts: Contact[]): string {
-  const header = ["name", "email", "phone", "company", "role", "tags", "notes", "frequency", "lastContactAt"];
+  const header = [
+    "name",
+    "email",
+    "phone",
+    "company",
+    "role",
+    "tags",
+    "notes",
+    "frequency",
+    "lastContactAt",
+  ];
   const rows = contacts.map((c) =>
     toCSVRow([
       c.name,
@@ -157,7 +171,7 @@ function exportCSV(contacts: Contact[]): string {
       c.notes ?? "",
       c.contactFrequency,
       c.lastContactAt ?? "",
-    ]),
+    ])
   );
   return [header.join(","), ...rows].join("\n");
 }
@@ -173,7 +187,10 @@ export function parseVCard(text: string): ContactImport[] {
   for (const block of blocks) {
     const end = block.search(/END:VCARD/i);
     const body = end >= 0 ? block.slice(0, end) : block;
-    const lines = body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const lines = body
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
     const imp: ContactImport = {};
     for (const line of lines) {
       const colon = line.indexOf(":");
@@ -193,7 +210,10 @@ export function parseVCard(text: string): ContactImport[] {
       } else if (key.startsWith("NOTE")) {
         imp.notes = val.replace(/\\n/g, "\n");
       } else if (key.startsWith("CATEGORIES")) {
-        imp.tags = val.split(",").map((t) => t.trim()).filter(Boolean);
+        imp.tags = val
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
       }
     }
     if (imp.name || imp.email) out.push(imp);
@@ -221,7 +241,11 @@ export function parseCSV(text: string): ContactImport[] {
       else if (key === "company" || key === "org") imp.company = val;
       else if (key === "role" || key === "title") imp.role = val;
       else if (key === "notes" || key === "note") imp.notes = val;
-      else if (key === "tags" || key === "categories") imp.tags = val.split(/[;,]/).map((t) => t.trim()).filter(Boolean);
+      else if (key === "tags" || key === "categories")
+        imp.tags = val
+          .split(/[;,]/)
+          .map((t) => t.trim())
+          .filter(Boolean);
     }
     if (imp.name || imp.email) out.push(imp);
   }
@@ -315,7 +339,7 @@ export const useContactStore = create<ContactState>()(
             c.email.toLowerCase().includes(q) ||
             (c.company ?? "").toLowerCase().includes(q) ||
             (c.role ?? "").toLowerCase().includes(q) ||
-            c.tags.some((t) => t.toLowerCase().includes(q)),
+            c.tags.some((t) => t.toLowerCase().includes(q))
         );
       },
 
@@ -328,7 +352,11 @@ export const useContactStore = create<ContactState>()(
           const e = normalizeEmail(c.email);
           if (byEmail.has(e)) {
             const prev = byEmail.get(e)!;
-            pairs.push({ primaryId: prev.id, duplicateId: c.id, reason: "email" });
+            pairs.push({
+              primaryId: prev.id,
+              duplicateId: c.id,
+              reason: "email",
+            });
           } else {
             byEmail.set(e, c);
           }
@@ -336,8 +364,15 @@ export const useContactStore = create<ContactState>()(
           if (n && byName.has(n)) {
             const prev = byName.get(n)!;
             // Only suggest a name-based duplicate if it isn't already an email one.
-            if (prev.id !== c.id && !pairs.some((p) => p.duplicateId === c.id)) {
-              pairs.push({ primaryId: prev.id, duplicateId: c.id, reason: "name" });
+            if (
+              prev.id !== c.id &&
+              !pairs.some((p) => p.duplicateId === c.id)
+            ) {
+              pairs.push({
+                primaryId: prev.id,
+                duplicateId: c.id,
+                reason: "name",
+              });
             }
           } else if (n) {
             byName.set(n, c);
@@ -355,10 +390,13 @@ export const useContactStore = create<ContactState>()(
           phone: input.phone?.trim() || undefined,
           company: input.company?.trim() || undefined,
           role: input.role?.trim() || undefined,
-          avatarColor: input.avatarColor || pickAvatarColor(input.email || input.name),
+          avatarColor:
+            input.avatarColor || pickAvatarColor(input.email || input.name),
           lastContactAt: input.lastContactAt ?? null,
           contactFrequency: input.contactFrequency ?? "never",
-          tags: (input.tags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean),
+          tags: (input.tags ?? [])
+            .map((t) => t.trim().toLowerCase())
+            .filter(Boolean),
           notes: input.notes?.trim() || undefined,
           groupId: input.groupId,
           createdAt: ts,
@@ -375,17 +413,37 @@ export const useContactStore = create<ContactState>()(
             return {
               ...c,
               ...("name" in input ? { name: input.name!.trim() } : {}),
-              ...("email" in input ? { email: normalizeEmail(input.email!) } : {}),
-              ...("phone" in input ? { phone: input.phone?.trim() || undefined } : {}),
-              ...("company" in input ? { company: input.company?.trim() || undefined } : {}),
-              ...("role" in input ? { role: input.role?.trim() || undefined } : {}),
-              ...("avatarColor" in input ? { avatarColor: input.avatarColor! } : {}),
-              ...("notes" in input ? { notes: input.notes?.trim() || undefined } : {}),
+              ...("email" in input
+                ? { email: normalizeEmail(input.email!) }
+                : {}),
+              ...("phone" in input
+                ? { phone: input.phone?.trim() || undefined }
+                : {}),
+              ...("company" in input
+                ? { company: input.company?.trim() || undefined }
+                : {}),
+              ...("role" in input
+                ? { role: input.role?.trim() || undefined }
+                : {}),
+              ...("avatarColor" in input
+                ? { avatarColor: input.avatarColor! }
+                : {}),
+              ...("notes" in input
+                ? { notes: input.notes?.trim() || undefined }
+                : {}),
               ...("groupId" in input ? { groupId: input.groupId } : {}),
-              ...("lastContactAt" in input ? { lastContactAt: input.lastContactAt ?? null } : {}),
-              ...("contactFrequency" in input ? { contactFrequency: input.contactFrequency! } : {}),
+              ...("lastContactAt" in input
+                ? { lastContactAt: input.lastContactAt ?? null }
+                : {}),
+              ...("contactFrequency" in input
+                ? { contactFrequency: input.contactFrequency! }
+                : {}),
               ...("tags" in input
-                ? { tags: (input.tags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean) }
+                ? {
+                    tags: (input.tags ?? [])
+                      .map((t) => t.trim().toLowerCase())
+                      .filter(Boolean),
+                  }
                 : {}),
               updatedAt: nowISO(),
             };
@@ -417,10 +475,14 @@ export const useContactStore = create<ContactState>()(
               ? primary.lastContactAt > duplicate.lastContactAt
                 ? primary.lastContactAt
                 : duplicate.lastContactAt
-              : primary.lastContactAt ?? duplicate.lastContactAt,
+              : (primary.lastContactAt ?? duplicate.lastContactAt),
           contactFrequency:
-            (["daily", "weekly", "monthly", "rarely", "never"] as const).indexOf(primary.contactFrequency) <=
-            (["daily", "weekly", "monthly", "rarely", "never"] as const).indexOf(duplicate.contactFrequency)
+            (
+              ["daily", "weekly", "monthly", "rarely", "never"] as const
+            ).indexOf(primary.contactFrequency) <=
+            (
+              ["daily", "weekly", "monthly", "rarely", "never"] as const
+            ).indexOf(duplicate.contactFrequency)
               ? primary.contactFrequency
               : duplicate.contactFrequency,
           updatedAt: nowISO(),
@@ -454,7 +516,7 @@ export const useContactStore = create<ContactState>()(
                   color: input.color ?? g.color,
                   description: input.description ?? g.description,
                 }
-              : g,
+              : g
           ),
         }));
       },
@@ -464,7 +526,7 @@ export const useContactStore = create<ContactState>()(
           groups: s.groups.filter((g) => g.id !== id),
           // Unassign contacts that belonged to the deleted group.
           contacts: s.contacts.map((c) =>
-            c.groupId === id ? { ...c, groupId: undefined } : c,
+            c.groupId === id ? { ...c, groupId: undefined } : c
           ),
         }));
       },
@@ -479,7 +541,11 @@ export const useContactStore = create<ContactState>()(
           if (!email && !name) continue;
           const normalized = email ? normalizeEmail(email) : "";
           // Skip duplicates by email.
-          if (normalized && next.some((c) => normalizeEmail(c.email) === normalized)) continue;
+          if (
+            normalized &&
+            next.some((c) => normalizeEmail(c.email) === normalized)
+          )
+            continue;
           const ts = nowISO();
           next.push({
             id: genId(),
@@ -491,7 +557,9 @@ export const useContactStore = create<ContactState>()(
             avatarColor: pickAvatarColor(name || normalized),
             lastContactAt: null,
             contactFrequency: "never",
-            tags: (imp.tags ?? []).map((t) => t.trim().toLowerCase()).filter(Boolean),
+            tags: (imp.tags ?? [])
+              .map((t) => t.trim().toLowerCase())
+              .filter(Boolean),
             notes: imp.notes?.trim() || undefined,
             createdAt: ts,
             updatedAt: ts,
@@ -541,7 +609,9 @@ export const useContactStore = create<ContactState>()(
             const dates = byContact.get(normalizeEmail(c.email));
             if (!dates || dates.length === 0) return c;
             const freq = deriveFrequency(dates);
-            const last = dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+            const last = dates.sort(
+              (a, b) => new Date(b).getTime() - new Date(a).getTime()
+            )[0];
             return {
               ...c,
               lastContactAt: last,
@@ -556,6 +626,6 @@ export const useContactStore = create<ContactState>()(
       name: "misfits-contacts-v1",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ contacts: s.contacts, groups: s.groups }),
-    },
-  ),
+    }
+  )
 );

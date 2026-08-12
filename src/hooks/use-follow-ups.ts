@@ -26,8 +26,7 @@ export function useFollowUps(): {
   const active = followUps
     .filter((fu) => fu.status !== "dismissed" && fu.status !== "completed")
     .sort(
-      (a, b) =>
-        new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+      (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
     );
 
   return { followUps: active, reminders, isScanning, lastScanAt };

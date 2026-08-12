@@ -13,11 +13,7 @@ export type SmtpEventType =
   | "bounced";
 
 export type DeliveryStatus =
-  | "pending"
-  | "delivered"
-  | "deferred"
-  | "bounced"
-  | "failed";
+  "pending" | "delivered" | "deferred" | "bounced" | "failed";
 
 export interface SmtpEvent {
   id: string;

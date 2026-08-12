@@ -41,7 +41,21 @@ type AvatarOption = {
 };
 
 const SYLLABLE_ONSETS = [
-  "b", "c", "d", "f", "g", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z",
+  "b",
+  "c",
+  "d",
+  "f",
+  "g",
+  "k",
+  "l",
+  "m",
+  "n",
+  "p",
+  "r",
+  "s",
+  "t",
+  "v",
+  "z",
 ] as const;
 
 const SYLLABLE_VOWELS = ["a", "e", "i", "o", "u", "ai", "ou"] as const;
@@ -115,9 +129,7 @@ function sanitizeAvatarName(input: string): string {
   return sanitized || "user-avatar";
 }
 
-function buildAvatarOptions(
-  salt: number,
-): AvatarOption[] {
+function buildAvatarOptions(salt: number): AvatarOption[] {
   const seedBase = `avatar-${salt}`;
   const baseHash = hashText(seedBase || "avatar");
 
@@ -132,8 +144,8 @@ function buildAvatarOptions(
     while (step < 50) {
       const leftSeed = hashText(`${baseHash}-${i}-${step}-left`);
       const rightSeed = hashText(`${baseHash}-${i}-${step}-right`);
-      const left = createPseudoWord(leftSeed, (leftSeed % 2 === 0 ? 1 : 2));
-      const right = createPseudoWord(rightSeed, (rightSeed % 2 === 0 ? 1 : 2));
+      const left = createPseudoWord(leftSeed, leftSeed % 2 === 0 ? 1 : 2);
+      const right = createPseudoWord(rightSeed, rightSeed % 2 === 0 ? 1 : 2);
       generatedName = sanitizeAvatarName(`${left}-${right}`);
       if (!usedNames.has(generatedName)) break;
       step += 1;
@@ -163,15 +175,18 @@ export default function RegisterPage() {
   const [termsTouched, setTermsTouched] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [avatarSalt, setAvatarSalt] = useState(() => Date.now());
-  const [avatarNameEdits, setAvatarNameEdits] = useState<Record<string, string>>({});
+  const [avatarNameEdits, setAvatarNameEdits] = useState<
+    Record<string, string>
+  >({});
 
   const avatarOptions = useMemo(
     () => buildAvatarOptions(avatarSalt),
-    [avatarSalt],
+    [avatarSalt]
   );
   const [selectedAvatar, setSelectedAvatar] = useState(0);
 
-  const selectedAvatarOption = avatarOptions[selectedAvatar] ?? avatarOptions[0];
+  const selectedAvatarOption =
+    avatarOptions[selectedAvatar] ?? avatarOptions[0];
   const selectedAvatarName = selectedAvatarOption
     ? (avatarNameEdits[selectedAvatarOption.id] ?? selectedAvatarOption.name)
     : "user-avatar";
@@ -321,7 +336,9 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setEmailTouched(true)}
                   aria-invalid={emailError ? "true" : "false"}
-                  aria-describedby={emailError ? "register-email-error" : undefined}
+                  aria-describedby={
+                    emailError ? "register-email-error" : undefined
+                  }
                   required
                 />
                 {emailError ? (
@@ -357,13 +374,15 @@ export default function RegisterPage() {
                           "mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold text-white transition",
                           selectedAvatar === idx
                             ? "ring-2 ring-[var(--color-brand-500)] ring-offset-2 ring-offset-[var(--color-bg)]"
-                            : "opacity-80 hover:opacity-100",
+                            : "opacity-80 hover:opacity-100"
                         )}
                         style={{ background: option.background }}
                         aria-label={`Select avatar ${option.name}`}
                         aria-pressed={selectedAvatar === idx}
                       >
-                        {initialsFromName(avatarNameEdits[option.id] ?? option.name)}
+                        {initialsFromName(
+                          avatarNameEdits[option.id] ?? option.name
+                        )}
                       </button>
                       <p className="truncate text-[10px] text-[var(--color-muted-fg)]">
                         {avatarNameEdits[option.id] ?? option.name}
@@ -372,7 +391,9 @@ export default function RegisterPage() {
                   ))}
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="avatar-name">Nom d&apos;avatar (editable)</Label>
+                  <Label htmlFor="avatar-name">
+                    Nom d&apos;avatar (editable)
+                  </Label>
                   <Input
                     id="avatar-name"
                     type="text"
@@ -417,13 +438,16 @@ export default function RegisterPage() {
                     id="register-password-help"
                     className="text-xs text-[var(--color-muted-fg)]"
                   >
-                    Use at least 8 characters with a mix of letters, numbers and symbols.
+                    Use at least 8 characters with a mix of letters, numbers and
+                    symbols.
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="register-confirm">Confirmation du mot de passe</Label>
+                <Label htmlFor="register-confirm">
+                  Confirmation du mot de passe
+                </Label>
                 <Input
                   id="register-confirm"
                   type="password"
@@ -433,7 +457,9 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   onBlur={() => setConfirmTouched(true)}
                   aria-invalid={passwordMismatch ? "true" : "false"}
-                  aria-describedby={passwordMismatch ? "register-confirm-error" : undefined}
+                  aria-describedby={
+                    passwordMismatch ? "register-confirm-error" : undefined
+                  }
                   required
                 />
                 {passwordMismatch ? (
@@ -454,11 +480,13 @@ export default function RegisterPage() {
                     checked={acceptTerms}
                     onCheckedChange={(v) => setTermsAccepted(v === true)}
                     aria-invalid={termsError ? "true" : "false"}
-                    aria-describedby={termsError ? "accept-terms-error" : undefined}
+                    aria-describedby={
+                      termsError ? "accept-terms-error" : undefined
+                    }
                   />
                   <Label
                     htmlFor="accept-terms"
-                    className="cursor-pointer text-sm font-normal leading-5"
+                    className="cursor-pointer text-sm leading-5 font-normal"
                   >
                     J&apos;accepte les conditions d&apos;utilisation.
                   </Label>
@@ -521,7 +549,7 @@ function ErrorBanner({
     <div
       className={cn(
         "mb-4 flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger-500)] bg-[var(--color-danger-50)] p-3 text-sm text-[var(--color-danger-700)] dark:bg-[var(--color-danger-900)] dark:text-[var(--color-danger-300)]",
-        className,
+        className
       )}
       role="alert"
       aria-live="assertive"

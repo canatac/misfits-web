@@ -3,13 +3,14 @@
  * useLabels queries the store (with query caching) and the mutations
  * wrap the store actions, invalidating the cache on success.
  */
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLabelStore } from "@/stores/label-store";
-import type { Label, LabelCreateInput, LabelUpdateInput, LabelTree } from "@/types/label";
+import type {
+  Label,
+  LabelCreateInput,
+  LabelUpdateInput,
+  LabelTree,
+} from "@/types/label";
 
 /** Query all labels from the store. */
 export function useLabels() {

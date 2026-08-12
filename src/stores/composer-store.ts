@@ -167,24 +167,33 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     const list = get()[type];
     // Avoid duplicates by email.
     if (list.some((r) => r.email === recipient.email)) return;
-    set({ [type]: [...list, recipient], isDirty: true } as Partial<ComposerStore>);
+    set({
+      [type]: [...list, recipient],
+      isDirty: true,
+    } as Partial<ComposerStore>);
   },
 
   removeRecipient: (type, id) => {
     const list = get()[type];
-    set({ [type]: list.filter((r) => r.id !== id), isDirty: true } as Partial<ComposerStore>);
+    set({
+      [type]: list.filter((r) => r.id !== id),
+      isDirty: true,
+    } as Partial<ComposerStore>);
   },
 
   setSubject: (subject) => set({ subject, isDirty: true }),
   setBody: (body) => set({ body, isDirty: true }),
 
   addAttachment: (attachment) =>
-    set((s) => ({ attachments: [...s.attachments, attachment], isDirty: true })),
+    set((s) => ({
+      attachments: [...s.attachments, attachment],
+      isDirty: true,
+    })),
 
   updateAttachment: (id, patch) =>
     set((s) => ({
       attachments: s.attachments.map((a) =>
-        a.id === id ? { ...a, ...patch } : a,
+        a.id === id ? { ...a, ...patch } : a
       ),
       isDirty: true,
     })),

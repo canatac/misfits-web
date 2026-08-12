@@ -29,7 +29,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useFollowUps, useDismissFollowUp, useSnoozeFollowUp } from "@/hooks/use-follow-ups";
+import {
+  useFollowUps,
+  useDismissFollowUp,
+  useSnoozeFollowUp,
+} from "@/hooks/use-follow-ups";
 import { useEmailStore } from "@/stores/email-store";
 import { useComposerStore } from "@/stores/composer-store";
 import { getUrgency } from "@/lib/follow-up-detector";
@@ -39,8 +43,9 @@ function daysBetween(fromISO: string, toISO: string): number {
   return Math.max(
     0,
     Math.floor(
-      (new Date(toISO).getTime() - new Date(fromISO).getTime()) / (1000 * 60 * 60 * 24),
-    ),
+      (new Date(toISO).getTime() - new Date(fromISO).getTime()) /
+        (1000 * 60 * 60 * 24)
+    )
   );
 }
 
@@ -112,7 +117,7 @@ export function FollowUpList({ className }: { className?: string }) {
         },
       },
     ],
-    [],
+    []
   );
 
   const handleReply = (fu: FollowUpItem) => {
@@ -125,12 +130,21 @@ export function FollowUpList({ className }: { className?: string }) {
     openComposer(
       email
         ? {
-            to: [{ id: `rcpt-${Date.now()}`, email: fu.senderAddress, name: fu.senderName, type: "to" as const }],
-            subject: email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`,
+            to: [
+              {
+                id: `rcpt-${Date.now()}`,
+                email: fu.senderAddress,
+                name: fu.senderName,
+                type: "to" as const,
+              },
+            ],
+            subject: email.subject.startsWith("Re: ")
+              ? email.subject
+              : `Re: ${email.subject}`,
             body: "",
             inReplyTo: email.messageId,
           }
-        : null,
+        : null
     );
   };
 
@@ -175,7 +189,7 @@ export function FollowUpList({ className }: { className?: string }) {
                             ? "text-[var(--color-danger-500)]"
                             : urgency === "warning"
                               ? "text-[var(--color-warning-500)]"
-                              : "text-[var(--color-muted-fg)]",
+                              : "text-[var(--color-muted-fg)]"
                         )}
                       />
                       <span className="truncate text-sm font-medium">
@@ -230,7 +244,10 @@ export function FollowUpList({ className }: { className?: string }) {
                         <DropdownMenuItem
                           key={opt.label}
                           onClick={() =>
-                            snoozeMutation.mutate({ id: fu.id, untilISO: opt.getISO() })
+                            snoozeMutation.mutate({
+                              id: fu.id,
+                              untilISO: opt.getISO(),
+                            })
                           }
                         >
                           {opt.label}

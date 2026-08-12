@@ -73,7 +73,9 @@ export function useLogin() {
     },
     onError: (error: unknown) => {
       const message =
-        error instanceof ApiError ? error.message : "Login failed. Please try again.";
+        error instanceof ApiError
+          ? error.message
+          : "Login failed. Please try again.";
       notifyAuthError(message);
     },
   });
@@ -149,7 +151,8 @@ export function useLogoutAction(): () => void {
 export function useRequestPasswordReset() {
   const requestPasswordReset = useAuthStore((s) => s.requestPasswordReset);
   return useMutation({
-    mutationFn: (request: PasswordResetRequest) => requestPasswordReset(request),
+    mutationFn: (request: PasswordResetRequest) =>
+      requestPasswordReset(request),
     onSuccess: () => {
       toast.success("If that email exists, a reset link is on its way.");
     },

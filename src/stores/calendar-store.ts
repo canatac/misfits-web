@@ -30,7 +30,10 @@ interface CalendarState {
 
   // Mutations
   createEvent: (input: CalendarEventInput) => Promise<CalendarEvent>;
-  updateEvent: (id: string, update: CalendarEventUpdate) => Promise<CalendarEvent>;
+  updateEvent: (
+    id: string,
+    update: CalendarEventUpdate
+  ) => Promise<CalendarEvent>;
   deleteEvent: (id: string) => Promise<void>;
 
   // UI
@@ -45,7 +48,8 @@ function toISO(v: unknown): string {
     const d = v as { $date?: string | { $numberLong?: string } };
     if (d.$date) {
       if (typeof d.$date === "string") return d.$date;
-      if (d.$date.$numberLong) return new Date(Number(d.$date.$numberLong)).toISOString();
+      if (d.$date.$numberLong)
+        return new Date(Number(d.$date.$numberLong)).toISOString();
     }
   }
   return new Date().toISOString();
@@ -84,7 +88,9 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
       const qs = params.toString();
       const path = qs ? `/calendar/events?${qs}` : "/calendar/events";
       const res = await apiClient.get<CalendarListResponse>(path);
-      const events = (res.events as unknown as Record<string, unknown>[]).map(normalizeEvent);
+      const events = (res.events as unknown as Record<string, unknown>[]).map(
+        normalizeEvent
+      );
       set({ events, loading: false });
     } catch (e) {
       set({ loading: false, error: (e as Error).message });
@@ -94,7 +100,10 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   getEventById: (id) => get().events.find((e) => e.id === id),
 
   createEvent: async (input) => {
-    const event = await apiClient.post<CalendarEvent>("/calendar/events", input);
+    const event = await apiClient.post<CalendarEvent>(
+      "/calendar/events",
+      input
+    );
     set((s) => ({ events: [...s.events, event] }));
     return event;
   },
@@ -102,7 +111,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   updateEvent: async (id, update) => {
     const event = await apiClient.put<CalendarEvent>(
       `/calendar/events/${id}`,
-      update,
+      update
     );
     set((s) => ({
       events: s.events.map((e) => (e.id === id ? event : e)),

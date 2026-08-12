@@ -4,7 +4,10 @@ import * as React from "react";
 import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Modal as Dialog, ModalContent as DialogContent } from "@/components/ui/modal";
+import {
+  Modal as Dialog,
+  ModalContent as DialogContent,
+} from "@/components/ui/modal";
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -14,7 +17,7 @@ const Command = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-full w-full flex-col overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-popover)] text-[var(--color-popover-fg)]",
-      className,
+      className
     )}
     {...props}
   />
@@ -39,13 +42,16 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="flex items-center border-b border-[var(--color-border)] px-3" cmdk-input-wrapper="">
+  <div
+    className="flex items-center border-b border-[var(--color-border)] px-3"
+    cmdk-input-wrapper=""
+  >
     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
         "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-[var(--color-muted-fg)] disabled:cursor-not-allowed disabled:opacity-50",
-        className,
+        className
       )}
       {...props}
     />
@@ -59,10 +65,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={cn(
-      "max-h-[300px] overflow-y-auto overflow-x-hidden",
-      className,
-    )}
+    className={cn("max-h-[300px] overflow-x-hidden overflow-y-auto", className)}
     {...props}
   />
 ));
@@ -88,7 +91,7 @@ const CommandGroup = React.forwardRef<
     ref={ref}
     className={cn(
       "overflow-hidden p-1 text-[var(--color-popover-fg)] [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-[var(--color-muted-fg)]",
-      className,
+      className
     )}
     {...props}
   />
@@ -114,8 +117,8 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-[var(--radius-sm)] px-2 py-1.5 text-sm outline-none data-[selected=true]:bg-[var(--color-accent)] data-[selected=true]:text-[var(--color-accent-fg)] data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
-      className,
+      "relative flex cursor-default items-center rounded-[var(--radius-sm)] px-2 py-1.5 text-sm outline-none select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-[var(--color-accent)] data-[selected=true]:text-[var(--color-accent-fg)]",
+      className
     )}
     {...props}
   />
@@ -129,7 +132,7 @@ const CommandShortcut = ({
   <span
     className={cn(
       "ml-auto text-xs tracking-widest text-[var(--color-muted-fg)]",
-      className,
+      className
     )}
     {...props}
   />

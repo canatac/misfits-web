@@ -7,11 +7,7 @@
  * - useEmailTemplates: query for built-in templates.
  * - useDrafts: query for the saved-drafts list.
  */
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useCallback } from "react";
 import { emailTemplates } from "@/lib/email-templates";
 import type { EmailTemplate } from "@/lib/email-templates";
@@ -77,7 +73,7 @@ export function useSaveDraft() {
         mutation.mutate(draft);
       }, DEBOUNCE_MS);
     },
-    [mutation],
+    [mutation]
   );
 
   /** Cancel a pending debounced save. */
@@ -108,7 +104,9 @@ export function useSendEmail() {
       options?: SendOptions;
     }) => {
       if (BACKEND_AVAILABLE) {
-        const endpoint = options?.sendLater ? "/api/send/schedule" : "/api/send";
+        const endpoint = options?.sendLater
+          ? "/api/send/schedule"
+          : "/api/send";
         const res = await fetch(endpoint, {
           method: "POST",
           headers: mailAuthHeaders(),
@@ -125,7 +123,7 @@ export function useSendEmail() {
         if (!res.ok) {
           const errBody = await res.text().catch(() => "");
           throw new Error(
-            errBody || `Send failed: ${res.status} ${res.statusText}`,
+            errBody || `Send failed: ${res.status} ${res.statusText}`
           );
         }
 
@@ -179,7 +177,10 @@ export const UNDO_SEND_DEFAULT = 10;
  * banner and call `undo` before the timer expires.
  */
 export function useUndoSend(windowSeconds: number = UNDO_SEND_DEFAULT) {
-  const clamped = Math.min(UNDO_SEND_MAX, Math.max(UNDO_SEND_MIN, windowSeconds));
+  const clamped = Math.min(
+    UNDO_SEND_MAX,
+    Math.max(UNDO_SEND_MIN, windowSeconds)
+  );
   const queryClient = useQueryClient();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendId = useRef<string | null>(null);
@@ -224,7 +225,7 @@ export function useUndoSend(windowSeconds: number = UNDO_SEND_DEFAULT) {
         }
       };
     },
-    [clamped],
+    [clamped]
   );
 
   /** Cancel the pending commit (i.e. actually undo). */

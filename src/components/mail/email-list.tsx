@@ -113,7 +113,7 @@ export function EmailList({ className }: EmailListProps) {
     (direction: "next" | "prev") => {
       if (filteredEmails.length === 0) return;
       const currentIndex = filteredEmails.findIndex(
-        (e) => e.id === selectedEmailId,
+        (e) => e.id === selectedEmailId
       );
       let newIndex: number;
       if (currentIndex === -1) {
@@ -126,7 +126,7 @@ export function EmailList({ className }: EmailListProps) {
       }
       selectEmail(filteredEmails[newIndex].id);
     },
-    [filteredEmails, selectedEmailId, selectEmail],
+    [filteredEmails, selectedEmailId, selectEmail]
   );
 
   // Expose search focus for parent keyboard handler via ref callback
@@ -136,9 +136,11 @@ export function EmailList({ className }: EmailListProps) {
 
   // Store focusSearch on window for the page-level shortcut hook to call
   useEffect(() => {
-    (window as Window & { __mailFocusSearch?: () => void }).__mailFocusSearch = focusSearch;
+    (window as Window & { __mailFocusSearch?: () => void }).__mailFocusSearch =
+      focusSearch;
     return () => {
-      delete (window as Window & { __mailFocusSearch?: () => void }).__mailFocusSearch;
+      delete (window as Window & { __mailFocusSearch?: () => void })
+        .__mailFocusSearch;
     };
   }, [focusSearch]);
 
@@ -196,7 +198,7 @@ export function EmailList({ className }: EmailListProps) {
     <div
       className={cn(
         "flex h-full flex-col border-r border-[#242427] bg-[#0A0A0B] text-[#E0E0E0]",
-        className,
+        className
       )}
       data-testid="email-list"
     >
@@ -209,7 +211,7 @@ export function EmailList({ className }: EmailListProps) {
         {/* Search + Sort */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
             <Input
               ref={searchRef}
               type="search"
@@ -221,7 +223,10 @@ export function EmailList({ className }: EmailListProps) {
             />
           </div>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-            <SelectTrigger className="w-[160px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]" aria-label="Sort by">
+            <SelectTrigger
+              className="w-[160px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]"
+              aria-label="Sort by"
+            >
               <ArrowDownUp className="mr-1 h-3.5 w-3.5" />
               <SelectValue />
             </SelectTrigger>
@@ -256,13 +261,25 @@ export function EmailList({ className }: EmailListProps) {
               <span className="text-xs text-[var(--color-muted-fg)]">
                 {selectedEmailIds.size} selected
               </span>
-              <Button size="sm" variant="ghost" onClick={() => bulkAction("archive")}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => bulkAction("archive")}
+              >
                 <Archive className="h-4 w-4" />
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => bulkAction("delete")}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => bulkAction("delete")}
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => bulkAction("markRead")}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => bulkAction("markRead")}
+              >
                 <MailOpen className="h-4 w-4" />
               </Button>
               <Button size="sm" variant="ghost" onClick={clearSelection}>
@@ -281,7 +298,8 @@ export function EmailList({ className }: EmailListProps) {
               aria-label="Select all emails"
             />
             <span className="text-xs text-[var(--color-muted-fg)]">
-              {filteredEmails.length} {filteredEmails.length === 1 ? "email" : "emails"}
+              {filteredEmails.length}{" "}
+              {filteredEmails.length === 1 ? "email" : "emails"}
             </span>
           </div>
         )}
@@ -303,7 +321,10 @@ export function EmailList({ className }: EmailListProps) {
       {/* Email rows */}
       <ScrollArea className="flex-1">
         {loading ? (
-          <div className="flex flex-col gap-0" data-testid="email-list-skeleton">
+          <div
+            className="flex flex-col gap-0"
+            data-testid="email-list-skeleton"
+          >
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
@@ -331,7 +352,11 @@ export function EmailList({ className }: EmailListProps) {
           />
         ) : threadingEnabled && threads.length > 0 ? (
           /* Threaded view */
-          <div role="listbox" aria-label="Thread list" data-testid="thread-list">
+          <div
+            role="listbox"
+            aria-label="Thread list"
+            data-testid="thread-list"
+          >
             {threads.map((thread) => (
               <ThreadListItem
                 key={thread.id}

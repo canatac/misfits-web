@@ -6,13 +6,7 @@
  * and a results count. Wires Cmd+/ focus via the global window hook.
  */
 import { useRef, useState, useEffect, useCallback } from "react";
-import {
-  Search,
-  X,
-  ChevronDown,
-  History,
-  Save,
-} from "lucide-react";
+import { Search, X, ChevronDown, History, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,10 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import {
-  OPERATOR_META,
-  type OperatorMeta,
-} from "@/types/search";
+import { OPERATOR_META, type OperatorMeta } from "@/types/search";
 import { getActiveOperator } from "@/lib/search-parser";
 import { useSearchStore } from "@/stores/search-store";
 import { useSearchHistory } from "@/hooks/use-search";
@@ -36,7 +27,11 @@ interface SearchBarProps {
   autoFocus?: boolean;
 }
 
-export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProps) {
+export function SearchBar({
+  className,
+  onOpenOverlay,
+  autoFocus,
+}: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [showOperatorHints, setShowOperatorHints] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -62,7 +57,8 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
       }
     };
     return () => {
-      delete (window as Window & { __mailFocusSearch?: () => void }).__mailFocusSearch;
+      delete (window as Window & { __mailFocusSearch?: () => void })
+        .__mailFocusSearch;
     };
   }, [onOpenOverlay]);
 
@@ -79,7 +75,7 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
       // Execute search (debounced via the store/hook)
       executeSearch();
     },
-    [setSearchQuery, executeSearch],
+    [setSearchQuery, executeSearch]
   );
 
   const handleKeyDown = useCallback(
@@ -107,7 +103,7 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
         setShowHistory(true);
       }
     },
-    [query, setSearchQuery, executeSearch, addHistoryEntry],
+    [query, setSearchQuery, executeSearch, addHistoryEntry]
   );
 
   const handleClear = useCallback(() => {
@@ -148,12 +144,15 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
 
       // Focus and position cursor after the operator
       requestAnimationFrame(() => {
-        const pos = (match ? cursorPos - match[0].length : cursorPos) + op.operator.length + 1;
+        const pos =
+          (match ? cursorPos - match[0].length : cursorPos) +
+          op.operator.length +
+          1;
         inputRef.current?.focus();
         inputRef.current?.setSelectionRange(pos, pos);
       });
     },
-    [query, setSearchQuery],
+    [query, setSearchQuery]
   );
 
   const activeOperator = (() => {
@@ -165,14 +164,14 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
     ? OPERATOR_META.filter(
         (op) =>
           op.operator.startsWith(activeOperator.operator) ||
-          op.operator.includes(activeOperator.operator),
+          op.operator.includes(activeOperator.operator)
       )
     : OPERATOR_META;
 
   return (
     <div className={cn("relative flex items-center gap-1", className)}>
       <div className="relative flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
+        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
         <Input
           ref={inputRef}
           type="search"
@@ -190,14 +189,14 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
               setShowOperatorHints(false);
             }, 200);
           }}
-          className="pl-9 pr-20"
+          className="pr-20 pl-9"
           aria-label="Search emails"
           data-testid="search-bar-input"
           autoFocus={autoFocus}
         />
 
         {/* Right-side actions */}
-        <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5">
+        <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5">
           {query && (
             <Button
               size="icon"
@@ -235,12 +234,9 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
                   <History className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                className="w-80 p-0"
-                align="end"
-              >
+              <PopoverContent className="w-80 p-0" align="end">
                 <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+                  <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
                     Recent Searches
                   </span>
                   {searchHistory.length > 0 && (
@@ -285,8 +281,8 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
 
       {/* Operator autocomplete dropdown */}
       {showOperatorHints && (
-        <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] shadow-[var(--shadow-lg)]">
-          <div className="border-b border-[var(--color-border)] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+        <div className="absolute top-full left-0 z-50 mt-1 w-80 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] shadow-[var(--shadow-lg)]">
+          <div className="border-b border-[var(--color-border)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
             Search Operators
           </div>
           <div className="max-h-64 overflow-y-auto p-1">
@@ -303,8 +299,12 @@ export function SearchBar({ className, onOpenOverlay, autoFocus }: SearchBarProp
                   {op.label}
                 </span>
                 <div className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-sm text-[var(--color-fg)]">{op.description}</span>
-                  <span className="text-xs text-[var(--color-muted-fg)]">{op.example}</span>
+                  <span className="text-sm text-[var(--color-fg)]">
+                    {op.description}
+                  </span>
+                  <span className="text-xs text-[var(--color-muted-fg)]">
+                    {op.example}
+                  </span>
                 </div>
               </button>
             ))}

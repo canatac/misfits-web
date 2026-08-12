@@ -63,7 +63,7 @@ export function ReminderBanner() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[100] flex max-w-sm flex-col gap-2"
+      className="fixed right-4 bottom-4 z-[100] flex max-w-sm flex-col gap-2"
       aria-live="polite"
       aria-label="Follow-up reminders"
       data-testid="reminder-banner"
@@ -77,7 +77,7 @@ export function ReminderBanner() {
             className={cn(
               "flex items-start gap-3 rounded-[var(--radius-lg)] border p-3 shadow-lg",
               styles.border,
-              "bg-[var(--color-card)]",
+              "bg-[var(--color-card)]"
             )}
             role="alert"
           >
@@ -85,7 +85,7 @@ export function ReminderBanner() {
               className={cn(
                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                 styles.bg,
-                styles.text,
+                styles.text
               )}
             >
               <Icon className="h-4 w-4" />
@@ -99,7 +99,8 @@ export function ReminderBanner() {
               </p>
               <div className="mt-1 flex items-center gap-1 text-xs text-[var(--color-muted-fg)]">
                 <Clock className="h-3 w-3" />
-                {reminder.daysWaiting} day{reminder.daysWaiting === 1 ? "" : "s"} waiting
+                {reminder.daysWaiting} day
+                {reminder.daysWaiting === 1 ? "" : "s"} waiting
               </div>
             </div>
             <Button
@@ -107,7 +108,9 @@ export function ReminderBanner() {
               size="icon"
               className="h-7 w-7 shrink-0 text-[var(--color-muted-fg)]"
               onClick={() => {
-                setDismissedIds((prev) => new Set(prev).add(reminder.followUpId));
+                setDismissedIds((prev) =>
+                  new Set(prev).add(reminder.followUpId)
+                );
                 dismissMutation.mutate(reminder.followUpId);
               }}
               aria-label="Dismiss reminder"

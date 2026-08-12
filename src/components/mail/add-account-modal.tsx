@@ -52,7 +52,11 @@ const ACCOUNT_COLORS: string[] = [
 /** Default IMAP/SMTP presets per provider. */
 const PROVIDER_PRESETS: Record<
   AccountProvider,
-  { label: string; serverConfig?: AccountServerConfig; needsServerFields: boolean }
+  {
+    label: string;
+    serverConfig?: AccountServerConfig;
+    needsServerFields: boolean;
+  }
 > = {
   gmail: {
     label: "Gmail",
@@ -116,7 +120,10 @@ const PROVIDER_PRESETS: Record<
   },
 };
 
-const SECURITY_OPTIONS: { value: AccountServerConfig["imapSecurity"]; label: string }[] = [
+const SECURITY_OPTIONS: {
+  value: AccountServerConfig["imapSecurity"];
+  label: string;
+}[] = [
   { value: "ssl", label: "SSL/TLS" },
   { value: "starttls", label: "STARTTLS" },
   { value: "none", label: "None" },
@@ -131,7 +138,7 @@ interface ValidationResult {
 function validateConnection(
   email: string,
   password: string,
-  serverConfig: AccountServerConfig,
+  serverConfig: AccountServerConfig
 ): ValidationResult {
   const errors: string[] = [];
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -140,10 +147,18 @@ function validateConnection(
 
   if (!serverConfig.imapHost.trim()) errors.push("IMAP host is required.");
   if (!serverConfig.smtpHost.trim()) errors.push("SMTP host is required.");
-  if (!Number.isInteger(serverConfig.imapPort) || serverConfig.imapPort < 1 || serverConfig.imapPort > 65535) {
+  if (
+    !Number.isInteger(serverConfig.imapPort) ||
+    serverConfig.imapPort < 1 ||
+    serverConfig.imapPort > 65535
+  ) {
     errors.push("IMAP port must be between 1 and 65535.");
   }
-  if (!Number.isInteger(serverConfig.smtpPort) || serverConfig.smtpPort < 1 || serverConfig.smtpPort > 65535) {
+  if (
+    !Number.isInteger(serverConfig.smtpPort) ||
+    serverConfig.smtpPort < 1 ||
+    serverConfig.smtpPort > 65535
+  ) {
     errors.push("SMTP port must be between 1 and 65535.");
   }
   return { ok: errors.length === 0, errors };
@@ -166,10 +181,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const [color, setColor] = React.useState(ACCOUNT_COLORS[0]);
   const [customColor, setCustomColor] = React.useState("");
   const [serverConfig, setServerConfig] = React.useState<AccountServerConfig>(
-    PROVIDER_PRESETS.gmail.serverConfig!,
+    PROVIDER_PRESETS.gmail.serverConfig!
   );
   const [testing, setTesting] = React.useState(false);
-  const [testResult, setTestResult] = React.useState<ValidationResult | null>(null);
+  const [testResult, setTestResult] = React.useState<ValidationResult | null>(
+    null
+  );
 
   const activeColor = customColor || color;
   const needsServerFields = PROVIDER_PRESETS[provider].needsServerFields;
@@ -219,7 +236,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       color: activeColor,
       avatar: undefined,
       aliases: [],
-      serverConfig: needsServerFields ? serverConfig : PROVIDER_PRESETS[provider].serverConfig,
+      serverConfig: needsServerFields
+        ? serverConfig
+        : PROVIDER_PRESETS[provider].serverConfig,
     });
     setActiveAccount(account.id);
     reset();
@@ -231,7 +250,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     onOpenChange(next);
   }
 
-  const canSave = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
+  const canSave =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
   const showServerFields = needsServerFields;
 
   return (
@@ -243,7 +263,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             Add email account
           </ModalTitle>
           <ModalDescription>
-            Connect a new mailbox. Choose a provider or use custom IMAP/SMTP settings.
+            Connect a new mailbox. Choose a provider or use custom IMAP/SMTP
+            settings.
           </ModalDescription>
         </ModalHeader>
 
@@ -252,16 +273,23 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             {/* Provider */}
             <div className="grid gap-2">
               <Label htmlFor="account-provider">Provider</Label>
-              <Select value={provider} onValueChange={(v) => handleProviderChange(v as AccountProvider)}>
+              <Select
+                value={provider}
+                onValueChange={(v) =>
+                  handleProviderChange(v as AccountProvider)
+                }
+              >
                 <SelectTrigger id="account-provider">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(PROVIDER_PRESETS) as AccountProvider[]).map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {PROVIDER_PRESETS[p].label}
-                    </SelectItem>
-                  ))}
+                  {(Object.keys(PROVIDER_PRESETS) as AccountProvider[]).map(
+                    (p) => (
+                      <SelectItem key={p} value={p}>
+                        {PROVIDER_PRESETS[p].label}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -274,7 +302,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   id="account-email"
                   type="email"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setTestResult(null); }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setTestResult(null);
+                  }}
                   placeholder="you@example.com"
                   autoFocus
                 />
@@ -297,7 +328,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 id="account-password"
                 type="password"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setTestResult(null); }}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setTestResult(null);
+                }}
                 placeholder="••••••••••••"
               />
               <p className="text-xs text-[var(--color-muted-fg)]">
@@ -315,7 +349,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                     <Input
                       id="imap-host"
                       value={serverConfig.imapHost}
-                      onChange={(e) => setServerConfig((s) => ({ ...s, imapHost: e.target.value }))}
+                      onChange={(e) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          imapHost: e.target.value,
+                        }))
+                      }
                       placeholder="imap.example.com"
                     />
                   </div>
@@ -327,21 +366,34 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                       min={1}
                       max={65535}
                       value={serverConfig.imapPort}
-                      onChange={(e) => setServerConfig((s) => ({ ...s, imapPort: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          imapPort: Number(e.target.value),
+                        }))
+                      }
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="imap-security">IMAP security</Label>
                     <Select
                       value={serverConfig.imapSecurity}
-                      onValueChange={(v) => setServerConfig((s) => ({ ...s, imapSecurity: v as AccountServerConfig["imapSecurity"] }))}
+                      onValueChange={(v) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          imapSecurity:
+                            v as AccountServerConfig["imapSecurity"],
+                        }))
+                      }
                     >
                       <SelectTrigger id="imap-security">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {SECURITY_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -351,7 +403,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                     <Input
                       id="smtp-host"
                       value={serverConfig.smtpHost}
-                      onChange={(e) => setServerConfig((s) => ({ ...s, smtpHost: e.target.value }))}
+                      onChange={(e) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          smtpHost: e.target.value,
+                        }))
+                      }
                       placeholder="smtp.example.com"
                     />
                   </div>
@@ -363,21 +420,34 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                       min={1}
                       max={65535}
                       value={serverConfig.smtpPort}
-                      onChange={(e) => setServerConfig((s) => ({ ...s, smtpPort: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          smtpPort: Number(e.target.value),
+                        }))
+                      }
                     />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="smtp-security">SMTP security</Label>
                     <Select
                       value={serverConfig.smtpSecurity}
-                      onValueChange={(v) => setServerConfig((s) => ({ ...s, smtpSecurity: v as AccountServerConfig["smtpSecurity"] }))}
+                      onValueChange={(v) =>
+                        setServerConfig((s) => ({
+                          ...s,
+                          smtpSecurity:
+                            v as AccountServerConfig["smtpSecurity"],
+                        }))
+                      }
                     >
                       <SelectTrigger id="smtp-security">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {SECURITY_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -395,12 +465,15 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                     key={c}
                     type="button"
                     aria-label={`Color ${c}`}
-                    onClick={() => { setColor(c); setCustomColor(""); }}
+                    onClick={() => {
+                      setColor(c);
+                      setCustomColor("");
+                    }}
                     className={cn(
                       "h-6 w-6 rounded-full border-2 transition-transform",
                       !customColor && color === c
-                        ? "border-[var(--color-fg)] scale-110"
-                        : "border-transparent hover:scale-110",
+                        ? "scale-110 border-[var(--color-fg)]"
+                        : "border-transparent hover:scale-110"
                     )}
                     style={{ backgroundColor: c }}
                   />
@@ -413,7 +486,11 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                     className="absolute inset-0 cursor-pointer opacity-0"
                     aria-label="Custom color"
                   />
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: activeColor }} aria-hidden="true" />
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: activeColor }}
+                    aria-hidden="true"
+                  />
                 </label>
                 <span className="ml-1 text-xs text-[var(--color-muted-fg)]">
                   {accounts.length} account(s) connected
@@ -428,7 +505,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   "flex items-start gap-2 rounded-[var(--radius-md)] border p-3 text-sm",
                   testResult.ok
                     ? "border-[var(--color-success-500)] bg-[var(--color-success)] text-[var(--color-success-fg)]"
-                    : "border-[var(--color-danger-500)] bg-[var(--color-danger)] text-[var(--color-danger-fg)]",
+                    : "border-[var(--color-danger-500)] bg-[var(--color-danger)] text-[var(--color-danger-fg)]"
                 )}
                 role={testResult.ok ? "status" : "alert"}
               >
@@ -462,11 +539,23 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             disabled={testing || !canSave}
             data-testid="test-connection-button"
           >
-            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {testing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
             Test connection
           </Button>
-          <Button onClick={handleSave} disabled={!canSave || addAccount.isPending} data-testid="save-account-button">
-            {addAccount.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+          <Button
+            onClick={handleSave}
+            disabled={!canSave || addAccount.isPending}
+            data-testid="save-account-button"
+          >
+            {addAccount.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="h-4 w-4" />
+            )}
             Add account
           </Button>
         </ModalFooter>

@@ -73,7 +73,9 @@ interface ComposerPanelProps {
   className?: string;
 }
 
-function buildDraft(s: ReturnType<typeof useComposerStore.getState>): ComposeDraft {
+function buildDraft(
+  s: ReturnType<typeof useComposerStore.getState>
+): ComposeDraft {
   return {
     id: s.draftId,
     to: s.to,
@@ -90,7 +92,11 @@ function buildDraft(s: ReturnType<typeof useComposerStore.getState>): ComposeDra
   };
 }
 
-export function ComposerPanel({ variant = "panel", onClose, className }: ComposerPanelProps) {
+export function ComposerPanel({
+  variant = "panel",
+  onClose,
+  className,
+}: ComposerPanelProps) {
   const router = useRouter();
   const store = useComposerStore();
   const {
@@ -124,7 +130,10 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   const [showCcBcc, setShowCcBcc] = useState(false);
   const [sendLaterDate, setSendLaterDate] = useState<string>("");
   const [showTemplates, setShowTemplates] = useState(false);
-  const [undoBanner, setUndoBanner] = useState<{ id: string; seconds: number } | null>(null);
+  const [undoBanner, setUndoBanner] = useState<{
+    id: string;
+    seconds: number;
+  } | null>(null);
   const undoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [aiEditor, setAiEditor] = useState<Editor | null>(null);
@@ -156,7 +165,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   const hasExternal = useMemo(
     () =>
       [...to, ...cc, ...bcc].some((r) => validateRecipient(r.email).external),
-    [to, cc, bcc],
+    [to, cc, bcc]
   );
 
   const attachmentMention = useMemo(() => {
@@ -169,10 +178,14 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
   const invalidRecipients = useMemo(
     () =>
       [...to, ...cc, ...bcc].filter((r) => !validateRecipient(r.email).valid),
-    [to, cc, bcc],
+    [to, cc, bcc]
   );
 
-  const canSend = to.length > 0 && invalidRecipients.length === 0 && !isSending && subject.trim() !== "";
+  const canSend =
+    to.length > 0 &&
+    invalidRecipients.length === 0 &&
+    !isSending &&
+    subject.trim() !== "";
 
   const finalBody = useMemo(() => {
     if (!signature) return body;
@@ -201,7 +214,8 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           messageId?: string;
           deliveryState?: "queued" | "sending" | "sent" | "failed";
         };
-        const id = payload.message_id ?? payload.messageId ?? payload.id ?? draft.id;
+        const id =
+          payload.message_id ?? payload.messageId ?? payload.id ?? draft.id;
         const state = payload.deliveryState;
         if (options?.sendLater) {
           toast.success(`Email programme. ID: ${id}`);
@@ -226,7 +240,16 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
         toast.error((err as Error).message || "Failed to send email.");
       }
     },
-    [finalBody, invalidRecipients, to.length, sendMutation, onClose, reset, variant, router],
+    [
+      finalBody,
+      invalidRecipients,
+      to.length,
+      sendMutation,
+      onClose,
+      reset,
+      variant,
+      router,
+    ]
   );
 
   const handleUndoSend = useCallback(() => {
@@ -269,9 +292,12 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
     };
   }, []);
 
-  const onAdd = (type: RecipientType) => (r: Recipient) => addRecipient(type, r);
-  const onRemove = (type: RecipientType) => (id: string) => removeRecipient(type, id);
-  const onSet = (type: RecipientType) => (rs: Recipient[]) => setRecipients(type, rs);
+  const onAdd = (type: RecipientType) => (r: Recipient) =>
+    addRecipient(type, r);
+  const onRemove = (type: RecipientType) => (id: string) =>
+    removeRecipient(type, id);
+  const onSet = (type: RecipientType) => (rs: Recipient[]) =>
+    setRecipients(type, rs);
 
   const showCcBccToggle = cc.length > 0 || bcc.length > 0 || showCcBcc;
 
@@ -279,9 +305,12 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
     <div
       className={cn(
         "relative flex flex-col bg-[#0A0A0B] text-[#E0E0E0]",
-        variant === "page" ? "h-full" : "max-h-[85vh] rounded-[var(--radius-xl)] border border-[#242427] shadow-[var(--shadow-xl)]",
-        isFullScreen && "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
-        className,
+        variant === "page"
+          ? "h-full"
+          : "max-h-[85vh] rounded-[var(--radius-xl)] border border-[#242427] shadow-[var(--shadow-xl)]",
+        isFullScreen &&
+          "fixed inset-0 z-[var(--z-modal)] rounded-none border-0",
+        className
       )}
       data-testid="composer-panel"
     >
@@ -300,7 +329,11 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           {/* Send later */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1.5 border border-[#242427] bg-[#1D1D20] text-[#E0E0E0] hover:border-[#C49B66]/50 hover:bg-[#242427]">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 border border-[#242427] bg-[#1D1D20] text-[#E0E0E0] hover:border-[#C49B66]/50 hover:bg-[#242427]"
+              >
                 <Clock className="h-4 w-4" />
                 <span className="hidden sm:inline">Programmer</span>
               </Button>
@@ -318,7 +351,9 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
                   size="sm"
                   disabled={!sendLaterDate || isSending}
                   onClick={() => {
-                    handleSend({ sendLater: new Date(sendLaterDate).toISOString() });
+                    handleSend({
+                      sendLater: new Date(sendLaterDate).toISOString(),
+                    });
                   }}
                 >
                   Schedule
@@ -329,7 +364,12 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" onClick={handleSaveDraft} className="gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSaveDraft}
+                className="gap-1.5"
+              >
                 <Save className="h-4 w-4" />
                 <span className="hidden sm:inline">Save</span>
               </Button>
@@ -339,8 +379,17 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleCompact} aria-label="Toggle compact">
-                {isCompact ? <PanelTop className="h-4 w-4" /> : <PanelBottom className="h-4 w-4" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleCompact}
+                aria-label="Toggle compact"
+              >
+                {isCompact ? (
+                  <PanelTop className="h-4 w-4" />
+                ) : (
+                  <PanelBottom className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isCompact ? "Expand" : "Compact"}</TooltipContent>
@@ -348,15 +397,31 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={toggleFullScreen} aria-label="Toggle full screen">
-                {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleFullScreen}
+                aria-label="Toggle full screen"
+              >
+                {isFullScreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{isFullScreen ? "Exit full screen" : "Full screen"}</TooltipContent>
+            <TooltipContent>
+              {isFullScreen ? "Exit full screen" : "Full screen"}
+            </TooltipContent>
           </Tooltip>
 
           {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close composer">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              aria-label="Close composer"
+            >
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -443,7 +508,10 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           {hasExternal && (
             <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-warning-500)]/30 bg-[var(--color-warning-500)]/10 px-3 py-2 text-sm text-[var(--color-warning-500)]">
               <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span>This email will be sent to external recipients outside misfits.ai.</span>
+              <span>
+                This email will be sent to external recipients outside
+                misfits.ai.
+              </span>
             </div>
           )}
           {attachmentMention && (
@@ -474,7 +542,7 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
           {/* Signature preview */}
           {signature && (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)]/40 p-3">
-              <div className="mb-1 text-xs font-medium uppercase tracking-wide text-[var(--color-muted-fg)]">
+              <div className="mb-1 text-xs font-medium tracking-wide text-[var(--color-muted-fg)] uppercase">
                 Signature
               </div>
               <div
@@ -520,7 +588,12 @@ export function ComposerPanel({ variant = "panel", onClose, className }: Compose
             </>
           )}
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleDiscard} className="gap-1.5 text-[var(--color-danger-500)]">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDiscard}
+          className="gap-1.5 text-[var(--color-danger-500)]"
+        >
           <Trash2 className="h-4 w-4" />
           Discard
         </Button>

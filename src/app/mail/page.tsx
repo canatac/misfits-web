@@ -286,7 +286,7 @@ export default function MailPage() {
       {/* 3-column layout */}
       <div
         className={cn(
-          "relative flex min-h-0 flex-1 w-full overflow-hidden p-2 lg:p-3"
+          "relative flex min-h-0 w-full flex-1 overflow-hidden p-2 lg:p-3"
         )}
       >
         {!desktopHeaderOpen && (

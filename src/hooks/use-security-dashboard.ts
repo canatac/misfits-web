@@ -47,8 +47,12 @@ export function useRollbackRemediation() {
   return useMutation({
     mutationFn: (alertId: string) => rollbackSecurityRemediation(alertId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["security", "active-alerts"] });
-      void queryClient.invalidateQueries({ queryKey: ["security", "incidents"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["security", "active-alerts"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["security", "incidents"],
+      });
       toast.success("Remediation rollback applique.");
     },
     onError: (err: Error) => {
@@ -83,7 +87,8 @@ export function useSecurityLive(options: UseSecurityLiveOptions = {}) {
   const streamUrl = useMemo(() => "/api/security/live", []);
 
   useEffect(() => {
-    const supportsSse = typeof window !== "undefined" && "EventSource" in window;
+    const supportsSse =
+      typeof window !== "undefined" && "EventSource" in window;
     if (!enabled || !isVisible || !supportsSse) {
       setIsConnected(false);
       return;
@@ -111,17 +116,22 @@ export function useSecurityLive(options: UseSecurityLiveOptions = {}) {
 
       source.addEventListener("security_alert", (evt) => {
         try {
-          const parsed = JSON.parse((evt as MessageEvent).data) as SecurityAlert;
+          const parsed = JSON.parse(
+            (evt as MessageEvent).data
+          ) as SecurityAlert;
           setAlerts((prev) => [parsed, ...prev].slice(0, 50));
-          toast.warning(`${parsed.severity.toUpperCase()} - ${parsed.rule_name}`, {
-            description: parsed.rule_id,
-            action: {
-              label: "Voir l'incident",
-              onClick: () => {
-                window.location.href = "/dashboard/security";
+          toast.warning(
+            `${parsed.severity.toUpperCase()} - ${parsed.rule_name}`,
+            {
+              description: parsed.rule_id,
+              action: {
+                label: "Voir l'incident",
+                onClick: () => {
+                  window.location.href = "/dashboard/security";
+                },
               },
-            },
-          });
+            }
+          );
         } catch {
           // ignore malformed event
         }
@@ -140,7 +150,10 @@ export function useSecurityLive(options: UseSecurityLiveOptions = {}) {
         setIsConnected(false);
         source?.close();
         retryRef.current += 1;
-        const delay = Math.min(10_000, 1000 * 2 ** Math.min(retryRef.current, 4));
+        const delay = Math.min(
+          10_000,
+          1000 * 2 ** Math.min(retryRef.current, 4)
+        );
         setLastError(`Reconnexion securite dans ${Math.round(delay / 1000)}s`);
         cleanupTimer();
         reconnectTimerRef.current = window.setTimeout(connect, delay);

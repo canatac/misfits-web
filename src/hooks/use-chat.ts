@@ -19,5 +19,10 @@ export function useConversations() {
   const deleteConversation = useChatStore((s) => s.deleteConversation);
   const selectConversation = useChatStore((s) => s.selectConversation);
   const createConversation = useChatStore((s) => s.createConversation);
-  return { conversations, deleteConversation, selectConversation, createConversation };
+  return {
+    conversations,
+    deleteConversation,
+    selectConversation,
+    createConversation,
+  };
 }

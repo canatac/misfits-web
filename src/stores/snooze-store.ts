@@ -4,7 +4,11 @@
  */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { SnoozedEmail, SnoozePreset, DefaultReminders } from "@/types/label";
+import type {
+  SnoozedEmail,
+  SnoozePreset,
+  DefaultReminders,
+} from "@/types/label";
 
 function startOfDay(d: Date): Date {
   const x = new Date(d);
@@ -47,9 +51,17 @@ function nextWeek(): string {
 
 /** Preset snooze options shown in the snooze picker. */
 export const SNOOZE_PRESETS: SnoozePreset[] = [
-  { id: "tomorrow-morning", label: "Tomorrow morning (8:00 AM)", getUntil: tomorrowMorning },
+  {
+    id: "tomorrow-morning",
+    label: "Tomorrow morning (8:00 AM)",
+    getUntil: tomorrowMorning,
+  },
   { id: "tonight", label: "Tonight (6:00 PM)", getUntil: tonight },
-  { id: "this-weekend", label: "This weekend (Sat 9:00 AM)", getUntil: thisWeekend },
+  {
+    id: "this-weekend",
+    label: "This weekend (Sat 9:00 AM)",
+    getUntil: thisWeekend,
+  },
   { id: "next-week", label: "Next week (Mon 9:00 AM)", getUntil: nextWeek },
 ];
 
@@ -64,7 +76,11 @@ interface SnoozeState {
   checkDueReminders: () => SnoozedEmail[];
 
   // Mutations
-  snoozeEmail: (emailId: string, snoozedUntil: string, reminder?: string) => void;
+  snoozeEmail: (
+    emailId: string,
+    snoozedUntil: string,
+    reminder?: string
+  ) => void;
   unsnoozeEmail: (emailId: string) => void;
   setDefaultReminders: (reminders: DefaultReminders) => void;
   /** Remove all snoozes that are due (after the caller has acted on them). */
@@ -82,15 +98,17 @@ export const useSnoozeStore = create<SnoozeState>()(
           .snoozedEmails.slice()
           .sort(
             (a, b) =>
-              new Date(a.snoozedUntil).getTime() - new Date(b.snoozedUntil).getTime(),
+              new Date(a.snoozedUntil).getTime() -
+              new Date(b.snoozedUntil).getTime()
           ),
 
-      isSnoozed: (emailId) => get().snoozedEmails.some((s) => s.emailId === emailId),
+      isSnoozed: (emailId) =>
+        get().snoozedEmails.some((s) => s.emailId === emailId),
 
       checkDueReminders: () => {
         const now = Date.now();
         return get().snoozedEmails.filter(
-          (s) => new Date(s.snoozedUntil).getTime() <= now,
+          (s) => new Date(s.snoozedUntil).getTime() <= now
         );
       },
 
@@ -111,7 +129,9 @@ export const useSnoozeStore = create<SnoozeState>()(
 
       unsnoozeEmail: (emailId) => {
         set((state) => ({
-          snoozedEmails: state.snoozedEmails.filter((s) => s.emailId !== emailId),
+          snoozedEmails: state.snoozedEmails.filter(
+            (s) => s.emailId !== emailId
+          ),
         }));
       },
 
@@ -121,7 +141,7 @@ export const useSnoozeStore = create<SnoozeState>()(
         const now = Date.now();
         set((state) => ({
           snoozedEmails: state.snoozedEmails.filter(
-            (s) => new Date(s.snoozedUntil).getTime() > now,
+            (s) => new Date(s.snoozedUntil).getTime() > now
           ),
         }));
       },
@@ -133,8 +153,8 @@ export const useSnoozeStore = create<SnoozeState>()(
         snoozedEmails: state.snoozedEmails,
         defaultReminders: state.defaultReminders,
       }),
-    },
-  ),
+    }
+  )
 );
 
 /** Format an ISO snooze timestamp for display. */

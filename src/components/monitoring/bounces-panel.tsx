@@ -7,7 +7,10 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MonitoringBouncesResponse } from "@/types/monitoring";
-import { displayNullable, formatLocalTimestamp } from "@/components/monitoring/utils";
+import {
+  displayNullable,
+  formatLocalTimestamp,
+} from "@/components/monitoring/utils";
 
 interface BouncesPanelProps {
   data: MonitoringBouncesResponse | undefined;
@@ -28,7 +31,9 @@ export function BouncesPanel({ data, isLoading }: BouncesPanelProps) {
     <Card>
       <CardHeader>
         <CardTitle>Bounces</CardTitle>
-        <CardDescription>Distribution hard / soft / policy + raisons</CardDescription>
+        <CardDescription>
+          Distribution hard / soft / policy + raisons
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -51,9 +56,24 @@ export function BouncesPanel({ data, isLoading }: BouncesPanelProps) {
                 </div>
               </div>
               <div className="space-y-1 text-sm">
-                <div><span className="font-medium text-[var(--color-danger-600)]">Hard</span>: {hard} ({hardPct.toFixed(1)}%)</div>
-                <div><span className="font-medium text-[var(--color-warning-600)]">Soft</span>: {soft} ({softPct.toFixed(1)}%)</div>
-                <div><span className="font-medium text-[var(--color-info-600)]">Policy</span>: {policy} ({policyPct.toFixed(1)}%)</div>
+                <div>
+                  <span className="font-medium text-[var(--color-danger-600)]">
+                    Hard
+                  </span>
+                  : {hard} ({hardPct.toFixed(1)}%)
+                </div>
+                <div>
+                  <span className="font-medium text-[var(--color-warning-600)]">
+                    Soft
+                  </span>
+                  : {soft} ({softPct.toFixed(1)}%)
+                </div>
+                <div>
+                  <span className="font-medium text-[var(--color-info-600)]">
+                    Policy
+                  </span>
+                  : {policy} ({policyPct.toFixed(1)}%)
+                </div>
               </div>
             </div>
 
@@ -69,11 +89,22 @@ export function BouncesPanel({ data, isLoading }: BouncesPanelProps) {
                 </thead>
                 <tbody>
                   {(data?.bounces ?? []).slice(0, 8).map((bounce) => (
-                    <tr key={bounce.id} className="border-b border-[var(--color-border)]">
-                      <td className="px-3 py-2 whitespace-nowrap">{formatLocalTimestamp(bounce.ts)}</td>
-                      <td className="px-3 py-2">{displayNullable(bounce.to)}</td>
-                      <td className="px-3 py-2">{displayNullable(bounce.bounce_type)}</td>
-                      <td className="px-3 py-2">{displayNullable(bounce.bounce_reason)}</td>
+                    <tr
+                      key={bounce.id}
+                      className="border-b border-[var(--color-border)]"
+                    >
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {formatLocalTimestamp(bounce.ts)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(bounce.to)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(bounce.bounce_type)}
+                      </td>
+                      <td className="px-3 py-2">
+                        {displayNullable(bounce.bounce_reason)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

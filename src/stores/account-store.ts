@@ -7,7 +7,11 @@
  */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { EmailAccount, AccountProvider, AccountServerConfig } from "@/types/account";
+import type {
+  EmailAccount,
+  AccountProvider,
+  AccountServerConfig,
+} from "@/types/account";
 
 /** Default seed accounts so the UI is populated on first load. */
 const DEFAULT_ACCOUNTS: EmailAccount[] = [
@@ -86,7 +90,8 @@ export const useAccountStore = create<AccountState>()(
         return accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
       },
 
-      getDefaultAccount: () => get().accounts.find((a) => a.isDefault) ?? get().accounts[0],
+      getDefaultAccount: () =>
+        get().accounts.find((a) => a.isDefault) ?? get().accounts[0],
 
       addAccount: (input) => {
         const account: EmailAccount = {
@@ -128,7 +133,7 @@ export const useAccountStore = create<AccountState>()(
           const removedWasDefault = !accounts.some((a) => a.isDefault);
           if (removedWasDefault && accounts.length > 0) {
             nextAccounts = accounts.map((a, i) =>
-              i === 0 ? { ...a, isDefault: true } : a,
+              i === 0 ? { ...a, isDefault: true } : a
             );
             activeAccountId = activeAccountId ?? nextAccounts[0].id;
           }
@@ -148,7 +153,10 @@ export const useAccountStore = create<AccountState>()(
         set((state) => {
           if (!state.accounts.some((a) => a.id === id)) return state;
           return {
-            accounts: state.accounts.map((a) => ({ ...a, isDefault: a.id === id })),
+            accounts: state.accounts.map((a) => ({
+              ...a,
+              isDefault: a.id === id,
+            })),
           };
         });
       },
@@ -175,11 +183,15 @@ export const useAccountStore = create<AccountState>()(
               ? {
                   ...a,
                   ...input,
-                  email: input.email !== undefined ? input.email.trim() : a.email,
-                  name: input.name !== undefined ? input.name.trim() || a.email.split("@")[0] : a.name,
+                  email:
+                    input.email !== undefined ? input.email.trim() : a.email,
+                  name:
+                    input.name !== undefined
+                      ? input.name.trim() || a.email.split("@")[0]
+                      : a.name,
                   aliases: input.aliases ?? a.aliases,
                 }
-              : a,
+              : a
           ),
         }));
         // If isDefault was set true on this account, clear the flag on others.
@@ -207,6 +219,6 @@ export const useAccountStore = create<AccountState>()(
         activeAccountId: state.activeAccountId,
         isUnifiedInbox: state.isUnifiedInbox,
       }),
-    },
-  ),
+    }
+  )
 );

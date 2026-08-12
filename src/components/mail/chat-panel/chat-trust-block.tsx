@@ -18,26 +18,42 @@ function humanizeSource(source: ChatSourceCitation): string {
   return `${source.label}: ${source.value}`;
 }
 
-export function ChatTrustBlock({ message, onSourceClick }: ChatTrustBlockProps) {
+export function ChatTrustBlock({
+  message,
+  onSourceClick,
+}: ChatTrustBlockProps) {
   const [expanded, setExpanded] = useState(false);
 
   const confidence =
-    typeof message?.metadata?.confidence === "string" ? message.metadata.confidence : null;
+    typeof message?.metadata?.confidence === "string"
+      ? message.metadata.confidence
+      : null;
   const confidenceReason =
     typeof message?.metadata?.confidenceReason === "string"
       ? message.metadata.confidenceReason
       : "Aucun détail de fiabilité disponible.";
   const sources = useMemo(
-    () => (Array.isArray(message?.metadata?.sources) ? message?.metadata?.sources : []),
-    [message?.metadata?.sources],
+    () =>
+      Array.isArray(message?.metadata?.sources)
+        ? message?.metadata?.sources
+        : [],
+    [message?.metadata?.sources]
   );
 
   if (!message || !confidence) return null;
 
   const confidenceVariant =
-    confidence === "high" ? "success" : confidence === "medium" ? "warning" : "destructive";
+    confidence === "high"
+      ? "success"
+      : confidence === "medium"
+        ? "warning"
+        : "destructive";
   const confidenceLabel =
-    confidence === "high" ? "Confiance élevée" : confidence === "medium" ? "Confiance modérée" : "À vérifier";
+    confidence === "high"
+      ? "Confiance élevée"
+      : confidence === "medium"
+        ? "Confiance modérée"
+        : "À vérifier";
 
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/30 p-2">
@@ -53,7 +69,11 @@ export function ChatTrustBlock({ message, onSourceClick }: ChatTrustBlockProps) 
         </Button>
       </div>
 
-      {expanded && <p className="mt-2 text-xs text-[var(--color-muted-fg)]">{confidenceReason}</p>}
+      {expanded && (
+        <p className="mt-2 text-xs text-[var(--color-muted-fg)]">
+          {confidenceReason}
+        </p>
+      )}
 
       {sources.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">

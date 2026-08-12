@@ -46,11 +46,7 @@ export interface AIStreamChunk {
 
 /** Writing tone for generated emails. */
 export type AITone =
-  | "professionnel"
-  | "amical"
-  | "direct"
-  | "formel"
-  | "decontracte";
+  "professionnel" | "amical" | "direct" | "formel" | "decontracte";
 
 /** Target length for generated emails. */
 export type AILength = "concis" | "standard" | "detaille";

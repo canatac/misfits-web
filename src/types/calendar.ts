@@ -7,12 +7,7 @@
 
 /** Type of event — drives color coding and filtering. */
 export type EventType =
-  | "meeting"
-  | "deadline"
-  | "reminder"
-  | "social"
-  | "travel"
-  | "default";
+  "meeting" | "deadline" | "reminder" | "social" | "travel" | "default";
 
 /** Calendar view modes. */
 export type CalendarView = "day" | "week" | "month";

@@ -36,7 +36,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useLabelStore, LABEL_COLORS, LABEL_ICONS, buildLabelTree } from "@/stores/label-store";
+import {
+  useLabelStore,
+  LABEL_COLORS,
+  LABEL_ICONS,
+  buildLabelTree,
+} from "@/stores/label-store";
 import type { Label, LabelCreateInput, LabelTree } from "@/types/label";
 
 interface LabelManagerProps {
@@ -44,13 +49,18 @@ interface LabelManagerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function getIcon(name: string): React.ComponentType<{ className?: string }> | undefined {
+function getIcon(
+  name: string
+): React.ComponentType<{ className?: string }> | undefined {
   if (!name) return undefined;
   const pascal = name
     .split(/[-_]/)
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
     .join("");
-  const icons = Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+  const icons = Icons as unknown as Record<
+    string,
+    React.ComponentType<{ className?: string }>
+  >;
   return icons[pascal];
 }
 
@@ -131,7 +141,9 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
     if (editingId === id) resetForm();
   }
 
-  const editingLabel = editingId ? labels.find((l) => l.id === editingId) : null;
+  const editingLabel = editingId
+    ? labels.find((l) => l.id === editingId)
+    : null;
   const showForm = isCreating || !!editingLabel;
 
   // Parent candidates exclude the editing label and its descendants.
@@ -152,18 +164,30 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
   }, [labels, editingId]);
 
   return (
-    <Modal open={open} onOpenChange={(o) => { if (!o) resetForm(); onOpenChange(o); }}>
+    <Modal
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) resetForm();
+        onOpenChange(o);
+      }}
+    >
       <ModalContent className="max-w-2xl">
         <ModalHeader>
           <ModalTitle>Manage labels</ModalTitle>
           <ModalDescription>
-            Create, edit, and organize labels. Labels can be nested for finer grouping.
+            Create, edit, and organize labels. Labels can be nested for finer
+            grouping.
           </ModalDescription>
         </ModalHeader>
         <ModalBody>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Labels</span>
-            <Button size="sm" variant="outline" onClick={startCreate} disabled={showForm}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={startCreate}
+              disabled={showForm}
+            >
               <Plus className="h-4 w-4" />
               New label
             </Button>
@@ -282,7 +306,13 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" onClick={() => { resetForm(); onOpenChange(false); }}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              resetForm();
+              onOpenChange(false);
+            }}
+          >
             Done
           </Button>
         </ModalFooter>
@@ -319,7 +349,7 @@ function LabelTreeRow({
       <div
         className={cn(
           "flex items-center gap-2 rounded-[var(--radius-sm)] py-1.5 pr-2",
-          editingId === node.id && "bg-[var(--color-muted)]",
+          editingId === node.id && "bg-[var(--color-muted)]"
         )}
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
       >
@@ -329,10 +359,15 @@ function LabelTreeRow({
           onClick={() => setExpanded((v) => !v)}
           className={cn(
             "flex h-5 w-5 items-center justify-center rounded text-[var(--color-muted-fg)]",
-            !hasChildren && "invisible",
+            !hasChildren && "invisible"
           )}
         >
-          <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-90")} />
+          <ChevronRight
+            className={cn(
+              "h-3.5 w-3.5 transition-transform",
+              expanded && "rotate-90"
+            )}
+          />
         </button>
         <span
           className="h-2.5 w-2.5 shrink-0 rounded-full"
@@ -341,7 +376,8 @@ function LabelTreeRow({
         />
         {Icon && <Icon className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" />}
         <span className="flex-1 truncate text-sm">{node.name}</span>
-        <div className="flex items-center gap-0.5 opacity-0 transition-opacity hover:opacity-100 group-hover:opacity-100 focus-within:opacity-100"
+        <div
+          className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 hover:opacity-100"
           style={{ opacity: 1 }}
         >
           <button
@@ -423,8 +459,8 @@ function ColorPicker({
           className={cn(
             "h-6 w-6 rounded-full border-2 transition-transform",
             !customValue && value === c
-              ? "border-[var(--color-fg)] scale-110"
-              : "border-transparent hover:scale-110",
+              ? "scale-110 border-[var(--color-fg)]"
+              : "border-transparent hover:scale-110"
           )}
           style={{ backgroundColor: c }}
         />

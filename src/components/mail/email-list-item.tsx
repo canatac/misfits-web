@@ -72,16 +72,17 @@ function EmailListItemComponent({
   // Read the raw assignment ref (or stable EMPTY). `?? []` allocates every
   // selector call → React #185 (max update depth) once emails are listed.
   const assignedLabels = useLabelStore(
-    (s) => s.assignments[email.id] ?? EMPTY_LABEL_IDS,
+    (s) => s.assignments[email.id] ?? EMPTY_LABEL_IDS
   );
   const allLabelIds = useMemo(
     () => Array.from(new Set([...email.labels, ...assignedLabels])),
-    [email.labels, assignedLabels],
+    [email.labels, assignedLabels]
   );
   // Show the account badge in unified-inbox mode (Issue #154).
   const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
   const accountsCount = useAccountStore((s) => s.accounts.length);
-  const showAccountBadge = isUnifiedInbox && accountsCount > 1 && !!email.accountId;
+  const showAccountBadge =
+    isUnifiedInbox && accountsCount > 1 && !!email.accountId;
 
   return (
     <div
@@ -100,15 +101,12 @@ function EmailListItemComponent({
         isActive && "bg-[var(--color-accent)]",
         !isActive && email.isRead && "bg-[var(--color-bg)]",
         !isActive && !email.isRead && "bg-[var(--color-card)]",
-        !isActive && "hover:bg-[var(--color-muted)]",
+        !isActive && "hover:bg-[var(--color-muted)]"
       )}
       data-testid={`email-item-${email.id}`}
     >
       {/* Bulk selection checkbox */}
-      <div
-        className="pt-1"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="pt-1" onClick={(e) => e.stopPropagation()}>
         <Checkbox
           checked={isSelected}
           onCheckedChange={() => onToggleSelection(email.id)}
@@ -137,7 +135,9 @@ function EmailListItemComponent({
           <span
             className={cn(
               "truncate text-sm",
-              !email.isRead ? "font-semibold text-[var(--color-fg)]" : "text-[var(--color-fg)]",
+              !email.isRead
+                ? "font-semibold text-[var(--color-fg)]"
+                : "text-[var(--color-fg)]"
             )}
           >
             {email.from.name}
@@ -151,7 +151,9 @@ function EmailListItemComponent({
           <span
             className={cn(
               "truncate text-sm",
-              !email.isRead ? "font-medium text-[var(--color-fg)]" : "text-[var(--color-muted-fg)]",
+              !email.isRead
+                ? "font-medium text-[var(--color-fg)]"
+                : "text-[var(--color-muted-fg)]"
             )}
           >
             {email.subject}
@@ -159,7 +161,10 @@ function EmailListItemComponent({
           <div className="flex shrink-0 items-center gap-1.5">
             <SecurityIndicator threatLevel="safe" />
             {email.hasAttachments && (
-              <Paperclip className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" aria-label="Has attachments" />
+              <Paperclip
+                className="h-3.5 w-3.5 text-[var(--color-muted-fg)]"
+                aria-label="Has attachments"
+              />
             )}
             <button
               onClick={(e) => {
@@ -174,7 +179,7 @@ function EmailListItemComponent({
                   "h-3.5 w-3.5",
                   email.isStarred
                     ? "fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
-                    : "text-[var(--color-muted-fg)]",
+                    : "text-[var(--color-muted-fg)]"
                 )}
               />
             </button>

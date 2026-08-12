@@ -7,7 +7,11 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SecurityAlert } from "@/types/security";
-import { actionIcon, formatIsoLocal, securitySeverityClass } from "@/components/security/utils";
+import {
+  actionIcon,
+  formatIsoLocal,
+  securitySeverityClass,
+} from "@/components/security/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface IncidentsTableProps {
@@ -18,7 +22,13 @@ interface IncidentsTableProps {
   onPageChange: (page: number) => void;
 }
 
-export function IncidentsTable({ incidents, total, page, isLoading, onPageChange }: IncidentsTableProps) {
+export function IncidentsTable({
+  incidents,
+  total,
+  page,
+  isLoading,
+  onPageChange,
+}: IncidentsTableProps) {
   const hasPrev = page > 1;
   const hasNext = page * 20 < total;
 
@@ -26,7 +36,9 @@ export function IncidentsTable({ incidents, total, page, isLoading, onPageChange
     <Card>
       <CardHeader>
         <CardTitle>Incidents</CardTitle>
-        <CardDescription>Historique complet active/resolved/rolled_back</CardDescription>
+        <CardDescription>
+          Historique complet active/resolved/rolled_back
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading ? (
@@ -51,23 +63,39 @@ export function IncidentsTable({ incidents, total, page, isLoading, onPageChange
               <tbody>
                 {incidents.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-[var(--color-muted-fg)]">
+                    <td
+                      colSpan={6}
+                      className="px-3 py-6 text-center text-[var(--color-muted-fg)]"
+                    >
                       Aucun incident.
                     </td>
                   </tr>
                 ) : (
                   incidents.map((item) => (
-                    <tr key={item.id} className="border-b border-[var(--color-border)]">
-                      <td className="px-3 py-2 whitespace-nowrap">{formatIsoLocal(item.ts)}</td>
+                    <tr
+                      key={item.id}
+                      className="border-b border-[var(--color-border)]"
+                    >
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {formatIsoLocal(item.ts)}
+                      </td>
                       <td className="px-3 py-2">
                         <div className="font-medium">{item.rule_name}</div>
-                        <div className="text-xs text-[var(--color-muted-fg)]">{item.rule_id}</div>
+                        <div className="text-xs text-[var(--color-muted-fg)]">
+                          {item.rule_id}
+                        </div>
                       </td>
                       <td className="px-3 py-2">
-                        <Badge className={securitySeverityClass(item.severity)}>{item.severity}</Badge>
+                        <Badge className={securitySeverityClass(item.severity)}>
+                          {item.severity}
+                        </Badge>
                       </td>
-                      <td className="px-3 py-2">{actionIcon(item.action)} {item.action}</td>
-                      <td className="px-3 py-2">{item.ip ?? "—"} / {item.country ?? "—"}</td>
+                      <td className="px-3 py-2">
+                        {actionIcon(item.action)} {item.action}
+                      </td>
+                      <td className="px-3 py-2">
+                        {item.ip ?? "—"} / {item.country ?? "—"}
+                      </td>
                       <td className="px-3 py-2">{item.status}</td>
                     </tr>
                   ))
@@ -78,7 +106,9 @@ export function IncidentsTable({ incidents, total, page, isLoading, onPageChange
         )}
 
         <div className="flex items-center justify-between text-xs text-[var(--color-muted-fg)]">
-          <span>Total: {total} - page {page}</span>
+          <span>
+            Total: {total} - page {page}
+          </span>
           <div className="flex gap-2">
             <button
               type="button"

@@ -40,7 +40,7 @@ export const signatureTemplates: SignatureTemplate[] = [
 export function generateDefaultSignature(
   name: string,
   email: string,
-  title = "",
+  title = ""
 ): EmailSignature {
   const display = name || email.split("@")[0] || "me";
   const tmpl = signatureTemplates[0];
@@ -97,7 +97,7 @@ export function setActiveSignatureId(id: string): void {
 /** Resolve the active signature, falling back to a generated default. */
 export function getActiveSignature(
   name: string,
-  email: string,
+  email: string
 ): EmailSignature {
   const list = getSignatures();
   const activeId = getActiveSignatureId();

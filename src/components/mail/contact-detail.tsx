@@ -26,7 +26,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { contactInitials, FREQUENCY_LABELS } from "@/stores/contact-store";
-import { useContactMutations, useDuplicateContacts } from "@/hooks/use-contacts";
+import {
+  useContactMutations,
+  useDuplicateContacts,
+} from "@/hooks/use-contacts";
 import { useEmailStore } from "@/stores/email-store";
 import type { Email } from "@/types/email";
 import type { Contact as AddressBookContact } from "@/types/contact";
@@ -47,7 +50,7 @@ function useContactTimeline(email: string): Email[] {
         (m) =>
           m.from.address.toLowerCase() === e ||
           m.to.some((r) => r.address.toLowerCase() === e) ||
-          (m.cc ?? []).some((r) => r.address.toLowerCase() === e),
+          (m.cc ?? []).some((r) => r.address.toLowerCase() === e)
       )
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 8);
@@ -80,7 +83,10 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
       setTagInput("");
       return;
     }
-    updateContact.mutate({ id: contact.id, input: { tags: [...contact.tags, t] } });
+    updateContact.mutate({
+      id: contact.id,
+      input: { tags: [...contact.tags, t] },
+    });
     setTagInput("");
   };
 
@@ -93,7 +99,10 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
   const handleMerge = () => {
     if (!duplicateOf) return;
-    mergeContacts.mutate({ primaryId: duplicateOf.primaryId, duplicateId: contact.id });
+    mergeContacts.mutate({
+      primaryId: duplicateOf.primaryId,
+      duplicateId: contact.id,
+    });
     onClose?.();
   };
 
@@ -115,10 +124,17 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
           <h2 className="truncate text-lg font-semibold text-[var(--color-fg)]">
             {contact.name}
           </h2>
-          <p className="truncate text-sm text-[var(--color-muted-fg)]">{contact.email}</p>
+          <p className="truncate text-sm text-[var(--color-muted-fg)]">
+            {contact.email}
+          </p>
         </div>
         {onClose && (
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close detail">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close detail"
+          >
             <X className="h-4 w-4" />
           </Button>
         )}
@@ -136,8 +152,8 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
                 Possible duplicate
               </div>
               <p className="mt-1 text-xs text-[var(--color-muted-fg)]">
-                This contact may be a duplicate (matched by {duplicateOf.reason}). Merge to keep a
-                single combined record.
+                This contact may be a duplicate (matched by {duplicateOf.reason}
+                ). Merge to keep a single combined record.
               </p>
               <Button
                 size="sm"
@@ -154,9 +170,21 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
           {/* Info grid */}
           <dl className="grid grid-cols-1 gap-2 text-sm">
-            <InfoRow icon={<Phone className="h-4 w-4" />} label="Phone" value={contact.phone} />
-            <InfoRow icon={<Building2 className="h-4 w-4" />} label="Company" value={contact.company} />
-            <InfoRow icon={<Briefcase className="h-4 w-4" />} label="Role" value={contact.role} />
+            <InfoRow
+              icon={<Phone className="h-4 w-4" />}
+              label="Phone"
+              value={contact.phone}
+            />
+            <InfoRow
+              icon={<Building2 className="h-4 w-4" />}
+              label="Company"
+              value={contact.company}
+            />
+            <InfoRow
+              icon={<Briefcase className="h-4 w-4" />}
+              label="Role"
+              value={contact.role}
+            />
             <InfoRow
               icon={<Clock className="h-4 w-4" />}
               label="Last contact"
@@ -171,16 +199,22 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
           {/* Tags editor */}
           <div>
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
               <Tag className="h-3 w-3" />
               Tags
             </div>
             <div className="mb-2 flex flex-wrap gap-1.5">
               {contact.tags.length === 0 && (
-                <span className="text-xs text-[var(--color-muted-fg)]">No tags yet.</span>
+                <span className="text-xs text-[var(--color-muted-fg)]">
+                  No tags yet.
+                </span>
               )}
               {contact.tags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="gap-1 pl-2 pr-1">
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="gap-1 pr-1 pl-2"
+                >
                   {tag}
                   <button
                     type="button"
@@ -207,7 +241,13 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
                 className="h-8 text-xs"
                 aria-label="Add tag"
               />
-              <Button size="icon" variant="outline" className="h-8 w-8" onClick={addTag} aria-label="Add tag">
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-8 w-8"
+                onClick={addTag}
+                aria-label="Add tag"
+              >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -215,7 +255,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
           {/* Notes editor */}
           <div>
-            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+            <div className="mb-1.5 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
               Notes
             </div>
             <Textarea
@@ -230,7 +270,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
           {/* Timeline */}
           <div>
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-muted-fg)]">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
               <Mail className="h-3 w-3" />
               Recent emails
             </div>
@@ -294,8 +334,12 @@ function InfoRow({
   return (
     <div className={cn("flex items-center gap-2", !value && "opacity-50")}>
       <span className="text-[var(--color-muted-fg)]">{icon}</span>
-      <span className="w-24 shrink-0 text-[var(--color-muted-fg)]">{label}</span>
-      <span className="flex-1 truncate text-[var(--color-fg)]">{value || "—"}</span>
+      <span className="w-24 shrink-0 text-[var(--color-muted-fg)]">
+        {label}
+      </span>
+      <span className="flex-1 truncate text-[var(--color-fg)]">
+        {value || "—"}
+      </span>
     </div>
   );
 }
