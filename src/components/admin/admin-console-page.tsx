@@ -322,6 +322,17 @@ function runStateLabel(state: ReturnType<typeof runStateFromStatus>): string {
   return "failed";
 }
 
+function hasTechnicalExecutionSignal(
+  events: Array<{ action: string; note?: string | null }>
+): boolean {
+  return events.some((event) => {
+    const haystack = `${event.action} ${event.note ?? ""}`.toLowerCase();
+    return /(build|test|ci|deploy|restart|rollout|release|commit|pr|merge|docker)/.test(
+      haystack
+    );
+  });
+}
+
 export function AdminConsolePage({
   initialTab = "overview",
 }: {
@@ -952,6 +963,20 @@ export function AdminConsolePage({
           null;
         const startedAt = item.takenInChargeAt || item.createdAt;
         const elapsedMinutes = minutesBetween(startedAt, nowIso);
+        const latestEvent = (item.workflowEvents ?? [])
+          .slice()
+          .sort(
+            (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
+          )[0];
+        const lastEventAt = latestEvent?.at || item.updatedAt;
+        const lastEventAgeMinutes = minutesBetween(lastEventAt, nowIso);
+        const hasExecutionSignal = hasTechnicalExecutionSignal(
+          item.workflowEvents ?? []
+        );
+        const appearsWorkflowOnly =
+          runState === "running" &&
+          !hasExecutionSignal &&
+          (lastEventAgeMinutes === null || lastEventAgeMinutes > 5);
 
         return {
           item,
@@ -961,12 +986,10 @@ export function AdminConsolePage({
           progressPct,
           currentStage,
           elapsedMinutes,
-          lastEventAt:
-            (item.workflowEvents ?? [])
-              .slice()
-              .sort(
-                (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
-              )[0]?.at || item.updatedAt,
+          lastEventAt,
+          lastEventAgeMinutes,
+          hasExecutionSignal,
+          appearsWorkflowOnly,
         };
       })
       .sort(
@@ -980,6 +1003,7 @@ export function AdminConsolePage({
       queued: runs.filter((run) => run.runState === "queued").length,
       completed: runs.filter((run) => run.runState === "completed").length,
       failed: runs.filter((run) => run.runState === "failed").length,
+      workflowOnlyRunning: runs.filter((run) => run.appearsWorkflowOnly).length,
     };
   }, [changeRequests.data?.items]);
 
@@ -1792,34 +1816,91 @@ export function AdminConsolePage({
             </p>
           </div>
 
-          <div className="mb-3 grid gap-2 md:grid-cols-4">
+          <div className="mb-3 grid gap-3 xl:grid-cols-3">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Console backend (source de vérité)
+                </h3>
+                <Badge tone={adminDataLoading ? "warn" : "ok"}>
+                  {adminDataLoading ? "syncing" : "live"}
+                </Badge>
+              </div>
+              <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                Preuves backend de l&apos;activité réelle (queue, débit,
+                erreurs), distinctes du simple statut workflow.
+              </p>
+              <div className="mt-2 grid gap-2 text-[11px] md:grid-cols-3">
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  queue depth:{" "}
+                  {asInt(observability?.health_realtime?.queue?.depth ?? 0)}
+                </div>
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  in/out min:{" "}
+                  {observability?.health_realtime?.throughput?.incoming_per_min?.toFixed(
+                    1
+                  ) ?? "0.0"}
+                  /
+                  {observability?.health_realtime?.throughput?.outgoing_per_min?.toFixed(
+                    1
+                  ) ?? "0.0"}
+                </div>
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  smtp 5xx:{" "}
+                  {percent(
+                    observability?.health_realtime?.delivery?.smtp_5xx_rate ?? 0
+                  )}
+                </div>
+              </div>
+              <div className="mt-2 text-[11px] text-[#A1A1AA]">
+                <p>
+                  success rate:{" "}
+                  {percent(
+                    observability?.health_realtime?.delivery?.success_rate ?? 0
+                  )}{" "}
+                  · p95:{" "}
+                  {asInt(
+                    observability?.health_realtime?.delivery?.p95_total_ms ?? 0
+                  )}{" "}
+                  ms
+                </p>
+                <p>
+                  alerts queue/auth:{" "}
+                  {asInt(
+                    observability?.proactive_alerting?.threshold_alerts
+                      ?.queue_growth ?? 0
+                  )}
+                  /
+                  {asInt(
+                    observability?.proactive_alerting?.threshold_alerts
+                      ?.auth_failures ?? 0
+                  )}
+                </p>
+                {adminDataError && (
+                  <p className="mt-1 text-[#FCA5A5]">
+                    backend indisponible: {adminDataError}
+                  </p>
+                )}
+              </div>
+            </article>
+
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">CR totales</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
                 {asInt(changeRequestMonitoring.total)}
               </p>
-            </article>
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
-              <p className="text-xs text-[#A1A1AA]">
-                En cours (hors released/rejected)
-              </p>
+              <p className="mt-2 text-xs text-[#A1A1AA]">En cours</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
                 {asInt(changeRequestMonitoring.wip)}
               </p>
-            </article>
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
-              <p className="text-xs text-[#A1A1AA]">
-                Prises en charge par Hermes
-              </p>
+              <p className="mt-2 text-xs text-[#A1A1AA]">Prises en charge</p>
               <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
                 {asInt(changeRequestMonitoring.takenCount)}
               </p>
-            </article>
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
-              <p className="text-xs text-[#A1A1AA]">
+              <p className="mt-2 text-xs text-[#A1A1AA]">
                 Délai moyen prise en charge
               </p>
-              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+              <p className="mt-1 text-sm font-semibold text-[#E4E4E7]">
                 {formatDurationMinutes(
                   changeRequestMonitoring.avgTriageMinutes
                 )}
@@ -1912,6 +1993,13 @@ export function AdminConsolePage({
                 </div>
               </div>
 
+              {workflowRunMonitoring.workflowOnlyRunning > 0 && (
+                <div className="mb-2 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
+                  {workflowRunMonitoring.workflowOnlyRunning} run(s) en statut
+                  running sans signal d&apos;exécution technique récent.
+                </div>
+              )}
+
               <div className="max-h-[460px] space-y-2 overflow-y-auto pr-1">
                 {workflowRunMonitoring.runs.map((run) => (
                   <button
@@ -1942,6 +2030,18 @@ export function AdminConsolePage({
                     </p>
                     <p className="text-[11px] text-[#71717A]">
                       elapsed: {formatDurationMinutes(run.elapsedMinutes)}
+                    </p>
+                    <p
+                      className={cn(
+                        "text-[11px]",
+                        run.appearsWorkflowOnly
+                          ? "text-[#FCD34D]"
+                          : "text-[#86EFAC]"
+                      )}
+                    >
+                      {run.appearsWorkflowOnly
+                        ? "signal: workflow uniquement"
+                        : "signal: activité technique détectée"}
                     </p>
                   </button>
                 ))}
@@ -1997,6 +2097,14 @@ export function AdminConsolePage({
                         selectedWorkflowRun.elapsedMinutes
                       )}
                     </p>
+
+                    {selectedWorkflowRun.appearsWorkflowOnly && (
+                      <div className="mt-2 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
+                        Statut &quot;running&quot; détecté, mais aucun signal de
+                        build/test/deploy récent. Cette CR semble en
+                        orchestration workflow uniquement.
+                      </div>
+                    )}
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       {(selectedWorkflowRun.item.status === "submitted" ||
