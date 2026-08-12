@@ -32,14 +32,48 @@ export function createAdminChangeRequest(payload: CreateChangeRequestInput) {
   );
 }
 
+const WORKFLOW_ORDER = [
+  "submitted",
+  "triaged",
+  "planned",
+  "in_progress",
+  "qa",
+  "released",
+  "rejected",
+] as const;
+
 export function transitionAdminChangeRequest(
   payload: TransitionChangeRequestInput
 ) {
-  const { id, ...rest } = payload;
+  const { id, action, currentStatus, ...rest } = payload;
   const encodedId = encodeURIComponent(id);
+
+  let body: Record<string, unknown> = { ...rest };
+
+  if (action === "cancel") {
+    body.action = "reject";
+  } else if (action === "stop") {
+    const idx = currentStatus ? WORKFLOW_ORDER.indexOf(currentStatus) : -1;
+    if (idx > 0) {
+      body.status = WORKFLOW_ORDER[idx - 1];
+    } else {
+      body.status = "submitted";
+    }
+  } else {
+    body.action = action;
+  }
+
   return apiClient.patch<TransitionChangeRequestResponse>(
     `/admin/change-requests/${encodedId}`,
-    rest,
+    body,
+    { skipAuth: true }
+  );
+}
+
+export function deleteAdminChangeRequest(id: string) {
+  const encodedId = encodeURIComponent(id);
+  return apiClient.delete<{ deleted: boolean; id: string }>(
+    `/admin/change-requests?id=${encodedId}`,
     { skipAuth: true }
   );
 }
