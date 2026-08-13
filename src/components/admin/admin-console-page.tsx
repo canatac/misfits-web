@@ -42,6 +42,7 @@ type AdminTab =
   | "overview"
   | "monitoring"
   | "security"
+  | "deliverability-ops"
   | "changelog"
   | "change-requests"
   | "users";
@@ -192,8 +193,31 @@ type AdminObservabilityOverviewResponse = {
   }>;
 };
 
+type DeliverabilityProcedureItem = {
+  id: string;
+  title: string;
+  status: "done" | "done_manual" | "in_progress" | "todo" | "blocked";
+  evidence?: string;
+  operator_note?: string;
+  cta?: { label?: string; kind?: string; details?: string };
+};
+
+type DeliverabilityProcedureResponse = {
+  overall_status?: string;
+  domain?: string;
+  window?: string;
+  progress?: { done?: number; total?: number };
+  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
+  checklist?: DeliverabilityProcedureItem[];
+  cta_details?: Array<{ id: string; label: string; description: string }>;
+  automation?: {
+    auto_checks?: string[];
+    last_computed_at?: string;
+  };
+};
+
 type ChangeRequestChatField =
-  "problemRoot" | "impact" | "successCriteria" | "rollbackPlan" | "none";
+  | "problemRoot" | "impact" | "successCriteria" | "rollbackPlan" | "none";
 
 type ChangeRequestChatMessage = {
   role: "assistant" | "user";
@@ -427,10 +451,13 @@ export function AdminConsolePage({
     useState<AdminSecurityPostureResponse | null>(null);
   const [deliverability, setDeliverability] =
     useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
+  const [deliverabilityProcedure, setDeliverabilityProcedure] =
+    useState<DeliverabilityProcedureResponse | null>(null);
   const [observability, setObservability] =
     useState<AdminObservabilityOverviewResponse | null>(null);
   const [adminDataLoading, setAdminDataLoading] = useState(false);
   const [adminDataError, setAdminDataError] = useState<string | null>(null);
+  const [procedureSaving, setProcedureSaving] = useState(false);
 
   const [assistantPrompt, setAssistantPrompt] = useState(
     "Fais-moi un résumé de la situation actuelle et les actions prioritaires à lancer dans les 2 prochaines heures."
@@ -446,7 +473,7 @@ export function AdminConsolePage({
       setAdminDataLoading(true);
       setAdminDataError(null);
       try {
-        const [securityRes, deliverabilityRes, observabilityRes] =
+        const [securityRes, deliverabilityRes, observabilityRes, procedureRes] =
           await Promise.all([
             fetch(`/api/admin/security/posture?window=${windowRange}`, {
               cache: "no-store",
@@ -460,19 +487,28 @@ export function AdminConsolePage({
             fetch(`/api/admin/observability/overview?window=${windowRange}`, {
               cache: "no-store",
             }),
+            fetch(`/api/admin/deliverability/procedure?window=${windowRange}`, {
+              cache: "no-store",
+            }),
           ]);
 
-        if (!securityRes.ok || !deliverabilityRes.ok || !observabilityRes.ok) {
+        if (
+          !securityRes.ok ||
+          !deliverabilityRes.ok ||
+          !observabilityRes.ok ||
+          !procedureRes.ok
+        ) {
           throw new Error(
-            `admin_api_status=${securityRes.status}/${deliverabilityRes.status}/${observabilityRes.status}`
+            `admin_api_status=${securityRes.status}/${deliverabilityRes.status}/${observabilityRes.status}/${procedureRes.status}`
           );
         }
 
-        const [securityData, deliverabilityData, observabilityData] =
+        const [securityData, deliverabilityData, observabilityData, procedureData] =
           await Promise.all([
             securityRes.json(),
             deliverabilityRes.json(),
             observabilityRes.json(),
+            procedureRes.json(),
           ]);
 
         if (cancelled) return;
@@ -480,6 +516,7 @@ export function AdminConsolePage({
         setSecurityPosture(securityData);
         setDeliverability(deliverabilityData);
         setObservability(observabilityData);
+        setDeliverabilityProcedure(procedureData);
       } catch (error) {
         if (cancelled) return;
         setAdminDataError(
@@ -498,6 +535,40 @@ export function AdminConsolePage({
       cancelled = true;
     };
   }, [windowRange]);
+
+  async function saveProcedureUpdate(payload: {
+    checklist?: Array<{ id: string; checked: boolean; note?: string }>;
+    reminder?: { enabled: boolean; cadence_hours: number };
+  }) {
+    setProcedureSaving(true);
+    try {
+      const res = await fetch(`/api/admin/deliverability/procedure`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `procedure_update_failed_${res.status}`);
+      }
+
+      const fresh = await fetch(
+        `/api/admin/deliverability/procedure?window=${windowRange}`,
+        {
+          cache: "no-store",
+        }
+      );
+      if (fresh.ok) {
+        setDeliverabilityProcedure(await fresh.json());
+      }
+    } catch (error) {
+      setAdminDataError(
+        error instanceof Error ? error.message : "deliverability_procedure_save_failed"
+      );
+    } finally {
+      setProcedureSaving(false);
+    }
+  }
 
   const summaryCards = useMemo(() => {
     const summary = monitoringSummary.data;
@@ -551,6 +622,7 @@ export function AdminConsolePage({
       security_live: securityLive.alerts.slice(0, 12),
       observability,
       deliverability,
+      deliverability_procedure: deliverabilityProcedure,
       security_posture: securityPosture,
       admin_data_loading: adminDataLoading,
       admin_data_error: adminDataError,
@@ -567,6 +639,7 @@ export function AdminConsolePage({
       securityLive.alerts,
       observability,
       deliverability,
+      deliverabilityProcedure,
       securityPosture,
       adminDataLoading,
       adminDataError,
@@ -1175,6 +1248,7 @@ export function AdminConsolePage({
               ["overview", "Vue globale"],
               ["monitoring", "Monitoring SMTP"],
               ["security", "Sécurité"],
+              ["deliverability-ops", "Deliverability Ops"],
               ["changelog", "Changelog"],
               ["change-requests", "Change requests"],
               ["users", "Utilisateurs"],
@@ -1690,6 +1764,156 @@ export function AdminConsolePage({
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "deliverability-ops" && (
+        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Procédure délivrabilité (checklist + automation)
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Pilotage DMARC/SPF/DKIM/Gmail policy avec statuts, rappels et CTAs.
+              </p>
+            </div>
+            <Badge tone={procedureSaving ? "warn" : "ok"}>
+              {procedureSaving ? "saving" : deliverabilityProcedure?.overall_status ?? "live"}
+            </Badge>
+          </div>
+
+          <div className="mb-3 grid gap-3 md:grid-cols-3">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 text-xs text-[#D4D4D8]">
+              <p className="text-[#A1A1AA]">Progression</p>
+              <p className="mt-1 text-lg font-semibold text-[#E4E4E7]">
+                {asInt(deliverabilityProcedure?.progress?.done ?? 0)} / {asInt(deliverabilityProcedure?.progress?.total ?? 0)}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 text-xs text-[#D4D4D8]">
+              <p className="text-[#A1A1AA]">Rappel</p>
+              <p>
+                {deliverabilityProcedure?.reminder?.enabled ? "activé" : "désactivé"} · every {deliverabilityProcedure?.reminder?.cadence_hours ?? 24}h
+              </p>
+              <p className="mt-1 text-[#71717A]">
+                next: {deliverabilityProcedure?.reminder?.next_due_at ? asDate(deliverabilityProcedure.reminder.next_due_at) : "—"}
+              </p>
+            </article>
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 text-xs text-[#D4D4D8]">
+              <p className="text-[#A1A1AA]">Auto-checks</p>
+              <p>
+                {(deliverabilityProcedure?.automation?.auto_checks ?? []).join(" · ") || "dns_txt · smtp_events · security_alerts"}
+              </p>
+            </article>
+          </div>
+
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={procedureSaving}
+              onClick={() =>
+                void saveProcedureUpdate({
+                  reminder: {
+                    enabled: !(deliverabilityProcedure?.reminder?.enabled ?? true),
+                    cadence_hours: deliverabilityProcedure?.reminder?.cadence_hours ?? 24,
+                  },
+                })
+              }
+              className="rounded-lg border border-[#2B2B31] bg-[#151518] px-3 py-1.5 text-xs text-[#D4D4D8] hover:border-[#3A3A42]"
+            >
+              {deliverabilityProcedure?.reminder?.enabled ? "Désactiver rappel" : "Activer rappel"}
+            </button>
+            <button
+              type="button"
+              disabled={procedureSaving}
+              onClick={() =>
+                void saveProcedureUpdate({
+                  reminder: {
+                    enabled: deliverabilityProcedure?.reminder?.enabled ?? true,
+                    cadence_hours:
+                      (deliverabilityProcedure?.reminder?.cadence_hours ?? 24) === 24 ? 48 : 24,
+                  },
+                })
+              }
+              className="rounded-lg border border-[#2B2B31] bg-[#151518] px-3 py-1.5 text-xs text-[#D4D4D8] hover:border-[#3A3A42]"
+            >
+              Basculer cadence 24h/48h
+            </button>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-2">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                Checklist opérateur
+              </h3>
+              <div className="mt-3 space-y-2">
+                {(deliverabilityProcedure?.checklist ?? []).map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-[#E4E4E7]">{item.title}</p>
+                      <Badge
+                        tone={
+                          item.status === "done" || item.status === "done_manual"
+                            ? "ok"
+                            : item.status === "blocked"
+                              ? "danger"
+                              : "warn"
+                        }
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-[#A1A1AA]">{item.evidence ?? "—"}</p>
+                    {item.operator_note && (
+                      <p className="mt-1 text-xs text-[#86EFAC]">note: {item.operator_note}</p>
+                    )}
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={procedureSaving}
+                        onClick={() =>
+                          void saveProcedureUpdate({
+                            checklist: [{ id: item.id, checked: true }],
+                          })
+                        }
+                        className="rounded-md border border-[#355D3A] bg-[#132016] px-2 py-1 text-[11px] text-[#86EFAC]"
+                      >
+                        Marquer fait
+                      </button>
+                      {item.cta?.details && (
+                        <code className="rounded bg-[#1A1A1F] px-2 py-1 text-[11px] text-[#D4D4D8]">
+                          {item.cta.details}
+                        </code>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                CTAs détaillées
+              </h3>
+              <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
+                {(deliverabilityProcedure?.cta_details ?? []).map((cta) => (
+                  <div
+                    key={cta.id}
+                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
+                  >
+                    <p className="text-sm text-[#E4E4E7]">{cta.label}</p>
+                    <p className="mt-1 text-[#A1A1AA]">{cta.description}</p>
+                  </div>
+                ))}
+                {!deliverabilityProcedure?.cta_details?.length && (
+                  <p className="text-[#71717A]">Aucune CTA détaillée disponible.</p>
+                )}
+              </div>
+            </article>
           </div>
         </section>
       )}
