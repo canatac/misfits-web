@@ -51,12 +51,16 @@ export function ImapConsole({ input, onDone, title }: Props) {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   // Sticky-bottom flag: if the user scrolls up we stop auto-scrolling.
   const stickyRef = React.useRef(true);
-  // Ref-buffered pending lines flushed on rAF to avoid per-frame re-renders.
+  // Ref-buffered pending lines flushed on a fixed timer (60ms) to keep the
+  // re-render rate well below refresh rate — rAF was still firing too often
+  // when many frames arrived on the same tick, and each setState paints
+  // the whole list (scrollbar apparaît/disparaît, layout thrash).
   const bufferRef = React.useRef<Line[]>([]);
-  const rafRef = React.useRef<number | null>(null);
+  const timerRef = React.useRef<number | null>(null);
+  const BATCH_MS = 60;
 
   const flushBuffer = React.useCallback(() => {
-    rafRef.current = null;
+    timerRef.current = null;
     if (bufferRef.current.length === 0) return;
     const batch = bufferRef.current;
     bufferRef.current = [];
@@ -66,8 +70,8 @@ export function ImapConsole({ input, onDone, title }: Props) {
   const pushLine = React.useCallback(
     (line: Line) => {
       bufferRef.current.push(line);
-      if (rafRef.current == null) {
-        rafRef.current = window.requestAnimationFrame(flushBuffer);
+      if (timerRef.current == null) {
+        timerRef.current = window.setTimeout(flushBuffer, BATCH_MS);
       }
     },
     [flushBuffer]
@@ -129,9 +133,9 @@ export function ImapConsole({ input, onDone, title }: Props) {
           pushLine({ dir: parsed.dir ?? "", text: parsed.text ?? "" });
         } else if (event === "done") {
           // Flush any pending buffered lines synchronously before finishing.
-          if (rafRef.current != null) {
-            window.cancelAnimationFrame(rafRef.current);
-            rafRef.current = null;
+          if (timerRef.current != null) {
+            window.clearTimeout(timerRef.current);
+            timerRef.current = null;
           }
           flushBuffer();
           setStatus(parsed.ok ? "done" : "error");
@@ -147,9 +151,9 @@ export function ImapConsole({ input, onDone, title }: Props) {
     return () => {
       aborted = true;
       controller.abort();
-      if (rafRef.current != null) {
-        window.cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
+      if (timerRef.current != null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
     };
   }, [input, onDone, pushLine, flushBuffer]);
@@ -196,8 +200,14 @@ export function ImapConsole({ input, onDone, title }: Props) {
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="h-64 overflow-y-auto overflow-x-hidden px-3 py-2 leading-5"
-        style={{ overflowAnchor: "none", scrollBehavior: "auto" }}
+        className="h-64 overflow-y-scroll overflow-x-hidden px-3 py-2 leading-5"
+        style={{
+          overflowAnchor: "none",
+          scrollBehavior: "auto",
+          scrollbarGutter: "stable",
+          contain: "strict",
+          willChange: "scroll-position",
+        }}
       >
         {lines.map((l, i) => (
           <div key={i} className={colorFor(l.dir)}>
