@@ -18,6 +18,7 @@ import {
   useAdminAiActivity,
   useAdminChangelog,
   useAdminUsers,
+  useAdminWhoami,
   useChangeRequests,
   useCreateAdminUser,
   useCreateChangeRequest,
@@ -397,6 +398,13 @@ export function AdminConsolePage({
   const adminChangelog = useAdminChangelog();
   const changeRequests = useChangeRequests();
   const adminUsers = useAdminUsers();
+  const whoami = useAdminWhoami();
+  // Effective role gate: when RBAC is enforced on the backend, hide CRUD
+  // affordances for anything other than an admin. When RBAC is OFF, the
+  // backend answers { role: "admin", enforced: false } so canWriteUsers
+  // stays true and the current behaviour is preserved.
+  const canWriteUsers = (whoami.data?.role ?? "admin") === "admin";
+  const rbacEnforced = whoami.data?.enforced === true;
   const adminAiActivity = useAdminAiActivity(50);
   const createChangeRequest = useCreateChangeRequest();
   const transitionChangeRequest = useTransitionChangeRequest();
@@ -3059,6 +3067,19 @@ export function AdminConsolePage({
             </Badge>
           </div>
 
+          {rbacEnforced && !canWriteUsers && (
+            <div className="mb-4 rounded-xl border border-[#5B4A1F] bg-[#2A2513] p-3">
+              <p className="text-xs font-medium text-[#F5C563]">
+                Lecture seule — rôle: {whoami.data?.role ?? "viewer"}
+              </p>
+              <p className="mt-1 text-[11px] text-[#D4D4D8]">
+                Vous consultez la liste des utilisateurs. Les actions
+                création, modification et suppression sont réservées au rôle
+                admin.
+              </p>
+            </div>
+          )}
+
           <div className="mb-4 grid gap-3 md:grid-cols-4">
             <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
               <p className="text-xs text-[#A1A1AA]">Utilisateurs</p>
@@ -3098,6 +3119,7 @@ export function AdminConsolePage({
             </article>
           </div>
 
+          {canWriteUsers && (
           <form
             onSubmit={(e) => void handleCreateUser(e)}
             className="mb-4 rounded-xl border border-[#232327] bg-[#151518] p-3"
@@ -3164,6 +3186,7 @@ export function AdminConsolePage({
               </button>
             </div>
           </form>
+          )}
 
           <div className="mb-4 rounded-xl border border-[#232327] bg-[#151518] p-3">
             <div className="mb-2 flex items-center justify-between">
@@ -3226,7 +3249,7 @@ export function AdminConsolePage({
                           e.target.value as AdminUserRecord["status"]
                         )
                       }
-                      disabled={updateAdminUser.isPending}
+                      disabled={updateAdminUser.isPending || !canWriteUsers}
                       className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
                     >
                       <option value="active">active</option>
@@ -3243,13 +3266,14 @@ export function AdminConsolePage({
                           e.target.value as AdminUserRecord["role"]
                         )
                       }
-                      disabled={updateAdminUser.isPending}
+                      disabled={updateAdminUser.isPending || !canWriteUsers}
                       className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
                     >
                       <option value="user">user</option>
                       <option value="support">support</option>
                       <option value="admin">admin</option>
                     </select>
+                    {canWriteUsers && (
                     <button
                       type="button"
                       onClick={() => void handleDeleteUser(user.id)}
@@ -3258,6 +3282,7 @@ export function AdminConsolePage({
                     >
                       Supprimer
                     </button>
+                    )}
                   </div>
                 </div>
 
