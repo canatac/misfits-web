@@ -2,7 +2,19 @@
 // TODO Sprint 5: Replace with real API calls
 // These are placeholder data for UI development
 
-const VEILLE = [
+export interface VeilleItem {
+  id: string; title: string; signal: number; tags: string[];
+  summary: string; takeaways?: string[];
+}
+export interface TaskItem {
+  id: string; label: string; ref?: string; details?: string;
+  due?: string; priority?: "high" | "medium" | "low";
+}
+export interface AlertItem {
+  id: string; title: string; description: string; time: string; cta: string;
+  bg?: string; border?: string; accent?: string;
+}
+export const VEILLE: VeilleItem[] = [
   {
     id: "v1",
     title: "The Byte Report",
@@ -44,7 +56,7 @@ const VEILLE = [
   },
 ] as const;
 
-const TASKS = [
+export const TASKS: TaskItem[] = [
   {
     id: "t1",
     label: "Review Contract (from Joey)",
@@ -75,7 +87,7 @@ const TASKS = [
   },
 ] as const;
 
-const ALERTS = [
+export const ALERTS: AlertItem[] = [
   {
     id: "a1",
     title: "Hameçonnage Intercepté (Phishing 99.4%)",

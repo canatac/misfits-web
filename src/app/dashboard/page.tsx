@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-import { VEILLE, TASKS, ALERTS } from "./dashboard-fixtures";
-import { StorageGauge, formatTime } from "@/components/dashboard/StorageGauge";
   AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
@@ -26,6 +24,8 @@ import { useI18n } from "@/i18n/provider";
 import { useAuthStore } from "@/stores/auth-store";
 import { useEmailList } from "@/hooks/use-emails";
 import type { Email } from "@/types/email";
+import { VEILLE, TASKS, ALERTS, type VeilleItem, type TaskItem, type AlertItem } from "./dashboard-fixtures";
+import { StorageGauge, formatTime } from "@/components/dashboard/StorageGauge";
 
 const INBOX_SCORES = [95, 82, 68, 98] as const;
 

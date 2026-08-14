@@ -1,21 +1,14 @@
 // StorageGauge.tsx — extracted Sprint 4
 import { HardDrive } from "lucide-react";
 
-function formatTime(iso: string): string {
+export function formatTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
-export { formatTime };
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
-function StorageGauge({
+export function StorageGauge({
   percentage,
   compact,
 }: {
