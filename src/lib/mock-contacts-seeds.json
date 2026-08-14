@@ -1,0 +1,634 @@
+[
+  {
+    "id": "c1",
+    "name": "Ada Lovelace",
+    "email": "ada@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Principal Engineer",
+    "avatarColor": "__COLOR_0__",
+    "lastContactAt": "__DAYSAGO_0__",
+    "contactFrequency": "daily",
+    "tags": [
+      "engineering",
+      "founder",
+      "vip"
+    ],
+    "groupId": "grp-team",
+    "notes": "Original architect of the inbox triage engine."
+  },
+  {
+    "id": "c2",
+    "name": "Alan Turing",
+    "email": "alan@misfits.ai",
+    "company": "misfits.ai",
+    "role": "ML Researcher",
+    "avatarColor": "__COLOR_1__",
+    "lastContactAt": "__DAYSAGO_1__",
+    "contactFrequency": "daily",
+    "tags": [
+      "engineering",
+      "research"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c3",
+    "name": "Grace Hopper",
+    "email": "grace@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Staff Engineer",
+    "avatarColor": "__COLOR_2__",
+    "lastContactAt": "__DAYSAGO_2__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "engineering",
+      "compiler"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c4",
+    "name": "Linus Torvalds",
+    "email": "linus@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Distinguished Engineer",
+    "avatarColor": "__COLOR_3__",
+    "lastContactAt": "__DAYSAGO_3__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "engineering",
+      "kernel"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c5",
+    "name": "Margaret Hamilton",
+    "email": "margaret@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Reliability Lead",
+    "avatarColor": "__COLOR_4__",
+    "lastContactAt": "__DAYSAGO_5__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "engineering",
+      "reliability"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c6",
+    "name": "Dennis Ritchie",
+    "email": "dennis@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Language Designer",
+    "avatarColor": "__COLOR_5__",
+    "lastContactAt": "__DAYSAGO_8__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "engineering",
+      "systems"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c7",
+    "name": "Katherine Johnson",
+    "email": "katherine@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Data Scientist",
+    "avatarColor": "__COLOR_6__",
+    "lastContactAt": "__DAYSAGO_6__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "data",
+      "research"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c8",
+    "name": "Tim Berners-Lee",
+    "email": "tim@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Protocol Architect",
+    "avatarColor": "__COLOR_7__",
+    "lastContactAt": "__DAYSAGO_12__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "engineering",
+      "protocols"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c9",
+    "name": "Barbara Liskov",
+    "email": "barbara@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Distributed Systems Lead",
+    "avatarColor": "__COLOR_8__",
+    "lastContactAt": "__DAYSAGO_9__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "engineering",
+      "distributed"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c10",
+    "name": "John Carmack",
+    "email": "john@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Rendering Engineer",
+    "avatarColor": "__COLOR_9__",
+    "lastContactAt": "__DAYSAGO_15__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "engineering",
+      "graphics"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c11",
+    "name": "Hedy Lamarr",
+    "email": "hedy@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Security Engineer",
+    "avatarColor": "__COLOR_0__",
+    "lastContactAt": "__DAYSAGO_7__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "security",
+      "research"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c12",
+    "name": "Donald Knuth",
+    "email": "donald@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Algorithms Architect",
+    "avatarColor": "__COLOR_1__",
+    "lastContactAt": "__DAYSAGO_20__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "algorithms",
+      "engineering"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c13",
+    "name": "Claude Shannon",
+    "email": "claude@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Information Theorist",
+    "avatarColor": "__COLOR_2__",
+    "lastContactAt": "__DAYSAGO_18__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "research",
+      "theory"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c14",
+    "name": "Radia Perlman",
+    "email": "radia@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Network Architect",
+    "avatarColor": "__COLOR_3__",
+    "lastContactAt": "__DAYSAGO_22__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "networking",
+      "engineering"
+    ],
+    "groupId": "grp-team"
+  },
+  {
+    "id": "c15",
+    "name": "Sarah Chen",
+    "email": "sarah.chen@misfits.ai",
+    "company": "misfits.ai",
+    "role": "VP Engineering",
+    "avatarColor": "__COLOR_4__",
+    "lastContactAt": "__DAYSAGO_0__",
+    "contactFrequency": "daily",
+    "tags": [
+      "leadership",
+      "vip"
+    ],
+    "groupId": "grp-leads",
+    "notes": "Owns the Q3 roadmap review."
+  },
+  {
+    "id": "c16",
+    "name": "Marcus Rodriguez",
+    "email": "marcus@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Head of Product",
+    "avatarColor": "__COLOR_5__",
+    "lastContactAt": "__DAYSAGO_1__",
+    "contactFrequency": "daily",
+    "tags": [
+      "product",
+      "leadership"
+    ],
+    "groupId": "grp-leads"
+  },
+  {
+    "id": "c17",
+    "name": "Priya Patel",
+    "email": "priya@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Design Director",
+    "avatarColor": "__COLOR_6__",
+    "lastContactAt": "__DAYSAGO_4__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "design",
+      "leadership"
+    ],
+    "groupId": "grp-leads"
+  },
+  {
+    "id": "c18",
+    "name": "James Okafor",
+    "email": "james@misfits.ai",
+    "company": "misfits.ai",
+    "role": "Head of Growth",
+    "avatarColor": "__COLOR_7__",
+    "lastContactAt": "__DAYSAGO_6__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "growth",
+      "leadership"
+    ],
+    "groupId": "grp-leads"
+  },
+  {
+    "id": "c19",
+    "name": "Satoshi Nakamoto",
+    "email": "satoshi@example.com",
+    "company": "Bitcoin Foundation",
+    "role": "Advisor",
+    "avatarColor": "__COLOR_8__",
+    "lastContactAt": "__DAYSAGO_45__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "investor",
+      "advisor",
+      "crypto"
+    ],
+    "groupId": "grp-investors"
+  },
+  {
+    "id": "c20",
+    "name": "Elon Musk",
+    "email": "elon@futurefund.vc",
+    "company": "Future Fund",
+    "role": "Partner",
+    "avatarColor": "__COLOR_9__",
+    "lastContactAt": "__DAYSAGO_30__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "investor",
+      "vc"
+    ],
+    "groupId": "grp-investors"
+  },
+  {
+    "id": "c21",
+    "name": "Gwynne Shotwell",
+    "email": "gwynne@orbitvc.com",
+    "company": "Orbit Ventures",
+    "role": "Managing Partner",
+    "avatarColor": "__COLOR_0__",
+    "lastContactAt": "__DAYSAGO_60__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "investor",
+      "vc"
+    ],
+    "groupId": "grp-investors"
+  },
+  {
+    "id": "c22",
+    "name": "Reid Hoffman",
+    "email": "reid@linkedcapital.com",
+    "company": "Linked Capital",
+    "role": "Angel",
+    "avatarColor": "__COLOR_1__",
+    "lastContactAt": "__DAYSAGO_75__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "investor",
+      "angel"
+    ],
+    "groupId": "grp-investors"
+  },
+  {
+    "id": "c23",
+    "name": "Leslie Alexander",
+    "email": "leslie@acme-corp.com",
+    "company": "Acme Corp",
+    "role": "Partnerships Manager",
+    "avatarColor": "__COLOR_0__",
+    "lastContactAt": "__DAYSAGO_14__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "partner",
+      "sales"
+    ],
+    "groupId": "grp-partners"
+  },
+  {
+    "id": "c24",
+    "name": "Werner Vogels",
+    "email": "werner@cloudscale.io",
+    "company": "CloudScale",
+    "role": "CTO",
+    "avatarColor": "__COLOR_2__",
+    "lastContactAt": "__DAYSAGO_25__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "partner",
+      "infra"
+    ],
+    "groupId": "grp-partners"
+  },
+  {
+    "id": "c25",
+    "name": "Patrick Collison",
+    "email": "patrick@stripe.io",
+    "company": "Stripe",
+    "role": "CEO",
+    "avatarColor": "__COLOR_4__",
+    "lastContactAt": "__DAYSAGO_40__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "partner",
+      "payments"
+    ],
+    "groupId": "grp-partners"
+  },
+  {
+    "id": "c26",
+    "name": "Mitchell Baker",
+    "email": "mitchell@mozillafdn.org",
+    "company": "Mozilla Foundation",
+    "role": "Executive Director",
+    "avatarColor": "__COLOR_6__",
+    "lastContactAt": "__DAYSAGO_90__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "partner",
+      "nonprofit"
+    ],
+    "groupId": "grp-partners"
+  },
+  {
+    "id": "c27",
+    "name": "Jane Cooper",
+    "email": "jane.cooper@gmail.com",
+    "avatarColor": "__COLOR_5__",
+    "lastContactAt": "__DAYSAGO_3__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "friend",
+      "personal"
+    ],
+    "groupId": "grp-personal"
+  },
+  {
+    "id": "c28",
+    "name": "Esther Howard",
+    "email": "esther.howard@outlook.com",
+    "avatarColor": "__COLOR_6__",
+    "lastContactAt": "__DAYSAGO_10__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "family",
+      "personal"
+    ],
+    "groupId": "grp-personal"
+  },
+  {
+    "id": "c29",
+    "name": "Wade Warren",
+    "email": "wade.warren@yahoo.com",
+    "avatarColor": "__COLOR_7__",
+    "lastContactAt": "__DAYSAGO_28__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "friend",
+      "personal"
+    ],
+    "groupId": "grp-personal"
+  },
+  {
+    "id": "c30",
+    "name": "Cameron Williamson",
+    "email": "cameron@proton.me",
+    "avatarColor": "__COLOR_8__",
+    "lastContactAt": "__DAYSAGO_50__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "personal"
+    ],
+    "groupId": "grp-personal"
+  },
+  {
+    "id": "c31",
+    "name": "Brooklyn Simmons",
+    "email": "brooklyn@fastmail.com",
+    "avatarColor": "__COLOR_9__",
+    "lastContactAt": "__DAYSAGO_120__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "personal"
+    ],
+    "groupId": "grp-personal"
+  },
+  {
+    "id": "c32",
+    "name": "Team Leads",
+    "email": "leads@misfits.ai",
+    "avatarColor": "__COLOR_1__",
+    "lastContactAt": "__DAYSAGO_2__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "mailing-list"
+    ]
+  },
+  {
+    "id": "c33",
+    "name": "All Staff",
+    "email": "everyone@misfits.ai",
+    "avatarColor": "__COLOR_2__",
+    "lastContactAt": "__DAYSAGO_1__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "mailing-list"
+    ]
+  },
+  {
+    "id": "c34",
+    "name": "Support Desk",
+    "email": "support@misfits.ai",
+    "avatarColor": "__COLOR_3__",
+    "lastContactAt": "__DAYSAGO_5__",
+    "contactFrequency": "weekly",
+    "tags": [
+      "support"
+    ]
+  },
+  {
+    "id": "c35",
+    "name": "Robert Fox",
+    "email": "robert.fox@techreview.com",
+    "company": "Tech Review",
+    "role": "Journalist",
+    "avatarColor": "__COLOR_4__",
+    "lastContactAt": "__DAYSAGO_35__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "press",
+      "external"
+    ]
+  },
+  {
+    "id": "c36",
+    "name": "Natalie Reyes",
+    "email": "natalie@designhub.co",
+    "company": "DesignHub",
+    "role": "Product Designer",
+    "avatarColor": "__COLOR_5__",
+    "lastContactAt": "__DAYSAGO_16__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "design",
+      "external"
+    ]
+  },
+  {
+    "id": "c37",
+    "name": "Devon Lane",
+    "email": "devon@startupweekly.io",
+    "company": "Startup Weekly",
+    "role": "Editor",
+    "avatarColor": "__COLOR_6__",
+    "lastContactAt": "__DAYSAGO_48__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "press"
+    ]
+  },
+  {
+    "id": "c38",
+    "name": "Frieda Vargas",
+    "email": "frieda@legalpartners.com",
+    "company": "Legal Partners LLP",
+    "role": "Counsel",
+    "avatarColor": "__COLOR_7__",
+    "lastContactAt": "__DAYSAGO_33__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "legal",
+      "external"
+    ],
+    "notes": "Outside counsel for trademark filings."
+  },
+  {
+    "id": "c39",
+    "name": "Olive Hughes",
+    "email": "olive.hughes@bigboxco.com",
+    "company": "BigBox Co",
+    "role": "Procurement",
+    "avatarColor": "__COLOR_8__",
+    "lastContactAt": "__DAYSAGO_72__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "vendor",
+      "external"
+    ]
+  },
+  {
+    "id": "c40",
+    "name": "Hank Gardner",
+    "email": "hank@devtools.fm",
+    "company": "DevTools FM",
+    "role": "Podcast Host",
+    "avatarColor": "__COLOR_9__",
+    "lastContactAt": "__DAYSAGO_58__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "press",
+      "podcast"
+    ]
+  },
+  {
+    "id": "c41",
+    "name": "Ida Bell",
+    "email": "ida.bell@quantumedge.ai",
+    "company": "QuantumEdge",
+    "role": "Research Scientist",
+    "avatarColor": "__COLOR_0__",
+    "lastContactAt": "__DAYSAGO_11__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "research",
+      "external"
+    ]
+  },
+  {
+    "id": "c42",
+    "name": "Mona Petersen",
+    "email": "mona@nordicvc.no",
+    "company": "Nordic VC",
+    "role": "Associate",
+    "avatarColor": "__COLOR_2__",
+    "lastContactAt": "__DAYSAGO_27__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "investor",
+      "vc",
+      "external"
+    ]
+  },
+  {
+    "id": "c43",
+    "name": "Cody Nguyen",
+    "email": "cody.nguyen@apiforge.dev",
+    "company": "API Forge",
+    "role": "Developer Advocate",
+    "avatarColor": "__COLOR_3__",
+    "lastContactAt": "__DAYSAGO_19__",
+    "contactFrequency": "monthly",
+    "tags": [
+      "partner",
+      "devrel",
+      "external"
+    ]
+  },
+  {
+    "id": "c44",
+    "name": "Zara Khan",
+    "email": "zara@brandstudio.com",
+    "company": "Brand Studio",
+    "role": "Creative Director",
+    "avatarColor": "__COLOR_5__",
+    "lastContactAt": "__DAYSAGO_44__",
+    "contactFrequency": "rarely",
+    "tags": [
+      "agency",
+      "external"
+    ]
+  }
+]
