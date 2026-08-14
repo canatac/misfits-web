@@ -2,10 +2,10 @@
 // chat-persistence.ts — extracted Sprint 3-3
 import type { ChatConversation } from "@/types/chat";
 
-const STORAGE_KEY = "mfa.chat";
-const MAX_CONVERSATIONS = 10;
+export const STORAGE_KEY = "mfa.chat";
+export const MAX_CONVERSATIONS = 10;
 
-function loadConversations(): ChatConversation[] {
+export function loadConversations(): ChatConversation[] {
   if (typeof localStorage === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -15,7 +15,7 @@ function loadConversations(): ChatConversation[] {
   }
 }
 
-function saveConversations(conversations: ChatConversation[]) {
+export function saveConversations(conversations: ChatConversation[]) {
   if (typeof localStorage === "undefined") return;
   try {
     localStorage.setItem(

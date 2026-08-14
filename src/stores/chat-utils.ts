@@ -2,7 +2,7 @@
 // chat-utils.ts — extracted Sprint 3-3
 import type { ChatTraceEvent, ChatSetState } from "./chat-types";
 
-function toShort(value: unknown, max = 140): string {
+export function toShort(value: unknown, max = 140): string {
   const text =
     typeof value === "string"
       ? value
@@ -14,7 +14,7 @@ function toShort(value: unknown, max = 140): string {
 }
 
 
-function pushTrace(
+export function pushTrace(
   set: ChatSetState,
   event: Omit<ChatTraceEvent, "id" | "at">
 ) {
@@ -30,7 +30,7 @@ function pushTrace(
   }));
 }
 
-function parseSseEventBlocks(buffer: string): {
+export function parseSseEventBlocks(buffer: string): {
   rest: string;
   blocks: string[];
 } {
@@ -39,7 +39,7 @@ function parseSseEventBlocks(buffer: string): {
   return { rest, blocks };
 }
 
-function extractDataFromBlock(block: string): string[] {
+export function extractDataFromBlock(block: string): string[] {
   const lines = block.split("\n");
   const data: string[] = [];
   for (const line of lines) {

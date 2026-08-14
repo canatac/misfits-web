@@ -406,3 +406,7 @@ export const useContactStore = create<ContactState>()(
     }
   )
 );
+
+// Re-exports for backward-compat (imported elsewhere from "@/stores/contact-store")
+export { contactInitials, pickAvatarColor, deriveFrequency, FREQUENCY_LABELS } from "./contact-utils";
+export { parseVCard, parseCSV } from "./contact-serialisers";
