@@ -254,9 +254,21 @@ export function useResetAdminPassword() {
       revokeSessions?: boolean;
     }) => resetAdminPassword(id, { newPassword, revokeSessions }),
     onSuccess: (data) => {
-      if (data.generatedPassword) {
+      if (data.generated && data.password) {
+        // Toast persistant avec le mot de passe temporaire — l'admin doit
+        // le communiquer au propriétaire du compte HORS-BANDE (SMS, canal
+        // sécurisé) puis exiger un changement à la prochaine connexion.
         toast.success(
-          "Mot de passe réinitialisé — un mot de passe temporaire a été généré côté serveur."
+          `Mot de passe temporaire : ${data.password} (à communiquer hors-bande)`,
+          {
+            duration: Infinity,
+            action: {
+              label: "Copier",
+              onClick: () => {
+                void navigator.clipboard.writeText(data.password ?? "");
+              },
+            },
+          }
         );
       } else {
         toast.success("Mot de passe réinitialisé");

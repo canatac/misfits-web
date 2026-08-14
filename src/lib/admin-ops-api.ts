@@ -136,7 +136,17 @@ export interface ResetAdminPasswordInput {
 export interface ResetAdminPasswordResponse {
   reset: boolean;
   user: AdminUsersResponse["users"][number];
-  generatedPassword: boolean | null;
+  /**
+   * Vrai si le backend a auto-généré un mot de passe (aucun `newPassword`
+   * n'était fourni dans la requête).
+   */
+  generated: boolean;
+  /**
+   * Mot de passe en clair — présent UNIQUEMENT quand `generated=true`.
+   * L'admin doit le communiquer au propriétaire hors-bande, puis exiger
+   * un changement à la prochaine connexion.
+   */
+  password: string | null;
 }
 
 export function resetAdminPassword(
