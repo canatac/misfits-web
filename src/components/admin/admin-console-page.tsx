@@ -16,6 +16,7 @@ import {
 } from "@/hooks/use-security-dashboard";
 import {
   useAdminAiActivity,
+  useAdminAuditLog,
   useAdminChangelog,
   useAdminUsers,
   useAdminWhoami,
@@ -24,6 +25,8 @@ import {
   useCreateChangeRequest,
   useDeleteChangeRequest,
   useDeleteAdminUser,
+  useInviteAdminUser,
+  useResetAdminPassword,
   useStartImplementationChangeRequest,
   useTransitionChangeRequest,
   useUpdateAdminUser,
@@ -405,6 +408,9 @@ export function AdminConsolePage({
   // stays true and the current behaviour is preserved.
   const canWriteUsers = (whoami.data?.role ?? "admin") === "admin";
   const rbacEnforced = whoami.data?.enforced === true;
+  const inviteAdminUser = useInviteAdminUser();
+  const resetAdminPassword = useResetAdminPassword();
+  const adminAuditLog = useAdminAuditLog(100);
   const adminAiActivity = useAdminAiActivity(50);
   const createChangeRequest = useCreateChangeRequest();
   const transitionChangeRequest = useTransitionChangeRequest();
@@ -3276,6 +3282,39 @@ export function AdminConsolePage({
                     {canWriteUsers && (
                     <button
                       type="button"
+                      onClick={() => inviteAdminUser.mutate(user.id)}
+                      disabled={inviteAdminUser.isPending}
+                      className="rounded-md border border-[#1F3B5B] px-2 py-1 text-[11px] text-[#93C5FD] disabled:opacity-50"
+                      title="Envoyer un lien d'invitation à cet utilisateur (72h)"
+                    >
+                      Inviter
+                    </button>
+                    )}
+                    {canWriteUsers && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = window.prompt(
+                          "Nouveau mot de passe (laisser vide pour générer)",
+                          ""
+                        );
+                        if (p === null) return; // annulé
+                        resetAdminPassword.mutate({
+                          id: user.id,
+                          newPassword: p.trim() || undefined,
+                          revokeSessions: true,
+                        });
+                      }}
+                      disabled={resetAdminPassword.isPending}
+                      className="rounded-md border border-[#3B4A1F] px-2 py-1 text-[11px] text-[#BEF264] disabled:opacity-50"
+                      title="Réinitialiser le mot de passe et révoquer les sessions"
+                    >
+                      Reset MDP
+                    </button>
+                    )}
+                    {canWriteUsers && (
+                    <button
+                      type="button"
                       onClick={() => void handleDeleteUser(user.id)}
                       disabled={deleteAdminUser.isPending}
                       className="rounded-md border border-[#5B1F27] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
@@ -3319,6 +3358,53 @@ export function AdminConsolePage({
                 Erreur activité IA: {adminAiActivity.error.message}
               </p>
             )}
+
+            <div className="mt-4 rounded-xl border border-[#232327] bg-[#151518] p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs text-[#A1A1AA]">
+                  Journal d&apos;audit (100 dernières actions)
+                </p>
+                <Badge tone={adminAuditLog.isFetching ? "warn" : "ok"}>
+                  {adminAuditLog.isFetching ? "syncing" : "live"}
+                </Badge>
+              </div>
+              {adminAuditLog.data?.entries?.length ? (
+                <ul className="space-y-1 text-[11px] text-[#D4D4D8]">
+                  {adminAuditLog.data.entries.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="flex items-center justify-between gap-3 rounded-md bg-[#111114] px-2 py-1"
+                    >
+                      <span className="min-w-0 truncate">
+                        <span className="text-[#71717A]">
+                          {new Date(entry.at).toLocaleString()}
+                        </span>{" "}
+                        <span className="font-mono text-[#93C5FD]">
+                          {entry.actorEmail}
+                        </span>{" "}
+                        →{" "}
+                        <span className="text-[#F5C563]">{entry.action}</span>{" "}
+                        <span className="text-[#71717A]">
+                          {entry.targetKind}:{entry.targetId}
+                        </span>
+                        {entry.note ? (
+                          <span className="text-[#A1A1AA]"> · {entry.note}</span>
+                        ) : null}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-[#71717A]">
+                  Aucune entrée pour le moment.
+                </p>
+              )}
+              {adminAuditLog.isError && (
+                <p className="text-sm text-[#FCA5A5]">
+                  Erreur audit-log: {adminAuditLog.error.message}
+                </p>
+              )}
+            </div>
           </div>
         </section>
       )}
