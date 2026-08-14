@@ -284,8 +284,9 @@ export function EmailView({ className }: EmailViewProps) {
 
   const handleReply = useCallback(() => {
     if (!email) return;
+    const replyTarget = email.replyTo ?? email.from;
     openComposer({
-      to: [toRecipient(email.from.address, email.from.name)],
+      to: [toRecipient(replyTarget.address, replyTarget.name)],
       cc: (email.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
       subject: email.subject.startsWith("Re: ")
         ? email.subject
@@ -300,7 +301,10 @@ export function EmailView({ className }: EmailViewProps) {
 
   const handleReplyAll = useCallback(() => {
     if (!email) return;
-    const to: Recipient[] = [toRecipient(email.from.address, email.from.name)];
+    const replyTarget = email.replyTo ?? email.from;
+    const to: Recipient[] = [
+      toRecipient(replyTarget.address, replyTarget.name),
+    ];
     for (const a of email.to) {
       if (
         a.address !== email.from.address &&

@@ -117,6 +117,8 @@ export function useSendEmail() {
             bcc: draft.bcc.map((r) => ({ email: r.email, name: r.name })),
             subject: draft.subject,
             body: draft.body,
+            inReplyTo: draft.inReplyTo,
+            references: draft.references,
             ...options,
           }),
         });
