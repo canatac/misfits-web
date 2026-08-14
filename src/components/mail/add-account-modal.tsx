@@ -229,6 +229,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       setTestResult(result);
       return;
     }
+    const effectiveServerConfig: AccountServerConfig = needsServerFields
+      ? serverConfig
+      : (PROVIDER_PRESETS[provider].serverConfig ?? serverConfig);
+
     const account = await addAccount.mutateAsync({
       email,
       name: name.trim() || undefined,
@@ -236,9 +240,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       color: activeColor,
       avatar: undefined,
       aliases: [],
-      serverConfig: needsServerFields
-        ? serverConfig
-        : PROVIDER_PRESETS[provider].serverConfig,
+      serverConfig: effectiveServerConfig,
     });
     setActiveAccount(account.id);
     reset();
