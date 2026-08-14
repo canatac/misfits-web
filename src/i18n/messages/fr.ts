@@ -8,6 +8,7 @@ const fr = {
     newsletters: "Newsletters",
     translation: "Traduction",
     docs: "Docs",
+    documentation: "Documentation",
     monitoring: "Monitoring",
     security: "Sécurité",
     admin: "Admin",
