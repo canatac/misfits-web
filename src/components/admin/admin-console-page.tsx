@@ -108,133 +108,14 @@ const STATUS_LABEL: Record<WorkflowStatus, string> = {
 };
 
 
-type AdminDeliverabilityDiagnosticsResponse = {
-  total_events?: number;
-  bounces_total?: number;
-  auth_policy_alerts?: number;
-  spf?: { failures?: number; failure_rate?: number };
-  dkim?: { failures?: number; failure_rate?: number };
-  dmarc?: { failures?: number; failure_rate?: number };
-  reputation?: { avg_risk_score?: number; high_risk_events?: number; ip_domain_status?: string };
-  top_bounce_reasons?: Array<{ reason: string; count: number }>;
-  rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
-};
-
-type DeliverabilityProcedureData = {
-  overall_status?: string;
-  domain?: string;
-  window?: string;
-  progress?: { done?: number; total?: number };
-  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
-  checklist?: Array<{
-    id: string;
-    title: string;
-    status: "done" | "done_manual" | "in_progress" | "todo" | "blocked";
-    evidence?: string;
-    operator_note?: string;
-    cta?: { label?: string; kind?: string; details?: string };
-  }>;
-  cta_details?: Array<{ id: string; label: string; description: string }>;
-  automation?: { auto_checks?: string[]; last_computed_at?: string };
-};
-
-type AdminObservabilityOverviewResponse = {
-  smtp?: {
-    total_events?: number;
-    failure_events?: number;
-    p95_total_ms?: number;
-  };
-  health_realtime?: {
-    queue?: {
-      depth?: number;
-      oldest_age_seconds?: number | null;
-    };
-    throughput?: {
-      incoming_per_min?: number;
-      outgoing_per_min?: number;
-    };
-    delivery?: {
-      success_rate?: number;
-      smtp_4xx_rate?: number;
-      smtp_5xx_rate?: number;
-      p95_total_ms?: number;
-    };
-  };
-  proactive_alerting?: {
-    threshold_alerts?: {
-      queue_growth?: number;
-      auth_failures?: number;
-      imap_latency_alert?: boolean;
-    };
-    anomaly_detection?: {
-      anomaly_alerts?: number;
-      spam_or_volume_spike?: boolean;
-      sudden_bounce_signal?: boolean;
-    };
-    correlation?: {
-      smtp?: { events?: number; smtp_4xx?: number; smtp_5xx?: number };
-      imap?: { active_connections?: number | null; p95_ms?: number | null };
-      dns?: { lookup_issue_events?: number };
-      blacklist?: {
-        sources?: string[];
-        listed_by?: string[];
-        listed?: boolean;
-      };
-    };
-  };
-  security_deliverability?: {
-    suspicious_logins_top?: Array<{ ip?: string; attempts?: number }>;
-    active_security_alerts?: number;
-    active_monitoring_alerts?: number;
-  };
-  imap?: {
-    active_connections?: number | null;
-  };
-  realtime_alerts?: {
-    monitoring_active?: number;
-    security_active?: number;
-  };
-  exports?: {
-    prometheus_enabled?: boolean;
-    siem_webhook_configured?: boolean;
-  };
-  per_domain?: Array<{
-    domain: string;
-    count: number;
-    delivered: number;
-    bounced: number;
-  }>;
-};
-
-
-type ChangeRequestChatField =
-  | "problemRoot" | "impact" | "successCriteria" | "rollbackPlan" | "none";
-
-type ChangeRequestChatMessage = {
-  role: "assistant" | "user";
-  content: string;
-};
-
-type ChangeRequestGuideDraft = {
-  problemRoot: string;
-  impact: string;
-  successCriteria: string;
-  rollbackPlan: string;
-};
-
-const CHANGE_REQUEST_GUIDE_ORDER: Array<
-  Exclude<ChangeRequestChatField, "none">
-> = ["problemRoot", "impact", "successCriteria", "rollbackPlan"];
-
-const CHANGE_REQUEST_GUIDE_LABEL: Record<
-  Exclude<ChangeRequestChatField, "none">,
-  string
-> = {
-  problemRoot: "problème racine",
-  impact: "impact utilisateur/business",
-  successCriteria: "critères de succès mesurables",
-  rollbackPlan: "plan de rollback/mitigation"
-};
+import type {
+  AdminDeliverabilityDiagnosticsResponse,
+  DeliverabilityProcedureData,
+  AdminObservabilityOverviewResponse,
+} from "@/types/admin-console";
+import { useAdminData } from "@/hooks/useAdminData";
+import { useCrGuide, type ChangeRequestChatMessage, type ChangeRequestGuideDraft, type ChangeRequestChatField } from "@/hooks/useCrGuide";
+import { useAdminAssistant } from "@/hooks/useAdminAssistant";
 
 export function AdminConsolePage({
   initialTab = "overview"
@@ -312,148 +193,56 @@ export function AdminConsolePage({
     title: string;
   } | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const [crGuideDraft, setCrGuideDraft] = useState<ChangeRequestGuideDraft>({
-    problemRoot: "",
-    impact: "",
-    successCriteria: "",
-    rollbackPlan: ""
+  const {
+    crGuideDraft,
+    crGuideStepIndex,
+    crGuideMessages,
+    crGuideInput,
+    setCrGuideInput,
+    crGuideLoading,
+    crGuideError,
+    applyGuideToForm,
+    handleGuideChatSubmit,
+  } = useCrGuide(newRequest, setNewRequest);
+
+  const {
+    securityPosture,
+    deliverability,
+    deliverabilityProcedure,
+    observability,
+    adminDataLoading,
+    adminDataError,
+    procedureSaving,
+    saveProcedureUpdate,
+  } = useAdminData(windowRange);
+
+  const {
+    assistantPrompt,
+    setAssistantPrompt,
+    assistantAnswer,
+    assistantLoading,
+    assistantError,
+    adminAssistantSnapshot,
+    askHermesForAdminPlan,
+  } = useAdminAssistant({
+    windowRange,
+    severity,
+    monitoringSummary,
+    monitoringAlerts,
+    securityActive,
+    monitoringProviders,
+    monitoringBounces,
+    monitoringLiveEvents: monitoringLive.events,
+    securityLiveAlerts: securityLive.alerts,
+    observability,
+    deliverability,
+    deliverabilityProcedure,
+    securityPosture,
+    adminDataLoading,
+    adminDataError,
   });
-  const [crGuideStepIndex, setCrGuideStepIndex] = useState(0);
-  const [crGuideMessages, setCrGuideMessages] = useState<
-    ChangeRequestChatMessage[]
-  >([
-    {
-      role: "assistant",
-      content:
-        "Je t’aide à remplir la change request. Commence par décrire le problème racine (symptôme + cause probable)."
-    },
-  ]);
-  const [crGuideInput, setCrGuideInput] = useState("");
-  const [crGuideLoading, setCrGuideLoading] = useState(false);
-  const [crGuideError, setCrGuideError] = useState<string | null>(null);
 
-  const [securityPosture, setSecurityPosture] =
-    useState<LocalSecurityPosture | null>(null);
-  const [deliverability, setDeliverability] =
-    useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
-  const [deliverabilityProcedure, setDeliverabilityProcedure] =
-    useState<DeliverabilityProcedureData | null>(null);
-  const [observability, setObservability] =
-    useState<AdminObservabilityOverviewResponse | null>(null);
-  const [adminDataLoading, setAdminDataLoading] = useState(false);
-  const [adminDataError, setAdminDataError] = useState<string | null>(null);
-  const [procedureSaving, setProcedureSaving] = useState(false);
 
-  const [assistantPrompt, setAssistantPrompt] = useState(
-    "Fais-moi un résumé de la situation actuelle et les actions prioritaires à lancer dans les 2 prochaines heures."
-  );
-  const [assistantAnswer, setAssistantAnswer] = useState<string>("");
-  const [assistantLoading, setAssistantLoading] = useState(false);
-  const [assistantError, setAssistantError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAdminData() {
-      setAdminDataLoading(true);
-      setAdminDataError(null);
-      try {
-        const [securityRes, deliverabilityRes, observabilityRes, procedureRes] =
-          await Promise.all([
-            fetch(`/api/admin/security/posture?window=${windowRange}`, {
-              cache: "no-store"
-            }),
-            fetch(
-              `/api/admin/deliverability/diagnostics?window=${windowRange}`,
-              {
-                cache: "no-store"
-              }
-            ),
-            fetch(`/api/admin/observability/overview?window=${windowRange}`, {
-              cache: "no-store"
-            }),
-            fetch(`/api/admin/deliverability/procedure?window=${windowRange}`, {
-              cache: "no-store"
-            }),
-          ]);
-
-        if (
-          !securityRes.ok ||
-          !deliverabilityRes.ok ||
-          !observabilityRes.ok ||
-          !procedureRes.ok
-        ) {
-          throw new Error(
-            `admin_api_status=${securityRes.status}/${deliverabilityRes.status}/${observabilityRes.status}/${procedureRes.status}`
-          );
-        }
-
-        const [securityData, deliverabilityData, observabilityData, procedureData] =
-          await Promise.all([
-            securityRes.json(),
-            deliverabilityRes.json(),
-            observabilityRes.json(),
-            procedureRes.json(),
-          ]);
-
-        if (cancelled) return;
-
-        setSecurityPosture(securityData);
-        setDeliverability(deliverabilityData);
-        setObservability(observabilityData);
-        setDeliverabilityProcedure(procedureData);
-      } catch (error) {
-        if (cancelled) return;
-        setAdminDataError(
-          error instanceof Error ? error.message : "admin_data_load_failed"
-        );
-      } finally {
-        if (!cancelled) {
-          setAdminDataLoading(false);
-        }
-      }
-    }
-
-    void loadAdminData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [windowRange]);
-
-  async function saveProcedureUpdate(payload: {
-    checklist?: Array<{ id: string; checked: boolean; note?: string }>;
-    reminder?: { enabled: boolean; cadence_hours: number };
-  }) {
-    setProcedureSaving(true);
-    try {
-      const res = await fetch(`/api/admin/deliverability/procedure`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `procedure_update_failed_${res.status}`);
-      }
-
-      const fresh = await fetch(
-        `/api/admin/deliverability/procedure?window=${windowRange}`,
-        {
-          cache: "no-store"
-        }
-      );
-      if (fresh.ok) {
-        setDeliverabilityProcedure(await fresh.json());
-      }
-    } catch (error) {
-      setAdminDataError(
-        error instanceof Error ? error.message : "deliverability_procedure_save_failed"
-      );
-    } finally {
-      setProcedureSaving(false);
-    }
-  }
 
   const summaryCards = useMemo(() => {
     const summary = monitoringSummary.data;
@@ -494,103 +283,7 @@ export function AdminConsolePage({
     windowRange,
   ]);
 
-  const adminAssistantSnapshot = useMemo(
-    () => ({
-      window: windowRange,
-      severity,
-      summary: monitoringSummary.data ?? null,
-      monitoring_alerts: monitoringAlerts.data?.alerts?.slice(0, 15) ?? [],
-      security_alerts: securityActive.data?.alerts?.slice(0, 15) ?? [],
-      providers: monitoringProviders.data?.providers?.slice(0, 10) ?? [],
-      bounces: monitoringBounces.data?.bounces?.slice(0, 10) ?? [],
-      monitoring_live: monitoringLive.events.slice(0, 12),
-      security_live: securityLive.alerts.slice(0, 12),
-      observability,
-      deliverability,
-      deliverability_procedure: deliverabilityProcedure,
-      security_posture: securityPosture,
-      admin_data_loading: adminDataLoading,
-      admin_data_error: adminDataError
-    }),
-    [
-      windowRange,
-      severity,
-      monitoringSummary.data,
-      monitoringAlerts.data,
-      securityActive.data,
-      monitoringProviders.data,
-      monitoringBounces.data,
-      monitoringLive.events,
-      securityLive.alerts,
-      observability,
-      deliverability,
-      deliverabilityProcedure,
-      securityPosture,
-      adminDataLoading,
-      adminDataError,
-    ]
-  );
 
-  async function askHermesForAdminPlan() {
-    const prompt = assistantPrompt.trim();
-    if (!prompt) {
-      setAssistantError("Merci de saisir une demande.");
-      return;
-    }
-
-    setAssistantLoading(true);
-    setAssistantError(null);
-
-    try {
-      const response = await fetch("/api/hermes/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content:
-                "Tu es Hermes, copilote SRE/DevOps de la console admin misfits.ai Mail. Réponds en français, de façon actionnable et concise. Donne exactement deux sections: 1) Résumé opérationnel (4-6 puces), 2) Actions à réaliser (checklist priorisée P0/P1/P2 avec commandes/étapes de vérification). Si des données sont absentes ou incohérentes, indique clairement les vérifications à lancer."
-            },
-            {
-              role: "user",
-              content: `Contexte observabilité/sécurité (JSON):\n${JSON.stringify(
-                adminAssistantSnapshot
-              )}\n\nDemande opérateur:\n${prompt}`
-            },
-          ],
-          sessionId: "admin-console-operations",
-          sessionKey: "misfits-admin-console",
-          temperature: 0.2
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          errorText || `hermes_request_failed_${response.status}`
-        );
-      }
-
-      const data = await response.json();
-      const content =
-        data?.choices?.[0]?.message?.content ??
-        data?.content ??
-        "Aucune réponse Hermes reçue.";
-
-      setAssistantAnswer(
-        typeof content === "string" ? content : JSON.stringify(content)
-      );
-    } catch (error) {
-      setAssistantError(
-        error instanceof Error
-          ? error.message
-          : "Erreur lors de l’appel Hermes."
-      );
-    } finally {
-      setAssistantLoading(false);
-    }
-  }
 
   async function handleCreateChangeRequest(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -653,169 +346,8 @@ export function AdminConsolePage({
     });
   }
 
-  function applyGuideToForm(nextDraft?: ChangeRequestGuideDraft) {
-    const draft = nextDraft ?? crGuideDraft;
-    const fusedProblem = [
-      draft.problemRoot.trim(),
-      draft.impact.trim() && `Impact: ${draft.impact.trim()}`,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
 
-    const fusedOutcome = [
-      draft.successCriteria.trim(),
-      draft.rollbackPlan.trim() &&
-        `Rollback/mitigation: ${draft.rollbackPlan.trim()}`,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
 
-    setNewRequest((prev) => ({
-      ...prev,
-      problem: fusedProblem || prev.problem,
-      desiredOutcome: fusedOutcome || prev.desiredOutcome
-    }));
-  }
-
-  function parseGuideResponse(raw: string): {
-    assistantReply?: string;
-    field?: ChangeRequestChatField;
-    fieldValue?: string;
-    nextQuestion?: string;
-  } {
-    const cleaned = raw
-      .trim()
-      .replace(/^```json\s*/i, "")
-      .replace(/```$/i, "");
-    try {
-      return JSON.parse(cleaned) as {
-        assistantReply?: string;
-        field?: ChangeRequestChatField;
-        fieldValue?: string;
-        nextQuestion?: string;
-      };
-    } catch {
-      return { assistantReply: raw };
-    }
-  }
-
-  async function handleGuideChatSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const prompt = crGuideInput.trim();
-    if (!prompt || crGuideLoading) return;
-
-    const field =
-      CHANGE_REQUEST_GUIDE_ORDER[
-        Math.min(crGuideStepIndex, CHANGE_REQUEST_GUIDE_ORDER.length - 1)
-      ];
-
-    setCrGuideError(null);
-    setCrGuideInput("");
-    setCrGuideMessages((prev) => [...prev, { role: "user", content: prompt }]);
-    setCrGuideLoading(true);
-
-    try {
-      const response = await fetch("/api/hermes/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "system",
-              content:
-                'Tu es assistant de formulation de change request. Réponds strictement en JSON sans markdown: {"assistantReply":string,"field":"problemRoot"|"impact"|"successCriteria"|"rollbackPlan"|"none","fieldValue":string,"nextQuestion":string}. fieldValue doit reformuler la réponse utilisateur en version exploitable et concise. nextQuestion doit poser la prochaine question utile pour compléter le formulaire.'
-            },
-            {
-              role: "user",
-              content: JSON.stringify({
-                currentField: field,
-                userMessage: prompt,
-                draft: crGuideDraft,
-                form: newRequest,
-                remainingFields: CHANGE_REQUEST_GUIDE_ORDER.slice(
-                  Math.min(
-                    crGuideStepIndex + 1,
-                    CHANGE_REQUEST_GUIDE_ORDER.length
-                  )
-                ).map((k) => CHANGE_REQUEST_GUIDE_LABEL[k])
-              })
-            },
-          ],
-          sessionId: "admin-change-request-guide",
-          sessionKey: "misfits-admin-change-request-guide",
-          temperature: 0.2
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`guide_chat_failed_${response.status}`);
-      }
-
-      const data = await response.json();
-      const raw =
-        data?.choices?.[0]?.message?.content ??
-        data?.content ??
-        "Réponse indisponible.";
-
-      const parsed = parseGuideResponse(
-        typeof raw === "string" ? raw : JSON.stringify(raw)
-      );
-
-      const targetField =
-        parsed.field && parsed.field !== "none" ? parsed.field : field;
-      const normalized = (parsed.fieldValue || prompt).trim();
-      const updatedDraft: ChangeRequestGuideDraft = {
-        ...crGuideDraft,
-        [targetField]: normalized
-      };
-
-      setCrGuideDraft(updatedDraft);
-
-      setCrGuideStepIndex((prev) =>
-        Math.min(prev + 1, CHANGE_REQUEST_GUIDE_ORDER.length)
-      );
-
-      applyGuideToForm(updatedDraft);
-
-      const reply =
-        parsed.assistantReply ||
-        `Bien reçu pour ${CHANGE_REQUEST_GUIDE_LABEL[targetField]}.`;
-      const next =
-        parsed.nextQuestion ||
-        (crGuideStepIndex + 1 >= CHANGE_REQUEST_GUIDE_ORDER.length
-          ? "Parfait, on a les éléments clés. Clique sur “Appliquer au formulaire” puis soumets la request."
-          : "Continue avec le prochain point pour compléter la request.");
-
-      setCrGuideMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: `${reply}\n\n${next}` },
-      ]);
-    } catch (error) {
-      setCrGuideError(
-        error instanceof Error ? error.message : "assistant_chat_unavailable"
-      );
-
-      const fallbackDraft: ChangeRequestGuideDraft = {
-        ...crGuideDraft,
-        [field]: prompt
-      };
-      setCrGuideDraft(fallbackDraft);
-      setCrGuideStepIndex((prev) =>
-        Math.min(prev + 1, CHANGE_REQUEST_GUIDE_ORDER.length)
-      );
-      setCrGuideMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content:
-            "Je n’ai pas pu reformuler automatiquement cette réponse. Je l’ai quand même prise en compte, tu peux continuer."
-        },
-      ]);
-      applyGuideToForm(fallbackDraft);
-    } finally {
-      setCrGuideLoading(false);
-    }
-  }
 
   async function handleUserRoleChange(
     id: string,
