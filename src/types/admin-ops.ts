@@ -231,9 +231,17 @@ export interface AdminAiActivityResponse {
 export interface DeliverabilityProcedureItem {
   id: string;
   label: string;
-  status: "done" | "pending" | "na";
+  title?: string;
+  status: "done" | "pending" | "na" | "done_manual" | "blocked";
   note?: string;
-  cta?: string;
+  cta?: string | { label: string; details?: string };
+  evidence?: string;
+  operator_note?: string;
+}
+
+export interface DeliverabilityCtaDetail {
+  label: string;
+  description: string;
 }
 
 export interface DeliverabilityProcedureResponse {
@@ -242,6 +250,7 @@ export interface DeliverabilityProcedureResponse {
   reminder: { enabled: boolean; cadence_hours: number; next_due_at?: string };
   automation: { auto_checks: string[] };
   checklist: DeliverabilityProcedureItem[];
+  cta_details?: DeliverabilityCtaDetail[];
 }
 
 export interface AdminDeliverabilityDiagnosticsResponse {

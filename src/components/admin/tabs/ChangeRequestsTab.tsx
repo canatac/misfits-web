@@ -41,7 +41,7 @@ interface ChangeRequestsTabProps {
   setCrGuideInput: React.Dispatch<React.SetStateAction<string>>;
   crGuideLoading: boolean;
   crGuideError: string | null;
-  handleCrGuide: (e: React.FormEvent) => Promise<void>;
+  handleCrGuide: (e: React.FormEvent) => void;
 }
 
 export function ChangeRequestsTab({
@@ -50,17 +50,13 @@ export function ChangeRequestsTab({
   deleteChangeRequest,
   transitionChangeRequest,
   startImplementation,
-  kanbanColumns,
-  workflowRunMonitoring,
-  crForm,
-  setCrForm,
+  adminDataLoading,
+  adminDataError,
   crGuideInput,
   setCrGuideInput,
   crGuideLoading,
   crGuideError,
   handleCrGuide,
-  WORKFLOW_STATUS_COLUMNS,
-  STATUS_LABEL,
 }: ChangeRequestsTabProps) {
 
   const kanbanColumns = useMemo(() => {
