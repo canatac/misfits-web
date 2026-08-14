@@ -580,7 +580,7 @@ export function AdminOverviewSections({
                 </p>
               </div>
             ))}
-          {!securityIncidents.data?.alerts?.length && (
+          {!securityIncidents.length && (
             <p className="text-sm text-[#71717A]">
               Aucun incident sur ce filtre.
             </p>
@@ -601,7 +601,7 @@ export function AdminOverviewSections({
         </Badge>
       </div>
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {(monitoringLive?.events ?? []).slice(0, 9).map((evt: { id?: string; kind?: string; ts?: string; message?: string; level?: string }) => (
+        {(monitoringLive?.events ?? []).slice(0, 9).map((evt: { id?: string; kind?: string; event_type?: string; ts?: string; message?: string; level?: string; to?: string }) => (
           <div
             key={evt.id}
             className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
