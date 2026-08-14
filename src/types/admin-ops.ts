@@ -245,11 +245,13 @@ export interface DeliverabilityCtaDetail {
 }
 
 export interface DeliverabilityProcedureResponse {
-  overall_status: string;
-  progress: { done: number; total: number };
-  reminder: { enabled: boolean; cadence_hours: number; next_due_at?: string };
-  automation: { auto_checks: string[] };
-  checklist: DeliverabilityProcedureItem[];
+  overall_status?: string;
+  domain?: string;
+  window?: string;
+  progress?: { done?: number; total?: number };
+  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
+  automation?: { auto_checks?: string[]; last_computed_at?: string };
+  checklist?: DeliverabilityProcedureItem[];
   cta_details?: DeliverabilityCtaDetail[];
 }
 

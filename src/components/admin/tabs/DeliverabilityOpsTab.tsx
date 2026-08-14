@@ -133,7 +133,7 @@ export function DeliverabilityOpsTab({
                       >
                         Marquer fait
                       </button>
-                      {item.cta?.details && (
+                      {item.cta && typeof item.cta === "object" && item.cta.details && (
                         <code className="rounded bg-[#1A1A1F] px-2 py-1 text-[11px] text-[#D4D4D8]">
                           {item.cta.details}
                         </code>
@@ -149,9 +149,9 @@ export function DeliverabilityOpsTab({
                 CTAs détaillées
               </h3>
               <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
-                {(deliverabilityProcedure?.cta_details ?? []).map((cta) => (
+                {(deliverabilityProcedure?.cta_details ?? []).map((cta, i) => (
                   <div
-                    key={cta.id}
+                    key={i}
                     className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
                   >
                     <p className="text-sm text-[#E4E4E7]">{cta.label}</p>

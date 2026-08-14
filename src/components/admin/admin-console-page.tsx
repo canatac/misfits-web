@@ -37,6 +37,8 @@ import type {
   CreateChangeRequestInput,
   WorkflowStatus,
   AdminUserRecord,
+,
+  DeliverabilityProcedureResponse
 } from "@/types/admin-ops";
 import {
   Badge,
@@ -224,11 +226,6 @@ type DeliverabilityProcedureItem = {
   cta?: { label?: string; kind?: string; details?: string };
 };
 
-type DeliverabilityProcedureResponse = {
-  overall_status?: string;
-  domain?: string;
-  window?: string;
-  progress?: { done?: number; total?: number };
   reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
   checklist?: DeliverabilityProcedureItem[];
   cta_details?: Array<{ id: string; label: string; description: string }>;
