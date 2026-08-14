@@ -13,7 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { ChatPanelHeader } from "@/components/mail/chat-panel/chat-panel-header";
 import { ChatAssistantView } from "@/components/mail/chat-panel/chat-assistant-view";
 import { ChatExpertView } from "@/components/mail/chat-panel/chat-expert-view";
-import type { ChatSourceCitation } from "@/types/chat";
+import type { ChatSourceCitation, ChatConversation } from "@/types/chat";
+import type { ChatTraceEvent } from "@/stores/chat-types";
+import type { Email } from "@/types/email";
 import { QUICK_PROMPTS, QUICK_ACTIONS, ROLE_TEMPLATES, SENSITIVE_KEYWORDS, DEFAULT_PERSONA, DEFAULT_ANALYTICS, containsSensitiveIntent, parseTaskCandidates, redactPii, buildPersonaInstruction, type Analytics, type PersonaPreset } from "./chat-panel/chat-panel-utils";
 
 
@@ -92,10 +94,10 @@ export function ChatPanel({
   const openComposer = useComposerStore((s) => s.openComposer);
 
   const active =
-    conversations.find((c) => c.id === activeConversationId) ?? null;
+    conversations.find((c: ChatConversation) => c.id === activeConversationId) ?? null;
   const isAdmin = user?.role === "admin";
   const selectedEmail = useMemo(
-    () => emails.find((e) => e.id === selectedEmailId) ?? null,
+    () => emails.find((e: Email) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId]
   );
 
@@ -139,9 +141,9 @@ export function ChatPanel({
   );
 
   const traceStats = useMemo(() => {
-    const info = traceEvents.filter((e) => e.level === "info").length;
-    const warn = traceEvents.filter((e) => e.level === "warn").length;
-    const error = traceEvents.filter((e) => e.level === "error").length;
+    const info = traceEvents.filter((e: ChatTraceEvent) => e.level === "info").length;
+    const warn = traceEvents.filter((e: ChatTraceEvent) => e.level === "warn").length;
+    const error = traceEvents.filter((e: ChatTraceEvent) => e.level === "error").length;
     return { info, warn, error };
   }, [traceEvents]);
 

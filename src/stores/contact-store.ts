@@ -22,66 +22,14 @@ import {
   AVATAR_COLORS,
 } from "@/lib/mock-contacts";
 import type { Email } from "@/types/email";
+import { genId, pickAvatarColor, contactInitials, normalizeEmail, deriveFrequency, FREQUENCY_LABELS, nowISO } from "./contact-utils";
+import { toVCard, exportCSV, parseVCard, parseCSV } from "./contact-serialisers";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 /** Generate a unique contact id. */
-function genId(prefix = "ct"): string {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-/** Pick a deterministic avatar colour from a string seed. */
-export function pickAvatarColor(seed: string): string {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-/** Derive initials from a name (or email fallback). */
-export function contactInitials(name: string, email: string): string {
-  const base = name || email.split("@")[0] || "?";
-  const parts = base.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-/** Normalise an email address for comparison. */
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
-}
-
-/**
- * Derive a `ContactFrequency` from an array of ISO timestamps (email dates).
- * daily   → last contact within 1 day
- * weekly  → last contact within 7 days
- * monthly → last contact within 30 days
- * rarely  → older than 30 days but present
- * never   → no history
- */
-export function deriveFrequency(dates: string[]): ContactFrequency {
-  if (dates.length === 0) return "never";
-  const last = Math.max(...dates.map((d) => new Date(d).getTime()));
-  if (Number.isNaN(last)) return "never";
-  const days = (Date.now() - last) / (1000 * 60 * 60 * 24);
-  if (days <= 1) return "daily";
-  if (days <= 7) return "weekly";
-  if (days <= 30) return "monthly";
-  return "rarely";
-}
-
-/** Resolve a frequency to a friendly label. */
-export const FREQUENCY_LABELS: Record<ContactFrequency, string> = {
-  daily: "Daily",
-  weekly: "Weekly",
-  monthly: "Monthly",
-  rarely: "Rarely",
-  never: "Never",
-};
 
 /* ------------------------------------------------------------------ */
 /* Store shape                                                        */
@@ -122,182 +70,11 @@ interface ContactState {
 /* Export serialisers                                                 */
 /* ------------------------------------------------------------------ */
 
-function toVCard(c: Contact): string {
-  const lines = [
-    "BEGIN:VCARD",
-    "VERSION:3.0",
-    `FN:${c.name}`,
-    `EMAIL;TYPE=INTERNET:${c.email}`,
-  ];
-  if (c.phone) lines.push(`TEL;TYPE=CELL:${c.phone}`);
-  if (c.company) lines.push(`ORG:${c.company}`);
-  if (c.role) lines.push(`TITLE:${c.role}`);
-  if (c.notes) lines.push(`NOTE:${c.notes.replace(/\n/g, "\\n")}`);
-  if (c.tags.length > 0) lines.push(`CATEGORIES:${c.tags.join(",")}`);
-  lines.push("END:VCARD");
-  return lines.join("\r\n");
-}
-
-function toCSVRow(fields: string[]): string {
-  return fields
-    .map((f) => {
-      const v = f ?? "";
-      if (/[",\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
-      return v;
-    })
-    .join(",");
-}
-
-function exportCSV(contacts: Contact[]): string {
-  const header = [
-    "name",
-    "email",
-    "phone",
-    "company",
-    "role",
-    "tags",
-    "notes",
-    "frequency",
-    "lastContactAt",
-  ];
-  const rows = contacts.map((c) =>
-    toCSVRow([
-      c.name,
-      c.email,
-      c.phone ?? "",
-      c.company ?? "",
-      c.role ?? "",
-      c.tags.join(";"),
-      c.notes ?? "",
-      c.contactFrequency,
-      c.lastContactAt ?? "",
-    ])
-  );
-  return [header.join(","), ...rows].join("\n");
-}
-
-/* ------------------------------------------------------------------ */
-/* CSV / vCard parsers (for import preview)                          */
-/* ------------------------------------------------------------------ */
-
-/** Parse a vCard text blob into import records. */
-export function parseVCard(text: string): ContactImport[] {
-  const out: ContactImport[] = [];
-  const blocks = text.split(/BEGIN:VCARD/i).slice(1);
-  for (const block of blocks) {
-    const end = block.search(/END:VCARD/i);
-    const body = end >= 0 ? block.slice(0, end) : block;
-    const lines = body
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean);
-    const imp: ContactImport = {};
-    for (const line of lines) {
-      const colon = line.indexOf(":");
-      if (colon < 0) continue;
-      const key = line.slice(0, colon).toUpperCase();
-      const val = line.slice(colon + 1);
-      if (key.startsWith("FN") || key.startsWith("N")) {
-        if (!imp.name) imp.name = val.replace(/;/g, " ").trim();
-      } else if (key.startsWith("EMAIL")) {
-        imp.email = val.trim();
-      } else if (key.startsWith("TEL")) {
-        imp.phone = val.trim();
-      } else if (key.startsWith("ORG")) {
-        imp.company = val.replace(/;/g, " ").trim();
-      } else if (key.startsWith("TITLE")) {
-        imp.role = val.trim();
-      } else if (key.startsWith("NOTE")) {
-        imp.notes = val.replace(/\\n/g, "\n");
-      } else if (key.startsWith("CATEGORIES")) {
-        imp.tags = val
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-      }
-    }
-    if (imp.name || imp.email) out.push(imp);
-  }
-  return out;
-}
-
-/** Parse a CSV text blob (with a header row) into import records. */
-export function parseCSV(text: string): ContactImport[] {
-  const rows = parseCSVRows(text);
-  if (rows.length === 0) return [];
-  const header = rows[0].map((h) => h.trim().toLowerCase());
-  const out: ContactImport[] = [];
-  for (let i = 1; i < rows.length; i++) {
-    const cells = rows[i];
-    if (cells.length === 0) continue;
-    const imp: ContactImport = {};
-    for (let c = 0; c < cells.length && c < header.length; c++) {
-      const val = cells[c].trim();
-      if (!val) continue;
-      const key = header[c];
-      if (key === "name") imp.name = val;
-      else if (key === "email") imp.email = val;
-      else if (key === "phone" || key === "tel") imp.phone = val;
-      else if (key === "company" || key === "org") imp.company = val;
-      else if (key === "role" || key === "title") imp.role = val;
-      else if (key === "notes" || key === "note") imp.notes = val;
-      else if (key === "tags" || key === "categories")
-        imp.tags = val
-          .split(/[;,]/)
-          .map((t) => t.trim())
-          .filter(Boolean);
-    }
-    if (imp.name || imp.email) out.push(imp);
-  }
-  return out;
-}
-
-/** Minimal RFC-4180-ish CSV row splitter (handles quoted fields + commas). */
-function parseCSVRows(text: string): string[][] {
-  const rows: string[][] = [];
-  let cur: string[] = [];
-  let field = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (inQuotes) {
-      if (ch === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else {
-          inQuotes = false;
-        }
-      } else {
-        field += ch;
-      }
-    } else if (ch === '"') {
-      inQuotes = true;
-    } else if (ch === ",") {
-      cur.push(field);
-      field = "";
-    } else if (ch === "\n" || ch === "\r") {
-      if (ch === "\r" && text[i + 1] === "\n") i++;
-      cur.push(field);
-      rows.push(cur);
-      cur = [];
-      field = "";
-    } else {
-      field += ch;
-    }
-  }
-  if (field.length > 0 || cur.length > 0) {
-    cur.push(field);
-    rows.push(cur);
-  }
-  return rows.filter((r) => r.some((c) => c.trim() !== ""));
-}
 
 /* ------------------------------------------------------------------ */
 /* Store implementation                                               */
 /* ------------------------------------------------------------------ */
 
-const nowISO = () => new Date().toISOString();
 
 /** Seed contacts derived from the richer mock dataset on first load. */
 function seedContacts(): Contact[] {
@@ -629,3 +406,7 @@ export const useContactStore = create<ContactState>()(
     }
   )
 );
+
+// Re-exports for backward-compat (imported elsewhere from "@/stores/contact-store")
+export { contactInitials, pickAvatarColor, deriveFrequency, FREQUENCY_LABELS } from "./contact-utils";
+export { parseVCard, parseCSV } from "./contact-serialisers";
