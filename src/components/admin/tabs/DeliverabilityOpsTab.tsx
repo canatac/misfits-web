@@ -1,13 +1,49 @@
 "use client";
 
 // DeliverabilityOpsTab.tsx — extracted Sprint 3
-import type { DeliverabilityProcedureResponse, AdminDeliverabilityDiagnosticsResponse } from "@/types/admin-ops";
+// Props use structural typing to avoid module-instance conflicts with parent's local types
 import { Badge, asDate, asInt } from "../shared";
+
+// Structural interfaces matching both local and global type shapes
+interface ChecklistItem {
+  id?: string;
+  title?: string;
+  label?: string;
+  status?: string;
+  note?: string;
+  evidence?: string;
+  operator_note?: string;
+  cta?: string | { label?: string; kind?: string; details?: string };
+}
+
+interface CtaDetail {
+  label: string;
+  description: string;
+}
+
+interface ProcedureData {
+  overall_status?: string;
+  progress?: { done?: number; total?: number };
+  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
+  automation?: { auto_checks?: string[] };
+  checklist?: ChecklistItem[];
+  cta_details?: CtaDetail[];
+}
+
+interface DiagnosticsData {
+  window?: string;
+  spf?: { valid?: boolean; failures?: number; failure_rate?: number };
+  dkim?: { valid?: boolean; failures?: number; failure_rate?: number };
+  dmarc?: { valid?: boolean; failures?: number; failure_rate?: number };
+  reputation?: { avg_risk_score?: number; high_risk_events?: number; ip_domain_status?: string };
+  top_bounce_reasons?: Array<{ reason: string; count: number }>;
+  rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
+}
 
 interface DeliverabilityOpsTabProps {
   procedureSaving: boolean;
-  deliverabilityProcedure: DeliverabilityProcedureResponse | null;
-  deliverability: AdminDeliverabilityDiagnosticsResponse | null;
+  deliverabilityProcedure: ProcedureData | null;
+  deliverability: DiagnosticsData | null;
   saveProcedureUpdate: (payload: { checklist?: { id: string; checked: boolean; note?: string }[]; reminder?: { enabled: boolean; cadence_hours: number } }) => Promise<void>;
 }
 
@@ -126,7 +162,7 @@ export function DeliverabilityOpsTab({
                         disabled={procedureSaving}
                         onClick={() =>
                           void saveProcedureUpdate({
-                            checklist: [{ id: item.id, checked: true }],
+                            checklist: [{ id: item.id ?? "", checked: true }],
                           })
                         }
                         className="rounded-md border border-[#355D3A] bg-[#132016] px-2 py-1 text-[11px] text-[#86EFAC]"

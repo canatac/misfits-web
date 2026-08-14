@@ -7,12 +7,12 @@ import {
   useMonitoringBounces,
   useMonitoringLive,
   useMonitoringProviders,
-  useMonitoringSummary,
+  useMonitoringSummary
 } from "@/hooks/use-monitoring";
 import {
   useSecurityActiveAlerts,
   useSecurityIncidents,
-  useSecurityLive,
+  useSecurityLive
 } from "@/hooks/use-security-dashboard";
 import {
   useAdminAiActivity,
@@ -29,17 +29,14 @@ import {
   useResetAdminPassword,
   useStartImplementationChangeRequest,
   useTransitionChangeRequest,
-  useUpdateAdminUser,
+  useUpdateAdminUser
 } from "@/hooks/use-admin-ops";
 import type {
   ChangeRequestItem,
   CreateAdminUserInput,
   CreateChangeRequestInput,
   WorkflowStatus,
-  AdminUserRecord,
-,
-  DeliverabilityProcedureResponse
-} from "@/types/admin-ops";
+  AdminUserRecord} from "@/types/admin-ops";
 import {
   Badge,
   asDate,
@@ -53,7 +50,7 @@ import {
   runStateTone,
   runStateLabel,
   executionStateTone,
-  executionStateLabel,
+  executionStateLabel
 } from "./shared";
 import { ChangelogTab } from "./tabs/ChangelogTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
@@ -97,7 +94,7 @@ const STATUS_LABEL: Record<WorkflowStatus, string> = {
   in_progress: "En cours",
   qa: "QA",
   released: "Released",
-  rejected: "Rejetée",
+  rejected: "Rejetée"
 };
 
 type AdminSecurityPostureResponse = {
@@ -129,7 +126,7 @@ type AdminSecurityPostureResponse = {
   };
 };
 
-type AdminDeliverabilityDiagnosticsResponse = {
+type= {
   total_events?: number;
   bounces_total?: number;
   auth_policy_alerts?: number;
@@ -217,22 +214,13 @@ type AdminObservabilityOverviewResponse = {
   }>;
 };
 
-type DeliverabilityProcedureItem = {
+type= {
   id: string;
   title: string;
   status: "done" | "done_manual" | "in_progress" | "todo" | "blocked";
   evidence?: string;
   operator_note?: string;
   cta?: { label?: string; kind?: string; details?: string };
-};
-
-  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
-  checklist?: DeliverabilityProcedureItem[];
-  cta_details?: Array<{ id: string; label: string; description: string }>;
-  automation?: {
-    auto_checks?: string[];
-    last_computed_at?: string;
-  };
 };
 
 type ChangeRequestChatField =
@@ -261,11 +249,11 @@ const CHANGE_REQUEST_GUIDE_LABEL: Record<
   problemRoot: "problème racine",
   impact: "impact utilisateur/business",
   successCriteria: "critères de succès mesurables",
-  rollbackPlan: "plan de rollback/mitigation",
+  rollbackPlan: "plan de rollback/mitigation"
 };
 
 export function AdminConsolePage({
-  initialTab = "overview",
+  initialTab = "overview"
 }: {
   initialTab?: AdminTab;
 }) {
@@ -278,18 +266,18 @@ export function AdminConsolePage({
   const monitoringProviders = useMonitoringProviders(windowRange);
   const monitoringBounces = useMonitoringBounces(windowRange);
   const monitoringLive = useMonitoringLive({
-    enabled: activeTab !== "changelog",
+    enabled: activeTab !== "changelog"
   });
 
   const securitySeverityFilter = severity === "all" ? undefined : severity;
   const securityActive = useSecurityActiveAlerts({
     window: windowRange,
-    severity: securitySeverityFilter,
+    severity: securitySeverityFilter
   });
   const securityIncidents = useSecurityIncidents({
     page: 1,
     page_size: 20,
-    severity: securitySeverityFilter,
+    severity: securitySeverityFilter
   });
   const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
 
@@ -324,14 +312,14 @@ export function AdminConsolePage({
     urgency: "medium",
     impact: "medium",
     requestedBy: "admin",
-    linkedRepo: "cross-repo",
+    linkedRepo: "cross-repo"
   });
   const [newAdminUser, setNewAdminUser] = useState<CreateAdminUserInput>({
     email: "",
     displayName: "",
     role: "user",
     status: "active",
-    twoFactorEnabled: false,
+    twoFactorEnabled: false
   });
 
   const [transitionNote, setTransitionNote] = useState("");
@@ -340,7 +328,7 @@ export function AdminConsolePage({
     problemRoot: "",
     impact: "",
     successCriteria: "",
-    rollbackPlan: "",
+    rollbackPlan: ""
   });
   const [crGuideStepIndex, setCrGuideStepIndex] = useState(0);
   const [crGuideMessages, setCrGuideMessages] = useState<
@@ -349,7 +337,7 @@ export function AdminConsolePage({
     {
       role: "assistant",
       content:
-        "Je t’aide à remplir la change request. Commence par décrire le problème racine (symptôme + cause probable).",
+        "Je t’aide à remplir la change request. Commence par décrire le problème racine (symptôme + cause probable)."
     },
   ]);
   const [crGuideInput, setCrGuideInput] = useState("");
@@ -359,9 +347,9 @@ export function AdminConsolePage({
   const [securityPosture, setSecurityPosture] =
     useState<AdminSecurityPostureResponse | null>(null);
   const [deliverability, setDeliverability] =
-    useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
+    useState<| null>(null);
   const [deliverabilityProcedure, setDeliverabilityProcedure] =
-    useState<DeliverabilityProcedureResponse | null>(null);
+    useState<| null>(null);
   const [observability, setObservability] =
     useState<AdminObservabilityOverviewResponse | null>(null);
   const [adminDataLoading, setAdminDataLoading] = useState(false);
@@ -385,19 +373,19 @@ export function AdminConsolePage({
         const [securityRes, deliverabilityRes, observabilityRes, procedureRes] =
           await Promise.all([
             fetch(`/api/admin/security/posture?window=${windowRange}`, {
-              cache: "no-store",
+              cache: "no-store"
             }),
             fetch(
               `/api/admin/deliverability/diagnostics?window=${windowRange}`,
               {
-                cache: "no-store",
+                cache: "no-store"
               }
             ),
             fetch(`/api/admin/observability/overview?window=${windowRange}`, {
-              cache: "no-store",
+              cache: "no-store"
             }),
             fetch(`/api/admin/deliverability/procedure?window=${windowRange}`, {
-              cache: "no-store",
+              cache: "no-store"
             }),
           ]);
 
@@ -454,7 +442,7 @@ export function AdminConsolePage({
       const res = await fetch(`/api/admin/deliverability/procedure`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         const text = await res.text();
@@ -464,7 +452,7 @@ export function AdminConsolePage({
       const fresh = await fetch(
         `/api/admin/deliverability/procedure?window=${windowRange}`,
         {
-          cache: "no-store",
+          cache: "no-store"
         }
       );
       if (fresh.ok) {
@@ -489,25 +477,25 @@ export function AdminConsolePage({
         label: "Delivery rate",
         value: summary ? percent(summary.delivery_rate) : "—",
         note: "Emails livrés",
-        icon: Activity,
+        icon: Activity
       },
       {
         label: "Bounce rate",
         value: summary ? percent(summary.bounce_rate) : "—",
         note: "Hard + soft bounce",
-        icon: AlertTriangle,
+        icon: AlertTriangle
       },
       {
         label: "Alertes Monitoring",
         value: asInt(activeMonAlerts),
         note: `Fenêtre ${windowRange}`,
-        icon: Clock3,
+        icon: Clock3
       },
       {
         label: "Alertes Sécurité",
         value: asInt(activeSecAlerts),
         note: severity === "all" ? "Toutes sévérités" : severity,
-        icon: ShieldCheck,
+        icon: ShieldCheck
       },
     ] as const;
   }, [
@@ -534,7 +522,7 @@ export function AdminConsolePage({
       deliverability_procedure: deliverabilityProcedure,
       security_posture: securityPosture,
       admin_data_loading: adminDataLoading,
-      admin_data_error: adminDataError,
+      admin_data_error: adminDataError
     }),
     [
       windowRange,
@@ -574,19 +562,19 @@ export function AdminConsolePage({
             {
               role: "system",
               content:
-                "Tu es Hermes, copilote SRE/DevOps de la console admin misfits.ai Mail. Réponds en français, de façon actionnable et concise. Donne exactement deux sections: 1) Résumé opérationnel (4-6 puces), 2) Actions à réaliser (checklist priorisée P0/P1/P2 avec commandes/étapes de vérification). Si des données sont absentes ou incohérentes, indique clairement les vérifications à lancer.",
+                "Tu es Hermes, copilote SRE/DevOps de la console admin misfits.ai Mail. Réponds en français, de façon actionnable et concise. Donne exactement deux sections: 1) Résumé opérationnel (4-6 puces), 2) Actions à réaliser (checklist priorisée P0/P1/P2 avec commandes/étapes de vérification). Si des données sont absentes ou incohérentes, indique clairement les vérifications à lancer."
             },
             {
               role: "user",
               content: `Contexte observabilité/sécurité (JSON):\n${JSON.stringify(
                 adminAssistantSnapshot
-              )}\n\nDemande opérateur:\n${prompt}`,
+              )}\n\nDemande opérateur:\n${prompt}`
             },
           ],
           sessionId: "admin-console-operations",
           sessionKey: "misfits-admin-console",
-          temperature: 0.2,
-        }),
+          temperature: 0.2
+        })
       });
 
       if (!response.ok) {
@@ -627,7 +615,7 @@ export function AdminConsolePage({
       ...prev,
       title: "",
       problem: "",
-      desiredOutcome: "",
+      desiredOutcome: ""
     }));
   }
 
@@ -651,7 +639,7 @@ export function AdminConsolePage({
       action,
       currentStatus,
       note: transitionNote.trim() || undefined,
-      actor: "hermes",
+      actor: "hermes"
     });
   }
 
@@ -670,7 +658,7 @@ export function AdminConsolePage({
       id,
       currentStatus,
       note: transitionNote.trim() || undefined,
-      actor: "hermes",
+      actor: "hermes"
     });
   }
 
@@ -694,7 +682,7 @@ export function AdminConsolePage({
     setNewRequest((prev) => ({
       ...prev,
       problem: fusedProblem || prev.problem,
-      desiredOutcome: fusedOutcome || prev.desiredOutcome,
+      desiredOutcome: fusedOutcome || prev.desiredOutcome
     }));
   }
 
@@ -744,7 +732,7 @@ export function AdminConsolePage({
             {
               role: "system",
               content:
-                'Tu es assistant de formulation de change request. Réponds strictement en JSON sans markdown: {"assistantReply":string,"field":"problemRoot"|"impact"|"successCriteria"|"rollbackPlan"|"none","fieldValue":string,"nextQuestion":string}. fieldValue doit reformuler la réponse utilisateur en version exploitable et concise. nextQuestion doit poser la prochaine question utile pour compléter le formulaire.',
+                'Tu es assistant de formulation de change request. Réponds strictement en JSON sans markdown: {"assistantReply":string,"field":"problemRoot"|"impact"|"successCriteria"|"rollbackPlan"|"none","fieldValue":string,"nextQuestion":string}. fieldValue doit reformuler la réponse utilisateur en version exploitable et concise. nextQuestion doit poser la prochaine question utile pour compléter le formulaire.'
             },
             {
               role: "user",
@@ -758,14 +746,14 @@ export function AdminConsolePage({
                     crGuideStepIndex + 1,
                     CHANGE_REQUEST_GUIDE_ORDER.length
                   )
-                ).map((k) => CHANGE_REQUEST_GUIDE_LABEL[k]),
-              }),
+                ).map((k) => CHANGE_REQUEST_GUIDE_LABEL[k])
+              })
             },
           ],
           sessionId: "admin-change-request-guide",
           sessionKey: "misfits-admin-change-request-guide",
-          temperature: 0.2,
-        }),
+          temperature: 0.2
+        })
       });
 
       if (!response.ok) {
@@ -787,7 +775,7 @@ export function AdminConsolePage({
       const normalized = (parsed.fieldValue || prompt).trim();
       const updatedDraft: ChangeRequestGuideDraft = {
         ...crGuideDraft,
-        [targetField]: normalized,
+        [targetField]: normalized
       };
 
       setCrGuideDraft(updatedDraft);
@@ -818,7 +806,7 @@ export function AdminConsolePage({
 
       const fallbackDraft: ChangeRequestGuideDraft = {
         ...crGuideDraft,
-        [field]: prompt,
+        [field]: prompt
       };
       setCrGuideDraft(fallbackDraft);
       setCrGuideStepIndex((prev) =>
@@ -829,7 +817,7 @@ export function AdminConsolePage({
         {
           role: "assistant",
           content:
-            "Je n’ai pas pu reformuler automatiquement cette réponse. Je l’ai quand même prise en compte, tu peux continuer.",
+            "Je n’ai pas pu reformuler automatiquement cette réponse. Je l’ai quand même prise en compte, tu peux continuer."
         },
       ]);
       applyGuideToForm(fallbackDraft);
@@ -862,7 +850,7 @@ export function AdminConsolePage({
       displayName: newAdminUser.displayName?.trim() || undefined,
       role: newAdminUser.role,
       status: newAdminUser.status,
-      twoFactorEnabled: newAdminUser.twoFactorEnabled,
+      twoFactorEnabled: newAdminUser.twoFactorEnabled
     });
 
     setNewAdminUser({
@@ -870,7 +858,7 @@ export function AdminConsolePage({
       displayName: "",
       role: "user",
       status: "active",
-      twoFactorEnabled: false,
+      twoFactorEnabled: false
     });
   }
 
@@ -886,38 +874,38 @@ export function AdminConsolePage({
     const checks = [
       {
         label: "Problème explicite (cause + symptôme)",
-        ok: newRequest.problem.trim().length >= 40,
+        ok: newRequest.problem.trim().length >= 40
       },
       {
         label: "Impact utilisateur/business explicite",
         ok: /impact|client|utilisateur|business|latence|erreur/i.test(
           `${newRequest.problem} ${crGuideDraft.impact}`
-        ),
+        )
       },
       {
         label: "Critères de succès mesurables",
         ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
           `${newRequest.desiredOutcome} ${crGuideDraft.successCriteria}`
-        ),
+        )
       },
       {
         label: "Plan de rollback / mitigation",
         ok: /rollback|revert|fallback|mitigation/i.test(
           `${newRequest.desiredOutcome} ${crGuideDraft.rollbackPlan}`
-        ),
+        )
       },
       {
         label: "Portée repo + priorité cohérentes",
         ok:
           (newRequest.linkedRepo === "cross-repo" &&
             newRequest.scope === "fullstack") ||
-          newRequest.linkedRepo !== "cross-repo",
+          newRequest.linkedRepo !== "cross-repo"
       },
     ];
 
     return {
       checks,
-      score: checks.filter((c) => c.ok).length,
+      score: checks.filter((c) => c.ok).length
     };
   }, [
     newRequest.problem,
@@ -1000,7 +988,7 @@ export function AdminConsolePage({
           executionHeartbeatAt,
           executionHeartbeatAgeMinutes,
           hasExecutionSignal,
-          appearsWorkflowOnly,
+          appearsWorkflowOnly
         };
       })
       .sort(
@@ -1014,7 +1002,7 @@ export function AdminConsolePage({
       queued: runs.filter((run) => run.runState === "queued").length,
       completed: runs.filter((run) => run.runState === "completed").length,
       failed: runs.filter((run) => run.runState === "failed").length,
-      workflowOnlyRunning: runs.filter((run) => run.appearsWorkflowOnly).length,
+      workflowOnlyRunning: runs.filter((run) => run.appearsWorkflowOnly).length
     };
   }, [changeRequests.data?.items]);
 
@@ -1078,7 +1066,7 @@ export function AdminConsolePage({
     const stalled = items
       .map((item) => ({
         item,
-        ageMinutes: minutesBetween(item.updatedAt, nowIso) ?? 0,
+        ageMinutes: minutesBetween(item.updatedAt, nowIso) ?? 0
       }))
       .filter((entry) => entry.item.status !== "released")
       .sort((a, b) => b.ageMinutes - a.ageMinutes)
@@ -1089,7 +1077,7 @@ export function AdminConsolePage({
         (item.workflowEvents ?? []).map((event) => ({
           ...event,
           requestId: item.id,
-          requestTitle: item.title,
+          requestTitle: item.title
         }))
       )
       .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
@@ -1101,7 +1089,7 @@ export function AdminConsolePage({
       takenCount: taken.length,
       avgTriageMinutes,
       stalled,
-      latestEvents,
+      latestEvents
     };
   }, [changeRequests.data?.items]);
 
@@ -2291,7 +2279,7 @@ export function AdminConsolePage({
                   onChange={(e) =>
                     setNewRequest((prev) => ({
                       ...prev,
-                      title: e.target.value,
+                      title: e.target.value
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
@@ -2304,7 +2292,7 @@ export function AdminConsolePage({
                   onChange={(e) =>
                     setNewRequest((prev) => ({
                       ...prev,
-                      requestedBy: e.target.value,
+                      requestedBy: e.target.value
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
@@ -2319,7 +2307,7 @@ export function AdminConsolePage({
                     setNewRequest((prev) => ({
                       ...prev,
                       scope: e.target
-                        .value as CreateChangeRequestInput["scope"],
+                        .value as CreateChangeRequestInput["scope"]
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
@@ -2335,7 +2323,7 @@ export function AdminConsolePage({
                     setNewRequest((prev) => ({
                       ...prev,
                       urgency: e.target
-                        .value as CreateChangeRequestInput["urgency"],
+                        .value as CreateChangeRequestInput["urgency"]
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
@@ -2350,7 +2338,7 @@ export function AdminConsolePage({
                     setNewRequest((prev) => ({
                       ...prev,
                       impact: e.target
-                        .value as CreateChangeRequestInput["impact"],
+                        .value as CreateChangeRequestInput["impact"]
                     }))
                   }
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
@@ -2367,7 +2355,7 @@ export function AdminConsolePage({
                     setNewRequest((prev) => ({
                       ...prev,
                       linkedRepo: e.target
-                        .value as CreateChangeRequestInput["linkedRepo"],
+                        .value as CreateChangeRequestInput["linkedRepo"]
                     }))
                   }
                   className="w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#D4D4D8]"
@@ -2384,7 +2372,7 @@ export function AdminConsolePage({
                 onChange={(e) =>
                   setNewRequest((prev) => ({
                     ...prev,
-                    problem: e.target.value,
+                    problem: e.target.value
                   }))
                 }
                 className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
@@ -2397,7 +2385,7 @@ export function AdminConsolePage({
                 onChange={(e) =>
                   setNewRequest((prev) => ({
                     ...prev,
-                    desiredOutcome: e.target.value,
+                    desiredOutcome: e.target.value
                   }))
                 }
                 className="mt-2 h-20 w-full rounded-lg border border-[#2A2A30] bg-[#111114] px-2.5 py-2 text-sm text-[#E4E4E7]"
