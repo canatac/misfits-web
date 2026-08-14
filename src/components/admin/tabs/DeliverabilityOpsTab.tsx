@@ -1,14 +1,15 @@
 "use client";
 
 // DeliverabilityOpsTab.tsx — extracted Sprint 3
-import type { DeliverabilityProcedureResponse, AdminDeliverabilityDiagnosticsResponse } from "@/types/admin-ops";
 import { Badge, asDate, asInt } from "../shared";
 
 interface DeliverabilityOpsTabProps {
   procedureSaving: boolean;
-  deliverabilityProcedure: DeliverabilityProcedureResponse | null;
-  deliverability: AdminDeliverabilityDiagnosticsResponse | null;
-  saveProcedureUpdate: (patch: Partial<DeliverabilityProcedureResponse>) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deliverabilityProcedure: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deliverability: any;
+  saveProcedureUpdate: (payload: { checklist?: { id: string; checked: boolean; note?: string }[]; reminder?: { enabled: boolean; cadence_hours: number } }) => Promise<void>;
 }
 
 export function DeliverabilityOpsTab({

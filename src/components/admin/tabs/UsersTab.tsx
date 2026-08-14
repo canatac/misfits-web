@@ -27,15 +27,9 @@ interface UsersTabProps {
   adminAuditLog: UseQueryResult<AdminAuditLogResponse, Error>;
   createAdminUser: ReturnType<typeof useCreateAdminUser>;
   inviteAdminUser: ReturnType<typeof useInviteAdminUser>;
-  resetAdminPassword: {
-    mutate: (args: { id: string; newPassword?: string; revokeSessions: boolean }) => void;
-    isPending: boolean;
-  };
+  resetAdminPassword: ReturnType<typeof useResetAdminPassword>;
   deleteAdminUser: ReturnType<typeof useDeleteAdminUser>;
-  updateAdminUser: {
-    mutateAsync: (args: { id: string; role?: AdminUserRecord["role"]; status?: AdminUserRecord["status"] }) => Promise<void>;
-    isPending: boolean;
-  };
+  updateAdminUser: ReturnType<typeof useUpdateAdminUser>;
 }
 
 export function UsersTab({
@@ -67,7 +61,7 @@ export function UsersTab({
   }
   async function handleDeleteUser(id: string) {
     if (!window.confirm("Supprimer cet utilisateur ?")) return;
-    deleteAdminUser.mutate(id);
+    deleteAdminUser.mutate({ id });
   }
   function handleCreateUser(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

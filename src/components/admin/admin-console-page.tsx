@@ -55,7 +55,6 @@ import {
 } from "./shared";
 import { ChangelogTab } from "./tabs/ChangelogTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
-import { ChangeRequestsTab } from "./tabs/ChangeRequestsTab";
 import { UsersTab } from "./tabs/UsersTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
@@ -1690,21 +1689,69 @@ export function AdminConsolePage({
         />
       )}
       {activeTab === "change-requests" && (
-        <ChangeRequestsTab
-          changeRequests={changeRequests}
-          createChangeRequest={createChangeRequest}
-          deleteChangeRequest={deleteChangeRequest}
-          transitionChangeRequest={transitionChangeRequest}
-          startImplementation={startImplementationChangeRequest}
-          adminDataLoading={adminDataLoading}
-          adminDataError={adminDataError}
-          crGuideInput={crGuideInput}
-          setCrGuideInput={setCrGuideInput}
-          crGuideLoading={crGuideLoading}
-          crGuideError={crGuideError}
-          handleCrGuide={handleCrGuide}
-        />
-      )}
+        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[#E4E4E7]">
+                Change Requests
+              </h2>
+              <p className="mt-1 text-xs text-[#71717A]">
+                Point d&apos;entrée unique des évolutions produit. Soumission →
+                triage → plan → build → QA → release.
+              </p>
+            </div>
+            <Badge tone={changeRequests.isFetching ? "warn" : "ok"}>
+              {changeRequests.isFetching ? "syncing" : "workflow live"}
+            </Badge>
+          </div>
+
+          <div className="mb-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
+            <p className="flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Déploiement requis
+            </p>
+            <p className="mt-1 text-[#E5E7EB]">
+              Une CR peut passer en &quot;implémentée&quot; côté workflow, mais
+              les changements code (misfits-web / reimagined-guide) nécessitent
+              merge + redémarrage/déploiement des services concernés pour être
+              visibles.
+            </p>
+          </div>
+
+          <div className="mb-3 grid gap-3 xl:grid-cols-3">
+            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
+                  Console backend (source de vérité)
+                </h3>
+                <Badge tone={adminDataLoading ? "warn" : "ok"}>
+                  {adminDataLoading ? "syncing" : "live"}
+                </Badge>
+              </div>
+              <p className="mt-1 text-[11px] text-[#A1A1AA]">
+                Preuves backend de l&apos;activité réelle (queue, débit,
+                erreurs), distinctes du simple statut workflow.
+              </p>
+              <div className="mt-2 grid gap-2 text-[11px] md:grid-cols-3">
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  queue depth:{" "}
+                  {asInt(observability?.health_realtime?.queue?.depth ?? 0)}
+                </div>
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  in/out min:{" "}
+                  {observability?.health_realtime?.throughput?.incoming_per_min?.toFixed(
+                    1
+                  ) ?? "0.0"}
+                  /
+                  {observability?.health_realtime?.throughput?.outgoing_per_min?.toFixed(
+                    1
+                  ) ?? "0.0"}
+                </div>
+                <div className="rounded-md border border-[#2A2A30] bg-[#111114] p-2 text-[#D4D4D8]">
+                  smtp 5xx:{" "}
+                  {percent(
+                    observability?.health_realtime?.delivery?.smtp_5xx_rate ?? 0
+                  )}
       {activeTab === "users" && (
         <UsersTab
           adminUsers={adminUsers}
