@@ -1,114 +1,17 @@
 "use client";
 import { create } from "zustand";
 import type { ChatContext, ChatConversation, ChatMessage } from "@/types/chat";
+import type { ChatTraceEvent, TraceLevel, ChatStore, ChatSetState } from "./chat-types";
+import { STORAGE_KEY, MAX_CONVERSATIONS, loadConversations, saveConversations } from "./chat-persistence";
+import { toShort, pushTrace, parseSseEventBlocks, extractDataFromBlock } from "./chat-utils";
 
-const STORAGE_KEY = "mfa.chat";
-const MAX_CONVERSATIONS = 10;
 let activeAbortController: AbortController | null = null;
 
-type TraceLevel = "info" | "warn" | "error";
 
-export interface ChatTraceEvent {
-  id: string;
-  at: number;
-  kind: string;
-  message: string;
-  level: TraceLevel;
-}
 
-interface ChatStore {
-  conversations: ChatConversation[];
-  activeConversationId: string | null;
-  isStreaming: boolean;
-  error: string | null;
-  isOpen: boolean;
-  traceEnabled: boolean;
-  traceEvents: ChatTraceEvent[];
-  lastLatencyMs: number | null;
-  sendMessage: (content: string, context?: ChatContext) => Promise<void>;
-  stopStreaming: () => void;
-  createConversation: () => string;
-  deleteConversation: (id: string) => void;
-  selectConversation: (id: string) => void;
-  toggleOpen: () => void;
-  setOpen: (open: boolean) => void;
-  setTraceEnabled: (enabled: boolean) => void;
-  clearTrace: () => void;
-  clearAll: () => void;
-}
 
-function loadConversations(): ChatConversation[] {
-  if (typeof localStorage === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
 
-function saveConversations(conversations: ChatConversation[]) {
-  if (typeof localStorage === "undefined") return;
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(conversations.slice(0, MAX_CONVERSATIONS))
-    );
-  } catch {
-    // no-op
-  }
-}
 
-function toShort(value: unknown, max = 140): string {
-  const text =
-    typeof value === "string"
-      ? value
-      : value === null || value === undefined
-        ? ""
-        : JSON.stringify(value);
-  const clean = text.replace(/\s+/g, " ").trim();
-  return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
-}
-
-type ChatSetState = (
-  partial: Partial<ChatStore> | ((state: ChatStore) => Partial<ChatStore>)
-) => void;
-
-function pushTrace(
-  set: ChatSetState,
-  event: Omit<ChatTraceEvent, "id" | "at">
-) {
-  set((s) => ({
-    traceEvents: [
-      ...s.traceEvents,
-      {
-        id: `trace-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        at: Date.now(),
-        ...event,
-      },
-    ].slice(-80),
-  }));
-}
-
-function parseSseEventBlocks(buffer: string): {
-  rest: string;
-  blocks: string[];
-} {
-  const blocks = buffer.split("\n\n");
-  const rest = blocks.pop() ?? "";
-  return { rest, blocks };
-}
-
-function extractDataFromBlock(block: string): string[] {
-  const lines = block.split("\n");
-  const data: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith("data:")) {
-      data.push(line.slice(5).trimStart());
-    }
-  }
-  return data;
-}
 
 function summarizeHermesEvent(payload: Record<string, unknown>): {
   kind: string;
