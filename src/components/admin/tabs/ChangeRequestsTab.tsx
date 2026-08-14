@@ -12,6 +12,7 @@ import { Badge, asDate, priorityTone, statusTone,
   runStateFromStatus, runStateTone, runStateLabel,
   executionStateTone, executionStateLabel } from "../shared";
 import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
 
 interface ChangeRequestsTabProps {
   changeRequests: UseQueryResult<ChangeRequestsResponse, Error>;
