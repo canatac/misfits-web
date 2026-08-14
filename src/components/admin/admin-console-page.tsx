@@ -54,7 +54,7 @@ import {
 } from "./shared";
 import { ChangelogTab } from "./tabs/ChangelogTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
-import { AdminOverviewSections } from "./tabs/AdminOverviewSections";
+import { AdminOverviewSections, type LocalSecurityPosture } from "./tabs/AdminOverviewSections";
 import { UsersTab } from "./tabs/UsersTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
@@ -98,34 +98,6 @@ const STATUS_LABEL: Record<WorkflowStatus, string> = {
   rejected: "Rejetée"
 };
 
-type AdminSecurityPostureResponse = {
-  security?: {
-    tls?: {
-      smtp_starttls_required?: boolean;
-      smtps_listener?: string;
-      imaps_listener?: string;
-    };
-    authentication?: {
-      sasl_mechanisms?: string[];
-      oauth2_enabled?: boolean;
-      admin_mfa_required?: boolean;
-    };
-    anti_abuse?: {
-      rate_limit_enabled?: boolean;
-      rate_limit_per_minute?: number;
-      fail2ban_enabled?: boolean;
-      bruteforce_signals_24h?: number;
-      auth_policy_signals_24h?: number;
-    };
-    mail_auth_dns?: {
-      domain?: string;
-      spf_expected?: string;
-      dkim_selector?: string;
-      dmarc_expected?: string;
-      ptr_rdns_note?: string;
-    };
-  };
-};
 
 type AdminDeliverabilityDiagnosticsResponse = {
   total_events?: number;
@@ -348,7 +320,7 @@ export function AdminConsolePage({
   const [crGuideError, setCrGuideError] = useState<string | null>(null);
 
   const [securityPosture, setSecurityPosture] =
-    useState<AdminSecurityPostureResponse | null>(null);
+    useState<LocalSecurityPosture | null>(null);
   const [deliverability, setDeliverability] =
     useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
   const [deliverabilityProcedure, setDeliverabilityProcedure] =
@@ -1182,6 +1154,13 @@ export function AdminConsolePage({
           adminDataLoading={adminDataLoading}
           adminDataError={adminDataError}
           securityLive={securityLive}
+          assistantLoading={assistantLoading}
+          assistantPrompt={assistantPrompt}
+          setAssistantPrompt={setAssistantPrompt}
+          assistantAnswer={assistantAnswer}
+          assistantError={assistantError}
+          askHermesForAdminPlan={askHermesForAdminPlan}
+          summaryCards={summaryCards}
         />
       )}
       {activeTab === "deliverability-ops" && (

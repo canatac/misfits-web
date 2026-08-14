@@ -3,13 +3,31 @@
 // chat-panel-utils.ts — extracted Sprint 4
 // Pure constants and helpers for ChatPanel
 
-const QUICK_PROMPTS = [
+export type Analytics = {
+  sent: number;
+  redactions: number;
+  stops: number;
+  regenerations: number;
+  inserts: number;
+  feedbackUp: number;
+  feedbackDown: number;
+  backendTaskRuns: number;
+};
+
+export type PersonaPreset = {
+  tone: "neutre" | "court" | "professionnel" | "empathique";
+  length: "court" | "moyen" | "détaillé";
+  language: "fr" | "en";
+};
+
+
+export const QUICK_PROMPTS = [
   "Quels emails importants aujourd'hui ?",
   "Résume ce thread",
   "Trouve les emails sur le budget Q4",
 ];
 
-const QUICK_ACTIONS = [
+export const QUICK_ACTIONS = [
   {
     id: "summarize",
     label: "Résumer",
@@ -36,7 +54,7 @@ const QUICK_ACTIONS = [
   },
 ] as const;
 
-const ROLE_TEMPLATES = [
+export const ROLE_TEMPLATES = [
   {
     id: "sales",
     label: "Sales",
@@ -63,7 +81,7 @@ const ROLE_TEMPLATES = [
   },
 ] as const;
 
-const SENSITIVE_KEYWORDS = [
+export const SENSITIVE_KEYWORDS = [
   "deploy",
   "rollback",
   "delete",
@@ -74,13 +92,13 @@ const SENSITIVE_KEYWORDS = [
   "rotate key",
 ];
 
-const DEFAULT_PERSONA: PersonaPreset = {
+export const DEFAULT_PERSONA: PersonaPreset = {
   tone: "professionnel",
   length: "court",
   language: "fr",
 };
 
-const DEFAULT_ANALYTICS: Analytics = {
+export const DEFAULT_ANALYTICS: Analytics = {
   sent: 0,
   redactions: 0,
   stops: 0,
@@ -91,12 +109,12 @@ const DEFAULT_ANALYTICS: Analytics = {
   backendTaskRuns: 0,
 };
 
-function containsSensitiveIntent(value: string): boolean {
+export function containsSensitiveIntent(value: string): boolean {
   const lower = value.toLowerCase();
   return SENSITIVE_KEYWORDS.some((k) => lower.includes(k));
 }
 
-function parseTaskCandidates(text: string): string[] {
+export function parseTaskCandidates(text: string): string[] {
   return text
     .split("\n")
     .map((line) => line.trim())
@@ -107,7 +125,7 @@ function parseTaskCandidates(text: string): string[] {
     .slice(0, 8);
 }
 
-function redactPii(input: string): { sanitized: string; count: number } {
+export function redactPii(input: string): { sanitized: string; count: number } {
   let count = 0;
   const apply = (value: string, pattern: RegExp, replacement: string) =>
     value.replace(pattern, () => {
@@ -132,7 +150,7 @@ function redactPii(input: string): { sanitized: string; count: number } {
   return { sanitized: out, count };
 }
 
-function buildPersonaInstruction(preset: PersonaPreset): string {
+export function buildPersonaInstruction(preset: PersonaPreset): string {
   return [
     `Réponds en ${preset.language === "fr" ? "français" : "anglais"}.`,
     `Ton attendu: ${preset.tone}.`,

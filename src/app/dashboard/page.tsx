@@ -261,7 +261,7 @@ export default function DashboardIndexPage() {
                 {detailItem.data.summary}
               </p>
               <ul className="space-y-1 rounded-xl border border-[#242427] bg-[#0A0A0B] p-4 text-sm text-[#A1A1AA]">
-                {detailItem.data.takeaways.map((takeaway) => (
+                {(detailItem.data.takeaways ?? []).map((takeaway) => (
                   <li key={takeaway} className="flex gap-2">
                     <span className="text-[#4ADE80]">•</span>
                     <span>{takeaway}</span>

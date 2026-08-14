@@ -4,7 +4,7 @@
 import type { AttachmentType, EmailAttachment } from "@/types/mail";
 import { FileIcon, FileText, FileSpreadsheet, FileCode, Paperclip } from "lucide-react";
 
-const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
+export const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
   pdf: FileText,
   image: ImageIcon,
   doc: FileText,
@@ -16,7 +16,7 @@ const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
   other: FileIcon,
 };
 
-function formatFullDate(dateStr: string): string {
+export function formatFullDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleString("en-US", {
     weekday: "short",
@@ -28,7 +28,7 @@ function formatFullDate(dateStr: string): string {
   });
 }
 
-function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024)
@@ -36,14 +36,14 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   if (name === "me") return "Me";
   const parts = name.trim().split(/\s+/);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function toPlainText(body: string, bodyType: "html" | "text"): string {
+export function toPlainText(body: string, bodyType: "html" | "text"): string {
   if (bodyType === "text") return body;
   return body
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
@@ -54,7 +54,7 @@ function toPlainText(body: string, bodyType: "html" | "text"): string {
 }
 
 // Regex to detect quoted reply sections
-const QUOTE_PATTERNS = [
+export const QUOTE_PATTERNS = [
   /<blockquote[^>]*>[\s\S]*<\/blockquote>/i,
   /On .* wrote:[\s\S]*$/i,
   /Le .* a écrit :[\s\S]*$/i,

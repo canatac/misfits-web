@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 // AdminOverviewSections.tsx — extracted Sprint 3
 // Shared diagnostic sections for overview / monitoring / security tabs
@@ -8,28 +9,44 @@ import { Badge, asDate, asInt, percent } from "../shared";
 
 type ActiveTabScope = "overview" | "monitoring" | "security";
 
-type AdminSecurityPostureResponse = {
+export type LocalSecurityPosture = {
   threat_events?: number;
   auth_failures_total?: number;
   suspicious_ips_count?: number;
   blocked_events?: number;
   alerts?: Array<{
-    id: string;
-    severity: string;
-    title: string;
-    description: string;
-    at: string;
-    remediation?: string;
+    id: string; severity: string; title: string; description: string;
+    at: string; remediation?: string;
   }>;
   ip_reputation?: Array<{
-    ip: string;
-    risk_score: number;
-    is_blocked: boolean;
-    last_seen_at: string;
+    ip: string; risk_score: number; is_blocked: boolean; last_seen_at: string;
   }>;
+  security?: {
+    tls?: {
+      smtp_starttls_required?: boolean;
+      smtps_listener?: string;
+      imaps_listener?: string;
+    };
+    authentication?: {
+      sasl_mechanisms?: string[];
+      oauth2_enabled?: boolean;
+      admin_mfa_required?: boolean;
+    };
+    anti_abuse?: {
+      rate_limit_enabled?: boolean;
+      rate_limit_per_minute?: number;
+      fail2ban_enabled?: boolean;
+      bruteforce_signals_24h?: number;
+      auth_policy_signals_24h?: number;
+    };
+    mail_auth_dns?: {
+      domain?: string; spf_expected?: string;
+      dkim_selector?: string; dmarc_expected?: string; ptr_rdns_note?: string;
+    };
+  };
 };
 
-type AdminDeliverabilityDiagnosticsResponse = {
+type LocalDeliverabilityDiag = {
   total_events?: number;
   bounces_total?: number;
   auth_policy_alerts?: number;
@@ -41,7 +58,7 @@ type AdminDeliverabilityDiagnosticsResponse = {
   rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
 };
 
-type AdminObservabilityOverviewResponse = {
+type LocalObservabilityOverview = {
   smtp?: { total_events?: number; failure_events?: number; p95_total_ms?: number };
   health_realtime?: {
     queue?: { depth?: number; oldest_age_seconds?: number | null };
@@ -50,14 +67,27 @@ type AdminObservabilityOverviewResponse = {
   };
 };
 
+interface SummaryCard {
+  label: string; value: string | number; note: string;
+  // eslint-disable-line @typescript-eslint/no-explicit-any
+  icon: React.ElementType;
+}
+
 interface AdminOverviewSectionsProps {
   activeTab: ActiveTabScope;
-  observability: AdminObservabilityOverviewResponse | null;
-  securityPosture: AdminSecurityPostureResponse | null;
-  deliverability: AdminDeliverabilityDiagnosticsResponse | null;
+  observability: LocalObservabilityOverview | null;
+  securityPosture: LocalSecurityPosture | null;
+  deliverability: LocalDeliverabilityDiag | null;
   adminDataLoading: boolean;
   adminDataError: string | null;
   securityLive: { isConnected: boolean; alerts: SecurityAlert[] };
+  assistantLoading: boolean;
+  assistantPrompt: string;
+  setAssistantPrompt: (v: string) => void;
+  assistantAnswer: string;
+  assistantError: string | null;
+  askHermesForAdminPlan: () => void;
+  summaryCards: readonly SummaryCard[];
 }
 
 export function AdminOverviewSections({
@@ -68,6 +98,13 @@ export function AdminOverviewSections({
   adminDataLoading,
   adminDataError,
   securityLive,
+  assistantLoading,
+  assistantPrompt,
+  setAssistantPrompt,
+  assistantAnswer,
+  assistantError,
+  askHermesForAdminPlan,
+  summaryCards,
 }: AdminOverviewSectionsProps) {
   return (
     <>

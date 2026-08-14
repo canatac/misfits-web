@@ -31,22 +31,9 @@ type OpsAction = {
   mode: "dry-run" | "execute";
 };
 
-type Analytics = {
-  sent: number;
-  redactions: number;
-  stops: number;
-  regenerations: number;
-  inserts: number;
-  feedbackUp: number;
-  feedbackDown: number;
-  backendTaskRuns: number;
-};
 
-type PersonaPreset = {
-  tone: "neutre" | "court" | "professionnel" | "empathique";
-  length: "court" | "moyen" | "détaillé";
-  language: "fr" | "en";
-};
+
+
 
 export function ChatPanel({
   layout = "overlay",
