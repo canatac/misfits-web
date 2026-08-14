@@ -13,6 +13,7 @@
 "use client";
 
 import * as React from "react";
+import { detectImapErrorHint } from "@/lib/imap-error-hints";
 
 export interface ImapConsoleProbeInput {
   host: string;
@@ -225,6 +226,35 @@ export function ImapConsole({ input, onDone, title }: Props) {
           <div className="text-neutral-500">connecting…</div>
         )}
       </div>
+      {/* Actionable hint below the terminal — surfaces the fix path for
+          well-known errors (Gmail app password, TLS mismatch, DNS, etc.). */}
+      {status === "error" && (() => {
+        // Scan both the streamed error and every server-side "<" line so we
+        // catch signals like "* NO [ALERT] Application-specific password
+        // required" even when the top-level error is just "LOGIN failed".
+        const haystack = [
+          finalError ?? "",
+          ...lines.filter((l) => l.dir === "<").map((l) => l.text),
+        ].join("\n");
+        const hint = detectImapErrorHint(haystack);
+        if (!hint) return null;
+        return (
+          <div className="border-t border-neutral-800 bg-neutral-900 px-3 py-2 text-xs">
+            <div className="font-medium text-amber-300">{hint.title}</div>
+            <div className="mt-0.5 text-neutral-300">{hint.description}</div>
+            {hint.cta && (
+              <a
+                href={hint.cta.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-sky-300 underline hover:text-sky-200"
+              >
+                {hint.cta.label} ↗
+              </a>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
