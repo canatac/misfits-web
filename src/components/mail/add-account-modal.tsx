@@ -223,12 +223,64 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   }
 
   async function handleSave() {
-    // Ensure connection is validated before saving.
+    // 1) Local syntactic validation (unchanged).
     const result = validateConnection(email, password, serverConfig);
     if (!result.ok) {
       setTestResult(result);
       return;
     }
+
+    // 2) Push to backend: create + test + initial sync (today only).
+    //    Any backend failure surfaces in the modal — nothing is stored locally
+    //    if the account isn't actually reachable server-side.
+    let backendId: string | undefined;
+    try {
+      setTesting(true);
+      const cfg = needsServerFields
+        ? serverConfig
+        : PROVIDER_PRESETS[provider].serverConfig;
+      const { createExternalAccount, testExternalAccount, startExternalAccountSync, startOfTodayIso, toCreatePayload, deleteExternalAccount } =
+        await import("@/lib/external-accounts-api");
+      const created = await createExternalAccount(
+        toCreatePayload({ email, provider, serverConfig: cfg, password })
+      );
+      backendId = created.id;
+
+      const test = await testExternalAccount(created.id);
+      if (!test.ok) {
+        // Clean up so the user isn't stuck with a dead account.
+        try { await deleteExternalAccount(created.id); } catch { /* noop */ }
+        setTestResult({ ok: false, errors: [test.message || "IMAP test failed"] });
+        setTesting(false);
+        return;
+      }
+
+      // Default sync window = "today only" (matches user requirement).
+      await startExternalAccountSync(created.id, {
+        mode: "incremental",
+        since: startOfTodayIso(),
+      });
+    } catch (err) {
+      // Roll back the backend account if create succeeded but a later step failed.
+      if (backendId) {
+        try {
+          const { deleteExternalAccount } = await import(
+            "@/lib/external-accounts-api"
+          );
+          await deleteExternalAccount(backendId);
+        } catch {
+          /* noop */
+        }
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      setTestResult({ ok: false, errors: [`Backend error: ${msg}`] });
+      setTesting(false);
+      return;
+    } finally {
+      setTesting(false);
+    }
+
+    // 3) Only persist locally once the backend has the account + a sync started.
     const account = await addAccount.mutateAsync({
       email,
       name: name.trim() || undefined,
