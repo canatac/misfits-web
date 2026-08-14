@@ -126,6 +126,17 @@ type AdminSecurityPostureResponse = {
   };
 };
 
+type AdminDeliverabilityDiagnosticsResponse = {
+  total_events?: number;
+  bounces_total?: number;
+  auth_policy_alerts?: number;
+  spf?: { failures?: number; failure_rate?: number };
+  dkim?: { failures?: number; failure_rate?: number };
+  dmarc?: { failures?: number; failure_rate?: number };
+  reputation?: { avg_risk_score?: number; high_risk_events?: number; ip_domain_status?: string };
+  top_bounce_reasons?: Array<{ reason: string; count: number }>;
+  rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
+};
 
 type AdminObservabilityOverviewResponse = {
   smtp?: {
