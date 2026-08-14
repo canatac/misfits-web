@@ -37,5 +37,14 @@ export function buildForwardHeaders(
   const { authorization, cookie } = extractIncomingAuth(request);
   if (authorization) headers.set("Authorization", authorization);
   if (cookie) headers.set("Cookie", cookie);
+  // Forward the user identity headers injected client-side by apiClient
+  // (`x-user-id`, `x-user-email`). Backend handlers use these to scope
+  // per-user resources (external IMAP accounts, drafts, etc.); dropping
+  // them causes silent 404s when the backend falls back to the SMTP_USERNAME
+  // default and a follow-up request looks up the resource with a different id.
+  const uid = request.headers.get("x-user-id");
+  const uemail = request.headers.get("x-user-email");
+  if (uid) headers.set("x-user-id", uid);
+  if (uemail) headers.set("x-user-email", uemail);
   return headers;
 }
