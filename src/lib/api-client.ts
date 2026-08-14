@@ -210,20 +210,31 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
   // Error path
   if (contentType.includes("application/json")) {
-    let body: ApiErrorBody;
+    let body: ApiErrorBody & { error?: { code?: string; message?: string } };
     try {
-      body = (await response.json()) as ApiErrorBody;
+      body = (await response.json()) as ApiErrorBody & {
+        error?: { code?: string; message?: string };
+      };
     } catch {
       body = { message: response.statusText };
     }
     const retryAfter = response.headers.get("retry-after");
-    throw new ApiError(response.status, body.message ?? response.statusText, {
-      code: body.code,
-      retryAfter:
-        body.retryAfter ??
-        (retryAfter ? Number(retryAfter) * 1000 + Date.now() : undefined),
-      body,
-    });
+    // Backend also uses a nested shape `{ error: { code, message } }`
+    // (external-accounts, admin ops). Fall back to it when the flat
+    // fields are absent so the UI shows a meaningful message.
+    const nestedMsg = body.error?.message;
+    const nestedCode = body.error?.code;
+    throw new ApiError(
+      response.status,
+      body.message ?? nestedMsg ?? response.statusText,
+      {
+        code: body.code ?? nestedCode,
+        retryAfter:
+          body.retryAfter ??
+          (retryAfter ? Number(retryAfter) * 1000 + Date.now() : undefined),
+        body,
+      }
+    );
   }
 
   throw new ApiError(response.status, response.statusText || "Request failed");
