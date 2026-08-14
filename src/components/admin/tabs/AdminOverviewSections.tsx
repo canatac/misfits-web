@@ -69,7 +69,6 @@ type LocalObservabilityOverview = {
 
 interface SummaryCard {
   label: string; value: string | number; note: string;
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   icon: React.ElementType;
 }
 
