@@ -8,10 +8,13 @@ import {
   deleteAdminChangeRequest,
   deleteAdminUser,
   getAdminAiActivity,
+  getAdminAuditLog,
   getAdminChangelog,
   getAdminUsers,
   getAdminWhoami,
   getChangeRequests,
+  inviteAdminUser,
+  resetAdminPassword,
   transitionAdminChangeRequest,
   updateAdminUser,
 } from "@/lib/admin-ops-api";
@@ -202,6 +205,68 @@ export function useAdminWhoami() {
     staleTime: 60_000,
     refetchOnWindowFocus: false,
     retry: false,
+  });
+}
+
+/**
+ * Audit trail — introduced in backend PR4. Refreshes on a slow cadence
+ * (60s) because entries are appended by other admin actions and don't
+ * need to be near-realtime.
+ */
+export function useAdminAuditLog(limit = 100) {
+  return useQuery({
+    queryKey: ["admin", "audit-log", limit],
+    queryFn: () => getAdminAuditLog({ limit }),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+}
+
+export function useInviteAdminUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => inviteAdminUser(id),
+    onSuccess: (data) => {
+      toast.success(
+        `Invitation envoyée. Le lien expire le ${new Date(
+          data.expiresAt
+        ).toLocaleString()}`
+      );
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "audit-log"] });
+    },
+    onError: (err: Error) => {
+      toast.error(`Échec invitation : ${err.message}`);
+    },
+  });
+}
+
+export function useResetAdminPassword() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      newPassword,
+      revokeSessions,
+    }: {
+      id: string;
+      newPassword?: string;
+      revokeSessions?: boolean;
+    }) => resetAdminPassword(id, { newPassword, revokeSessions }),
+    onSuccess: (data) => {
+      if (data.generatedPassword) {
+        toast.success(
+          "Mot de passe réinitialisé — un mot de passe temporaire a été généré côté serveur."
+        );
+      } else {
+        toast.success("Mot de passe réinitialisé");
+      }
+      qc.invalidateQueries({ queryKey: ["admin", "users"] });
+      qc.invalidateQueries({ queryKey: ["admin", "audit-log"] });
+    },
+    onError: (err: Error) => {
+      toast.error(`Échec réinitialisation : ${err.message}`);
+    },
   });
 }
 

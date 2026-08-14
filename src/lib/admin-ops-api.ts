@@ -112,6 +112,78 @@ export function getAdminWhoami() {
   });
 }
 
+// ------- PR3/PR4 endpoints (invite, reset-password, audit-log) -------
+
+export interface InviteAdminUserResponse {
+  invited: boolean;
+  user: AdminUsersResponse["users"][number];
+  acceptUrl: string;
+  expiresAt: string;
+}
+
+export function inviteAdminUser(id: string) {
+  return apiClient.post<InviteAdminUserResponse>(
+    `/admin/users/${encodeURIComponent(id)}/invite`,
+    {},
+    { skipAuth: true }
+  );
+}
+
+export interface ResetAdminPasswordInput {
+  newPassword?: string;
+  revokeSessions?: boolean;
+}
+export interface ResetAdminPasswordResponse {
+  reset: boolean;
+  user: AdminUsersResponse["users"][number];
+  generatedPassword: boolean | null;
+}
+
+export function resetAdminPassword(
+  id: string,
+  payload: ResetAdminPasswordInput = {}
+) {
+  return apiClient.post<ResetAdminPasswordResponse>(
+    `/admin/users/${encodeURIComponent(id)}/reset-password`,
+    payload,
+    { skipAuth: true }
+  );
+}
+
+export interface AdminAuditEntry {
+  id: string;
+  at: string;
+  actorId: string;
+  actorEmail: string;
+  action: string;
+  targetKind: string;
+  targetId: string;
+  note?: string | null;
+  diff?: unknown;
+}
+export interface AdminAuditLogResponse {
+  generatedAt: string;
+  entries: AdminAuditEntry[];
+}
+
+export function getAdminAuditLog(params: {
+  target?: string;
+  actor?: string;
+  action?: string;
+  limit?: number;
+} = {}) {
+  const search = new URLSearchParams();
+  if (params.target) search.set("target", params.target);
+  if (params.actor) search.set("actor", params.actor);
+  if (params.action) search.set("action", params.action);
+  if (params.limit) search.set("limit", String(params.limit));
+  const suffix = search.toString();
+  return apiClient.get<AdminAuditLogResponse>(
+    `/admin/audit-log${suffix ? `?${suffix}` : ""}`,
+    { skipAuth: true }
+  );
+}
+
 export function createAdminUser(payload: CreateAdminUserInput) {
   return apiClient.post<{ user: AdminUsersResponse["users"][number] }>(
     "/admin/users",
