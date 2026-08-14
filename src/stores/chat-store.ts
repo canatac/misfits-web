@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import type { ChatContext, ChatConversation, ChatMessage } from "@/types/chat";
 import type { ChatTraceEvent, TraceLevel } from "./chat-types";
+import { chatRepository } from "@/lib/repositories";
 import { STORAGE_KEY, MAX_CONVERSATIONS, loadConversations, saveConversations } from "./chat-persistence";
 import { toShort, pushTrace, parseSseEventBlocks, extractDataFromBlock } from "./chat-utils";
 
@@ -260,11 +261,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           : "Aucune pièce jointe signalée dans le contexte.";
 
       if (!get().traceEnabled) {
-        const res = await fetch("/api/hermes/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: activeAbortController.signal,
-          body: JSON.stringify({
+        const data = await chatRepository.postChat(
+          {
             messages: [
               {
                 role: "system",
@@ -276,17 +274,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             userId: resolvedUserId,
             sessionId: resolvedSessionId,
             sessionKey: resolvedSessionKey,
-          }),
-        });
+          },
+          activeAbortController.signal
+        );
 
-        if (!res.ok) {
-          const errorText = await res
-            .text()
-            .catch(() => "Hermes request failed");
-          throw new Error(errorText || `Hermes request failed (${res.status})`);
-        }
-
-        const data = await res.json();
         const assistantContent =
           data?.choices?.[0]?.message?.content ||
           data?.content ||
@@ -347,26 +338,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         .filter(Boolean)
         .join("\n\n");
 
-      const runRes = await fetch("/api/hermes/runs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: activeAbortController.signal,
-        body: JSON.stringify({
+      const runData = await chatRepository.createRun(
+        {
           input: runInput,
           model: "hermes-agent",
           threadId: resolvedThreadId,
           userId: resolvedUserId,
           sessionId: resolvedSessionId,
           sessionKey: resolvedSessionKey,
-        }),
-      });
-
-      if (!runRes.ok) {
-        const errorText = await runRes.text().catch(() => "Hermes run failed");
-        throw new Error(errorText || `Hermes run failed (${runRes.status})`);
-      }
-
-      const runData = await runRes.json().catch(() => ({}));
+        },
+        activeAbortController.signal
+      );
       const runId: string | undefined = runData?.run_id || runData?.id;
       if (!runId) {
         throw new Error("Hermes run id missing");
@@ -396,25 +378,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         return { conversations };
       });
 
-      const eventsRes = await fetch(
-        `/api/hermes/runs/${encodeURIComponent(runId)}/events?stream=true`,
-        {
-          method: "GET",
-          headers: { Accept: "text/event-stream" },
-          signal: activeAbortController.signal,
-        }
+      const eventsBody = await chatRepository.streamRunEvents(
+        runId,
+        activeAbortController.signal
       );
 
-      if (!eventsRes.ok || !eventsRes.body) {
-        const errorText = await eventsRes
-          .text()
-          .catch(() => "Hermes events failed");
-        throw new Error(
-          errorText || `Hermes events failed (${eventsRes.status})`
-        );
-      }
-
-      const reader = eventsRes.body.getReader();
+      const reader = eventsBody.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let assistantContent = "";
