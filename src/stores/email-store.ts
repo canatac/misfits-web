@@ -12,7 +12,7 @@ import type {
   SortBy,
 } from "@/types/email";
 import { mockFolders, mockLabels } from "@/lib/mock-emails";
-import { mailAuthHeaders } from "@/lib/mail-api";
+import { mailAuthHeaders, hasMailIdentity } from "@/lib/mail-api";
 
 export type BulkActionType =
   "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
@@ -133,6 +133,15 @@ export const useEmailStore = create<EmailState>((set, get) => ({
 
   fetchEmails: (folder) => {
     const targetFolder = folder ?? get().currentFolder;
+    if (!hasMailIdentity()) {
+      set({
+        loading: false,
+        currentFolder: targetFolder,
+        error: "Mail session missing. Please sign in again.",
+        emails: [],
+      });
+      return;
+    }
     // Skip duplicate in-flight / same-folder reloads when data already present
     if (get().loading && get().currentFolder === targetFolder) return;
     set({ loading: true, error: null, currentFolder: targetFolder });

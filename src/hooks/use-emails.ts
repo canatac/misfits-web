@@ -14,10 +14,13 @@ import type {
   EmailQuery,
   Folder,
 } from "@/types/email";
-import { mailAuthHeaders } from "@/lib/mail-api";
+import { mailAuthHeaders, hasMailIdentity } from "@/lib/mail-api";
 import { useEmailStore } from "@/stores/email-store";
 
 async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
+  if (!hasMailIdentity()) {
+    throw new Error("Mail session missing. Please sign in again.");
+  }
   const params = new URLSearchParams();
   if (query.folder) params.set("folder", query.folder);
   if (query.sortBy) params.set("sortBy", query.sortBy);
@@ -42,6 +45,9 @@ async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
 }
 
 async function fetchEmailById(id: string): Promise<Email | null> {
+  if (!hasMailIdentity()) {
+    throw new Error("Mail session missing. Please sign in again.");
+  }
   const res = await fetch(`/api/emails/${encodeURIComponent(id)}`, {
     headers: mailAuthHeaders(),
     credentials: "include",
@@ -65,6 +71,9 @@ async function postEmailAction(
     | "unstar",
   targetFolder?: Folder
 ): Promise<void> {
+  if (!hasMailIdentity()) {
+    throw new Error("Mail session missing. Please sign in again.");
+  }
   const payload =
     action === "move" && targetFolder ? { action, targetFolder } : { action };
 
