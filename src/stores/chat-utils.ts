@@ -15,7 +15,7 @@ export function toShort(value: unknown, max = 140): string {
 
 
 export function pushTrace(
-  set: ChatSetState,
+  set: (fn: (s: { traceEvents: ChatTraceEvent[] }) => Partial<{ traceEvents: ChatTraceEvent[] }>) => void,
   event: Omit<ChatTraceEvent, "id" | "at">
 ) {
   set((s: { traceEvents: ChatTraceEvent[] }) => ({

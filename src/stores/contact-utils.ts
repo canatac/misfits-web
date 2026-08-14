@@ -1,6 +1,7 @@
 "use client";
 // contact-utils.ts — extracted Sprint 3-3
 import type { Contact, ContactFrequency, ContactGroup } from "@/types/contact";
+import { AVATAR_COLORS } from "@/lib/mock-contacts";
 
 export function genId(prefix = "ct"): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
