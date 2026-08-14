@@ -138,6 +138,24 @@ type AdminDeliverabilityDiagnosticsResponse = {
   rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
 };
 
+type DeliverabilityProcedureData = {
+  overall_status?: string;
+  domain?: string;
+  window?: string;
+  progress?: { done?: number; total?: number };
+  reminder?: { enabled?: boolean; cadence_hours?: number; next_due_at?: string };
+  checklist?: Array<{
+    id: string;
+    title: string;
+    status: "done" | "done_manual" | "in_progress" | "todo" | "blocked";
+    evidence?: string;
+    operator_note?: string;
+    cta?: { label?: string; kind?: string; details?: string };
+  }>;
+  cta_details?: Array<{ id: string; label: string; description: string }>;
+  automation?: { auto_checks?: string[]; last_computed_at?: string };
+};
+
 type AdminObservabilityOverviewResponse = {
   smtp?: {
     total_events?: number;
@@ -331,9 +349,9 @@ export function AdminConsolePage({
   const [securityPosture, setSecurityPosture] =
     useState<AdminSecurityPostureResponse | null>(null);
   const [deliverability, setDeliverability] =
-    useState<| null>(null);
+    useState<AdminDeliverabilityDiagnosticsResponse | null>(null);
   const [deliverabilityProcedure, setDeliverabilityProcedure] =
-    useState<| null>(null);
+    useState<DeliverabilityProcedureData | null>(null);
   const [observability, setObservability] =
     useState<AdminObservabilityOverviewResponse | null>(null);
   const [adminDataLoading, setAdminDataLoading] = useState(false);
