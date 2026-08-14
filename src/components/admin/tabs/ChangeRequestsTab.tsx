@@ -1,36 +1,47 @@
 "use client";
 
 // ChangeRequestsTab.tsx — extracted Sprint 3
+import { useMemo, useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type {
   ChangeRequestItem,
   WorkflowStatus,
   ChangeRequestsResponse,
-  CreateChangeRequestInput,
+  ChangeRequestGuideDraft,
 } from "@/types/admin-ops";
+import type {
+  useTransitionChangeRequest,
+  useStartImplementationChangeRequest,
+  useCreateChangeRequest,
+  useDeleteChangeRequest,
+} from "@/hooks/use-admin-ops";
 import { Badge, asDate, priorityTone, statusTone,
   runStateFromStatus, runStateTone, runStateLabel,
-  executionStateTone, executionStateLabel } from "../shared";
+  executionStateTone, executionStateLabel, minutesBetween } from "../shared";
 import { cn } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
 
+const WORKFLOW_STATUS_COLUMNS: WorkflowStatus[] = [
+  "draft", "review", "approved", "in_progress", "done", "rejected",
+];
+const STATUS_LABEL: Record<WorkflowStatus, string> = {
+  draft: "Brouillon", review: "En revue", approved: "Approuvé",
+  in_progress: "En cours", done: "Terminé", rejected: "Rejeté",
+};
+
 interface ChangeRequestsTabProps {
   changeRequests: UseQueryResult<ChangeRequestsResponse, Error>;
-  createChangeRequest: { mutate: (input: CreateChangeRequestInput) => void; isPending: boolean };
-  deleteChangeRequest: { mutate: (id: string) => void };
-  transitionChangeRequest: { mutate: (args: { id: string; status: WorkflowStatus }) => void };
-  startImplementation: { mutate: (id: string) => void };
-  kanbanColumns: Map<WorkflowStatus, ChangeRequestItem[]>;
-  workflowRunMonitoring: { onTrack: number; atRisk: number; blocked: number };
-  crForm: CreateChangeRequestInput;
-  setCrForm: React.Dispatch<React.SetStateAction<CreateChangeRequestInput>>;
+  createChangeRequest: ReturnType<typeof useCreateChangeRequest>;
+  deleteChangeRequest: ReturnType<typeof useDeleteChangeRequest>;
+  transitionChangeRequest: ReturnType<typeof useTransitionChangeRequest>;
+  startImplementation: ReturnType<typeof useStartImplementationChangeRequest>;
+  adminDataLoading: boolean;
+  adminDataError: string | null;
   crGuideInput: string;
   setCrGuideInput: React.Dispatch<React.SetStateAction<string>>;
   crGuideLoading: boolean;
   crGuideError: string | null;
   handleCrGuide: (e: React.FormEvent) => Promise<void>;
-  WORKFLOW_STATUS_COLUMNS: WorkflowStatus[];
-  STATUS_LABEL: Record<WorkflowStatus, string>;
 }
 
 export function ChangeRequestsTab({
@@ -51,6 +62,95 @@ export function ChangeRequestsTab({
   WORKFLOW_STATUS_COLUMNS,
   STATUS_LABEL,
 }: ChangeRequestsTabProps) {
+
+  const kanbanColumns = useMemo(() => {
+    const cols = new Map<WorkflowStatus, ChangeRequestItem[]>();
+    WORKFLOW_STATUS_COLUMNS.forEach((s) => cols.set(s, []));
+    for (const item of changeRequests.data?.items ?? []) {
+      const col = cols.get(item.status as WorkflowStatus);
+      if (col) col.push(item);
+    }
+    return cols;
+  }, [changeRequests.data?.items]);
+
+  const workflowRunMonitoring = useMemo(() => {
+    const items = changeRequests.data?.items ?? [];
+    const nowIso = new Date().toISOString();
+
+    const runs = items
+      .map((item) => {
+        const runState = runStateFromStatus(item.status);
+        const totalStages = item.workflow?.length ?? 0;
+        const doneStages = (item.workflow ?? []).filter(
+          (stage) => stage.status === "done"
+        ).length;
+        const progressPct =
+          totalStages > 0 ? Math.round((doneStages / totalStages) * 100) : 0;
+        const currentStage =
+          (item.workflow ?? []).find((stage) => stage.status === "active") ??
+          (item.workflow ?? [])[Math.max(0, doneStages - 1)] ??
+          null;
+        const startedAt = item.takenInChargeAt || item.createdAt;
+        const elapsedMinutes = minutesBetween(startedAt, nowIso);
+        const latestEvent = (item.workflowEvents ?? [])
+          .slice()
+          .sort(
+            (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
+          )[0];
+        const lastEventAt = latestEvent?.at || item.updatedAt;
+        const lastEventAgeMinutes = minutesBetween(lastEventAt, nowIso);
+        const executionState = item.executionState ?? "idle";
+        const executionHeartbeatAt = item.executionLastHeartbeatAt || null;
+        const executionHeartbeatAgeMinutes = minutesBetween(
+          executionHeartbeatAt || undefined,
+          nowIso
+        );
+        const hasExecutionSignal =
+          executionState === "running" ||
+          executionState === "success" ||
+          executionState === "failed";
+        const appearsWorkflowOnly =
+          runState === "running" &&
+          (executionState === "idle" || executionState === "queued") &&
+          (executionHeartbeatAgeMinutes === null ||
+            executionHeartbeatAgeMinutes > 5);
+
+        return {
+          item,
+          runState,
+          totalStages,
+          doneStages,
+          progressPct,
+          currentStage,
+          elapsedMinutes,
+          lastEventAt,
+          lastEventAgeMinutes,
+          executionState,
+          executionHeartbeatAt,
+          executionHeartbeatAgeMinutes,
+          hasExecutionSignal,
+          appearsWorkflowOnly,
+        };
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime()
+      );
+
+    return {
+      runs,
+      running: runs.filter((run) => run.runState === "running").length,
+      queued: runs.filter((run) => run.runState === "queued").length,
+      completed: runs.filter((run) => run.runState === "completed").length,
+      failed: runs.filter((run) => run.runState === "failed").length,
+      workflowOnlyRunning: runs.filter((run) => run.appearsWorkflowOnly).length,
+    };
+  }, [changeRequests.data?.items]);
+
+  const [crForm, setCrForm] = useState({
+    title: "", description: "", priority: "medium" as const, tags: [] as string[],
+  });
+
   return (
     <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
           <div className="mb-4 flex items-center justify-between gap-3">

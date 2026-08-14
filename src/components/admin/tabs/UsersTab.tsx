@@ -11,6 +11,13 @@ import type {
   AdminAiActivityResponse,
 } from "@/types/admin-ops";
 import type { AdminAuditLogResponse } from "@/lib/admin-ops-api";
+import type {
+  useUpdateAdminUser,
+  useDeleteAdminUser,
+  useCreateAdminUser,
+  useInviteAdminUser,
+  useResetAdminPassword,
+} from "@/hooks/use-admin-ops";
 import { Badge, asDate, asInt, percent } from "../shared";
 
 interface UsersTabProps {
@@ -18,13 +25,13 @@ interface UsersTabProps {
   adminWhoami: UseQueryResult<AdminWhoamiResponse & { enforced?: boolean }, Error>;
   adminAiActivity: UseQueryResult<AdminAiActivityResponse, Error>;
   adminAuditLog: UseQueryResult<AdminAuditLogResponse, Error>;
-  createAdminUser: { mutate: (input: CreateAdminUserInput) => void; isPending: boolean };
-  inviteAdminUser: { mutate: (id: string) => void; isPending: boolean };
+  createAdminUser: ReturnType<typeof useCreateAdminUser>;
+  inviteAdminUser: ReturnType<typeof useInviteAdminUser>;
   resetAdminPassword: {
     mutate: (args: { id: string; newPassword?: string; revokeSessions: boolean }) => void;
     isPending: boolean;
   };
-  deleteAdminUser: { mutate: (id: string) => void; isPending: boolean };
+  deleteAdminUser: ReturnType<typeof useDeleteAdminUser>;
   updateAdminUser: {
     mutateAsync: (args: { id: string; role?: AdminUserRecord["role"]; status?: AdminUserRecord["status"] }) => Promise<void>;
     isPending: boolean;

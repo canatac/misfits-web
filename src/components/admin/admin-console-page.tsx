@@ -1696,17 +1696,13 @@ export function AdminConsolePage({
           deleteChangeRequest={deleteChangeRequest}
           transitionChangeRequest={transitionChangeRequest}
           startImplementation={startImplementationChangeRequest}
-          kanbanColumns={kanbanColumns}
-          workflowRunMonitoring={workflowRunMonitoring}
-          crForm={crForm}
-          setCrForm={setCrForm}
+          adminDataLoading={adminDataLoading}
+          adminDataError={adminDataError}
           crGuideInput={crGuideInput}
           setCrGuideInput={setCrGuideInput}
           crGuideLoading={crGuideLoading}
           crGuideError={crGuideError}
           handleCrGuide={handleCrGuide}
-          WORKFLOW_STATUS_COLUMNS={WORKFLOW_STATUS_COLUMNS}
-          STATUS_LABEL={STATUS_LABEL}
         />
       )}
       {activeTab === "users" && (
