@@ -225,3 +225,39 @@ export interface AdminAiActivityResponse {
   metrics: AdminAiActivityMetrics;
   runs: AdminAiRunItem[];
 }
+
+// ─── Deliverability procedure ─────────────────────────────────────────────────
+
+export interface DeliverabilityProcedureItem {
+  id: string;
+  label: string;
+  status: "done" | "pending" | "na";
+  note?: string;
+  cta?: string;
+}
+
+export interface DeliverabilityProcedureResponse {
+  overall_status: string;
+  progress: { done: number; total: number };
+  reminder: { enabled: boolean; cadence_hours: number; next_due_at?: string };
+  automation: { auto_checks: string[] };
+  checklist: DeliverabilityProcedureItem[];
+}
+
+export interface AdminDeliverabilityDiagnosticsResponse {
+  window: string;
+  spf?: { valid: boolean; record?: string };
+  dkim?: { valid: boolean; domains?: string[] };
+  dmarc?: { valid: boolean; record?: string };
+  mx?: { records?: string[] };
+  bounces?: { total: number; rate: number };
+  [key: string]: unknown;
+}
+
+// ─── Whoami ───────────────────────────────────────────────────────────────────
+
+export interface AdminWhoamiResponse {
+  email: string;
+  role: string;
+  display_name?: string;
+}
