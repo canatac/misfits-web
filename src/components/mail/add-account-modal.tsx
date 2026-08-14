@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { useAccountMutations } from "@/hooks/use-accounts";
 import { useAccountStore } from "@/stores/account-store";
+import { ImapConsole } from "@/components/mail/imap-console";
 import type { AccountProvider, AccountServerConfig } from "@/types/account";
 
 /** Accent color presets for accounts. */
@@ -211,15 +212,33 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     setTestResult(null);
   }
 
+  const [probeInput, setProbeInput] = React.useState<null | {
+    host: string;
+    port: number;
+    tls: boolean;
+    username: string;
+    password: string;
+  }>(null);
+
   function handleTestConnection() {
     setTesting(true);
     setTestResult(null);
-    // Real validation is synchronous; emulate a brief async delay for UX feedback.
+    // 1) Local syntactic validation stays as a first-line filter.
     const result = validateConnection(email, password, serverConfig);
-    window.setTimeout(() => {
+    if (!result.ok) {
       setTestResult(result);
       setTesting(false);
-    }, 350);
+      return;
+    }
+    // 2) Kick off the live IMAP probe so the user can see every command/response.
+    setProbeInput({
+      host: serverConfig.imapHost,
+      port: serverConfig.imapPort,
+      tls: serverConfig.imapSecurity !== "none",
+      username: email,
+      password,
+    });
+    // The console component reports completion via onDone.
   }
 
   async function handleSave() {
@@ -562,6 +581,20 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 </span>
               </div>
             </div>
+
+            {/* Live IMAP console (shows every request/response during test) */}
+            <ImapConsole
+              input={probeInput}
+              onDone={(r) => {
+                setTesting(false);
+                setTestResult(
+                  r.ok
+                    ? { ok: true, errors: [] }
+                    : { ok: false, errors: [r.error ?? "IMAP probe failed"] }
+                );
+              }}
+              title="IMAP session"
+            />
 
             {/* Test connection result */}
             {testResult && (
