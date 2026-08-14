@@ -51,6 +51,7 @@ export function ChangeRequestsTab({
   STATUS_LABEL,
 }: ChangeRequestsTabProps) {
   return (
+    <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-[#E4E4E7]">
@@ -1050,5 +1051,6 @@ export function ChangeRequestsTab({
               </article>
             ))}
           </div>
+        </section>
   );
 }

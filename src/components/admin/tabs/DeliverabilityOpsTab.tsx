@@ -18,6 +18,7 @@ export function DeliverabilityOpsTab({
   saveProcedureUpdate,
 }: DeliverabilityOpsTabProps) {
   return (
+    <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-[#E4E4E7]">
@@ -118,54 +119,6 @@ export function DeliverabilityOpsTab({
                     <p className="mt-1 text-xs text-[#A1A1AA]">{item.evidence ?? "—"}</p>
                     {item.operator_note && (
                       <p className="mt-1 text-xs text-[#86EFAC]">note: {item.operator_note}</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={procedureSaving}
-                        onClick={() =>
-                          void saveProcedureUpdate({
-                            checklist: [{ id: item.id, checked: true }],
-                          })
-                        }
-                        className="rounded-md border border-[#355D3A] bg-[#132016] px-2 py-1 text-[11px] text-[#86EFAC]"
-                      >
-                        Marquer fait
-                      </button>
-                      {item.cta?.details && (
-                        <code className="rounded bg-[#1A1A1F] px-2 py-1 text-[11px] text-[#D4D4D8]">
-                          {item.cta.details}
-                        </code>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
-              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
-                CTAs détaillées
-              </h3>
-              <div className="mt-3 space-y-2 text-xs text-[#D4D4D8]">
-                {(deliverabilityProcedure?.cta_details ?? []).map((cta) => (
-                  <div
-                    key={cta.id}
-                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
-                  >
-                    <p className="text-sm text-[#E4E4E7]">{cta.label}</p>
-                    <p className="mt-1 text-[#A1A1AA]">{cta.description}</p>
-                  </div>
-                ))}
-                {!deliverabilityProcedure?.cta_details?.length && (
-                  <p className="text-[#71717A]">Aucune CTA détaillée disponible.</p>
-                )}
-              </div>
-            </article>
-          </div>
         </section>
-      )}
-
-      {activeTab === "changelog" && (
   );
 }

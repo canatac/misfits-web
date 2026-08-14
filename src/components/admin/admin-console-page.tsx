@@ -1722,5 +1722,6 @@ export function AdminConsolePage({
           updateAdminUser={updateAdminUser}
         />
       )}
+    </div>
   );
 }

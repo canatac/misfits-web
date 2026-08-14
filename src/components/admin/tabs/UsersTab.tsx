@@ -322,8 +322,6 @@ export function UsersTab({
             {adminAuditLog.isError && (
               <p className="text-sm text-[#FCA5A5]">Erreur audit-log: {adminAuditLog.error.message}</p>
             )}
-          </div>
-          </div>
         </div>
     </section>
   );
