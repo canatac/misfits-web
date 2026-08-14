@@ -1193,6 +1193,40 @@ export function AdminConsolePage({
             </Badge>
           </div>
 
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#232327] bg-[#151518] p-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setChangeRequestView("essential")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs",
+                  changeRequestView === "essential"
+                    ? "border border-[#C49B66] bg-[#2A2218] text-[#F2D5A7]"
+                    : "border border-[#2A2A30] text-[#A1A1AA]"
+                )}
+              >
+                Vue essentielle
+              </button>
+              <button
+                type="button"
+                onClick={() => setChangeRequestView("advanced")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs",
+                  changeRequestView === "advanced"
+                    ? "border border-[#C49B66] bg-[#2A2218] text-[#F2D5A7]"
+                    : "border border-[#2A2A30] text-[#A1A1AA]"
+                )}
+              >
+                Vue opérateur
+              </button>
+            </div>
+            <p className="text-[11px] text-[#A1A1AA]">
+              {changeRequestView === "essential"
+                ? "Focus création + priorisation. Les métriques expertes sont masquées."
+                : "Vue complète avec signaux backend, runs et logs."}
+            </p>
+          </div>
+
           <div className="mb-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
             <p className="flex items-center gap-1">
               <AlertTriangle className="h-3.5 w-3.5" />
