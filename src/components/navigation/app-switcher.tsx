@@ -56,6 +56,12 @@ const NAV_ITEMS: NavItem[] = [
     matchPrefix: "/translation",
   },
   { href: "/docs", labelKey: "nav.docs", icon: BookOpen, matchPrefix: "/docs" },
+  {
+    href: "/documentation",
+    labelKey: "nav.documentation",
+    icon: BookOpen,
+    matchPrefix: "/documentation",
+  },
 ];
 
 interface AppSwitcherProps {

@@ -8,6 +8,7 @@ const en = {
     newsletters: "Newsletters",
     translation: "Translation",
     docs: "Docs",
+    documentation: "Documentation",
     monitoring: "Monitoring",
     security: "Security",
     admin: "Admin",
