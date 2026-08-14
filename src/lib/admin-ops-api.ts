@@ -1,3 +1,15 @@
+/**
+ * admin-ops-api.ts
+ *
+ * Thin wrappers around apiClient for the admin panel endpoints.
+ *
+ * Sprint 3 hardening: all admin calls now use the authenticated client
+ * (skipAuth removed). The backend RBAC layer (admin_auth.rs) validates
+ * the session token on every request when ADMIN_RBAC_ENFORCE=1.
+ *
+ * Endpoints reach the backend via Next.js proxy routes (/api/admin/*),
+ * which forward the session token through buildForwardHeaders().
+ */
 import { apiClient } from "@/lib/api-client";
 import type {
   AdminAiActivityResponse,
@@ -12,23 +24,22 @@ import type {
   UpdateAdminUserInput,
 } from "@/types/admin-ops";
 
+// ─── Changelog ───────────────────────────────────────────────────────────────
+
 export function getAdminChangelog() {
-  return apiClient.get<AdminChangelogResponse>("/admin/changelog", {
-    skipAuth: true,
-  });
+  return apiClient.get<AdminChangelogResponse>("/admin/changelog");
 }
 
+// ─── Change requests ─────────────────────────────────────────────────────────
+
 export function getChangeRequests() {
-  return apiClient.get<ChangeRequestsResponse>("/admin/change-requests", {
-    skipAuth: true,
-  });
+  return apiClient.get<ChangeRequestsResponse>("/admin/change-requests");
 }
 
 export function createAdminChangeRequest(payload: CreateChangeRequestInput) {
   return apiClient.post<TransitionChangeRequestResponse>(
     "/admin/change-requests",
-    payload,
-    { skipAuth: true }
+    payload
   );
 }
 
@@ -63,32 +74,26 @@ export function transitionAdminChangeRequest(
     body.action = action;
   }
 
-  if (payload.executionRunId) {
-    body.executionRunId = payload.executionRunId;
-  }
-  if (payload.executionError) {
-    body.executionError = payload.executionError;
-  }
+  if (payload.executionRunId) body.executionRunId = payload.executionRunId;
+  if (payload.executionError)  body.executionError = payload.executionError;
 
   return apiClient.patch<TransitionChangeRequestResponse>(
     `/admin/change-requests/${encodedId}`,
-    body,
-    { skipAuth: true }
+    body
   );
 }
 
 export function deleteAdminChangeRequest(id: string) {
   const encodedId = encodeURIComponent(id);
   return apiClient.delete<{ deleted: boolean; id: string }>(
-    `/admin/change-requests?id=${encodedId}`,
-    { skipAuth: true }
+    `/admin/change-requests?id=${encodedId}`
   );
 }
 
+// ─── Users ───────────────────────────────────────────────────────────────────
+
 export function getAdminUsers() {
-  return apiClient.get<AdminUsersResponse>("/admin/users", {
-    skipAuth: true,
-  });
+  return apiClient.get<AdminUsersResponse>("/admin/users");
 }
 
 /**
@@ -107,12 +112,10 @@ export interface AdminWhoamiResponse {
 }
 
 export function getAdminWhoami() {
-  return apiClient.get<AdminWhoamiResponse>("/admin/whoami", {
-    skipAuth: true,
-  });
+  return apiClient.get<AdminWhoamiResponse>("/admin/whoami");
 }
 
-// ------- PR3/PR4 endpoints (invite, reset-password, audit-log) -------
+// ─── User management ─────────────────────────────────────────────────────────
 
 export interface InviteAdminUserResponse {
   invited: boolean;
@@ -124,8 +127,7 @@ export interface InviteAdminUserResponse {
 export function inviteAdminUser(id: string) {
   return apiClient.post<InviteAdminUserResponse>(
     `/admin/users/${encodeURIComponent(id)}/invite`,
-    {},
-    { skipAuth: true }
+    {}
   );
 }
 
@@ -145,8 +147,7 @@ export function resetAdminPassword(
 ) {
   return apiClient.post<ResetAdminPasswordResponse>(
     `/admin/users/${encodeURIComponent(id)}/reset-password`,
-    payload,
-    { skipAuth: true }
+    payload
   );
 }
 
@@ -166,55 +167,48 @@ export interface AdminAuditLogResponse {
   entries: AdminAuditEntry[];
 }
 
-export function getAdminAuditLog(params: {
-  target?: string;
-  actor?: string;
-  action?: string;
-  limit?: number;
-} = {}) {
+export function getAdminAuditLog(
+  params: {
+    target?: string;
+    actor?: string;
+    action?: string;
+    limit?: number;
+  } = {}
+) {
   const search = new URLSearchParams();
   if (params.target) search.set("target", params.target);
-  if (params.actor) search.set("actor", params.actor);
+  if (params.actor)  search.set("actor",  params.actor);
   if (params.action) search.set("action", params.action);
-  if (params.limit) search.set("limit", String(params.limit));
+  if (params.limit)  search.set("limit",  String(params.limit));
   const suffix = search.toString();
   return apiClient.get<AdminAuditLogResponse>(
-    `/admin/audit-log${suffix ? `?${suffix}` : ""}`,
-    { skipAuth: true }
+    `/admin/audit-log${suffix ? `?${suffix}` : ""}`
   );
 }
 
 export function createAdminUser(payload: CreateAdminUserInput) {
   return apiClient.post<{ user: AdminUsersResponse["users"][number] }>(
     "/admin/users",
-    payload,
-    { skipAuth: true }
+    payload
   );
 }
 
 export function updateAdminUser(payload: UpdateAdminUserInput) {
   return apiClient.patch<{ user: AdminUsersResponse["users"][number] }>(
     "/admin/users",
-    payload,
-    { skipAuth: true }
+    payload
   );
 }
 
 export function deleteAdminUser(payload: DeleteAdminUserInput) {
   const id = encodeURIComponent(payload.id);
   return apiClient.delete<{ deleted: boolean; id: string }>(
-    `/admin/users?id=${id}`,
-    {
-      skipAuth: true,
-    }
+    `/admin/users?id=${id}`
   );
 }
 
 export function getAdminAiActivity(limit = 40) {
   return apiClient.get<AdminAiActivityResponse>(
-    `/admin/ai-activity?limit=${limit}`,
-    {
-      skipAuth: true,
-    }
+    `/admin/ai-activity?limit=${limit}`
   );
 }

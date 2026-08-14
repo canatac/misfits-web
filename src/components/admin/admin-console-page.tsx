@@ -38,6 +38,22 @@ import type {
   WorkflowStatus,
   AdminUserRecord,
 } from "@/types/admin-ops";
+import {
+  Badge,
+  asDate,
+  asInt,
+  percent,
+  minutesBetween,
+  formatDurationMinutes,
+  priorityTone,
+  statusTone,
+  runStateFromStatus,
+  runStateTone,
+  runStateLabel,
+  executionStateTone,
+  executionStateLabel,
+} from "./shared";
+import { ChangelogTab } from "./tabs/ChangelogTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
 import { cn } from "@/lib/utils";
@@ -248,126 +264,6 @@ const CHANGE_REQUEST_GUIDE_LABEL: Record<
   successCriteria: "critères de succès mesurables",
   rollbackPlan: "plan de rollback/mitigation",
 };
-
-function percent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-function asInt(value: number): string {
-  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(
-    value
-  );
-}
-
-function asDate(ts: string): string {
-  if (!ts) return "—";
-  return new Date(ts).toLocaleString("fr-FR", {
-    dateStyle: "short",
-    timeStyle: "medium",
-  });
-}
-
-function minutesBetween(fromIso?: string, toIso?: string): number | null {
-  if (!fromIso || !toIso) return null;
-  const from = new Date(fromIso).getTime();
-  const to = new Date(toIso).getTime();
-  if (!Number.isFinite(from) || !Number.isFinite(to) || to < from) return null;
-  return Math.round((to - from) / 60000);
-}
-
-function formatDurationMinutes(minutes: number | null): string {
-  if (minutes === null) return "—";
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h < 24) return `${h}h ${m.toString().padStart(2, "0")}`;
-  const d = Math.floor(h / 24);
-  const remH = h % 24;
-  return `${d}j ${remH}h`;
-}
-
-function Badge({
-  children,
-  tone = "neutral",
-}: {
-  children: React.ReactNode;
-  tone?: "neutral" | "danger" | "warn" | "ok";
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
-        tone === "neutral" && "border-[#313136] bg-[#1B1B1F] text-[#CFCFD4]",
-        tone === "danger" && "border-[#5B1F27] bg-[#2B1419] text-[#FCA5A5]",
-        tone === "warn" && "border-[#5E4A20] bg-[#2B2413] text-[#FCD34D]",
-        tone === "ok" && "border-[#1F4B3E] bg-[#10281F] text-[#86EFAC]"
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function priorityTone(
-  priority: ChangeRequestItem["priority"]
-): "danger" | "warn" | "ok" {
-  if (priority === "P0") return "danger";
-  if (priority === "P1") return "warn";
-  return "ok";
-}
-
-function statusTone(
-  status: WorkflowStatus
-): "danger" | "warn" | "ok" | "neutral" {
-  if (status === "rejected") return "danger";
-  if (status === "released") return "ok";
-  if (status === "submitted" || status === "triaged") return "warn";
-  return "neutral";
-}
-
-function runStateFromStatus(
-  status: WorkflowStatus
-): "running" | "queued" | "completed" | "failed" {
-  if (status === "released") return "completed";
-  if (status === "rejected") return "failed";
-  if (status === "in_progress" || status === "qa") return "running";
-  return "queued";
-}
-
-function runStateTone(
-  state: ReturnType<typeof runStateFromStatus>
-): "danger" | "warn" | "ok" | "neutral" {
-  if (state === "failed") return "danger";
-  if (state === "completed") return "ok";
-  if (state === "queued") return "warn";
-  return "neutral";
-}
-
-function runStateLabel(state: ReturnType<typeof runStateFromStatus>): string {
-  if (state === "running") return "running";
-  if (state === "queued") return "queued";
-  if (state === "completed") return "completed";
-  return "failed";
-}
-
-function executionStateTone(
-  state: ChangeRequestItem["executionState"]
-): "danger" | "warn" | "ok" | "neutral" {
-  if (state === "failed") return "danger";
-  if (state === "success") return "ok";
-  if (state === "queued" || state === "running") return "warn";
-  return "neutral";
-}
-
-function executionStateLabel(
-  state: ChangeRequestItem["executionState"]
-): string {
-  if (state === "running") return "running";
-  if (state === "queued") return "queued";
-  if (state === "success") return "success";
-  if (state === "failed") return "failed";
-  return "idle";
-}
 
 export function AdminConsolePage({
   initialTab = "overview",
@@ -1933,124 +1829,7 @@ export function AdminConsolePage({
       )}
 
       {activeTab === "changelog" && (
-        <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-[#E4E4E7]">
-                Changelog Admin
-              </h2>
-              <p className="mt-1 text-xs text-[#71717A]">
-                Flux consolidé GitHub + releases issues du workflow Change
-                Request.
-              </p>
-            </div>
-            <Badge tone={adminChangelog.isFetching ? "warn" : "ok"}>
-              {adminChangelog.isFetching ? "refreshing" : "live"}
-            </Badge>
-          </div>
-
-          <div className="grid gap-4 xl:grid-cols-3">
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-1">
-              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
-                Releases issues du workflow
-              </h3>
-              <div className="mt-3 space-y-2">
-                {(adminChangelog.data?.workflowReleases ?? []).map(
-                  (release) => (
-                    <div
-                      key={release.id}
-                      className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm text-[#E4E4E7]">
-                          {release.title}
-                        </p>
-                        <Badge tone={priorityTone(release.priority)}>
-                          {release.priority}
-                        </Badge>
-                      </div>
-                      <p className="mt-1 text-xs text-[#A1A1AA]">
-                        {release.summary}
-                      </p>
-                      <p className="mt-1 text-[11px] text-[#71717A]">
-                        {asDate(release.releasedAt)} · {release.scope} ·{" "}
-                        {release.sourceChangeRequestId}
-                      </p>
-                    </div>
-                  )
-                )}
-                {!adminChangelog.data?.workflowReleases?.length && (
-                  <p className="text-xs text-[#71717A]">
-                    Aucune release issue d&apos;une change request pour le
-                    moment.
-                  </p>
-                )}
-              </div>
-            </article>
-
-            <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-2">
-              <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
-                Commits récents
-              </h3>
-              <div className="mt-3 space-y-3">
-                {(adminChangelog.data?.repositories ?? []).map((repo) => (
-                  <div
-                    key={repo.key}
-                    className="rounded-lg border border-[#2A2A30] bg-[#111114] p-3"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <p className="text-sm text-[#E4E4E7]">
-                        {repo.owner}/{repo.repo}
-                      </p>
-                      <Badge>{repo.latestShortSha}</Badge>
-                    </div>
-                    <div className="space-y-2">
-                      {repo.commits.slice(0, 6).map((commit) => (
-                        <div
-                          key={commit.sha}
-                          className="rounded-md border border-[#242429] bg-[#141419] p-2"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <a
-                              href={commit.commitUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="truncate text-xs font-medium text-[#F2D5A7] hover:underline"
-                            >
-                              {commit.shortSha} · {commit.message}
-                            </a>
-                            {commit.workflowUrl ? (
-                              <a
-                                href={commit.workflowUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-[11px] text-[#86EFAC] hover:underline"
-                              >
-                                {commit.workflowName || "workflow"}
-                              </a>
-                            ) : (
-                              <span className="text-[11px] text-[#71717A]">
-                                no run
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-[11px] text-[#71717A]">
-                            {commit.author} · {asDate(commit.committedAt)}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {adminChangelog.isError && (
-                  <p className="text-sm text-[#FCA5A5]">
-                    Erreur changelog: {adminChangelog.error.message}
-                  </p>
-                )}
-              </div>
-            </article>
-          </div>
-        </section>
+        <ChangelogTab adminChangelog={adminChangelog} />
       )}
 
       {activeTab === "change-requests" && (
