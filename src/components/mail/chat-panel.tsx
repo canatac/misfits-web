@@ -14,7 +14,7 @@ import { ChatPanelHeader } from "@/components/mail/chat-panel/chat-panel-header"
 import { ChatAssistantView } from "@/components/mail/chat-panel/chat-assistant-view";
 import { ChatExpertView } from "@/components/mail/chat-panel/chat-expert-view";
 import type { ChatSourceCitation } from "@/types/chat";
-import { QUICK_PROMPTS, QUICK_ACTIONS, ROLE_TEMPLATES, SENSITIVE_KEYWORDS, DEFAULT_PERSONA, DEFAULT_ANALYTICS, containsSensitiveIntent, parseTaskCandidates, redactPii, buildPersonaInstruction } from "./chat-panel/chat-panel-utils";
+import { QUICK_PROMPTS, QUICK_ACTIONS, ROLE_TEMPLATES, SENSITIVE_KEYWORDS, DEFAULT_PERSONA, DEFAULT_ANALYTICS, containsSensitiveIntent, parseTaskCandidates, redactPii, buildPersonaInstruction, type Analytics, type PersonaPreset } from "./chat-panel/chat-panel-utils";
 
 
 type TaskItem = {
@@ -34,6 +34,12 @@ type OpsAction = {
 
 
 
+
+interface ChatPanelProps {
+  layout?: "overlay" | "inline";
+  className?: string;
+  onRequestClose?: () => void;
+}
 
 export function ChatPanel({
   layout = "overlay",

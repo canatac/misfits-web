@@ -1,5 +1,6 @@
 // StorageGauge.tsx — extracted Sprint 4
 import { HardDrive } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function formatTime(iso: string): string {
   const d = new Date(iso);

@@ -1,8 +1,11 @@
 "use client";
 // email-view-utils.ts — extracted Sprint 4
 
-import type { AttachmentType, EmailAttachment } from "@/types/mail";
-import { FileIcon, FileText, FileSpreadsheet, FileCode, Paperclip } from "lucide-react";
+import type { AttachmentType, EmailAttachment } from "@/types/email";
+import {
+  FileIcon, FileText, FileSpreadsheet, FileCode, Paperclip,
+  Image as ImageIcon, Music, Video, Archive, Presentation,
+} from "lucide-react";
 
 export const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
   pdf: FileText,
@@ -10,55 +13,52 @@ export const ATTACHMENT_ICONS: Record<AttachmentType, typeof FileIcon> = {
   doc: FileText,
   spreadsheet: FileSpreadsheet,
   presentation: Presentation,
-  archive: ArchiveIcon,
+  archive: Archive,
   audio: Music,
   video: Video,
-  other: FileIcon,
-};
+  other: Paperclip,
+} as Record<AttachmentType, typeof FileIcon>;
 
 export function formatFullDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleString("fr-FR", {
+    weekday: "long", year: "numeric", month: "long",
+    day: "numeric", hour: "2-digit", minute: "2-digit",
   });
 }
 
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024)
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function getInitials(name: string): string {
-  if (name === "me") return "Me";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name
+    .split(" ")
+    .map((n) => n[0] ?? "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
 export function toPlainText(body: string, bodyType: "html" | "text"): string {
   if (bodyType === "text") return body;
   return body
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-// Regex to detect quoted reply sections
 export const QUOTE_PATTERNS = [
-  /<blockquote[^>]*>[\s\S]*<\/blockquote>/i,
-  /On .* wrote:[\s\S]*$/i,
-  /Le .* a écrit :[\s\S]*$/i,
-  /-+Original Message-+[\s\S]*$/i,
-  /From: .[\s\S]*$/i,
+  /^-{3,}/m,
+  /^_{3,}/m,
+  /^From:/im,
+  /^On .+ wrote:/m,
+  /Le .+ a écrit\s*:/m,
 ];
 
+// Re-export EmailAttachment type for consumers
+export type { EmailAttachment };

@@ -71,13 +71,12 @@ export type LocalObservabilityOverview = {
     last_triggered?: string | null;
     active_alerts?: Array<{ id: string; severity: string; message: string; ts: string }>;
     threshold_alerts?: number;
+    lookup_issue_events?: number;
+    listed_by?: number;
     queue_growth?: number | { pct?: number };
     auth_failures?: number | { count?: number };
     imap_latency_alert?: boolean;
-    correlation?: {
-      enabled?: boolean; window_minutes?: number; matched?: number;
-      dns?: number; blacklist?: number;
-    };
+    correlation?: { enabled?: boolean; window_minutes?: number; matched?: number; dns?: number; blacklist?: number };
   };
   security_deliverability?: {
     spf_failures_24h?: number;
@@ -107,6 +106,7 @@ interface AdminOverviewSectionsProps {
   adminDataLoading: boolean;
   adminDataError: string | null;
   securityLive: { isConnected: boolean; alerts: SecurityAlert[] };
+  monitoringLive?: { isConnected?: boolean; events?: Array<{ id?: string; kind?: string; ts?: string; message?: string; level?: string }> };
   assistantLoading: boolean;
   assistantPrompt: string;
   setAssistantPrompt: (v: string) => void;
@@ -128,6 +128,7 @@ export function AdminOverviewSections({
   adminDataLoading,
   adminDataError,
   securityLive,
+  monitoringLive,
   assistantLoading,
   assistantPrompt,
   setAssistantPrompt,
@@ -591,12 +592,12 @@ export function AdminOverviewSections({
         <h2 className="text-sm font-semibold text-[#E4E4E7]">
           Live monitoring stream
         </h2>
-        <Badge tone={monitoringLive.isConnected ? "ok" : "warn"}>
-          {monitoringLive.isConnected ? "connected" : "disconnected"}
+        <Badge tone={(monitoringLive?.isConnected ?? false) ? "ok" : "warn"}>
+          {(monitoringLive?.isConnected ?? false) ? "connected" : "disconnected"}
         </Badge>
       </div>
       <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-        {monitoringLive.events.slice(0, 9).map((evt) => (
+        {(monitoringLive?.events ?? []).slice(0, 9).map((evt: { id?: string; kind?: string; ts?: string; message?: string; level?: string }) => (
           <div
             key={evt.id}
             className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"

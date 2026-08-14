@@ -1154,6 +1154,7 @@ export function AdminConsolePage({
           adminDataLoading={adminDataLoading}
           adminDataError={adminDataError}
           securityLive={securityLive}
+          monitoringLive={monitoringLive}
           assistantLoading={assistantLoading}
           assistantPrompt={assistantPrompt}
           setAssistantPrompt={setAssistantPrompt}
