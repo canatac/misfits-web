@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+import { VEILLE, TASKS, ALERTS } from "./dashboard-fixtures";
+import { StorageGauge, formatTime } from "@/components/dashboard/StorageGauge";
   AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
@@ -55,118 +57,13 @@ const BRIEFING = [
   },
 ] as const;
 
-const VEILLE = [
-  {
-    id: "v1",
-    title: "The Byte Report",
-    signal: 92,
-    tags: ["#IA", "#MachineLearning"],
-    summary:
-      "Latest issue dives into the new GPT-5 architecture, autonomous agents, and a comparative analysis with leading open-source models.",
-    takeaways: [
-      "GPT-5 introduces stronger tool routing and memory handling.",
-      "Agentic workflows are moving from demos to production guardrails.",
-      "Open-source models close latency/cost gaps on constrained tasks.",
-    ],
-  },
-  {
-    id: "v2",
-    title: "Market Edge",
-    signal: 84,
-    tags: ["#Finance", "#Crypto"],
-    summary:
-      "Analyzes the Federal Reserve recent interest rate decision and its impact on cryptocurrency volatility.",
-    takeaways: [
-      "Rate decision increased short-term risk appetite.",
-      "BTC volatility rises during macro-news windows.",
-      "Hedging narratives dominate institutional commentary.",
-    ],
-  },
-  {
-    id: "v3",
-    title: "Daily Zen",
-    signal: 78,
-    tags: ["#Lifestyle", "#Bien-être"],
-    summary:
-      "Explores mindfulness techniques for remote workers, including digital detox strategies and setting healthy boundaries.",
-    takeaways: [
-      "Short deep-work blocks outperform long distracted sessions.",
-      "Calendar hygiene is a major stress reducer.",
-      "Small offline rituals improve focus recovery.",
-    ],
-  },
-] as const;
 
-const TASKS = [
-  {
-    id: "t1",
-    label: "Review Contract (from Joey)",
-    ref: "Email Thread #1",
-    details:
-      "Contract Q4 includes revised payment terms and SLA penalties. Validation required before 14:00.",
-  },
-  {
-    id: "t2",
-    label: "Follow up with Client X",
-    ref: "Email Thread #2",
-    details:
-      "Client asks for migration timeline and security hardening milestones for September.",
-  },
-  {
-    id: "t3",
-    label: "Prepare Presentation",
-    ref: "Calendar Sync",
-    details:
-      "Finalize product narrative and benchmark slides for architecture review.",
-  },
-  {
-    id: "t4",
-    label: "Review proposal by EOD",
-    ref: "Issue Inbox",
-    details:
-      "Proposal impacts infra costs and requires product + engineering sign-off.",
-  },
-] as const;
 
 const RDV = [
   { id: "r1", title: "Work Team Sync", time: "10:00" },
   { id: "r2", title: "Project Review", time: "14:00" },
 ] as const;
 
-const ALERTS = [
-  {
-    id: "a1",
-    title: "Hameçonnage Intercepté (Phishing 99.4%)",
-    time: "08:11 AM",
-    description:
-      "Tentative d’usurpation d’identité bancaire bloquée par le Bouclier PHAROS.",
-    cta: "Inspecter la menace",
-    accent: "#F87171",
-    bg: "bg-[#200F0F]",
-    border: "border-[#3D1515]",
-  },
-  {
-    id: "a2",
-    title: "Service Agreement en attente de signature",
-    time: "Dû 08:15 AM",
-    description:
-      "Contrat Q4 envoyé par Sarah Jenkins. (Délai 30). Démarrage 1er nov.",
-    cta: "Voir le contrat",
-    accent: "#C49B66",
-    bg: "bg-[#1D1611]",
-    border: "border-[#3A2E1A]",
-  },
-  {
-    id: "a3",
-    title: "Quota AI Gemini 1.5 Pro Nominal",
-    time: "08:08 AM",
-    description: "4 600 tokens utilisés aujourd’hui sur 100 000 max.",
-    cta: "Consulter la console",
-    accent: "#4ADE80",
-    bg: "bg-[#0D1A11]",
-    border: "border-[#1A3325]",
-  },
-] as const;
 
 type DetailItem =
   | { type: "email"; data: Email & { score: number } }
@@ -174,69 +71,6 @@ type DetailItem =
   | { type: "task"; data: (typeof TASKS)[number] }
   | { type: "alert"; data: (typeof ALERTS)[number] };
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function StorageGauge({
-  percentage,
-  compact,
-}: {
-  percentage: number;
-  compact?: boolean;
-}) {
-  const radius = compact ? 26 : 36;
-  const stroke = compact ? 5 : 7;
-  const normalizedRadius = radius - stroke / 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const clamped = Math.max(0, Math.min(100, percentage));
-  const offset = circumference - (clamped / 100) * circumference;
-  const isCritical = clamped >= 80;
-
-  return (
-    <div className={cn("flex items-center", compact ? "gap-2" : "gap-3")}>
-      <div className="relative">
-        <svg width={radius * 2} height={radius * 2}>
-          <circle
-            stroke="#2A2A2E"
-            fill="transparent"
-            strokeWidth={stroke}
-            r={normalizedRadius}
-            cx={radius}
-            cy={radius}
-          />
-          <circle
-            stroke={isCritical ? "#F87171" : "#4ADE80"}
-            fill="transparent"
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            strokeDasharray={`${circumference} ${circumference}`}
-            style={{
-              strokeDashoffset: offset,
-              transition: "stroke-dashoffset 300ms",
-            }}
-            r={normalizedRadius}
-            cx={radius}
-            cy={radius}
-            transform={`rotate(-90 ${radius} ${radius})`}
-          />
-        </svg>
-        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
-          {clamped}%
-        </span>
-      </div>
-      {!compact && (
-        <div className="space-y-0.5 text-xs">
-          <p className="text-white">Stockage cloud</p>
-          <p className="text-[#71717A]">842 Go / 1000 Go</p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function DashboardIndexPage() {
   const { locale, t } = useI18n();
