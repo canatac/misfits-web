@@ -58,7 +58,7 @@ type LocalDeliverabilityDiag = {
   rbl?: { sources?: string[]; listed_by?: string[]; status?: string };
 };
 
-type LocalObservabilityOverview = {
+export type LocalObservabilityOverview = {
   smtp?: { total_events?: number; failure_events?: number; p95_total_ms?: number };
   health_realtime?: {
     queue?: { depth?: number; oldest_age_seconds?: number | null };
@@ -70,16 +70,21 @@ type LocalObservabilityOverview = {
     active_rules?: number;
     last_triggered?: string | null;
     active_alerts?: Array<{ id: string; severity: string; message: string; ts: string }>;
+    threshold_alerts?: number;
+    correlation?: { enabled?: boolean; window_minutes?: number; matched?: number };
   };
   security_deliverability?: {
     spf_failures_24h?: number;
     dkim_failures_24h?: number;
     dmarc_failures_24h?: number;
     auth_ratio?: number;
+    suspicious_logins_top?: Array<{ ip: string; attempts: number }>;
   };
   exports?: {
     last_export_at?: string | null;
     total_exports?: number;
+    prometheus_enabled?: boolean;
+    siem_webhook_configured?: boolean;
   };
 };
 
@@ -103,10 +108,10 @@ interface AdminOverviewSectionsProps {
   assistantError: string | null;
   askHermesForAdminPlan: () => void;
   summaryCards: readonly SummaryCard[];
-  monitoringProviders: { data?: { providers?: Array<Record<string, unknown>> } };
-  monitoringBounces: { data?: { bounces?: Array<Record<string, unknown>> } };
-  securityActive: { data?: { alerts?: Array<Record<string, unknown>> } };
-  securityIncidents: { data?: { incidents?: Array<Record<string, unknown>> } };
+  monitoringProviders?: Array<{ name?: string; status?: string; latency_ms?: number; success_rate?: number; region?: string }>;
+  monitoringBounces?: Array<{ email?: string; reason?: string; at?: string; code?: number }>;
+  securityActiveAlerts?: SecurityAlert[];
+  securityIncidents?: Array<{ id?: string; severity?: string; title?: string; at?: string; status?: string }>;
 }
 
 export function AdminOverviewSections({
@@ -124,10 +129,10 @@ export function AdminOverviewSections({
   assistantError,
   askHermesForAdminPlan,
   summaryCards,
-  monitoringProviders,
-  monitoringBounces,
-  securityActive,
-  securityIncidents,
+  monitoringProviders = [],
+  monitoringBounces = [],
+  securityActiveAlerts = [],
+  securityIncidents = [],
 }: AdminOverviewSectionsProps) {
   return (
     <>
@@ -425,9 +430,9 @@ export function AdminOverviewSections({
           Top providers
         </h2>
         <div className="space-y-2">
-          {(monitoringProviders.data?.providers ?? [])
+          {(monitoringProviders)
             .slice(0, 8)
-            .map((provider: Record<string, unknown>, idx) => (
+            .map((provider, idx) => (
               <div
                 key={`${provider.company ?? "unknown"}-${idx}`}
                 className="flex items-center justify-between rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -452,7 +457,7 @@ export function AdminOverviewSections({
                 </div>
               </div>
             ))}
-          {!monitoringProviders.data?.providers?.length && (
+          {!monitoringProviders?.length && (
             <p className="text-sm text-[#71717A]">
               Aucune donnée provider pour la fenêtre sélectionnée.
             </p>
@@ -465,9 +470,9 @@ export function AdminOverviewSections({
           Bounces (récentes)
         </h2>
         <div className="space-y-2">
-          {(monitoringBounces.data?.bounces ?? [])
+          {(monitoringBounces)
             .slice(0, 8)
-            .map((bounce: Record<string, unknown>) => (
+            .map((bounce) => (
               <div
                 key={bounce.id}
                 className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -487,7 +492,7 @@ export function AdminOverviewSections({
                 </p>
               </div>
             ))}
-          {!monitoringBounces.data?.bounces?.length && (
+          {!monitoringBounces?.length && (
             <p className="text-sm text-[#71717A]">
               Aucun bounce sur la fenêtre sélectionnée.
             </p>
@@ -504,7 +509,7 @@ export function AdminOverviewSections({
           Alertes sécurité actives
         </h2>
         <div className="space-y-2">
-          {(securityActive.data?.alerts ?? []).slice(0, 10).map((alert: Record<string, unknown>) => (
+          {(securityActiveAlerts).slice(0, 10).map((alert) => (
             <div
               key={alert.id}
               className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -530,7 +535,7 @@ export function AdminOverviewSections({
               </p>
             </div>
           ))}
-          {!securityActive.data?.alerts?.length && (
+          {!securityActiveAlerts?.length && (
             <p className="text-sm text-[#71717A]">
               Aucune alerte active pour ce filtre.
             </p>
@@ -545,7 +550,7 @@ export function AdminOverviewSections({
         <div className="space-y-2">
           {(securityIncidents.data?.alerts ?? [])
             .slice(0, 10)
-            .map((incident: Record<string, unknown>) => (
+            .map((incident) => (
               <div
                 key={incident.id}
                 className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"

@@ -54,7 +54,7 @@ import {
 } from "./shared";
 import { ChangelogTab } from "./tabs/ChangelogTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
-import { AdminOverviewSections, type LocalSecurityPosture } from "./tabs/AdminOverviewSections";
+import { AdminOverviewSections, type LocalSecurityPosture, type LocalObservabilityOverview } from "./tabs/AdminOverviewSections";
 import { UsersTab } from "./tabs/UsersTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
@@ -1148,7 +1148,7 @@ export function AdminConsolePage({
         activeTab === "security") && (
         <AdminOverviewSections
           activeTab={activeTab as "overview" | "monitoring" | "security"}
-          observability={observability}
+          observability={observability as unknown as LocalObservabilityOverview}
           securityPosture={securityPosture}
           deliverability={deliverability}
           adminDataLoading={adminDataLoading}
@@ -1161,10 +1161,10 @@ export function AdminConsolePage({
           assistantError={assistantError}
           askHermesForAdminPlan={askHermesForAdminPlan}
           summaryCards={summaryCards}
-          monitoringProviders={monitoringProviders}
-          monitoringBounces={monitoringBounces}
-          securityActive={securityActive}
-          securityIncidents={securityIncidents}
+          monitoringProviders={monitoringProviders.data?.providers ?? []}
+          monitoringBounces={monitoringBounces.data?.bounces ?? []}
+          securityActiveAlerts={securityActive.data?.alerts ?? []}
+          securityIncidents={securityIncidents.data?.incidents ?? []}
         />
       )}
       {activeTab === "deliverability-ops" && (
