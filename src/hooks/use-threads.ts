@@ -99,8 +99,9 @@ export function useThreadActions() {
         timeStyle: "short",
       });
       const replyBody = `<p></p><blockquote>On ${replyDate}, ${last.from.name} &lt;${last.from.address}&gt; wrote:<br/>${last.body}</blockquote>`;
+      const replyTarget = last.replyTo ?? last.from;
       openComposer({
-        to: [toRecipient(last.from.address, last.from.name)],
+        to: [toRecipient(replyTarget.address, replyTarget.name)],
         cc: (last.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
         subject: last.subject.startsWith("Re: ")
           ? last.subject
