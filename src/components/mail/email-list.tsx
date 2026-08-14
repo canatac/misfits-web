@@ -5,7 +5,7 @@
  * email rows, loading skeleton, and empty state.
  * Keyboard navigation: j/k to move, e to archive, # to delete, Enter to open.
  */
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import {
   Search,
   ArrowDownUp,
@@ -14,6 +14,7 @@ import {
   MailOpen,
   X,
   Inbox as InboxIcon,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,7 @@ interface EmailListProps {
 export function EmailList({ className }: EmailListProps) {
   const filteredEmails = useFilteredSortedEmails();
   const loading = useEmailStore((s) => s.loading);
+  const emails = useEmailStore((s) => s.emails);
   const currentFolder = useEmailStore((s) => s.currentFolder);
   const filterType = useEmailStore((s) => s.filterType);
   const sortBy = useEmailStore((s) => s.sortBy);
@@ -102,10 +104,76 @@ export function EmailList({ className }: EmailListProps) {
   const { replyToThread } = useThreadActions();
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const baselineTopEmailIdRef = useRef<string | null>(null);
+  const [newEmailsCount, setNewEmailsCount] = useState(0);
 
   // Fetch emails when folder changes or on mount
   useEffect(() => {
     fetchEmails(currentFolder);
+  }, [fetchEmails, currentFolder]);
+
+  // Balanced inbox refresh (Outlook/Gmail-like):
+  // - background poll every 15s while visible
+  // - immediate refresh on tab focus/visibility return
+  // - preserve current reading selection during refresh
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshPreservingSelection = () => {
+      if (cancelled) return;
+      if (document.visibilityState !== "visible") return;
+      if (useEmailStore.getState().loading) return;
+      void fetchEmails(currentFolder, { preserveSelection: true });
+    };
+
+    const interval = window.setInterval(refreshPreservingSelection, 15_000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshPreservingSelection();
+      }
+    };
+
+    window.addEventListener("focus", refreshPreservingSelection);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshPreservingSelection);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [fetchEmails, currentFolder]);
+
+  // Track newly arrived items without disrupting current reading flow.
+  useEffect(() => {
+    if (loading) return;
+    const topId = emails[0]?.id ?? null;
+    const baselineId = baselineTopEmailIdRef.current;
+
+    if (!baselineId) {
+      baselineTopEmailIdRef.current = topId;
+      return;
+    }
+
+    if (!topId || topId === baselineId) return;
+
+    const baselineIndex = emails.findIndex((e) => e.id === baselineId);
+    const incoming = baselineIndex === -1 ? emails.length : baselineIndex;
+    if (incoming > 0) {
+      setNewEmailsCount(incoming);
+    }
+  }, [emails, loading]);
+
+  const acknowledgeNewEmails = useCallback(() => {
+    baselineTopEmailIdRef.current = emails[0]?.id ?? null;
+    setNewEmailsCount(0);
+  }, [emails]);
+
+  const handleManualRefresh = useCallback(() => {
+    void fetchEmails(currentFolder, { preserveSelection: true }).then(() => {
+      baselineTopEmailIdRef.current = useEmailStore.getState().emails[0]?.id ?? null;
+      setNewEmailsCount(0);
+    });
   }, [fetchEmails, currentFolder]);
 
   // Keyboard navigation within the list
@@ -238,7 +306,34 @@ export function EmailList({ className }: EmailListProps) {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleManualRefresh}
+            disabled={loading}
+            aria-label="Rafraîchir la boîte de réception"
+            title="Rafraîchir"
+          >
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
         </div>
+
+        {newEmailsCount > 0 && (
+          <div className="flex items-center justify-between rounded-lg border border-[#3A2F1F] bg-[#18130D] px-3 py-2 text-xs">
+            <span className="text-[#F5D7A9]">
+              {newEmailsCount} nouveau{newEmailsCount > 1 ? "x" : ""} mail
+              {newEmailsCount > 1 ? "s" : ""}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 px-2 text-[#F5D7A9] hover:text-[#FDE7C6]"
+              onClick={acknowledgeNewEmails}
+            >
+              Voir
+            </Button>
+          </div>
+        )}
 
         {/* Filter tabs + Bulk actions */}
         <div className="flex items-center justify-between gap-2">

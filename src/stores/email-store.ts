@@ -17,6 +17,10 @@ import { mailAuthHeaders, hasMailIdentity } from "@/lib/mail-api";
 export type BulkActionType =
   "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
 
+interface FetchEmailsOptions {
+  preserveSelection?: boolean;
+}
+
 interface EmailState {
   // Data
   emails: Email[];
@@ -34,7 +38,7 @@ interface EmailState {
   accountId: string | null;
 
   // Actions
-  fetchEmails: (folder?: Folder) => void | Promise<void>;
+  fetchEmails: (folder?: Folder, options?: FetchEmailsOptions) => Promise<void>;
   selectEmail: (id: string | null) => void;
   toggleStar: (id: string) => void;
   markRead: (id: string) => void;
@@ -131,8 +135,9 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   error: null,
   accountId: null,
 
-  fetchEmails: (folder) => {
+  fetchEmails: async (folder, options) => {
     const targetFolder = folder ?? get().currentFolder;
+    const preserveSelection = Boolean(options?.preserveSelection);
     if (!hasMailIdentity()) {
       set({
         loading: false,
@@ -153,47 +158,58 @@ export const useEmailStore = create<EmailState>((set, get) => ({
     const gen = (get() as { _fetchGen?: number })._fetchGen ?? 0;
     const myGen = gen + 1;
     (get() as { _fetchGen?: number })._fetchGen = myGen;
-    void (async () => {
-      try {
-        const res = await fetch(`/api/emails?${params.toString()}`, {
-          headers: mailAuthHeaders(),
-          credentials: "include",
-        });
-        if (!res.ok) {
-          throw new Error(`Failed to fetch emails: ${res.status}`);
-        }
-        const data = (await res.json()) as {
-          emails?: Email[];
-          total?: number;
-        };
-        // Drop stale responses
-        if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
-        const emails = Array.isArray(data.emails) ? data.emails : [];
-        set({
-          emails,
-          loading: false,
-          error: null,
-          selectedEmailId: null,
-          selectedEmailIds: new Set(),
-          folders: get().folders.map((f) =>
-            f.id === targetFolder
-              ? {
-                  ...f,
-                  totalCount: data.total ?? emails.length,
-                  unreadCount: emails.filter((e) => !e.isRead).length,
-                }
-              : f
-          ),
-        });
-      } catch (err) {
-        if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
-        set({
-          loading: false,
-          error: err instanceof Error ? err.message : "Failed to fetch emails",
-          emails: [],
-        });
+    try {
+      const res = await fetch(`/api/emails?${params.toString()}`, {
+        headers: mailAuthHeaders(),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch emails: ${res.status}`);
       }
-    })();
+      const data = (await res.json()) as {
+        emails?: Email[];
+        total?: number;
+      };
+      // Drop stale responses
+      if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
+      const emails = Array.isArray(data.emails) ? data.emails : [];
+      const selectedEmailId = get().selectedEmailId;
+      const selectedEmailIds = get().selectedEmailIds;
+      const allowedIds = new Set(emails.map((e) => e.id));
+      const nextSelectedEmailId =
+        preserveSelection &&
+        selectedEmailId !== null &&
+        allowedIds.has(selectedEmailId)
+          ? selectedEmailId
+          : null;
+      const nextSelectedEmailIds = preserveSelection
+        ? new Set([...selectedEmailIds].filter((id) => allowedIds.has(id)))
+        : new Set<string>();
+
+      set({
+        emails,
+        loading: false,
+        error: null,
+        selectedEmailId: nextSelectedEmailId,
+        selectedEmailIds: nextSelectedEmailIds,
+        folders: get().folders.map((f) =>
+          f.id === targetFolder
+            ? {
+                ...f,
+                totalCount: data.total ?? emails.length,
+                unreadCount: emails.filter((e) => !e.isRead).length,
+              }
+            : f
+        ),
+      });
+    } catch (err) {
+      if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
+      set({
+        loading: false,
+        error: err instanceof Error ? err.message : "Failed to fetch emails",
+        emails: [],
+      });
+    }
   },
 
   selectEmail: (id) => {
