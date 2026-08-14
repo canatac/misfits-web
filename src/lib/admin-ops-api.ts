@@ -91,6 +91,27 @@ export function getAdminUsers() {
   });
 }
 
+/**
+ * Whoami — introduced in backend PR1 (RBAC foundation).
+ *
+ * The backend responds with `{ userId, email, role, enforced }`. When
+ * `enforced` is false the RBAC flag is OFF and `role` will always be
+ * `"admin"` regardless of the caller; when true, the returned role
+ * reflects the effective session.
+ */
+export interface AdminWhoamiResponse {
+  userId: string;
+  email: string;
+  role: "user" | "admin" | "support" | string;
+  enforced: boolean;
+}
+
+export function getAdminWhoami() {
+  return apiClient.get<AdminWhoamiResponse>("/admin/whoami", {
+    skipAuth: true,
+  });
+}
+
 export function createAdminUser(payload: CreateAdminUserInput) {
   return apiClient.post<{ user: AdminUsersResponse["users"][number] }>(
     "/admin/users",

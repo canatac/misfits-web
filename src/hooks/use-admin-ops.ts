@@ -10,6 +10,7 @@ import {
   getAdminAiActivity,
   getAdminChangelog,
   getAdminUsers,
+  getAdminWhoami,
   getChangeRequests,
   transitionAdminChangeRequest,
   updateAdminUser,
@@ -184,6 +185,23 @@ export function useAdminUsers() {
     queryFn: getAdminUsers,
     refetchInterval: REFRESH_30S,
     staleTime: 10_000,
+  });
+}
+
+/**
+ * Whoami query — introduced in backend PR1 (RBAC foundation).
+ *
+ * Consumed by the admin console to decide whether to render CRUD affordances.
+ * Cached longer than the other admin queries because it changes only on
+ * login/logout, never on background writes.
+ */
+export function useAdminWhoami() {
+  return useQuery({
+    queryKey: ["admin", "whoami"],
+    queryFn: getAdminWhoami,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 }
 
