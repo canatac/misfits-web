@@ -4,6 +4,7 @@ import React from "react";
 // AdminOverviewSections.tsx — extracted Sprint 3
 // Shared diagnostic sections for overview / monitoring / security tabs
 import type { SecurityAlert } from "@/types/security";
+import type { MonitoringProvider, SmtpEvent } from "@/types/monitoring";
 import { cn } from "@/lib/utils";
 import { Badge, asDate, asInt, percent } from "../shared";
 
@@ -70,13 +71,16 @@ export type LocalObservabilityOverview = {
     active_rules?: number;
     last_triggered?: string | null;
     active_alerts?: Array<{ id: string; severity: string; message: string; ts: string }>;
-    threshold_alerts?: number;
-    lookup_issue_events?: number;
-    listed_by?: number;
-    queue_growth?: number | { pct?: number };
-    auth_failures?: number | { count?: number };
-    imap_latency_alert?: boolean;
-    correlation?: { enabled?: boolean; window_minutes?: number; matched?: number; dns?: number; blacklist?: number };
+    threshold_alerts?: {
+      queue_growth?: number;
+      auth_failures?: number;
+      imap_latency_alert?: boolean;
+    };
+    correlation?: {
+      enabled?: boolean; window_minutes?: number; matched?: number;
+      dns?: { lookup_issue_events?: number };
+      blacklist?: { listed_by?: string[] };
+    };
   };
   security_deliverability?: {
     spf_failures_24h?: number;
@@ -106,7 +110,7 @@ interface AdminOverviewSectionsProps {
   adminDataLoading: boolean;
   adminDataError: string | null;
   securityLive: { isConnected: boolean; alerts: SecurityAlert[] };
-  monitoringLive?: { isConnected?: boolean; events?: Array<{ id?: string; kind?: string; ts?: string; message?: string; level?: string }> };
+  monitoringLive?: { isConnected?: boolean; events?: Array<{ id?: string; kind?: string; event_type?: string; ts?: string; message?: string; level?: string; to?: string }> };
   assistantLoading: boolean;
   assistantPrompt: string;
   setAssistantPrompt: (v: string) => void;
@@ -604,7 +608,7 @@ export function AdminOverviewSections({
           >
             <p className="text-xs text-[#A1A1AA]">{evt.event_type}</p>
             <p className="truncate text-sm text-[#E4E4E7]">{evt.to}</p>
-            <p className="mt-1 text-xs text-[#71717A]">{asDate(evt.ts)}</p>
+            <p className="mt-1 text-xs text-[#71717A]">{asDate(evt.ts ?? '')}</p>
           </div>
         ))}
       </div>

@@ -36,7 +36,7 @@ type OpsAction = {
 
 
 interface ChatPanelProps {
-  layout?: "overlay" | "inline";
+  layout?: "overlay" | "inline" | "docked";
   className?: string;
   onRequestClose?: () => void;
 }
