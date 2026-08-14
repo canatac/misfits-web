@@ -57,7 +57,8 @@ export default function MailPage() {
   const selectEmail = useEmailStore((s) => s.selectEmail);
   const setAccountId = useEmailStore((s) => s.setAccountId);
   const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
-  const hasDesktopSelection = Boolean(selectedEmailId || selectedThreadId);
+  const selectThread = useThreadStore((s) => s.selectThread);
+  const hasDesktopSelection = Boolean(selectedEmailId);
 
   // Multi-account state (Issue #154): sync account store → email store filter.
   const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
@@ -137,6 +138,13 @@ export default function MailPage() {
     }
   }, [selectedEmailId]);
 
+  // Keep thread selection in sync with the viewer lifecycle.
+  useEffect(() => {
+    if (!selectedEmailId && selectedThreadId) {
+      selectThread(null);
+    }
+  }, [selectedEmailId, selectedThreadId, selectThread]);
+
   // Compose handler — route to dedicated /compose page.
   const openComposer = useComposerStore((s) => s.openComposer);
   const composerOpen = useComposerStore((s) => s.composerOpen);
@@ -173,8 +181,9 @@ export default function MailPage() {
 
   const handleClose = useCallback(() => {
     selectEmail(null);
+    selectThread(null);
     setMobileView("list");
-  }, [selectEmail]);
+  }, [selectEmail, selectThread]);
 
   const closeActiveOverlay = useCallback(() => {
     if (isDesktop) return false;
