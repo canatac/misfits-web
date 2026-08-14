@@ -116,6 +116,7 @@ import type {
 import { useAdminData } from "@/hooks/useAdminData";
 import { useCrGuide, type ChangeRequestChatMessage, type ChangeRequestGuideDraft, type ChangeRequestChatField } from "@/hooks/useCrGuide";
 import { useAdminAssistant } from "@/hooks/useAdminAssistant";
+import { useAdminActions } from "@/hooks/useAdminActions";
 
 export function AdminConsolePage({
   initialTab = "overview"
@@ -285,113 +286,17 @@ export function AdminConsolePage({
 
 
 
-  async function handleCreateChangeRequest(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (qualityChecks.score < 4) {
-      return;
-    }
-
-    await createChangeRequest.mutateAsync(newRequest);
-    setNewRequest((prev) => ({
-      ...prev,
-      title: "",
-      problem: "",
-      desiredOutcome: ""
-    }));
-  }
-
-  async function handleTransition(
-    id: string,
-    action:
-      | "advance"
-      | "reject"
-      | "stop"
-      | "cancel"
-      | "execution_queue"
-      | "execution_start"
-      | "execution_heartbeat"
-      | "execution_fail"
-      | "execution_success"
-      | "execution_reset",
-    currentStatus: WorkflowStatus
-  ) {
-    await transitionChangeRequest.mutateAsync({
-      id,
-      action,
-      currentStatus,
-      note: transitionNote.trim() || undefined,
-      actor: "hermes"
-    });
-  }
-
-  function openDeleteChangeRequestDialog(id: string, title: string) {
-    setDeleteDialogTarget({ id, title });
-  }
-
-  async function handleDeleteChangeRequestConfirm() {
-    if (!deleteDialogTarget) return;
-    await deleteChangeRequest.mutateAsync(deleteDialogTarget.id);
-    setDeleteDialogTarget(null);
-  }
-
-  async function handleStartImplementation(
-    id: string,
-    currentStatus: WorkflowStatus
-  ) {
-    await startImplementationChangeRequest.mutateAsync({
-      id,
-      currentStatus,
-      note: transitionNote.trim() || undefined,
-      actor: "hermes"
-    });
-  }
 
 
 
 
-  async function handleUserRoleChange(
-    id: string,
-    role: AdminUserRecord["role"]
-  ) {
-    await updateAdminUser.mutateAsync({ id, role });
-  }
 
-  async function handleUserStatusChange(
-    id: string,
-    status: AdminUserRecord["status"]
-  ) {
-    await updateAdminUser.mutateAsync({ id, status });
-  }
 
-  async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const email = newAdminUser.email?.trim() || "";
-    if (!email) return;
 
-    await createAdminUser.mutateAsync({
-      email,
-      displayName: newAdminUser.displayName?.trim() || undefined,
-      role: newAdminUser.role,
-      status: newAdminUser.status,
-      twoFactorEnabled: newAdminUser.twoFactorEnabled
-    });
 
-    setNewAdminUser({
-      email: "",
-      displayName: "",
-      role: "user",
-      status: "active",
-      twoFactorEnabled: false
-    });
-  }
 
-  async function handleDeleteUser(id: string) {
-    const confirmed = window.confirm(
-      "Supprimer cet utilisateur du répertoire admin ?"
-    );
-    if (!confirmed) return;
-    await deleteAdminUser.mutateAsync({ id });
-  }
+
+
 
   const qualityChecks = useMemo(() => {
     const checks = [
@@ -439,6 +344,31 @@ export function AdminConsolePage({
     crGuideDraft.successCriteria,
     crGuideDraft.rollbackPlan,
   ]);
+
+  const {
+    handleCreateChangeRequest,
+    handleTransition,
+    openDeleteChangeRequestDialog,
+    handleDeleteChangeRequestConfirm,
+    handleStartImplementation,
+    handleUserRoleChange,
+    handleUserStatusChange,
+    handleCreateUser,
+    handleDeleteUser,
+  } = useAdminActions({
+    newRequest, setNewRequest,
+    newAdminUser, setNewAdminUser,
+    transitionNote,
+    deleteDialogTarget, setDeleteDialogTarget,
+    qualityScore: qualityChecks.score,
+    createChangeRequest,
+    transitionChangeRequest,
+    deleteChangeRequest,
+    startImplementationChangeRequest,
+    updateAdminUser,
+    createAdminUser,
+    deleteAdminUser,
+  });
 
   const requestsByStatus = useMemo(() => {
     const grouped = Object.fromEntries(
