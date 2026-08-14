@@ -390,26 +390,79 @@ export default function FilesPage() {
 
   const runWorkflow = async () => {
     const win = window as WindowWithDirectoryPicker;
-    if (!win.showDirectoryPicker) {
-      setWorkflowStatus(
-        "Ce navigateur ne supporte pas File System Access API (showDirectoryPicker)."
-      );
-      return;
-    }
-
     const activeRules = rules.filter((r) => r.enabled);
+
     if (activeRules.length === 0) {
       setWorkflowStatus("Active au moins une règle de workflow.");
       return;
     }
 
+    const fetchAttachmentBlob = async (file: WorkspaceLeaf): Promise<Blob | null> => {
+      if (!file.downloadUrl) return null;
+      const res = await fetch(file.downloadUrl, {
+        headers: mailAuthHeaders(),
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return res.blob();
+    };
+
+    const triggerBrowserDownload = (blob: Blob, suggestedName: string) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = suggestedName;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+    };
+
     setRunningWorkflow(true);
-    setWorkflowStatus("Demande d’autorisation dossier en cours...");
 
     try {
-      const root = await win.showDirectoryPicker();
       let saved = 0;
       let skipped = 0;
+
+      if (!win.showDirectoryPicker) {
+        setWorkflowStatus(
+          "Mode compatibilité: Firefox privé détecté, téléchargement local sans choix de dossier (noms préfixés par destination)."
+        );
+
+        for (const file of files) {
+          const rule = activeRules.find((r) => matchesRule(file, r));
+          if (!rule) {
+            skipped += 1;
+            continue;
+          }
+
+          const blob = await fetchAttachmentBlob(file);
+          if (!blob) {
+            skipped += 1;
+            continue;
+          }
+
+          const destinationPrefix = rule.destination
+            .split("/")
+            .map((p) => sanitizeSegment(p))
+            .filter(Boolean)
+            .join("__");
+          const safeName = sanitizeSegment(file.name) || "document";
+          const suggestedName = destinationPrefix ? `${destinationPrefix}__${safeName}` : safeName;
+
+          triggerBrowserDownload(blob, suggestedName);
+          saved += 1;
+        }
+
+        setWorkflowStatus(
+          `Workflow compat terminé: ${saved} téléchargement(s) lancés, ${skipped} ignoré(s).`
+        );
+        return;
+      }
+
+      setWorkflowStatus("Demande d’autorisation dossier en cours...");
+      const root = await win.showDirectoryPicker();
 
       for (const file of files) {
         const rule = activeRules.find((r) => matchesRule(file, r));
@@ -417,22 +470,13 @@ export default function FilesPage() {
           skipped += 1;
           continue;
         }
-        if (!file.downloadUrl) {
+
+        const blob = await fetchAttachmentBlob(file);
+        if (!blob) {
           skipped += 1;
           continue;
         }
 
-        const res = await fetch(file.downloadUrl, {
-          headers: mailAuthHeaders(),
-          credentials: "include",
-        });
-
-        if (!res.ok) {
-          skipped += 1;
-          continue;
-        }
-
-        const blob = await res.blob();
         const targetDir = await ensureNestedDir(root, rule.destination);
         await writeBlobToDir(targetDir, file.name, blob);
         saved += 1;
