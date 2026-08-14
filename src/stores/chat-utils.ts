@@ -1,6 +1,6 @@
 "use client";
 // chat-utils.ts — extracted Sprint 3-3
-import type { ChatTraceEvent, ChatSetState } from "./chat-types";
+import type { ChatTraceEvent } from "./chat-types";
 
 export function toShort(value: unknown, max = 140): string {
   const text =
@@ -18,7 +18,7 @@ export function pushTrace(
   set: ChatSetState,
   event: Omit<ChatTraceEvent, "id" | "at">
 ) {
-  set((s) => ({
+  set((s: { traceEvents: ChatTraceEvent[] }) => ({
     traceEvents: [
       ...s.traceEvents,
       {
