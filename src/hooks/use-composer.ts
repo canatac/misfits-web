@@ -19,6 +19,40 @@ const BACKEND_AVAILABLE = true;
 
 const DEBOUNCE_MS = 1500;
 
+interface OutgoingAttachmentPayload {
+  filename: string;
+  contentType: string;
+  size: number;
+  dataBase64: string;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 1) {
+    binary += String.fromCharCode(bytes[i]!);
+  }
+  return btoa(binary);
+}
+
+async function buildOutgoingAttachments(
+  draft: ComposeDraft
+): Promise<OutgoingAttachmentPayload[]> {
+  const out: OutgoingAttachmentPayload[] = [];
+  for (const att of draft.attachments ?? []) {
+    if (!att.file) continue;
+    const dataBase64 = arrayBufferToBase64(await att.file.arrayBuffer());
+    out.push({
+      filename: att.filename,
+      contentType: att.contentType || att.file.type || "application/octet-stream",
+      size: att.size,
+      dataBase64,
+    });
+  }
+  return out;
+}
+
+
 /**
  * Query: list of saved drafts (server source-of-truth).
  */
@@ -107,6 +141,7 @@ export function useSendEmail() {
         const endpoint = options?.sendLater
           ? "/api/send/schedule"
           : "/api/send";
+        const attachments = await buildOutgoingAttachments(draft);
         const res = await fetch(endpoint, {
           method: "POST",
           headers: mailAuthHeaders(),
@@ -117,6 +152,7 @@ export function useSendEmail() {
             bcc: draft.bcc.map((r) => ({ email: r.email, name: r.name })),
             subject: draft.subject,
             body: draft.body,
+            attachments,
             inReplyTo: draft.inReplyTo,
             references: draft.references,
             ...options,
