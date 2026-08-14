@@ -14,7 +14,7 @@ import type {
   RecipientType,
   SendOptions,
 } from "@/types/composer";
-import { mailAuthHeaders } from "@/lib/mail-api";
+import { composerRepository } from "@/lib/repositories";
 
 const STORAGE_KEY = "misfits:composer-draft";
 const AUTOSAVE_INTERVAL = 10_000;
@@ -221,23 +221,16 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     set({ sending: true, sendError: null });
     try {
       const snap = snapshot(get());
-      const res = await fetch("/api/send", {
-        method: "POST",
-        headers: mailAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({
+      await composerRepository.send(
+        {
           to: snap.to.map((r) => ({ email: r.email, name: r.name })),
           cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
           bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
           subject: snap.subject,
           body: snap.body,
-          ...options,
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => "");
-        throw new Error(errBody || `Send failed: ${res.status}`);
-      }
+        },
+        options
+      );
       // Clear the persisted draft on success.
       if (typeof window !== "undefined") {
         try {
@@ -258,23 +251,16 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     set({ sending: true, sendError: null });
     try {
       const snap = snapshot(get());
-      const res = await fetch("/api/send/schedule", {
-        method: "POST",
-        headers: mailAuthHeaders(),
-        credentials: "include",
-        body: JSON.stringify({
+      await composerRepository.schedule(
+        {
           to: snap.to.map((r) => ({ email: r.email, name: r.name })),
           cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
           bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
           subject: snap.subject,
           body: snap.body,
-          sendLater: date,
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => "");
-        throw new Error(errBody || `Schedule failed: ${res.status}`);
-      }
+        },
+        date
+      );
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {

@@ -12,7 +12,8 @@ import type {
   SortBy,
 } from "@/types/email";
 import { mockFolders, mockLabels } from "@/lib/mock-emails";
-import { mailAuthHeaders, hasMailIdentity } from "@/lib/mail-api";
+import { hasMailIdentity } from "@/lib/mail-api";
+import { emailRepository } from "@/lib/repositories";
 
 export type BulkActionType =
   "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
@@ -150,29 +151,18 @@ export const useEmailStore = create<EmailState>((set, get) => ({
     // Skip duplicate in-flight / same-folder reloads when data already present
     if (get().loading && get().currentFolder === targetFolder) return;
     set({ loading: true, error: null, currentFolder: targetFolder });
-    const params = new URLSearchParams({
-      folder: targetFolder,
-      page: "1",
-      pageSize: "50",
-    });
     const gen = (get() as { _fetchGen?: number })._fetchGen ?? 0;
     const myGen = gen + 1;
     (get() as { _fetchGen?: number })._fetchGen = myGen;
     try {
-      const res = await fetch(`/api/emails?${params.toString()}`, {
-        headers: mailAuthHeaders(),
-        credentials: "include",
+      const data = await emailRepository.fetchEmails({
+        folder: targetFolder,
+        page: 1,
+        pageSize: 50,
       });
-      if (!res.ok) {
-        throw new Error(`Failed to fetch emails: ${res.status}`);
-      }
-      const data = (await res.json()) as {
-        emails?: Email[];
-        total?: number;
-      };
       // Drop stale responses
       if ((get() as { _fetchGen?: number })._fetchGen !== myGen) return;
-      const emails = Array.isArray(data.emails) ? data.emails : [];
+      const emails = data.emails;
       const selectedEmailId = get().selectedEmailId;
       const selectedEmailIds = get().selectedEmailIds;
       const allowedIds = new Set(emails.map((e) => e.id));
