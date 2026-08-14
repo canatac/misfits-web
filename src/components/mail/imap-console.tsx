@@ -49,6 +49,29 @@ export function ImapConsole({ input, onDone, title }: Props) {
   );
   const [finalError, setFinalError] = React.useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  // Sticky-bottom flag: if the user scrolls up we stop auto-scrolling.
+  const stickyRef = React.useRef(true);
+  // Ref-buffered pending lines flushed on rAF to avoid per-frame re-renders.
+  const bufferRef = React.useRef<Line[]>([]);
+  const rafRef = React.useRef<number | null>(null);
+
+  const flushBuffer = React.useCallback(() => {
+    rafRef.current = null;
+    if (bufferRef.current.length === 0) return;
+    const batch = bufferRef.current;
+    bufferRef.current = [];
+    setLines((prev) => prev.concat(batch));
+  }, []);
+
+  const pushLine = React.useCallback(
+    (line: Line) => {
+      bufferRef.current.push(line);
+      if (rafRef.current == null) {
+        rafRef.current = window.requestAnimationFrame(flushBuffer);
+      }
+    },
+    [flushBuffer]
+  );
 
   React.useEffect(() => {
     if (!input) return;
@@ -57,8 +80,10 @@ export function ImapConsole({ input, onDone, title }: Props) {
 
     async function run() {
       setLines([]);
+      bufferRef.current = [];
       setStatus("running");
       setFinalError(null);
+      stickyRef.current = true;
       try {
         const res = await fetch("/api/external-accounts/probe-stream", {
           method: "POST",
@@ -74,7 +99,6 @@ export function ImapConsole({ input, onDone, title }: Props) {
           const { value, done } = await reader.read();
           if (done) break;
           buf += dec.decode(value, { stream: true });
-          // Split on double newline (SSE frame boundary).
           let idx = buf.indexOf("\n\n");
           while (idx >= 0) {
             const frame = buf.slice(0, idx);
@@ -92,9 +116,6 @@ export function ImapConsole({ input, onDone, title }: Props) {
     }
 
     function handleFrame(frame: string) {
-      // Frames look like:
-      //   event: line
-      //   data: {"dir":">","text":"a1 CAPABILITY"}
       let event = "message";
       let data = "";
       for (const raw of frame.split("\n")) {
@@ -105,8 +126,14 @@ export function ImapConsole({ input, onDone, title }: Props) {
       try {
         const parsed = JSON.parse(data);
         if (event === "line") {
-          setLines((prev) => [...prev, { dir: parsed.dir ?? "", text: parsed.text ?? "" }]);
+          pushLine({ dir: parsed.dir ?? "", text: parsed.text ?? "" });
         } else if (event === "done") {
+          // Flush any pending buffered lines synchronously before finishing.
+          if (rafRef.current != null) {
+            window.cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
+          flushBuffer();
           setStatus(parsed.ok ? "done" : "error");
           if (!parsed.ok) setFinalError(parsed.error ?? "IMAP probe failed");
           onDone?.({ ok: !!parsed.ok, error: parsed.error });
@@ -120,14 +147,29 @@ export function ImapConsole({ input, onDone, title }: Props) {
     return () => {
       aborted = true;
       controller.abort();
+      if (rafRef.current != null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
-  }, [input, onDone]);
+  }, [input, onDone, pushLine, flushBuffer]);
 
-  // Auto-scroll to bottom on new lines.
+  // Sticky-bottom auto-scroll: keep at bottom unless the user scrolled up.
   React.useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el || !stickyRef.current) return;
+    // No smooth scroll: instant jump to bottom avoids the visual "bounce"
+    // when many frames arrive in the same rAF tick.
+    el.scrollTop = el.scrollHeight;
   }, [lines.length]);
+
+  function handleScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    // Consider "stuck to bottom" when within a small threshold.
+    const nearBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 16;
+    stickyRef.current = nearBottom;
+  }
 
   if (!input && status === "idle") {
     return null;
@@ -151,7 +193,12 @@ export function ImapConsole({ input, onDone, title }: Props) {
           {status}
         </span>
       </div>
-      <div ref={scrollRef} className="max-h-64 overflow-auto px-3 py-2 leading-5">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="h-64 overflow-y-auto overflow-x-hidden px-3 py-2 leading-5"
+        style={{ overflowAnchor: "none", scrollBehavior: "auto" }}
+      >
         {lines.map((l, i) => (
           <div key={i} className={colorFor(l.dir)}>
             <span className="mr-2 text-neutral-500">{prefixFor(l.dir)}</span>
