@@ -299,6 +299,9 @@ export function AdminConsolePage({
 
   const [transitionNote, setTransitionNote] = useState("");
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+  const [changeRequestView, setChangeRequestView] = useState<
+    "essential" | "advanced"
+  >("essential");
   const [crGuideDraft, setCrGuideDraft] = useState<ChangeRequestGuideDraft>({
     problemRoot: "",
     impact: "",
