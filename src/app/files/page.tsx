@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FolderOpen, FileText, RefreshCw, ChevronRight, ChevronDown, Download } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Download,
+  FileText,
+  FolderOpen,
+  Play,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { NovamailWorkspaceShell } from "@/components/navigation/novamail-workspace-shell";
 import { mailAuthHeaders } from "@/lib/mail-api";
 import type { Email, EmailAttachment } from "@/types/email";
@@ -27,6 +37,72 @@ type WorkspaceNode = {
   children: WorkspaceNode[];
   files: WorkspaceLeaf[];
 };
+
+type WorkflowRule = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  scope: ScopeRule;
+  senderContains: string;
+  filenameIncludes: string;
+  extensionsCsv: string;
+  destination: string;
+  safeOnly: boolean;
+  maxSizeMb: number;
+};
+
+type DirectoryHandleLike = {
+  getDirectoryHandle: (
+    name: string,
+    opts?: { create?: boolean }
+  ) => Promise<DirectoryHandleLike>;
+  getFileHandle: (
+    name: string,
+    opts?: { create?: boolean }
+  ) => Promise<FileHandleLike>;
+};
+
+type FileHandleLike = {
+  createWritable: () => Promise<{
+    write: (data: Blob) => Promise<void>;
+    close: () => Promise<void>;
+  }>;
+};
+
+type WindowWithDirectoryPicker = Window & {
+  showDirectoryPicker?: () => Promise<DirectoryHandleLike>;
+};
+
+const RULES_STORAGE_KEY = "misfits-files-workspace-rules-v1";
+const SAFE_EXTENSIONS = new Set([
+  "pdf",
+  "txt",
+  "csv",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+]);
+
+function makeRule(partial?: Partial<WorkflowRule>): WorkflowRule {
+  return {
+    id: `rule-${Math.random().toString(36).slice(2, 9)}`,
+    name: partial?.name || "Nouveau workflow",
+    enabled: partial?.enabled ?? true,
+    scope: partial?.scope || "all",
+    senderContains: partial?.senderContains || "",
+    filenameIncludes: partial?.filenameIncludes || "",
+    extensionsCsv: partial?.extensionsCsv || "pdf,doc,docx,xls,xlsx,csv,txt",
+    destination: partial?.destination || "documents/tri",
+    safeOnly: partial?.safeOnly ?? true,
+    maxSizeMb: partial?.maxSizeMb ?? 10,
+  };
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -71,6 +147,28 @@ function addPath(root: WorkspaceNode, parts: string[], file: WorkspaceLeaf): voi
   cursor.files.push(file);
 }
 
+function collectFiles(emails: Email[], scope: ScopeRule): WorkspaceLeaf[] {
+  const out: WorkspaceLeaf[] = [];
+  for (const email of emails) {
+    if (scope === "received" && email.folder === "sent") continue;
+    if (scope === "sent" && email.folder !== "sent") continue;
+    for (const att of email.attachments ?? []) {
+      out.push({
+        id: `${email.id}:${att.id}`,
+        name: att.filename,
+        downloadUrl: att.downloadUrl,
+        contentType: att.contentType,
+        size: att.size,
+        subject: email.subject,
+        owner: ownerFor(email),
+        folder: email.folder,
+        date: email.date,
+      });
+    }
+  }
+  return out;
+}
+
 function buildTree(emails: Email[], grouping: GroupingRule, scope: ScopeRule): WorkspaceNode {
   const root: WorkspaceNode = {
     id: "root",
@@ -79,35 +177,17 @@ function buildTree(emails: Email[], grouping: GroupingRule, scope: ScopeRule): W
     files: [],
   };
 
-  for (const email of emails) {
-    if (scope === "received" && email.folder === "sent") continue;
-    if (scope === "sent" && email.folder !== "sent") continue;
+  for (const file of collectFiles(emails, scope)) {
+    const parts =
+      grouping === "folder"
+        ? [file.folder, monthKey(file.date), file.owner]
+        : grouping === "sender"
+          ? [file.owner, file.folder, monthKey(file.date)]
+          : grouping === "month"
+            ? [monthKey(file.date), file.folder, file.owner]
+            : [fileTypeKey({ filename: file.name, type: "other" } as EmailAttachment), file.folder, monthKey(file.date), file.owner];
 
-    for (const att of email.attachments ?? []) {
-      const owner = ownerFor(email);
-      const file: WorkspaceLeaf = {
-        id: `${email.id}:${att.id}`,
-        name: att.filename,
-        downloadUrl: att.downloadUrl,
-        contentType: att.contentType,
-        size: att.size,
-        subject: email.subject,
-        owner,
-        folder: email.folder,
-        date: email.date,
-      };
-
-      const parts =
-        grouping === "folder"
-          ? [email.folder, monthKey(email.date), owner]
-          : grouping === "sender"
-            ? [owner, email.folder, monthKey(email.date)]
-            : grouping === "month"
-              ? [monthKey(email.date), email.folder, owner]
-              : [fileTypeKey(att), email.folder, monthKey(email.date), owner];
-
-      addPath(root, parts, file);
-    }
+    addPath(root, parts, file);
   }
 
   const sortNode = (node: WorkspaceNode) => {
@@ -118,6 +198,51 @@ function buildTree(emails: Email[], grouping: GroupingRule, scope: ScopeRule): W
   sortNode(root);
 
   return root;
+}
+
+function sanitizeSegment(value: string): string {
+  return value
+    .trim()
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .replace(/\.{2,}/g, ".")
+    .replace(/^\.+/, "")
+    .trim();
+}
+
+function extOf(filename: string): string {
+  const ext = filename.split(".").pop()?.toLowerCase() || "";
+  return ext;
+}
+
+function isSafeByRule(file: WorkspaceLeaf, rule: WorkflowRule): boolean {
+  if (!rule.safeOnly) return true;
+  if (file.size > Math.max(1, rule.maxSizeMb) * 1024 * 1024) return false;
+  const ext = extOf(file.name);
+  if (!ext || !SAFE_EXTENSIONS.has(ext)) return false;
+  return true;
+}
+
+function matchesRule(file: WorkspaceLeaf, rule: WorkflowRule): boolean {
+  if (!rule.enabled) return false;
+  if (rule.scope === "received" && file.folder === "sent") return false;
+  if (rule.scope === "sent" && file.folder !== "sent") return false;
+
+  const senderNeedle = rule.senderContains.trim().toLowerCase();
+  if (senderNeedle && !file.owner.toLowerCase().includes(senderNeedle)) return false;
+
+  const nameNeedle = rule.filenameIncludes.trim().toLowerCase();
+  if (nameNeedle && !file.name.toLowerCase().includes(nameNeedle)) return false;
+
+  const allowedExt = rule.extensionsCsv
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (allowedExt.length > 0) {
+    const ext = extOf(file.name);
+    if (!allowedExt.includes(ext)) return false;
+  }
+
+  return isSafeByRule(file, rule);
 }
 
 async function fetchFolder(folder: string): Promise<Email[]> {
@@ -131,6 +256,27 @@ async function fetchFolder(folder: string): Promise<Email[]> {
   }
   const data = (await res.json()) as { emails?: Email[] };
   return Array.isArray(data.emails) ? data.emails : [];
+}
+
+async function ensureNestedDir(root: DirectoryHandleLike, destination: string): Promise<DirectoryHandleLike> {
+  const parts = destination
+    .split("/")
+    .map((p) => sanitizeSegment(p))
+    .filter(Boolean);
+
+  let current = root;
+  for (const part of parts) {
+    current = await current.getDirectoryHandle(part, { create: true });
+  }
+  return current;
+}
+
+async function writeBlobToDir(dir: DirectoryHandleLike, fileName: string, blob: Blob): Promise<void> {
+  const safeName = sanitizeSegment(fileName) || "document";
+  const handle = await dir.getFileHandle(safeName, { create: true });
+  const writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
 }
 
 function TreeNodeView({
@@ -170,7 +316,9 @@ function TreeNodeView({
                   <FileText className="h-3.5 w-3.5" />
                   <span className="truncate">{file.name}</span>
                 </div>
-                <div className="truncate">{file.subject} · {formatBytes(file.size)}</div>
+                <div className="truncate">
+                  {file.subject} · {formatBytes(file.size)} · {file.owner}
+                </div>
               </div>
               {file.downloadUrl ? (
                 <a
@@ -196,6 +344,9 @@ export default function FilesPage() {
   const [grouping, setGrouping] = useState<GroupingRule>("folder");
   const [scope, setScope] = useState<ScopeRule>("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set(["root"]));
+  const [rules, setRules] = useState<WorkflowRule[]>([makeRule()]);
+  const [workflowStatus, setWorkflowStatus] = useState<string>("");
+  const [runningWorkflow, setRunningWorkflow] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -216,11 +367,85 @@ export default function FilesPage() {
     void load();
   }, []);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RULES_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as WorkflowRule[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setRules(parsed.map((r) => makeRule(r)));
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(rules));
+  }, [rules]);
+
   const tree = useMemo(() => buildTree(emails, grouping, scope), [emails, grouping, scope]);
-  const fileCount = useMemo(
-    () => emails.reduce((acc, e) => acc + (e.attachments?.length ?? 0), 0),
-    [emails]
-  );
+  const files = useMemo(() => collectFiles(emails, scope), [emails, scope]);
+  const fileCount = files.length;
+
+  const runWorkflow = async () => {
+    const win = window as WindowWithDirectoryPicker;
+    if (!win.showDirectoryPicker) {
+      setWorkflowStatus(
+        "Ce navigateur ne supporte pas File System Access API (showDirectoryPicker)."
+      );
+      return;
+    }
+
+    const activeRules = rules.filter((r) => r.enabled);
+    if (activeRules.length === 0) {
+      setWorkflowStatus("Active au moins une règle de workflow.");
+      return;
+    }
+
+    setRunningWorkflow(true);
+    setWorkflowStatus("Demande d’autorisation dossier en cours...");
+
+    try {
+      const root = await win.showDirectoryPicker();
+      let saved = 0;
+      let skipped = 0;
+
+      for (const file of files) {
+        const rule = activeRules.find((r) => matchesRule(file, r));
+        if (!rule) {
+          skipped += 1;
+          continue;
+        }
+        if (!file.downloadUrl) {
+          skipped += 1;
+          continue;
+        }
+
+        const res = await fetch(file.downloadUrl, {
+          headers: mailAuthHeaders(),
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          skipped += 1;
+          continue;
+        }
+
+        const blob = await res.blob();
+        const targetDir = await ensureNestedDir(root, rule.destination);
+        await writeBlobToDir(targetDir, file.name, blob);
+        saved += 1;
+      }
+
+      setWorkflowStatus(`Workflow terminé: ${saved} fichier(s) enregistrés, ${skipped} ignoré(s).`);
+    } catch (e) {
+      const message = (e as Error).message || "workflow failed";
+      setWorkflowStatus(`Workflow interrompu: ${message}`);
+    } finally {
+      setRunningWorkflow(false);
+    }
+  };
 
   return (
     <NovamailWorkspaceShell>
@@ -229,7 +454,7 @@ export default function FilesPage() {
           <div>
             <h1 className="text-xl font-bold text-white">Files Workspace</h1>
             <p className="text-sm text-[#A1A1AA]">
-              Explorateur local des documents mail (reçus + envoyés), classés par règle.
+              Explorateur local + workflows de sauvegarde sur la machine du navigateur.
             </p>
           </div>
           <button
@@ -274,6 +499,202 @@ export default function FilesPage() {
           <div className="rounded border border-[#242427] bg-[#141417] px-3 py-2 text-sm text-[#A1A1AA]">
             <div>Mails indexés: {emails.length}</div>
             <div>Documents trouvés: {fileCount}</div>
+          </div>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-[#242427] bg-[#0E0E10] p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Workflow local (côté navigateur)</h2>
+              <p className="text-xs text-[#A1A1AA]">
+                Les règles ci-dessous décident quels fichiers sont enregistrés et dans quel sous-dossier local.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRules((prev) => [...prev, makeRule({ name: `Workflow ${prev.length + 1}` })])}
+              className="inline-flex items-center gap-1 rounded border border-[#2A2A2D] px-2 py-1 text-xs text-[#D4D4D8] hover:bg-[#1A1A1D]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Ajouter règle
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {rules.map((rule) => (
+              <div key={rule.id} className="rounded-lg border border-[#242427] bg-[#121214] p-3">
+                <div className="mb-2 grid gap-2 md:grid-cols-5">
+                  <label className="text-xs text-[#A1A1AA]">
+                    Nom
+                    <input
+                      value={rule.name}
+                      onChange={(e) =>
+                        setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, name: e.target.value } : r)))
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+
+                  <label className="text-xs text-[#A1A1AA]">
+                    Scope
+                    <select
+                      value={rule.scope}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id ? { ...r, scope: e.target.value as ScopeRule } : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs"
+                    >
+                      <option value="all">all</option>
+                      <option value="received">received</option>
+                      <option value="sent">sent</option>
+                    </select>
+                  </label>
+
+                  <label className="text-xs text-[#A1A1AA]">
+                    Sender contains
+                    <input
+                      value={rule.senderContains}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id ? { ...r, senderContains: e.target.value } : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+
+                  <label className="text-xs text-[#A1A1AA]">
+                    Filename contains
+                    <input
+                      value={rule.filenameIncludes}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id ? { ...r, filenameIncludes: e.target.value } : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+
+                  <label className="text-xs text-[#A1A1AA]">
+                    Extensions (csv)
+                    <input
+                      value={rule.extensionsCsv}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id ? { ...r, extensionsCsv: e.target.value } : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid gap-2 md:grid-cols-4">
+                  <label className="text-xs text-[#A1A1AA] md:col-span-2">
+                    Destination locale (ex: documents/factures/2026)
+                    <input
+                      value={rule.destination}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id ? { ...r, destination: e.target.value } : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+
+                  <label className="text-xs text-[#A1A1AA]">
+                    Taille max (MB)
+                    <input
+                      type="number"
+                      min={1}
+                      value={rule.maxSizeMb}
+                      onChange={(e) =>
+                        setRules((prev) =>
+                          prev.map((r) =>
+                            r.id === rule.id
+                              ? { ...r, maxSizeMb: Number(e.target.value || 1) }
+                              : r
+                          )
+                        )
+                      }
+                      className="mt-1 w-full rounded border border-[#2A2A2D] bg-[#141417] px-2 py-1.5 text-xs text-[#E4E4E7]"
+                    />
+                  </label>
+
+                  <div className="flex items-end justify-between gap-3">
+                    <label className="inline-flex items-center gap-2 text-xs text-[#D4D4D8]">
+                      <input
+                        type="checkbox"
+                        checked={rule.enabled}
+                        onChange={(e) =>
+                          setRules((prev) =>
+                            prev.map((r) =>
+                              r.id === rule.id ? { ...r, enabled: e.target.checked } : r
+                            )
+                          )
+                        }
+                      />
+                      Active
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-xs text-[#D4D4D8]">
+                      <input
+                        type="checkbox"
+                        checked={rule.safeOnly}
+                        onChange={(e) =>
+                          setRules((prev) =>
+                            prev.map((r) =>
+                              r.id === rule.id ? { ...r, safeOnly: e.target.checked } : r
+                            )
+                          )
+                        }
+                      />
+                      Doc sûr
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setRules((prev) =>
+                          prev.length <= 1 ? prev : prev.filter((r) => r.id !== rule.id)
+                        )
+                      }
+                      className="inline-flex items-center gap-1 rounded border border-[#2A2A2D] px-2 py-1 text-xs text-[#FCA5A5] hover:bg-[#1A1A1D]"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Suppr.
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => void runWorkflow()}
+              disabled={runningWorkflow}
+              className="inline-flex items-center gap-2 rounded-lg border border-[#2A2A2D] bg-[#141417] px-3 py-2 text-sm text-[#E4E4E7] hover:bg-[#1A1A1D] disabled:opacity-50"
+            >
+              <Play className="h-4 w-4" />
+              Exécuter workflow local
+            </button>
+            <span className="text-xs text-[#A1A1AA]">
+              {workflowStatus || "Choisis un dossier local quand le navigateur te le demande."}
+            </span>
           </div>
         </div>
 
