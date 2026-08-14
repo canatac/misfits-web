@@ -58,6 +58,8 @@ import { SecurityBanner } from "@/components/mail/security-banner";
 import type { Email, EmailAttachment, AttachmentType } from "@/types/email";
 import type { Recipient } from "@/types/composer";
 import { ATTACHMENT_ICONS, QUOTE_PATTERNS, formatFullDate, formatFileSize, getInitials, toPlainText } from "./email-view-utils";
+import { AttachmentCard } from "./attachment-card";
+import { useEmailActions } from "@/hooks/useEmailActions";
 
 
 interface EmailViewProps {
@@ -255,161 +257,19 @@ export function EmailView({ className }: EmailViewProps) {
     return body;
   }, [sanitizedBody, loadImages, showQuoted, hasQuoted]);
 
-  const openComposer = useComposerStore((s) => s.openComposer);
-  const sendChatMessage = useChatStore((s) => s.sendMessage);
-  const openChatPanel = useChatStore((s) => s.setOpen);
-  const userId = useAuthStore((s) => s.user?.id ?? null);
-
-  const toRecipient = useCallback(
-    (
-      address: string,
-      name: string,
-      type: Recipient["type"] = "to"
-    ): Recipient => ({
-      id: uid("rcpt"),
-      email: address.toLowerCase(),
-      name: name && name !== "me" ? name : undefined,
-      type,
-    }),
-    []
-  );
-
-  const buildReplyBody = useCallback((em: Email) => {
-    const replyDate = new Date(em.date).toLocaleString("en-US", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-    return `<p></p><blockquote>On ${replyDate}, ${em.from.name} &lt;${em.from.address}&gt; wrote:<br/>${em.body}</blockquote>`;
-  }, []);
-
-  const handleReply = useCallback(() => {
-    if (!email) return;
-    const replyTarget = email.replyTo ?? email.from;
-    openComposer({
-      to: [toRecipient(replyTarget.address, replyTarget.name)],
-      cc: (email.cc ?? []).map((a) => toRecipient(a.address, a.name, "cc")),
-      subject: email.subject.startsWith("Re: ")
-        ? email.subject
-        : `Re: ${email.subject}`,
-      body: buildReplyBody(email),
-      inReplyTo: email.messageId,
-      references: [...(email.references ?? []), email.messageId].filter(
-        Boolean
-      ),
-    });
-  }, [email, openComposer, toRecipient, buildReplyBody]);
-
-  const handleReplyAll = useCallback(() => {
-    if (!email) return;
-    const replyTarget = email.replyTo ?? email.from;
-    const to: Recipient[] = [
-      toRecipient(replyTarget.address, replyTarget.name),
-    ];
-    for (const a of email.to) {
-      if (
-        a.address !== email.from.address &&
-        !to.some((r) => r.email === a.address.toLowerCase())
-      ) {
-        to.push(toRecipient(a.address, a.name));
-      }
-    }
-    const ccRecipients: Recipient[] = (email.cc ?? []).map((a) =>
-      toRecipient(a.address, a.name, "cc")
-    );
-    openComposer({
-      to,
-      cc: ccRecipients,
-      subject: email.subject.startsWith("Re: ")
-        ? email.subject
-        : `Re: ${email.subject}`,
-      body: buildReplyBody(email),
-      inReplyTo: email.messageId,
-      references: [...(email.references ?? []), email.messageId].filter(
-        Boolean
-      ),
-    });
-  }, [email, openComposer, toRecipient, buildReplyBody]);
-
-  const handleForward = useCallback(() => {
-    if (!email) return;
-    const fwdBody = `<p></p><blockquote>---------- Forwarded message ----------<br/>From: ${email.from.name} &lt;${email.from.address}&gt;<br/>Date: ${new Date(email.date).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}<br/>Subject: ${email.subject}<br/><br/>${email.body}</blockquote>`;
-    openComposer({
-      to: [],
-      subject: email.subject.startsWith("Fwd: ")
-        ? email.subject
-        : `Fwd: ${email.subject}`,
-      body: fwdBody,
-    });
-  }, [email, openComposer]);
-
-  const handleToggleStar = useCallback(() => {
-    if (email) toggleStar(email.id);
-  }, [email, toggleStar]);
-
-  const handleArchive = useCallback(() => {
-    if (email) archive(email.id);
-  }, [email, archive]);
-
-  const handleDelete = useCallback(() => {
-    if (email) deleteEmail(email.id);
-  }, [email, deleteEmail]);
-
-  const handleMarkUnread = useCallback(() => {
-    if (email) markUnread(email.id);
-  }, [email, markUnread]);
-
-  const askHermesAboutEmail = useCallback(
-    (instruction: string) => {
-      if (!email) return;
-      const bodyPreview = toPlainText(email.body, email.bodyType).slice(
-        0,
-        4000
-      );
-      const prompt = [
-        instruction,
-        "",
-        `Sujet: ${email.subject}`,
-        `De: ${email.from.name} <${email.from.address}>`,
-        `Date: ${email.date}`,
-        "",
-        "Contenu:",
-        bodyPreview,
-      ].join("\n");
-
-      openChatPanel(true);
-      void sendChatMessage(prompt, {
-        currentEmailId: email.id,
-        currentFolder: email.folder,
-        threadId: email.threadId,
-        userId: userId ? String(userId) : undefined,
-      });
-    },
-    [email, openChatPanel, sendChatMessage, userId]
-  );
-
-  const handleHermesSummarize = useCallback(() => {
-    askHermesAboutEmail(
-      "Résume cet email en 5 puces maximum (FR), puis donne niveau d'urgence (faible/moyen/élevé)."
-    );
-  }, [askHermesAboutEmail]);
-
-  const handleHermesReplyDraft = useCallback(() => {
-    askHermesAboutEmail(
-      "Propose une réponse email professionnelle en français: objet suggéré + corps prêt à envoyer."
-    );
-  }, [askHermesAboutEmail]);
-
-  const handleHermesTranslate = useCallback(() => {
-    askHermesAboutEmail(
-      "Traduis cet email en français clair en gardant le sens exact. Si déjà en français, fournis une version plus concise."
-    );
-  }, [askHermesAboutEmail]);
-
-  const handleHermesTodos = useCallback(() => {
-    askHermesAboutEmail(
-      "Extrais les TODO/action items: owner suggéré, échéance si détectée, et priorité."
-    );
-  }, [askHermesAboutEmail]);
+  const {
+    handleReply,
+    handleReplyAll,
+    handleForward,
+    handleToggleStar,
+    handleArchive,
+    handleDelete,
+    handleMarkUnread,
+    handleHermesSummarize,
+    handleHermesReplyDraft,
+    handleHermesTranslate,
+    handleHermesTodos,
+  } = useEmailActions(email);
 
   if (!email) {
     return (
@@ -791,30 +651,3 @@ export function EmailView({ className }: EmailViewProps) {
 /**
  * Attachment card with icon by file type and download link.
  */
-function AttachmentCard({ attachment }: { attachment: EmailAttachment }) {
-  const Icon = ATTACHMENT_ICONS[attachment.type] ?? FileIcon;
-  return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card)] p-3 transition-colors hover:bg-[var(--color-muted)]">
-      <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-muted)]">
-        <Icon className="h-5 w-5 text-[var(--color-muted-fg)]" />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-medium text-[var(--color-fg)]">
-          {attachment.filename}
-        </span>
-        <span className="text-xs text-[var(--color-muted-fg)]">
-          {formatFileSize(attachment.size)} · {attachment.type.toUpperCase()}
-        </span>
-      </div>
-      <Button variant="ghost" size="sm" asChild>
-        <a
-          href={attachment.downloadUrl ?? "#"}
-          download={attachment.filename}
-          aria-label={`Download ${attachment.filename}`}
-        >
-          Download
-        </a>
-      </Button>
-    </div>
-  );
-}
