@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildForwardHeaders } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,16 +10,17 @@ function resolveBackendBaseUrl(): string {
 }
 
 async function proxy(
+  request: Request,
   path: string,
   method: "GET" | "POST",
   body?: unknown
 ): Promise<NextResponse> {
+  const headers = buildForwardHeaders(request, {
+    ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+  });
   const upstream = await fetch(`${resolveBackendBaseUrl()}${path}`, {
     method,
-    headers: {
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     cache: "no-store",
   });
@@ -39,6 +41,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const window = url.searchParams.get("window") || "1h";
   return proxy(
+    request,
     `/api/admin/deliverability/procedure?window=${encodeURIComponent(window)}`,
     "GET"
   );
@@ -52,5 +55,5 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  return proxy(`/api/admin/deliverability/procedure`, "POST", payload);
+  return proxy(request, `/api/admin/deliverability/procedure`, "POST", payload);
 }

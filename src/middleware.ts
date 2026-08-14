@@ -23,11 +23,24 @@ const PROTECTED_PREFIXES = [
   "/security",
 ];
 const PUBLIC_EXACT = new Set(["/", "/login", "/reset-password"]);
+// Public API routes: auth endpoints + OAuth callback.
+// All /api/admin/* are intentionally excluded so they reach
+// the Next.js proxy handlers, which forward auth to the backend.
+const PUBLIC_API_PREFIXES = [
+  "/api/auth/",
+  "/api/health",
+];
 const SESSION_COOKIE = "mfa_session";
 
 function isProtected(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return false;
-  if (pathname.startsWith("/api")) return false;
+  // Admin API routes are NOT blanket-public: they go through proxy-auth.ts
+  // which forwards the session token to the backend RBAC guard.
+  if (PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p))) return false;
+  // Non-admin API routes (mail, monitoring, etc.) are server-to-server,
+  // protected by the backend's own auth layer.
+  if (pathname.startsWith("/api") && !pathname.startsWith("/api/admin"))
+    return false;
   return PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );

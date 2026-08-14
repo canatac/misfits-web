@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildForwardHeaders } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,19 +10,20 @@ function resolveBackendBaseUrl(): string {
 }
 
 async function proxy(
+  request: Request,
   id: string,
   method: "GET" | "PATCH" | "DELETE",
   body?: unknown
 ) {
   try {
+    const headers = buildForwardHeaders(request, {
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+    });
     const upstream = await fetch(
       `${resolveBackendBaseUrl()}/api/admin/change-requests/${encodeURIComponent(id)}`,
       {
         method,
-        headers: {
-          Accept: "application/json",
-          ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-        },
+        headers,
         body: body !== undefined ? JSON.stringify(body) : undefined,
         cache: "no-store",
       }
@@ -46,7 +48,7 @@ async function proxy(
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -56,7 +58,7 @@ export async function GET(
       { status: 400 }
     );
   }
-  return proxy(id.trim(), "GET");
+  return proxy(request, id.trim(), "GET");
 }
 
 export async function PATCH(
@@ -79,11 +81,11 @@ export async function PATCH(
     );
   }
 
-  return proxy(id.trim(), "PATCH", payload);
+  return proxy(request, id.trim(), "PATCH", payload);
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -93,5 +95,5 @@ export async function DELETE(
       { status: 400 }
     );
   }
-  return proxy(id.trim(), "DELETE");
+  return proxy(request, id.trim(), "DELETE");
 }
