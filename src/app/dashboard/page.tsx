@@ -22,8 +22,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/provider";
 import { useAuthStore } from "@/stores/auth-store";
-import { mockEmails, mockFolders } from "@/lib/mock-emails";
 import { useEmailList } from "@/hooks/use-emails";
+import type { Email } from "@/types/email";
 
 const INBOX_SCORES = [95, 82, 68, 98] as const;
 
@@ -169,7 +169,7 @@ const ALERTS = [
 ] as const;
 
 type DetailItem =
-  | { type: "email"; data: (typeof mockEmails)[number] & { score: number } }
+  | { type: "email"; data: Email & { score: number } }
   | { type: "newsletter"; data: (typeof VEILLE)[number] }
   | { type: "task"; data: (typeof TASKS)[number] }
   | { type: "alert"; data: (typeof ALERTS)[number] };
@@ -311,11 +311,7 @@ export default function DashboardIndexPage() {
   }, [now, locale]);
 
   const inboxEmails = useMemo(() => {
-    const source =
-      inboxQuery.data?.emails && inboxQuery.data.emails.length > 0
-        ? inboxQuery.data.emails
-        : mockEmails.filter((e) => e.folder === "inbox");
-
+    const source = inboxQuery.data?.emails ?? [];
     return source
       .slice(0, 4)
       .map((e, i) => ({ ...e, score: INBOX_SCORES[i] ?? 80 }));
@@ -328,10 +324,7 @@ export default function DashboardIndexPage() {
     pageSize: 1,
   });
 
-  const unreadCount =
-    unreadCountQuery.data?.total ??
-    mockFolders.find((f) => f.id === "inbox")?.unreadCount ??
-    0;
+  const unreadCount = unreadCountQuery.data?.total ?? 0;
   const highSignalNewsletters = VEILLE.filter((v) => v.signal >= 80).length;
   const pendingTasks = TASKS.filter((task) => !doneIds.has(task.id)).length;
   const urgentTasks: number = 2;

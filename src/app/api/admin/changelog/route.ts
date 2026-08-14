@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildForwardHeaders } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,11 +76,11 @@ function resolveBackendBaseUrl(): string {
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
 }
 
-async function fetchWorkflowReleases(): Promise<WorkflowRelease[]> {
+async function fetchWorkflowReleases(request: Request): Promise<WorkflowRelease[]> {
   const res = await fetch(
     `${resolveBackendBaseUrl()}/api/admin/change-requests`,
     {
-      headers: { Accept: "application/json" },
+      headers: buildForwardHeaders(request),
       cache: "no-store",
     }
   );
@@ -186,10 +187,10 @@ async function fetchRepoChangelog(repoDef: RepoDef): Promise<RepoPayload> {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const repositories = await Promise.all(REPOS.map(fetchRepoChangelog));
-    const workflowReleases = await fetchWorkflowReleases();
+    const workflowReleases = await fetchWorkflowReleases(request);
 
     return NextResponse.json(
       {

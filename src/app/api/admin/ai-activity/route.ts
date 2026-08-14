@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildForwardHeaders } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,9 +49,7 @@ export async function GET(request: Request) {
     `${resolveBackendBaseUrl()}/api/hermes/runs?limit=${limit}`,
     {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: buildForwardHeaders(request),
       cache: "no-store",
     }
   ).catch(() => null);

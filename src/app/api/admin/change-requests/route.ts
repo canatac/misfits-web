@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildForwardHeaders } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,16 +10,17 @@ function resolveBackendBaseUrl(): string {
 }
 
 async function proxy(
+  request: Request,
   path: string,
   method: "GET" | "POST" | "PATCH" | "DELETE",
   body?: unknown
 ) {
+  const headers = buildForwardHeaders(request, {
+    ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+  });
   const upstream = await fetch(`${resolveBackendBaseUrl()}${path}`, {
     method,
-    headers: {
-      Accept: "application/json",
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     cache: "no-store",
   });
@@ -39,9 +41,9 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id")?.trim();
   if (id) {
-    return proxy(`/api/admin/change-requests/${encodeURIComponent(id)}`, "GET");
+    return proxy(request, `/api/admin/change-requests/${encodeURIComponent(id)}`, "GET");
   }
-  return proxy("/api/admin/change-requests", "GET");
+  return proxy(request, "/api/admin/change-requests", "GET");
 }
 
 export async function POST(request: Request) {
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  return proxy("/api/admin/change-requests", "POST", payload);
+  return proxy(request, "/api/admin/change-requests", "POST", payload);
 }
 
 export async function PATCH(request: Request) {
@@ -87,6 +89,7 @@ export async function PATCH(request: Request) {
   }
 
   return proxy(
+    request,
     `/api/admin/change-requests/${encodeURIComponent(id)}`,
     "PATCH",
     patchBody
@@ -103,6 +106,7 @@ export async function DELETE(request: Request) {
     );
   }
   return proxy(
+    request,
     `/api/admin/change-requests/${encodeURIComponent(id)}`,
     "DELETE"
   );
