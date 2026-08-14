@@ -71,7 +71,13 @@ export type LocalObservabilityOverview = {
     last_triggered?: string | null;
     active_alerts?: Array<{ id: string; severity: string; message: string; ts: string }>;
     threshold_alerts?: number;
-    correlation?: { enabled?: boolean; window_minutes?: number; matched?: number };
+    queue_growth?: number | { pct?: number };
+    auth_failures?: number | { count?: number };
+    imap_latency_alert?: boolean;
+    correlation?: {
+      enabled?: boolean; window_minutes?: number; matched?: number;
+      dns?: number; blacklist?: number;
+    };
   };
   security_deliverability?: {
     spf_failures_24h?: number;
@@ -108,10 +114,10 @@ interface AdminOverviewSectionsProps {
   assistantError: string | null;
   askHermesForAdminPlan: () => void;
   summaryCards: readonly SummaryCard[];
-  monitoringProviders?: Array<{ name?: string; status?: string; latency_ms?: number; success_rate?: number; region?: string }>;
-  monitoringBounces?: Array<{ email?: string; reason?: string; at?: string; code?: number }>;
+  monitoringProviders?: MonitoringProvider[];
+  monitoringBounces?: SmtpEvent[];
   securityActiveAlerts?: SecurityAlert[];
-  securityIncidents?: Array<{ id?: string; severity?: string; title?: string; at?: string; status?: string }>;
+  securityIncidents?: SecurityAlert[];
 }
 
 export function AdminOverviewSections({
@@ -548,7 +554,7 @@ export function AdminOverviewSections({
           Incidents (historique récent)
         </h2>
         <div className="space-y-2">
-          {(securityIncidents.data?.alerts ?? [])
+          {(securityIncidents)
             .slice(0, 10)
             .map((incident) => (
               <div

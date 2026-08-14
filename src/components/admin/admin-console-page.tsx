@@ -1164,7 +1164,7 @@ export function AdminConsolePage({
           monitoringProviders={monitoringProviders.data?.providers ?? []}
           monitoringBounces={monitoringBounces.data?.bounces ?? []}
           securityActiveAlerts={securityActive.data?.alerts ?? []}
-          securityIncidents={securityIncidents.data?.incidents ?? []}
+          securityIncidents={securityIncidents.data?.alerts ?? []}
         />
       )}
       {activeTab === "deliverability-ops" && (
