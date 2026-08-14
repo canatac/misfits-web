@@ -86,7 +86,7 @@ export function transitionAdminChangeRequest(
 export function deleteAdminChangeRequest(id: string) {
   const encodedId = encodeURIComponent(id);
   return apiClient.delete<{ deleted: boolean; id: string }>(
-    `/admin/change-requests?id=${encodedId}`
+    `/admin/change-requests/${encodedId}`
   );
 }
 
