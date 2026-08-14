@@ -1161,6 +1161,10 @@ export function AdminConsolePage({
           assistantError={assistantError}
           askHermesForAdminPlan={askHermesForAdminPlan}
           summaryCards={summaryCards}
+          monitoringProviders={monitoringProviders}
+          monitoringBounces={monitoringBounces}
+          securityActive={securityActive}
+          securityIncidents={securityIncidents}
         />
       )}
       {activeTab === "deliverability-ops" && (

@@ -65,6 +65,22 @@ type LocalObservabilityOverview = {
     throughput?: { incoming_per_min?: number; outgoing_per_min?: number };
     delivery?: { success_rate?: number; smtp_4xx_rate?: number; smtp_5xx_rate?: number; p95_total_ms?: number };
   };
+  proactive_alerting?: {
+    enabled?: boolean;
+    active_rules?: number;
+    last_triggered?: string | null;
+    active_alerts?: Array<{ id: string; severity: string; message: string; ts: string }>;
+  };
+  security_deliverability?: {
+    spf_failures_24h?: number;
+    dkim_failures_24h?: number;
+    dmarc_failures_24h?: number;
+    auth_ratio?: number;
+  };
+  exports?: {
+    last_export_at?: string | null;
+    total_exports?: number;
+  };
 };
 
 interface SummaryCard {
@@ -87,6 +103,10 @@ interface AdminOverviewSectionsProps {
   assistantError: string | null;
   askHermesForAdminPlan: () => void;
   summaryCards: readonly SummaryCard[];
+  monitoringProviders: { data?: { providers?: Array<Record<string, unknown>> } };
+  monitoringBounces: { data?: { bounces?: Array<Record<string, unknown>> } };
+  securityActive: { data?: { alerts?: Array<Record<string, unknown>> } };
+  securityIncidents: { data?: { incidents?: Array<Record<string, unknown>> } };
 }
 
 export function AdminOverviewSections({
@@ -104,6 +124,10 @@ export function AdminOverviewSections({
   assistantError,
   askHermesForAdminPlan,
   summaryCards,
+  monitoringProviders,
+  monitoringBounces,
+  securityActive,
+  securityIncidents,
 }: AdminOverviewSectionsProps) {
   return (
     <>
@@ -367,7 +391,7 @@ export function AdminOverviewSections({
                 ?.suspicious_logins_top ?? []
             )
               .slice(0, 2)
-              .map((x) => `${x.ip ?? "?"}(${x.attempts ?? 0})`)
+              .map((x: { ip?: string; attempts?: number }) => `${x.ip ?? "?"}(${x.attempts ?? 0})`)
               .join(" · ") || "none"}
           </p>
           <p>
@@ -403,7 +427,7 @@ export function AdminOverviewSections({
         <div className="space-y-2">
           {(monitoringProviders.data?.providers ?? [])
             .slice(0, 8)
-            .map((provider, idx) => (
+            .map((provider: Record<string, unknown>, idx) => (
               <div
                 key={`${provider.company ?? "unknown"}-${idx}`}
                 className="flex items-center justify-between rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -443,7 +467,7 @@ export function AdminOverviewSections({
         <div className="space-y-2">
           {(monitoringBounces.data?.bounces ?? [])
             .slice(0, 8)
-            .map((bounce) => (
+            .map((bounce: Record<string, unknown>) => (
               <div
                 key={bounce.id}
                 className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -480,7 +504,7 @@ export function AdminOverviewSections({
           Alertes sécurité actives
         </h2>
         <div className="space-y-2">
-          {(securityActive.data?.alerts ?? []).slice(0, 10).map((alert) => (
+          {(securityActive.data?.alerts ?? []).slice(0, 10).map((alert: Record<string, unknown>) => (
             <div
               key={alert.id}
               className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
@@ -521,7 +545,7 @@ export function AdminOverviewSections({
         <div className="space-y-2">
           {(securityIncidents.data?.alerts ?? [])
             .slice(0, 10)
-            .map((incident) => (
+            .map((incident: Record<string, unknown>) => (
               <div
                 key={incident.id}
                 className="rounded-xl border border-[#232327] bg-[#151518] px-3 py-2"
