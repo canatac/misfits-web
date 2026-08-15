@@ -9,7 +9,7 @@ import type {
   AdminObservabilityOverviewResponse,
   DeliverabilityProcedureData,
 } from "@/types/admin-console";
-import type { LocalSecurityPosture } from "@/components/admin/tabs/AdminOverviewSections";
+import type { LocalSecurityPosture } from "@/components/admin/tabs/overview-sections/types";
 
 export function useAdminData(windowRange: string) {
   const [securityPosture, setSecurityPosture] =

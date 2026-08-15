@@ -2,6 +2,7 @@
 // email-view-utils.ts — extracted Sprint 4
 
 import type { AttachmentType, EmailAttachment } from "@/types/email";
+import { toPlainText as toPlainTextImpl } from "@/lib/mail-utils";
 import {
   FileIcon, FileText, FileSpreadsheet, FileCode, Paperclip,
   Image as ImageIcon, Music, Video, Archive, Presentation,
@@ -44,12 +45,8 @@ export function getInitials(name: string): string {
 }
 
 export function toPlainText(body: string, bodyType: "html" | "text"): string {
-  if (bodyType === "text") return body;
-  return body
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Re-export depuis lib/mail-utils.ts (Boucle 14) pour éviter cycles hooks → components.
+  return toPlainTextImpl(body, bodyType);
 }
 
 export const QUOTE_PATTERNS = [
