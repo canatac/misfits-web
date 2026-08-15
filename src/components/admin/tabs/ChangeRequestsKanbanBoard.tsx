@@ -5,13 +5,12 @@
 // en props, il n'a aucun état interne ni effet.
 
 import React from "react";
-import type { WorkflowStatus } from "@/types/admin-ops";
+import type { WorkflowStatus, ChangeRequestItem } from "@/types/admin-ops";
 import { WORKFLOW_STATUS_COLUMNS, STATUS_LABEL } from "../admin-console-constants";
 import { Badge, asDate, statusTone, priorityTone } from "../shared";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ChangeRequestsKanbanBoardProps {
-  requestsByStatus: Record<WorkflowStatus, any[]>;
+  requestsByStatus: Record<WorkflowStatus, ChangeRequestItem[]>;
   handleStartImplementation: (id: string, currentStatus: WorkflowStatus) => void | Promise<unknown>;
   handleTransition: (id: string, action: string, currentStatus: WorkflowStatus) => void | Promise<unknown>;
   openDeleteChangeRequestDialog: (id: string, title: string) => void;
@@ -45,7 +44,7 @@ export function ChangeRequestsKanbanBoard({
               </Badge>
             </div>
             <div className="space-y-2">
-              {requestsByStatus[status].map((item: any) => (
+              {requestsByStatus[status].map((item: ChangeRequestItem) => (
                 <div
                   key={item.id}
                   className="rounded-lg border border-[#2A2A30] bg-[#111114] p-2"
