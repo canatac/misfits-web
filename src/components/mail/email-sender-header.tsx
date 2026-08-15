@@ -8,9 +8,15 @@ import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials, formatFullDate } from "./email-view-utils";
 
+type MailRecipient = { name: string; address?: string };
+type MailSender = { name: string; address: string };
 interface EmailSenderHeaderProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  email: any;
+  email: {
+    from: MailSender;
+    to: MailRecipient[];
+    cc?: MailRecipient[];
+    date: string;
+  };
 }
 
 export function EmailSenderHeader({ email }: EmailSenderHeaderProps) {
