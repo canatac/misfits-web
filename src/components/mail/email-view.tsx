@@ -33,6 +33,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmailSenderHeader } from "./email-sender-header";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -498,44 +499,7 @@ export function EmailView({ className }: EmailViewProps) {
           </div>
 
           {/* Sender header */}
-          <div className="mb-4 flex items-start gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback>{getInitials(email.from.name)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex flex-wrap items-baseline gap-2">
-                <span className="font-medium text-[var(--color-fg)]">
-                  {email.from.name}
-                </span>
-                <span className="text-sm text-[var(--color-muted-fg)]">
-                  &lt;{email.from.address}&gt;
-                </span>
-              </div>
-              <div className="text-sm text-[var(--color-muted-fg)]">
-                to{" "}
-                {email.to.map((r, i) => (
-                  <span key={i}>
-                    {i > 0 && ", "}
-                    {r.name}
-                  </span>
-                ))}
-                {email.cc && email.cc.length > 0 && (
-                  <>
-                    {" · cc "}
-                    {email.cc.map((r, i) => (
-                      <span key={i}>
-                        {i > 0 && ", "}
-                        {r.name}
-                      </span>
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-            <span className="shrink-0 text-sm text-[var(--color-muted-fg)]">
-              {formatFullDate(email.date)}
-            </span>
-          </div>
+          <EmailSenderHeader email={email} />
 
           <Separator className="mb-4" />
 
