@@ -12,7 +12,7 @@ import { useEmailStore } from "@/stores/email-store";
 import { useComposerStore, uid } from "@/stores/composer-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useAuthStore } from "@/stores/auth-store";
-import { toPlainText } from "@/components/mail/email-view-utils";
+import { toPlainText } from "@/lib/mail-utils";
 
 function toRecipient(
   address: string,
