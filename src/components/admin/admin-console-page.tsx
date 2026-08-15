@@ -69,43 +69,16 @@ import {
   ModalTitle,
 } from "@/components/ui/modal";
 
-type AdminTab =
-  | "overview"
-  | "monitoring"
-  | "security"
-  | "deliverability-ops"
-  | "changelog"
-  | "change-requests"
-  | "users";
-
-const WINDOW_OPTIONS: MonitoringWindow[] = ["15m", "1h", "6h", "24h", "7d"];
-const SEVERITY_OPTIONS: Array<SecuritySeverity | "all"> = [
-  "all",
-  "info",
-  "low",
-  "medium",
-  "high",
-  "critical",
-];
-const WORKFLOW_STATUS_COLUMNS: WorkflowStatus[] = [
-  "submitted",
-  "triaged",
-  "planned",
-  "in_progress",
-  "qa",
-  "released",
-  "rejected",
-];
-
-const STATUS_LABEL: Record<WorkflowStatus, string> = {
-  submitted: "Soumise",
-  triaged: "Triage",
-  planned: "Planifiée",
-  in_progress: "En cours",
-  qa: "QA",
-  released: "Released",
-  rejected: "Rejetée"
-};
+// Types et constantes admin console — extraits vers un module dédié
+// (refactor itération architecte, novembre 2026) pour aérer ce fichier
+// et faciliter leur réutilisation par les sous-composants de tab.
+import {
+  type AdminTab,
+  WINDOW_OPTIONS,
+  SEVERITY_OPTIONS,
+  WORKFLOW_STATUS_COLUMNS,
+  STATUS_LABEL,
+} from "./admin-console-constants";
 
 
 import type {
@@ -372,7 +345,7 @@ export function AdminConsolePage({
 
   const requestsByStatus = useMemo(() => {
     const grouped = Object.fromEntries(
-      WORKFLOW_STATUS_COLUMNS.map((status) => [
+      WORKFLOW_STATUS_COLUMNS.map((status: WorkflowStatus) => [
         status,
         [] as ChangeRequestItem[],
       ])
@@ -1514,7 +1487,7 @@ export function AdminConsolePage({
           </div>
 
           <div className="mt-4 grid gap-3 xl:grid-cols-4">
-            {WORKFLOW_STATUS_COLUMNS.map((status) => (
+            {WORKFLOW_STATUS_COLUMNS.map((status: WorkflowStatus) => (
               <article
                 key={status}
                 className="rounded-xl border border-[#232327] bg-[#151518] p-3"
