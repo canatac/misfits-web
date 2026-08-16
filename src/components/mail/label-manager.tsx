@@ -50,6 +50,77 @@ interface LabelManagerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Reducer — form state for label create/edit.                               */
+/* -------------------------------------------------------------------------- */
+
+interface FormState {
+  editingId: string | null;
+  isCreating: boolean;
+  name: string;
+  color: string;
+  customColor: string;
+  icon: string;
+  parentId: string;
+  description: string;
+}
+
+type FormAction =
+  | { type: "reset" }
+  | { type: "startCreate" }
+  | { type: "startEdit"; label: Label }
+  | { type: "setName"; name: string }
+  | { type: "setColor"; color: string }
+  | { type: "setCustomColor"; customColor: string }
+  | { type: "setIcon"; icon: string }
+  | { type: "setParentId"; parentId: string }
+  | { type: "setDescription"; description: string };
+
+const initialFormState: FormState = {
+  editingId: null,
+  isCreating: false,
+  name: "",
+  color: LABEL_COLORS[0],
+  customColor: "",
+  icon: "",
+  parentId: "__none__",
+  description: "",
+};
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case "reset":
+      return initialFormState;
+    case "startCreate":
+      return { ...initialFormState, isCreating: true };
+    case "startEdit":
+      return {
+        editingId: action.label.id,
+        isCreating: false,
+        name: action.label.name,
+        color: action.label.color,
+        customColor: "",
+        icon: action.label.icon,
+        parentId: action.label.parentId ?? "__none__",
+        description: action.label.description ?? "",
+      };
+    case "setName":
+      return { ...state, name: action.name };
+    case "setColor":
+      return { ...state, color: action.color, customColor: "" };
+    case "setCustomColor":
+      return { ...state, customColor: action.customColor };
+    case "setIcon":
+      return { ...state, icon: action.icon };
+    case "setParentId":
+      return { ...state, parentId: action.parentId };
+    case "setDescription":
+      return { ...state, description: action.description };
+    default:
+      return state;
+  }
+}
+
 function getIcon(
   name: string
 ): React.ComponentType<{ className?: string }> | undefined {
@@ -75,44 +146,30 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
   const deleteLabel = useLabelStore((s) => s.deleteLabel);
   const reorderLabel = useLabelStore((s) => s.reorderLabel);
 
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [isCreating, setIsCreating] = React.useState(false);
-
-  // Form state
-  const [name, setName] = React.useState("");
-  const [color, setColor] = React.useState(LABEL_COLORS[0]);
-  const [customColor, setCustomColor] = React.useState("");
-  const [icon, setIcon] = React.useState("");
-  const [parentId, setParentId] = React.useState<string>("__none__");
-  const [description, setDescription] = React.useState("");
+  const [formState, dispatch] = React.useReducer(formReducer, initialFormState);
+  const {
+    editingId,
+    isCreating,
+    name,
+    color,
+    customColor,
+    icon,
+    parentId,
+    description,
+  } = formState;
 
   const activeColor = customColor || color;
 
   function resetForm() {
-    setName("");
-    setColor(LABEL_COLORS[0]);
-    setCustomColor("");
-    setIcon("");
-    setParentId("__none__");
-    setDescription("");
-    setEditingId(null);
-    setIsCreating(false);
+    dispatch({ type: "reset" });
   }
 
   function startCreate() {
-    resetForm();
-    setIsCreating(true);
+    dispatch({ type: "startCreate" });
   }
 
   function startEdit(label: Label) {
-    setName(label.name);
-    setColor(label.color);
-    setCustomColor("");
-    setIcon(label.icon);
-    setParentId(label.parentId ?? "__none__");
-    setDescription(label.description ?? "");
-    setEditingId(label.id);
-    setIsCreating(false);
+    dispatch({ type: "startEdit", label });
   }
 
   function handleSave() {
@@ -214,7 +271,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                   </label>
                   <Input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => dispatch({ type: "setName", name: e.target.value })}
                     placeholder="Label name"
                     autoFocus
                   />
@@ -225,7 +282,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                     <label className="text-xs font-medium text-[var(--color-muted-fg)]">
                       Parent label
                     </label>
-                    <Select value={parentId} onValueChange={setParentId}>
+                    <Select value={parentId} onValueChange={(v) => dispatch({ type: "setParentId", parentId: v })}>
                       <SelectTrigger>
                         <SelectValue placeholder="No parent" />
                       </SelectTrigger>
@@ -243,7 +300,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                     <label className="text-xs font-medium text-[var(--color-muted-fg)]">
                       Icon
                     </label>
-                    <IconPicker value={icon} onChange={setIcon} />
+                    <IconPicker value={icon} onChange={(v) => dispatch({ type: "setIcon", icon: v })} />
                   </div>
                 </div>
 
@@ -254,11 +311,8 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                   <ColorPicker
                     value={color}
                     customValue={customColor}
-                    onPresetChange={(c) => {
-                      setColor(c);
-                      setCustomColor("");
-                    }}
-                    onCustomChange={(c) => setCustomColor(c)}
+                    onPresetChange={(c) => dispatch({ type: "setColor", color: c })}
+                    onCustomChange={(c) => dispatch({ type: "setCustomColor", customColor: c })}
                   />
                 </div>
 
@@ -268,7 +322,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
                   </label>
                   <Textarea
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => dispatch({ type: "setDescription", description: e.target.value })}
                     placeholder="What is this label for?"
                     rows={2}
                   />
