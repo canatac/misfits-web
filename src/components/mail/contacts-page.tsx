@@ -2,62 +2,28 @@
 
 /**
  * Contacts page — the full intelligent address book UI (Issue #152).
- *
- * Three regions: a group sidebar, a searchable contact list, and a detail
- * panel. Includes import/export buttons (vCard + CSV) and an "add contact"
- * action. Enriches contact history from the email store on mount.
  */
-import { useMemo, useState, useEffect } from "react";
-import Link from "next/link";
-import {
-  Search,
-  Plus,
-  Upload,
-  Download,
-  Users,
-  GitMerge,
-  ArrowLeft,
-  ChevronDown,
-  FileText,
-  Contact as ContactIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalBody,
-  ModalFooter,
-} from "@/components/ui/modal";
-import { ContactCard } from "@/components/mail/contact-card";
+import { useEffect, useMemo, useState } from "react";
+import { Contact as ContactIcon } from "lucide-react";
 import { ContactDetail } from "@/components/mail/contact-detail";
 import { ContactImporter } from "@/components/mail/contact-importer";
 import {
-  useContacts,
+  useContactGroupMutations,
   useContactGroups,
   useContactMutations,
-  useContactGroupMutations,
+  useContacts,
   useDuplicateContacts,
 } from "@/hooks/use-contacts";
 import { useSearchContacts } from "@/hooks/use-contacts";
 import { useContactStore } from "@/stores/contact-store";
 import { useEmailStore } from "@/stores/email-store";
 import { toast } from "sonner";
-import type { ContactInput } from "@/types/contact";
-import { AddContactModal, AddGroupModal } from "@/components/mail/contacts-page/modals";
+import {
+  AddContactModal,
+  AddGroupModal,
+} from "@/components/mail/contacts-page/modals";
+import { ContactsSidebar } from "@/components/mail/contacts-page/contacts-sidebar";
+import { ContactsListPane } from "@/components/mail/contacts-page/contacts-list-pane";
 
 export function ContactsPage() {
   const { data: contacts = [] } = useContacts();
@@ -78,13 +44,11 @@ export function ContactsPage() {
   const enrichFromEmails = useContactStore((s) => s.enrichFromEmails);
   const allEmails = useEmailStore((s) => s.emails);
 
-  // Enrich contact history once on mount when the page has emails loaded.
   useEffect(() => {
     if (allEmails.length > 0) enrichFromEmails(allEmails);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter by group then apply search results.
   const visible = useMemo(() => {
     let list = results;
     if (activeGroupId) list = list.filter((c) => c.groupId === activeGroupId);
@@ -93,7 +57,6 @@ export function ContactsPage() {
 
   const selected = contacts.find((c) => c.id === selectedId) ?? null;
 
-  // Counts per group for the sidebar.
   const groupCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const c of contacts) {
@@ -129,195 +92,29 @@ export function ContactsPage() {
       className="flex h-full w-full overflow-hidden bg-[var(--color-bg)]"
       data-testid="contacts-page"
     >
-      {/* Group sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-card)] md:flex">
-        <div className="flex items-center gap-2 p-3">
-          <Link
-            href="/mail"
-            className="rounded-md p-1 text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)]"
-            aria-label="Back to mail"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <ContactIcon className="h-4 w-4" />
-            Contacts
-          </span>
-        </div>
-        <Separator />
-        <ScrollArea className="flex-1">
-          <div className="flex flex-col gap-1 p-3">
-            <button
-              onClick={() => {
-                setActiveGroupId(null);
-                setQuery("");
-              }}
-              className={cn(
-                "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
-                activeGroupId === null
-                  ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
-                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
-              )}
-            >
-              <span className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                All contacts
-              </span>
-              <Badge variant="secondary">{contacts.length}</Badge>
-            </button>
+      <ContactsSidebar
+        contacts={contacts}
+        groups={groups}
+        duplicatesCount={duplicates.length}
+        groupCounts={groupCounts}
+        ungroupedCount={ungroupedCount}
+        activeGroupId={activeGroupId}
+        setActiveGroupId={setActiveGroupId}
+        setQuery={setQuery}
+        setAddGroupOpen={setAddGroupOpen}
+      />
 
-            <button
-              onClick={() => setActiveGroupId("__ungrouped__")}
-              className={cn(
-                "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
-                activeGroupId === "__ungrouped__"
-                  ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
-                  : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
-              )}
-            >
-              <span>Ungrouped</span>
-              <Badge variant="secondary">{ungroupedCount}</Badge>
-            </button>
+      <ContactsListPane
+        query={query}
+        setQuery={setQuery}
+        visible={visible}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
+        setAddOpen={setAddOpen}
+        setImporterOpen={setImporterOpen}
+        handleExport={handleExport}
+      />
 
-            <div className="mt-3 mb-1 flex items-center justify-between px-3">
-              <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-                Groups
-              </span>
-              <button
-                onClick={() => setAddGroupOpen(true)}
-                className="rounded p-1 text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)]"
-                aria-label="Add group"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
-
-            {groups.length === 0 && (
-              <p className="px-3 py-2 text-xs text-[var(--color-muted-fg)]">
-                No groups yet.
-              </p>
-            )}
-            {groups.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setActiveGroupId(g.id)}
-                className={cn(
-                  "flex items-center justify-between rounded-[var(--radius-md)] px-3 py-2 text-sm",
-                  activeGroupId === g.id
-                    ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
-                    : "text-[var(--color-fg)] hover:bg-[var(--color-muted)]"
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: g.color }}
-                  />
-                  {g.name}
-                </span>
-                <Badge variant="secondary">{groupCounts.get(g.id) ?? 0}</Badge>
-              </button>
-            ))}
-
-            {duplicates.length > 0 && (
-              <>
-                <div className="mt-3 mb-1 px-3 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-                  Cleanup
-                </div>
-                <div className="flex items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-warning-500)]/10 px-3 py-2 text-xs text-[var(--color-warning-500)]">
-                  <GitMerge className="h-3.5 w-3.5" />
-                  {duplicates.length} duplicate
-                  {duplicates.length === 1 ? "" : "s"} to review
-                </div>
-              </>
-            )}
-          </div>
-        </ScrollArea>
-      </aside>
-
-      {/* Contact list */}
-      <section className="flex w-full flex-col md:w-[340px] md:shrink-0 md:border-r md:border-[var(--color-border)]">
-        <div className="flex flex-col gap-2 p-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search contacts…"
-                className="pl-9"
-                aria-label="Search contacts"
-                data-testid="contact-search"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5"
-              onClick={() => setAddOpen(true)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              onClick={() => setImporterOpen(true)}
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Import
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <Download className="h-3.5 w-3.5" />
-                  Export
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => handleExport("csv")}
-                  className="gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleExport("vcard")}
-                  className="gap-2"
-                >
-                  <ContactIcon className="h-4 w-4" />
-                  Export as vCard
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        <Separator />
-        <ScrollArea className="flex-1">
-          <div className="flex flex-col gap-2 p-3">
-            {visible.length === 0 ? (
-              <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-fg)]">
-                No contacts found.
-              </p>
-            ) : (
-              visible.map((c) => (
-                <ContactCard
-                  key={c.id}
-                  contact={c}
-                  active={c.id === selectedId}
-                  onClick={() => setSelectedId(c.id)}
-                />
-              ))
-            )}
-          </div>
-        </ScrollArea>
-      </section>
-
-      {/* Detail panel */}
       <section className="hidden flex-1 md:block">
         {selected ? (
           <ContactDetail
@@ -332,7 +129,6 @@ export function ContactsPage() {
         )}
       </section>
 
-      {/* Add contact modal */}
       <AddContactModal
         open={addOpen}
         onOpenChange={setAddOpen}
@@ -342,7 +138,6 @@ export function ContactsPage() {
         }}
       />
 
-      {/* Add group modal */}
       <AddGroupModal
         open={addGroupOpen}
         onOpenChange={setAddGroupOpen}
@@ -355,4 +150,3 @@ export function ContactsPage() {
     </div>
   );
 }
-
