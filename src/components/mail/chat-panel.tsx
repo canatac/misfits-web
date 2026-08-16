@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, ListTodo, Send, ShieldAlert } from "lucide-react";
+import { useMemo } from "react";
+import { ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/stores/chat-store";
 import { useEmailStore } from "@/stores/email-store";
@@ -9,33 +9,26 @@ import { useThreadStore } from "@/stores/thread-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { useComposerStore } from "@/stores/composer-store";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ChatPanelHeader } from "@/components/mail/chat-panel/chat-panel-header";
 import { ChatAssistantView } from "@/components/mail/chat-panel/chat-assistant-view";
 import { ChatExpertView } from "@/components/mail/chat-panel/chat-expert-view";
+import { ChatPanelTabs } from "@/components/mail/chat-panel/chat-panel-tabs";
+import { ChatPanelWorkspace } from "@/components/mail/chat-panel/chat-panel-workspace";
+import { ChatPanelInput } from "@/components/mail/chat-panel/chat-panel-input";
+import { useChatPanelState } from "@/components/mail/chat-panel/use-chat-panel-state";
 import type { ChatSourceCitation, ChatConversation } from "@/types/chat";
 import type { ChatTraceEvent } from "@/stores/chat-types";
 import type { Email } from "@/types/email";
-import { QUICK_PROMPTS, QUICK_ACTIONS, ROLE_TEMPLATES, SENSITIVE_KEYWORDS, DEFAULT_PERSONA, DEFAULT_ANALYTICS, containsSensitiveIntent, parseTaskCandidates, redactPii, buildPersonaInstruction, type Analytics, type PersonaPreset } from "./chat-panel/chat-panel-utils";
-
-
-type TaskItem = {
-  id: string;
-  text: string;
-  done: boolean;
-  status: "idle" | "running" | "done" | "failed";
-  runId?: string;
-};
-
-type OpsAction = {
-  at: number;
-  action: string;
-  mode: "dry-run" | "execute";
-};
-
-
-
-
+import {
+  QUICK_PROMPTS,
+  QUICK_ACTIONS,
+  ROLE_TEMPLATES,
+  containsSensitiveIntent,
+  parseTaskCandidates,
+  redactPii,
+  buildPersonaInstruction,
+  type PersonaPreset,
+} from "./chat-panel/chat-panel-utils";
 
 interface ChatPanelProps {
   layout?: "overlay" | "inline" | "docked";
@@ -64,25 +57,6 @@ export function ChatPanel({
     selectConversation,
     lastLatencyMs,
   } = useChatStore();
-
-  const [uiMode, setUiMode] = useState<"assistant" | "expert">("assistant");
-  const [workspaceTab, setWorkspaceTab] = useState<"ai" | "agenda" | "tasks">(
-    "ai"
-  );
-  const [input, setInput] = useState("");
-  const [searchValue, setSearchValue] = useState("");
-  const [pendingSensitivePrompt, setPendingSensitivePrompt] = useState<
-    string | null
-  >(null);
-  const [opsDryRun, setOpsDryRun] = useState(true);
-  const [opsHistory, setOpsHistory] = useState<OpsAction[]>([]);
-  const [memoryNote, setMemoryNote] = useState("");
-  const [taskItems, setTaskItems] = useState<TaskItem[]>([]);
-  const [templateId, setTemplateId] = useState<string>("none");
-  const [persona, setPersona] = useState<PersonaPreset>(DEFAULT_PERSONA);
-  const [analytics, setAnalytics] = useState<Analytics>(DEFAULT_ANALYTICS);
-  const [lastRedactionCount, setLastRedactionCount] = useState(0);
-  const [lastExecError, setLastExecError] = useState<string | null>(null);
 
   const emails = useEmailStore((s) => s.emails);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
@@ -126,19 +100,45 @@ export function ChatPanel({
   const sessionKey = chatContext.userId
     ? `user-${chatContext.userId}`
     : "(none)";
-  const memoryKey = useMemo(
-    () => `mfa.chat.memory.${sessionKey}`,
+
+  const storageKeys = useMemo(
+    () => ({
+      memoryKey: `mfa.chat.memory.${sessionKey}`,
+      tasksKey: `mfa.chat.tasks.${sessionKey}`,
+      personaKey: `mfa.chat.persona.${sessionKey}`,
+      analyticsKey: `mfa.chat.analytics.${sessionKey}`,
+    }),
     [sessionKey]
   );
-  const tasksKey = useMemo(() => `mfa.chat.tasks.${sessionKey}`, [sessionKey]);
-  const personaKey = useMemo(
-    () => `mfa.chat.persona.${sessionKey}`,
-    [sessionKey]
-  );
-  const analyticsKey = useMemo(
-    () => `mfa.chat.analytics.${sessionKey}`,
-    [sessionKey]
-  );
+
+  const {
+    state,
+    dispatch,
+    input,
+    setInput,
+    searchValue,
+    setSearchValue,
+    bumpAnalytics,
+    persistTasks,
+    persistPersona,
+    persistMemoryNote,
+    clearMemoryNote,
+  } = useChatPanelState({ isOpen, storageKeys });
+
+  const {
+    uiMode,
+    workspaceTab,
+    pendingSensitivePrompt,
+    opsDryRun,
+    opsHistory,
+    memoryNote,
+    taskItems,
+    templateId,
+    persona,
+    analytics,
+    lastRedactionCount,
+    lastExecError,
+  } = state;
 
   const traceStats = useMemo(() => {
     const info = traceEvents.filter((e: ChatTraceEvent) => e.level === "info").length;
@@ -178,56 +178,7 @@ export function ChatPanel({
     [taskItems]
   );
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const savedNote = window.localStorage.getItem(memoryKey) ?? "";
-    setMemoryNote(savedNote);
-
-    const savedTasks = window.localStorage.getItem(tasksKey);
-    if (savedTasks) {
-      try {
-        setTaskItems(JSON.parse(savedTasks) as TaskItem[]);
-      } catch {
-        setTaskItems([]);
-      }
-    } else {
-      setTaskItems([]);
-    }
-
-    const savedPersona = window.localStorage.getItem(personaKey);
-    if (savedPersona) {
-      try {
-        setPersona(JSON.parse(savedPersona) as PersonaPreset);
-      } catch {
-        setPersona(DEFAULT_PERSONA);
-      }
-    }
-
-    const savedAnalytics = window.localStorage.getItem(analyticsKey);
-    if (savedAnalytics) {
-      try {
-        setAnalytics(JSON.parse(savedAnalytics) as Analytics);
-      } catch {
-        setAnalytics(DEFAULT_ANALYTICS);
-      }
-    }
-  }, [isOpen, memoryKey, tasksKey, personaKey, analyticsKey]);
-
   if (!isOpen) return null;
-
-  const bumpAnalytics = (patch: Partial<Analytics>) => {
-    const next = {
-      ...analytics,
-      ...Object.fromEntries(
-        Object.entries(patch).map(([k, v]) => [
-          k,
-          ((analytics as Record<string, number>)[k] ?? 0) + (v ?? 0),
-        ])
-      ),
-    } as Analytics;
-    setAnalytics(next);
-    window.localStorage.setItem(analyticsKey, JSON.stringify(next));
-  };
 
   const dispatchPrompt = (prompt: string) => {
     const templatePrompt = ROLE_TEMPLATES.find(
@@ -256,11 +207,11 @@ export function ChatPanel({
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
     const redacted = redactPii(input.trim());
-    setLastRedactionCount(redacted.count);
+    dispatch({ type: "setLastRedactionCount", value: redacted.count });
     if (redacted.count > 0) bumpAnalytics({ redactions: redacted.count });
 
     if (containsSensitiveIntent(redacted.sanitized)) {
-      setPendingSensitivePrompt(redacted.sanitized);
+      dispatch({ type: "setPendingSensitivePrompt", value: redacted.sanitized });
       return;
     }
 
@@ -272,7 +223,7 @@ export function ChatPanel({
     if (!pendingSensitivePrompt) return;
     dispatchPrompt(pendingSensitivePrompt);
     setInput("");
-    setPendingSensitivePrompt(null);
+    dispatch({ type: "setPendingSensitivePrompt", value: null });
   };
 
   const copySessionContext = async () => {
@@ -302,29 +253,21 @@ export function ChatPanel({
       done: false,
       status: "idle" as const,
     }));
-    const next = [...taskItems, ...appended].slice(-20);
-    setTaskItems(next);
-    window.localStorage.setItem(tasksKey, JSON.stringify(next));
-  };
-
-  const updateTasks = (next: TaskItem[]) => {
-    setTaskItems(next);
-    window.localStorage.setItem(tasksKey, JSON.stringify(next));
+    persistTasks([...taskItems, ...appended].slice(-20));
   };
 
   const toggleTask = (id: string) => {
-    const next = taskItems.map((t) =>
-      t.id === id ? { ...t, done: !t.done } : t
+    persistTasks(
+      taskItems.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
     );
-    updateTasks(next);
   };
 
   const executeTaskOnBackend = async (taskId: string) => {
-    setLastExecError(null);
+    dispatch({ type: "setLastExecError", value: null });
     const task = taskItems.find((t) => t.id === taskId);
     if (!task) return;
 
-    updateTasks(
+    persistTasks(
       taskItems.map((t) => (t.id === taskId ? { ...t, status: "running" } : t))
     );
 
@@ -354,18 +297,19 @@ export function ChatPanel({
       const runId = data.run_id ?? data.id ?? "n/a";
       bumpAnalytics({ backendTaskRuns: 1 });
 
-      updateTasks(
+      persistTasks(
         taskItems.map((t) =>
           t.id === taskId ? { ...t, status: "done", done: true, runId } : t
         )
       );
     } catch (err) {
-      updateTasks(
+      persistTasks(
         taskItems.map((t) => (t.id === taskId ? { ...t, status: "failed" } : t))
       );
-      setLastExecError(
-        err instanceof Error ? err.message : "Échec exécution backend"
-      );
+      dispatch({
+        type: "setLastExecError",
+        value: err instanceof Error ? err.message : "Échec exécution backend",
+      });
     }
   };
 
@@ -394,10 +338,11 @@ export function ChatPanel({
   };
 
   const runAdminAction = (action: string, prompt: string) => {
-    const mode: OpsAction["mode"] = opsDryRun ? "dry-run" : "execute";
-    setOpsHistory((prev) =>
-      [{ at: Date.now(), action, mode }, ...prev].slice(0, 20)
-    );
+    const mode = opsDryRun ? "dry-run" : "execute";
+    dispatch({
+      type: "pushOpsAction",
+      value: { at: Date.now(), action, mode },
+    });
     const finalPrompt = opsDryRun
       ? `[DRY-RUN ADMIN] ${prompt}\n\nNe rien exécuter. Produire un plan + commandes de vérification.`
       : `[ADMIN ACTION] ${prompt}`;
@@ -437,7 +382,7 @@ export function ChatPanel({
     >
       <ChatPanelHeader
         uiMode={uiMode}
-        onModeChange={setUiMode}
+        onModeChange={(value) => dispatch({ type: "setUiMode", value })}
         onClose={closePanel}
         isStreaming={isStreaming}
         lastLatencyMs={lastLatencyMs}
@@ -449,82 +394,21 @@ export function ChatPanel({
         }}
       />
 
-      <div className="px-3 pt-2">
-        <div className="flex items-center gap-2 text-xs text-[var(--color-muted-fg)]">
-          <Badge variant={traceStats.error > 0 ? "destructive" : "secondary"}>
-            {confidenceLabel}
-          </Badge>
-          {uiMode === "assistant" ? (
-            <span>
-              {selectedEmail?.subject
-                ? `Contexte: ${selectedEmail.subject.slice(0, 72)}`
-                : "Contexte: conversation courante"}
-            </span>
-          ) : (
-            <span>{`session=${sessionId} · user=${sessionKey}`}</span>
-          )}
-        </div>
-
-        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl border border-[#242427] bg-[#121214] p-1 text-[11px]">
-          <button
-            type="button"
-            onClick={() => setWorkspaceTab("ai")}
-            className={cn(
-              "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "ai"
-                ? "bg-[#1D1D20] text-[#C49B66]"
-                : "text-[#71717A] hover:text-white"
-            )}
-          >
-            IA
-          </button>
-          <button
-            type="button"
-            onClick={() => setWorkspaceTab("agenda")}
-            className={cn(
-              "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "agenda"
-                ? "bg-[#1D1D20] text-[#C49B66]"
-                : "text-[#71717A] hover:text-white"
-            )}
-          >
-            Agenda
-          </button>
-          <button
-            type="button"
-            onClick={() => setWorkspaceTab("tasks")}
-            className={cn(
-              "rounded-lg px-2 py-1.5 font-medium transition",
-              workspaceTab === "tasks"
-                ? "bg-[#1D1D20] text-[#C49B66]"
-                : "text-[#71717A] hover:text-white"
-            )}
-          >
-            Tâches
-          </button>
-        </div>
-
-        <div className="mt-2 grid grid-cols-3 gap-2 text-[10px]">
-          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
-            <div className="text-[#71717A]">Conversations</div>
-            <div className="font-mono text-[#E0E0E0]">
-              {conversations.length}
-            </div>
-          </div>
-          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
-            <div className="text-[#71717A]">Agenda détecté</div>
-            <div className="font-mono text-[#E0E0E0]">
-              {agendaEmails.length}
-            </div>
-          </div>
-          <div className="rounded-lg border border-[#242427] bg-[#121214] px-2 py-1.5">
-            <div className="text-[#71717A]">TODO actifs</div>
-            <div className="font-mono text-[#E0E0E0]">
-              {pendingTasks.length}
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatPanelTabs
+        confidenceLabel={confidenceLabel}
+        hasErrors={traceStats.error > 0}
+        uiMode={uiMode}
+        selectedEmailSubject={selectedEmail?.subject}
+        sessionId={sessionId}
+        sessionKey={sessionKey}
+        workspaceTab={workspaceTab}
+        onWorkspaceTabChange={(value) =>
+          dispatch({ type: "setWorkspaceTab", value })
+        }
+        conversationsCount={conversations.length}
+        agendaCount={agendaEmails.length}
+        pendingTasksCount={pendingTasks.length}
+      />
 
       {pendingSensitivePrompt && (
         <div className="mx-3 mt-3 rounded-md border border-amber-400/50 bg-amber-500/10 p-2 text-xs">
@@ -540,7 +424,9 @@ export function ChatPanel({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setPendingSensitivePrompt(null)}
+              onClick={() =>
+                dispatch({ type: "setPendingSensitivePrompt", value: null })
+              }
             >
               Annuler
             </Button>
@@ -567,7 +453,9 @@ export function ChatPanel({
               searchValue={searchValue}
               onSearchValueChange={setSearchValue}
               templateId={templateId}
-              onTemplateIdChange={setTemplateId}
+              onTemplateIdChange={(value) =>
+                dispatch({ type: "setTemplateId", value })
+              }
               roleTemplates={ROLE_TEMPLATES.map((t) => ({
                 id: t.id,
                 label: `Template: ${t.label}`,
@@ -599,26 +487,18 @@ export function ChatPanel({
               onCopySessionContext={() => void copySessionContext()}
               persona={persona}
               onPersonaChange={(next) => {
-                const updated = {
+                persistPersona({
                   tone: next.tone as PersonaPreset["tone"],
                   length: next.length as PersonaPreset["length"],
                   language: next.language as PersonaPreset["language"],
-                };
-                setPersona(updated);
-                window.localStorage.setItem(
-                  personaKey,
-                  JSON.stringify(updated)
-                );
+                });
               }}
               memoryNote={memoryNote}
-              onMemoryNoteChange={setMemoryNote}
-              onSaveMemoryNote={() =>
-                window.localStorage.setItem(memoryKey, memoryNote)
+              onMemoryNoteChange={(value) =>
+                dispatch({ type: "setMemoryNote", value })
               }
-              onClearMemoryNote={() => {
-                setMemoryNote("");
-                window.localStorage.removeItem(memoryKey);
-              }}
+              onSaveMemoryNote={() => persistMemoryNote(memoryNote)}
+              onClearMemoryNote={clearMemoryNote}
               taskItems={taskItems}
               onToggleTask={toggleTask}
               onExecuteTask={(id) => void executeTaskOnBackend(id)}
@@ -627,108 +507,32 @@ export function ChatPanel({
               lastLatencyMs={lastLatencyMs}
               isAdmin={isAdmin}
               opsDryRun={opsDryRun}
-              onToggleOpsDryRun={() => setOpsDryRun((v) => !v)}
+              onToggleOpsDryRun={() => dispatch({ type: "toggleOpsDryRun" })}
               onRunAdminAction={runAdminAction}
               opsHistory={opsHistory}
             />
           )
-        ) : workspaceTab === "agenda" ? (
-          <div className="h-full overflow-auto rounded-xl border border-[#242427] bg-[#121214] p-3">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#E0E0E0]">
-              <CalendarClock className="h-4 w-4 text-[#C49B66]" />
-              Agenda prioritaire
-            </div>
-            <div className="space-y-2">
-              {agendaEmails.length === 0 ? (
-                <p className="text-xs text-[#71717A]">
-                  Aucun email agenda détecté.
-                </p>
-              ) : (
-                agendaEmails.map((email) => (
-                  <button
-                    key={email.id}
-                    type="button"
-                    onClick={() => selectEmail(email.id)}
-                    className="w-full rounded-lg border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-left hover:border-[#C49B66]/50"
-                  >
-                    <div className="text-xs font-medium text-[#E0E0E0]">
-                      {email.subject}
-                    </div>
-                    <div className="mt-0.5 line-clamp-2 text-[11px] text-[#71717A]">
-                      {email.preview}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
         ) : (
-          <div className="h-full overflow-auto rounded-xl border border-[#242427] bg-[#121214] p-3">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#E0E0E0]">
-              <ListTodo className="h-4 w-4 text-[#C49B66]" />
-              Tâches Hermes
-            </div>
-            <div className="space-y-2">
-              {pendingTasks.length === 0 ? (
-                <p className="text-xs text-[#71717A]">
-                  Aucune tâche en attente.
-                </p>
-              ) : (
-                pendingTasks.map((task) => (
-                  <label
-                    key={task.id}
-                    className="flex items-start gap-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-xs text-[#D4D4D8]"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={task.done}
-                      onChange={() => toggleTask(task.id)}
-                      className="mt-0.5"
-                    />
-                    <span className="flex-1">{task.text}</span>
-                  </label>
-                ))
-              )}
-            </div>
-          </div>
+          <ChatPanelWorkspace
+            tab={workspaceTab}
+            agendaEmails={agendaEmails}
+            pendingTasks={pendingTasks}
+            onSelectEmail={selectEmail}
+            onToggleTask={toggleTask}
+          />
         )}
       </div>
 
-      <div className="border-t border-[#242427] bg-[#121214] p-3">
-        <div className="mb-2 flex items-center gap-2">
-          <Button
-            onClick={insertLatestToDraft}
-            disabled={!lastAssistantMessage?.content}
-            className="flex-1"
-          >
-            Action principale: Insérer la dernière réponse dans le brouillon
-          </Button>
-          <Button
-            variant="outline"
-            onClick={regenerate}
-            disabled={!lastUserMessage || isStreaming}
-          >
-            Régénérer
-          </Button>
-        </div>
-
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Demander à Hermes..."
-            className="flex-1 rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-sm text-white placeholder-[#71717A] focus:ring-2 focus:ring-[#C49B66] focus:outline-none"
-          />
-          <Button
-            size="icon"
-            onClick={handleSend}
-            disabled={isStreaming || !input.trim()}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <ChatPanelInput
+        input={input}
+        onInputChange={setInput}
+        onSend={handleSend}
+        isStreaming={isStreaming}
+        canInsertLatest={Boolean(lastAssistantMessage?.content)}
+        onInsertLatest={insertLatestToDraft}
+        canRegenerate={Boolean(lastUserMessage)}
+        onRegenerate={regenerate}
+      />
     </div>
   );
 }
