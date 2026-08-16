@@ -11,6 +11,7 @@ import {
   executionStateTone,
   executionStateLabel,
 } from "../../shared";
+import { WorkflowRunActions } from "./WorkflowRunActions";
 
 export interface WorkflowRunDetailPanelProps {
   selectedWorkflowRun: any;
@@ -106,148 +107,14 @@ export function WorkflowRunDetailPanel({
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap gap-2">
-              {(selectedWorkflowRun.item.status === "submitted" ||
-                selectedWorkflowRun.item.status === "triaged" ||
-                selectedWorkflowRun.item.status === "planned") && (
-                <button
-                  type="button"
-                  className="rounded-md border border-[#1F4D3E] bg-[#132C24] px-2 py-1 text-[11px] text-[#86EFAC] disabled:opacity-50"
-                  disabled={
-                    transitionChangeRequest.isPending ||
-                    startImplementationChangeRequest.isPending ||
-                    deleteChangeRequest.isPending
-                  }
-                  onClick={() =>
-                    void handleStartImplementation(
-                      selectedWorkflowRun.item.id,
-                      selectedWorkflowRun.item.status
-                    )
-                  }
-                >
-                  relancer run
-                </button>
-              )}
-              {(selectedWorkflowRun.item.status === "in_progress" ||
-                selectedWorkflowRun.item.status === "qa") && (
-                <button
-                  type="button"
-                  className="rounded-md border border-[#4A3B1F] bg-[#2B2210] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
-                  disabled={
-                    transitionChangeRequest.isPending ||
-                    startImplementationChangeRequest.isPending ||
-                    deleteChangeRequest.isPending
-                  }
-                  onClick={() =>
-                    void handleTransition(
-                      selectedWorkflowRun.item.id,
-                      "stop",
-                      selectedWorkflowRun.item.status
-                    )
-                  }
-                >
-                  stop run
-                </button>
-              )}
-              {selectedWorkflowRun.item.status !== "released" &&
-                selectedWorkflowRun.item.status !== "rejected" && (
-                  <button
-                    type="button"
-                    className="rounded-md border border-[#5E4A20] bg-[#2B2413] px-2 py-1 text-[11px] text-[#FCD34D] disabled:opacity-50"
-                    disabled={
-                      transitionChangeRequest.isPending ||
-                      startImplementationChangeRequest.isPending ||
-                      deleteChangeRequest.isPending
-                    }
-                    onClick={() =>
-                      void handleTransition(
-                        selectedWorkflowRun.item.id,
-                        "cancel",
-                        selectedWorkflowRun.item.status
-                      )
-                    }
-                  >
-                    cancel run
-                  </button>
-                )}
-              {(selectedWorkflowRun.item.status === "in_progress" ||
-                selectedWorkflowRun.item.status === "qa") && (
-                <>
-                  <button
-                    type="button"
-                    className="rounded-md border border-[#3A3A42] bg-[#17171B] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
-                    disabled={
-                      transitionChangeRequest.isPending ||
-                      startImplementationChangeRequest.isPending ||
-                      deleteChangeRequest.isPending
-                    }
-                    onClick={() =>
-                      void handleTransition(
-                        selectedWorkflowRun.item.id,
-                        "execution_start",
-                        selectedWorkflowRun.item.status
-                      )
-                    }
-                  >
-                    signaler start backend
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-[#3A3A42] bg-[#17171B] px-2 py-1 text-[11px] text-[#D4D4D8] disabled:opacity-50"
-                    disabled={
-                      transitionChangeRequest.isPending ||
-                      startImplementationChangeRequest.isPending ||
-                      deleteChangeRequest.isPending
-                    }
-                    onClick={() =>
-                      void handleTransition(
-                        selectedWorkflowRun.item.id,
-                        "execution_heartbeat",
-                        selectedWorkflowRun.item.status
-                      )
-                    }
-                  >
-                    heartbeat
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-[#1F4D3E] bg-[#132C24] px-2 py-1 text-[11px] text-[#86EFAC] disabled:opacity-50"
-                    disabled={
-                      transitionChangeRequest.isPending ||
-                      startImplementationChangeRequest.isPending ||
-                      deleteChangeRequest.isPending
-                    }
-                    onClick={() =>
-                      void handleTransition(
-                        selectedWorkflowRun.item.id,
-                        "execution_success",
-                        selectedWorkflowRun.item.status
-                      )
-                    }
-                  >
-                    signaler success
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-[#5B1F27] bg-[#2B1419] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
-                    disabled={
-                      transitionChangeRequest.isPending ||
-                      startImplementationChangeRequest.isPending ||
-                      deleteChangeRequest.isPending
-                    }
-                    onClick={() =>
-                      void handleTransition(
-                        selectedWorkflowRun.item.id,
-                        "execution_fail",
-                        selectedWorkflowRun.item.status
-                      )
-                    }
-                  >
-                    signaler échec
-                  </button>
-                </>
-              )}
-            </div>
+            <WorkflowRunActions
+              selectedWorkflowRun={selectedWorkflowRun}
+              transitionChangeRequest={transitionChangeRequest}
+              startImplementationChangeRequest={startImplementationChangeRequest}
+              deleteChangeRequest={deleteChangeRequest}
+              handleStartImplementation={handleStartImplementation}
+              handleTransition={handleTransition}
+            />
 
             <div className="mt-3 rounded-md border border-[#5E4A20] bg-[#2B2413] p-2 text-[11px] text-[#FCD34D]">
               <p className="flex items-center gap-1">
