@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useGenerateSubject } from "@/hooks/use-ai";
-import { stripHtml } from "@/lib/ai-client";
+import { stripHtml } from "@/lib/ai-prompts";
 
 interface AISubjectSuggesterProps {
   /** Current email body (HTML). */

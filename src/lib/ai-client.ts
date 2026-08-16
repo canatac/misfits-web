@@ -388,16 +388,3 @@ async function* parseSSEStream(
   }
   yield { content: "", done: true };
 }
-
-
-/* ------------------------------------------------------------------ *
- * Sprint 12 : ré-exports depuis ai-prompts pour compat imports
- * ------------------------------------------------------------------ */
-export {
-  stripHtml,
-  generateEmail,
-  rewriteText,
-  translateText,
-  generateSubject,
-  smartComplete,
-} from "./ai-prompts";
