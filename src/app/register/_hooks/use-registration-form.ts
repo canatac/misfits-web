@@ -1,35 +1,44 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useReducer, type FormEvent } from "react";
 import { useRegister } from "@/hooks/use-auth";
 import { buildAvatarOptions, sanitizeAvatarName } from "../_lib/avatar";
+import {
+  initialRegistrationState,
+  registrationReducer,
+} from "../_lib/registration-reducer";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function useRegistrationForm() {
   const registerMutation = useRegister();
+  const [state, dispatch] = useReducer(
+    registrationReducer,
+    undefined,
+    initialRegistrationState,
+  );
+  // Placeholder pour éventuel state UI local futur — garde ≤ 3 useState.
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [acceptTerms, setAcceptTerms] = useState(false);
-
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [confirmTouched, setConfirmTouched] = useState(false);
-  const [termsTouched, setTermsTouched] = useState(false);
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [avatarSalt, setAvatarSalt] = useState(() => Date.now());
-  const [avatarNameEdits, setAvatarNameEdits] = useState<
-    Record<string, string>
-  >({});
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    acceptTerms,
+    emailTouched,
+    confirmTouched,
+    termsTouched,
+    submitAttempted,
+    avatarSalt,
+    avatarNameEdits,
+    selectedAvatar,
+  } = state;
 
   const avatarOptions = useMemo(
     () => buildAvatarOptions(avatarSalt),
     [avatarSalt],
   );
-  const [selectedAvatar, setSelectedAvatar] = useState(0);
 
   const selectedAvatarOption =
     avatarOptions[selectedAvatar] ?? avatarOptions[0];
@@ -53,37 +62,33 @@ export function useRegistrationForm() {
     !registerMutation.isPending;
 
   function regenerateAvatars() {
-    setAvatarSalt((prev) => prev + Math.floor(Math.random() * 1_000_000) + 1);
-    setAvatarNameEdits({});
-    setSelectedAvatar(0);
+    dispatch({
+      type: "REGENERATE_AVATARS",
+      salt: avatarSalt + Math.floor(Math.random() * 1_000_000) + 1,
+    });
   }
 
   function updateSelectedAvatarName(next: string) {
     if (!selectedAvatarOption) return;
-    setAvatarNameEdits((prev) => ({
-      ...prev,
-      [selectedAvatarOption.id]: sanitizeAvatarName(next),
-    }));
+    dispatch({
+      type: "SET_AVATAR_NAME",
+      id: selectedAvatarOption.id,
+      value: sanitizeAvatarName(next),
+    });
   }
 
   function setTermsAccepted(next: boolean) {
-    setAcceptTerms(next);
-    setTermsTouched(!next);
+    dispatch({ type: "SET_ACCEPT_TERMS", value: next });
   }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitAttempted(true);
-
     if (!canSubmit) {
-      setEmailTouched(true);
-      setConfirmTouched(true);
-      if (!acceptTerms) setTermsTouched(true);
+      dispatch({ type: "MARK_INVALID_SUBMIT", needTerms: !acceptTerms });
       return;
     }
-
+    dispatch({ type: "SET_SUBMIT_ATTEMPTED", value: true });
     void selectedAvatarName;
-
     registerMutation.mutate({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
@@ -95,21 +100,24 @@ export function useRegistrationForm() {
   return {
     registerMutation,
     firstName,
-    setFirstName,
+    setFirstName: (v: string) => dispatch({ type: "SET_FIRST_NAME", value: v }),
     lastName,
-    setLastName,
+    setLastName: (v: string) => dispatch({ type: "SET_LAST_NAME", value: v }),
     email,
-    setEmail,
+    setEmail: (v: string) => dispatch({ type: "SET_EMAIL", value: v }),
     password,
-    setPassword,
+    setPassword: (v: string) => dispatch({ type: "SET_PASSWORD", value: v }),
     confirmPassword,
-    setConfirmPassword,
+    setConfirmPassword: (v: string) =>
+      dispatch({ type: "SET_CONFIRM_PASSWORD", value: v }),
     acceptTerms,
     setTermsAccepted,
     emailTouched,
-    setEmailTouched,
+    setEmailTouched: (v: boolean) =>
+      dispatch({ type: "SET_EMAIL_TOUCHED", value: v }),
     confirmTouched,
-    setConfirmTouched,
+    setConfirmTouched: (v: boolean) =>
+      dispatch({ type: "SET_CONFIRM_TOUCHED", value: v }),
     emailError,
     passwordTooShort,
     passwordMismatch,
@@ -117,7 +125,8 @@ export function useRegistrationForm() {
     canSubmit,
     avatarOptions,
     selectedAvatar,
-    setSelectedAvatar,
+    setSelectedAvatar: (v: number) =>
+      dispatch({ type: "SET_SELECTED_AVATAR", value: v }),
     avatarNameEdits,
     selectedAvatarName,
     regenerateAvatars,
