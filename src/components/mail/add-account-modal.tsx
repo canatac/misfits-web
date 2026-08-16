@@ -35,12 +35,16 @@ import { useAccountMutations } from "@/hooks/use-accounts";
 import { useAccountStore } from "@/stores/account-store";
 import { ImapConsole } from "@/components/mail/imap-console";
 import type { AccountProvider, AccountServerConfig } from "@/types/account";
+import {
+  AccountColorPicker,
+  TestResultBanner,
+} from "./add-account-modal/account-color-picker";
+import { ServerSettingsFields } from "./add-account-modal/server-settings-fields";
 
 /** Accent color presets for accounts. */
 import {
   ACCOUNT_COLORS,
   PROVIDER_PRESETS,
-  SECURITY_OPTIONS,
   validateConnection,
   type ValidationResult,
 } from "@/lib/account-presets";
@@ -305,162 +309,23 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
             {/* Server settings (only for custom provider) */}
             {showServerFields && (
-              <div className="grid gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3">
-                <span className="text-sm font-medium">Server settings</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="grid gap-2">
-                    <Label htmlFor="imap-host">IMAP host</Label>
-                    <Input
-                      id="imap-host"
-                      value={serverConfig.imapHost}
-                      onChange={(e) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          imapHost: e.target.value,
-                        }))
-                      }
-                      placeholder="imap.example.com"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="imap-port">IMAP port</Label>
-                    <Input
-                      id="imap-port"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      value={serverConfig.imapPort}
-                      onChange={(e) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          imapPort: Number(e.target.value),
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="imap-security">IMAP security</Label>
-                    <Select
-                      value={serverConfig.imapSecurity}
-                      onValueChange={(v) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          imapSecurity:
-                            v as AccountServerConfig["imapSecurity"],
-                        }))
-                      }
-                    >
-                      <SelectTrigger id="imap-security">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECURITY_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtp-host">SMTP host</Label>
-                    <Input
-                      id="smtp-host"
-                      value={serverConfig.smtpHost}
-                      onChange={(e) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          smtpHost: e.target.value,
-                        }))
-                      }
-                      placeholder="smtp.example.com"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtp-port">SMTP port</Label>
-                    <Input
-                      id="smtp-port"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      value={serverConfig.smtpPort}
-                      onChange={(e) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          smtpPort: Number(e.target.value),
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="smtp-security">SMTP security</Label>
-                    <Select
-                      value={serverConfig.smtpSecurity}
-                      onValueChange={(v) =>
-                        setServerConfig((s) => ({
-                          ...s,
-                          smtpSecurity:
-                            v as AccountServerConfig["smtpSecurity"],
-                        }))
-                      }
-                    >
-                      <SelectTrigger id="smtp-security">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SECURITY_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+              <ServerSettingsFields
+                serverConfig={serverConfig}
+                setServerConfig={setServerConfig}
+              />
             )}
 
             {/* Color picker */}
-            <div className="grid gap-2">
-              <Label>Account color</Label>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {ACCOUNT_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    aria-label={`Color ${c}`}
-                    onClick={() => {
-                      setColor(c);
-                      setCustomColor("");
-                    }}
-                    className={cn(
-                      "h-6 w-6 rounded-full border-2 transition-transform",
-                      !customColor && color === c
-                        ? "scale-110 border-[var(--color-fg)]"
-                        : "border-transparent hover:scale-110"
-                    )}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-                <label className="relative ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[var(--color-border)]">
-                  <input
-                    type="color"
-                    value={customColor || color}
-                    onChange={(e) => setCustomColor(e.target.value)}
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    aria-label="Custom color"
-                  />
-                  <span
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: activeColor }}
-                    aria-hidden="true"
-                  />
-                </label>
-                <span className="ml-1 text-xs text-[var(--color-muted-fg)]">
-                  {accounts.length} account(s) connected
-                </span>
-              </div>
-            </div>
+            <AccountColorPicker
+              color={color}
+              customColor={customColor}
+              onSelectColor={(c) => {
+                setColor(c);
+                setCustomColor("");
+              }}
+              onCustomColorChange={(c) => setCustomColor(c)}
+              accountsCount={accounts.length}
+            />
 
             {/* Live IMAP console (shows every request/response during test) */}
             <ImapConsole
@@ -477,33 +342,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             />
 
             {/* Test connection result */}
-            {testResult && (
-              <div
-                className={cn(
-                  "flex items-start gap-2 rounded-[var(--radius-md)] border p-3 text-sm",
-                  testResult.ok
-                    ? "border-[var(--color-success-500)] bg-[var(--color-success)] text-[var(--color-success-fg)]"
-                    : "border-[var(--color-danger-500)] bg-[var(--color-danger)] text-[var(--color-danger-fg)]"
-                )}
-                role={testResult.ok ? "status" : "alert"}
-              >
-                {testResult.ok ? (
-                  <>
-                    <Check className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>Connection validated. Settings look good.</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <div className="flex flex-col gap-0.5">
-                      {testResult.errors.map((err) => (
-                        <span key={err}>{err}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+            <TestResultBanner testResult={testResult} />
           </div>
         </ModalBody>
 
