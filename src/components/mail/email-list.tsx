@@ -6,60 +6,19 @@
  * Keyboard navigation: j/k to move, e to archive, # to delete, Enter to open.
  */
 import { useRef, useEffect, useCallback, useState } from "react";
-import {
-  Search,
-  ArrowDownUp,
-  Archive,
-  Trash2,
-  MailOpen,
-  X,
-  Inbox as InboxIcon,
-  RefreshCw,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { useEmailStore, useFilteredSortedEmails } from "@/stores/email-store";
 import { useThreadStore } from "@/stores/thread-store";
 import { useThreads, useThreadActions } from "@/hooks/use-threads";
 import { EmailListItem } from "@/components/mail/email-list-item";
 import { ThreadListItem } from "@/components/mail/thread-list-item";
 import { ThreadHeader } from "@/components/mail/thread-header";
-import type { FilterType, SortBy } from "@/types/email";
-
-const FILTER_TABS: { value: FilterType; label: string }[] = [
-  { value: "all", label: "Focus" },
-  { value: "unread", label: "Non lus" },
-  { value: "starred", label: "VIP" },
-  { value: "attachments", label: "Pièces jointes" },
-];
-
-const SORT_OPTIONS: { value: SortBy; label: string }[] = [
-  { value: "date", label: "Date (newest)" },
-  { value: "sender", label: "Sender (A–Z)" },
-  { value: "subject", label: "Subject (A–Z)" },
-  { value: "size", label: "Size (largest)" },
-  { value: "unreadFirst", label: "Unread first" },
-];
+import { EmailListToolbar } from "@/components/mail/parts/email-list/email-list-toolbar";
+import {
+  EmailListSkeleton,
+  EmailListEmpty,
+} from "@/components/mail/parts/email-list/email-list-states";
 
 interface EmailListProps {
   className?: string;
@@ -87,7 +46,6 @@ export function EmailList({ className }: EmailListProps) {
   const toggleEmailSelection = useEmailStore((s) => s.toggleEmailSelection);
   const clearSelection = useEmailStore((s) => s.clearSelection);
 
-  // Threading state
   const threadingEnabled = useThreadStore((s) => s.threadingEnabled);
   const threadingMode = useThreadStore((s) => s.threadingMode);
   const viewMode = useThreadStore((s) => s.viewMode);
@@ -99,7 +57,6 @@ export function EmailList({ className }: EmailListProps) {
   const selectThread = useThreadStore((s) => s.selectThread);
   const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
 
-  // Build threads from the filtered emails
   const threads = useThreads();
   const { replyToThread } = useThreadActions();
 
@@ -107,35 +64,24 @@ export function EmailList({ className }: EmailListProps) {
   const baselineTopEmailIdRef = useRef<string | null>(null);
   const [newEmailsCount, setNewEmailsCount] = useState(0);
 
-  // Fetch emails when folder changes or on mount
   useEffect(() => {
     fetchEmails(currentFolder);
   }, [fetchEmails, currentFolder]);
 
-  // Balanced inbox refresh (Outlook/Gmail-like):
-  // - background poll every 15s while visible
-  // - immediate refresh on tab focus/visibility return
-  // - preserve current reading selection during refresh
   useEffect(() => {
     let cancelled = false;
-
     const refreshPreservingSelection = () => {
       if (cancelled) return;
       if (document.visibilityState !== "visible") return;
       if (useEmailStore.getState().loading) return;
       void fetchEmails(currentFolder, { preserveSelection: true });
     };
-
     const interval = window.setInterval(refreshPreservingSelection, 15_000);
     const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        refreshPreservingSelection();
-      }
+      if (document.visibilityState === "visible") refreshPreservingSelection();
     };
-
     window.addEventListener("focus", refreshPreservingSelection);
     document.addEventListener("visibilitychange", onVisibilityChange);
-
     return () => {
       cancelled = true;
       window.clearInterval(interval);
@@ -144,24 +90,18 @@ export function EmailList({ className }: EmailListProps) {
     };
   }, [fetchEmails, currentFolder]);
 
-  // Track newly arrived items without disrupting current reading flow.
   useEffect(() => {
     if (loading) return;
     const topId = emails[0]?.id ?? null;
     const baselineId = baselineTopEmailIdRef.current;
-
     if (!baselineId) {
       baselineTopEmailIdRef.current = topId;
       return;
     }
-
     if (!topId || topId === baselineId) return;
-
     const baselineIndex = emails.findIndex((e) => e.id === baselineId);
     const incoming = baselineIndex === -1 ? emails.length : baselineIndex;
-    if (incoming > 0) {
-      setNewEmailsCount(incoming);
-    }
+    if (incoming > 0) setNewEmailsCount(incoming);
   }, [emails, loading]);
 
   const acknowledgeNewEmails = useCallback(() => {
@@ -171,12 +111,12 @@ export function EmailList({ className }: EmailListProps) {
 
   const handleManualRefresh = useCallback(() => {
     void fetchEmails(currentFolder, { preserveSelection: true }).then(() => {
-      baselineTopEmailIdRef.current = useEmailStore.getState().emails[0]?.id ?? null;
+      baselineTopEmailIdRef.current =
+        useEmailStore.getState().emails[0]?.id ?? null;
       setNewEmailsCount(0);
     });
   }, [fetchEmails, currentFolder]);
 
-  // Keyboard navigation within the list
   const navigateEmail = useCallback(
     (direction: "next" | "prev") => {
       if (filteredEmails.length === 0) return;
@@ -197,12 +137,10 @@ export function EmailList({ className }: EmailListProps) {
     [filteredEmails, selectedEmailId, selectEmail]
   );
 
-  // Expose search focus for parent keyboard handler via ref callback
   const focusSearch = useCallback(() => {
     searchRef.current?.focus();
   }, []);
 
-  // Store focusSearch on window for the page-level shortcut hook to call
   useEffect(() => {
     (window as Window & { __mailFocusSearch?: () => void }).__mailFocusSearch =
       focusSearch;
@@ -213,22 +151,15 @@ export function EmailList({ className }: EmailListProps) {
   }, [focusSearch]);
 
   const handleArchive = useCallback(() => {
-    if (selectedEmailIds.size > 0) {
-      bulkAction("archive");
-    } else if (selectedEmailId) {
-      archive(selectedEmailId);
-    }
+    if (selectedEmailIds.size > 0) bulkAction("archive");
+    else if (selectedEmailId) archive(selectedEmailId);
   }, [selectedEmailIds, selectedEmailId, bulkAction, archive]);
 
   const handleDelete = useCallback(() => {
-    if (selectedEmailIds.size > 0) {
-      bulkAction("delete");
-    } else if (selectedEmailId) {
-      deleteEmail(selectedEmailId);
-    }
+    if (selectedEmailIds.size > 0) bulkAction("delete");
+    else if (selectedEmailId) deleteEmail(selectedEmailId);
   }, [selectedEmailIds, selectedEmailId, bulkAction, deleteEmail]);
 
-  // Expose actions on window for the page-level shortcut hook
   useEffect(() => {
     const w = window as Window & {
       __mailNavNext?: () => void;
@@ -270,137 +201,28 @@ export function EmailList({ className }: EmailListProps) {
       )}
       data-testid="email-list"
     >
-      {/* Toolbar */}
-      <div className="flex flex-col gap-2 border-b border-[#242427] bg-[#121214] p-3">
-        <div className="flex items-center justify-between rounded-xl border border-[#242427] bg-[#0A0A0B] px-3 py-2 text-xs">
-          <span className="font-semibold text-[#E0E0E0]">Focus Inbox</span>
-          <span className="font-mono text-[#C49B66]">Signal trié IA</span>
-        </div>
-        {/* Search + Sort */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
-            <Input
-              ref={searchRef}
-              type="search"
-              placeholder="Search mail..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-[#242427] bg-[#0A0A0B] pl-9 text-[#E0E0E0] placeholder:text-[#71717A]"
-              aria-label="Search emails"
-            />
-          </div>
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-            <SelectTrigger
-              className="w-[160px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]"
-              aria-label="Sort by"
-            >
-              <ArrowDownUp className="mr-1 h-3.5 w-3.5" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleManualRefresh}
-            disabled={loading}
-            aria-label="Rafraîchir la boîte de réception"
-            title="Rafraîchir"
-          >
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-          </Button>
-        </div>
+      <EmailListToolbar
+        searchRef={searchRef}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        loading={loading}
+        onManualRefresh={handleManualRefresh}
+        newEmailsCount={newEmailsCount}
+        acknowledgeNewEmails={acknowledgeNewEmails}
+        hasSelection={hasSelection}
+        selectedCount={selectedEmailIds.size}
+        bulkAction={bulkAction}
+        clearSelection={clearSelection}
+        showSelectAll={filteredEmails.length > 0 && !loading}
+        allSelected={allSelected}
+        onSelectAll={handleSelectAll}
+        visibleCount={filteredEmails.length}
+      />
 
-        {newEmailsCount > 0 && (
-          <div className="flex items-center justify-between rounded-lg border border-[#3A2F1F] bg-[#18130D] px-3 py-2 text-xs">
-            <span className="text-[#F5D7A9]">
-              {newEmailsCount} nouveau{newEmailsCount > 1 ? "x" : ""} mail
-              {newEmailsCount > 1 ? "s" : ""}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 px-2 text-[#F5D7A9] hover:text-[#FDE7C6]"
-              onClick={acknowledgeNewEmails}
-            >
-              Voir
-            </Button>
-          </div>
-        )}
-
-        {/* Filter tabs + Bulk actions */}
-        <div className="flex items-center justify-between gap-2">
-          <Tabs
-            value={filterType}
-            onValueChange={(v) => setFilterType(v as FilterType)}
-          >
-            <TabsList>
-              {FILTER_TABS.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-
-          {/* Bulk action bar */}
-          {hasSelection && (
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-[var(--color-muted-fg)]">
-                {selectedEmailIds.size} selected
-              </span>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => bulkAction("archive")}
-              >
-                <Archive className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => bulkAction("delete")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => bulkAction("markRead")}
-              >
-                <MailOpen className="h-4 w-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={clearSelection}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Select-all checkbox (only when there are emails) */}
-        {filteredEmails.length > 0 && !loading && (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={allSelected}
-              onCheckedChange={handleSelectAll}
-              aria-label="Select all emails"
-            />
-            <span className="text-xs text-[var(--color-muted-fg)]">
-              {filteredEmails.length}{" "}
-              {filteredEmails.length === 1 ? "email" : "emails"}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Threading header */}
       {threadingEnabled && threads.length > 0 && !loading && (
         <ThreadHeader
           thread={threads.find((t) => t.id === selectedThreadId) ?? null}
@@ -413,45 +235,13 @@ export function EmailList({ className }: EmailListProps) {
         />
       )}
 
-      {/* Email rows */}
       <ScrollArea className="flex-1">
         {loading ? (
-          <div
-            className="flex flex-col gap-0"
-            data-testid="email-list-skeleton"
-          >
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 border-b border-[var(--color-border)] p-3"
-              >
-                <Skeleton className="h-4 w-4 rounded" />
-                <Skeleton className="h-9 w-9 rounded-full" />
-                <div className="flex flex-1 flex-col gap-2">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-12" />
-                  </div>
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <EmailListSkeleton />
         ) : filteredEmails.length === 0 ? (
-          <EmptyState
-            icon={InboxIcon}
-            title="No emails here"
-            description="This folder is empty, or no emails match your current filters."
-            size="lg"
-          />
+          <EmailListEmpty />
         ) : threadingEnabled && threads.length > 0 ? (
-          /* Threaded view */
-          <div
-            role="listbox"
-            aria-label="Thread list"
-            data-testid="thread-list"
-          >
+          <div role="listbox" aria-label="Thread list" data-testid="thread-list">
             {threads.map((thread) => (
               <ThreadListItem
                 key={thread.id}
@@ -461,7 +251,6 @@ export function EmailList({ className }: EmailListProps) {
                 selectedEmailId={selectedEmailId}
                 onSelectThread={(tid) => {
                   selectThread(tid);
-                  // Also select the last email for the view panel
                   const last = thread.messages[thread.messages.length - 1];
                   if (last) selectEmail(last.id);
                 }}
@@ -475,7 +264,6 @@ export function EmailList({ className }: EmailListProps) {
             <div className="h-4" aria-hidden="true" />
           </div>
         ) : (
-          /* Flat view */
           <div role="listbox" aria-label="Email list">
             {filteredEmails.map((email) => (
               <EmailListItem
@@ -488,7 +276,6 @@ export function EmailList({ className }: EmailListProps) {
                 onToggleStar={toggleStar}
               />
             ))}
-            {/* Infinite scroll stub — last item sentinel */}
             <div className="h-4" aria-hidden="true" />
           </div>
         )}
