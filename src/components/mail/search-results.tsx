@@ -5,14 +5,8 @@
  * a faceted filters panel, sort controls, loading skeleton, and empty state.
  */
 import { useMemo, useState } from "react";
-import {
-  Search as SearchIcon,
-  Paperclip,
-  Star,
-  ArrowDownUp,
-  Filter,
-  X,
-} from "lucide-react";
+import { Search as SearchIcon, Paperclip, Star, ArrowDownUp } from "lucide-react";
+import { FacetPanel } from "./search-results/facet-panel";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -258,152 +252,11 @@ function ResultItem({
 // Faceted filters panel
 // ---------------------------------------------------------------------------
 
-const FOLDER_NAMES: Record<Folder, string> = {
-  inbox: "Inbox",
-  sent: "Sent",
-  drafts: "Drafts",
-  archive: "Archive",
-  trash: "Trash",
-  spam: "Spam",
-};
-
 const SORT_OPTIONS: { value: SearchSort; label: string }[] = [
   { value: "relevance", label: "Relevance" },
   { value: "date", label: "Date (newest)" },
 ];
 
-function FacetPanel() {
-  const facets = useSearchStore((s) => s.facets);
-  const query = useSearchStore((s) => s.query);
-  const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
-  const executeSearch = useSearchStore((s) => s.executeSearch);
-
-  if (!facets || !query.trim()) return null;
-
-  const folders = Object.entries(facets.folders).filter(
-    ([, count]) => count > 0
-  );
-  const labels = Object.entries(facets.labels).filter(([, count]) => count > 0);
-
-  const appendFilter = (operator: string, value: string) => {
-    const newQuery = `${query} ${operator}:${value}`;
-    setSearchQuery(newQuery);
-    executeSearch();
-  };
-
-  return (
-    <div className="flex flex-col gap-3 border-b border-[var(--color-border)] p-3">
-      <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-        <Filter className="h-3.5 w-3.5" />
-        Refine
-      </div>
-
-      {/* Quick filters */}
-      <div className="flex flex-wrap gap-1.5">
-        {facets.isUnread > 0 && (
-          <button
-            onClick={() => appendFilter("is", "unread")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-          >
-            Unread ({facets.isUnread})
-          </button>
-        )}
-        {facets.isStarred > 0 && (
-          <button
-            onClick={() => appendFilter("is", "starred")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-          >
-            <Star className="h-3 w-3" />
-            Starred ({facets.isStarred})
-          </button>
-        )}
-        {facets.hasAttachment > 0 && (
-          <button
-            onClick={() => appendFilter("has", "attachment")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-          >
-            <Paperclip className="h-3 w-3" />
-            Attachments ({facets.hasAttachment})
-          </button>
-        )}
-      </div>
-
-      {/* Folder facets */}
-      {folders.length > 1 && (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-[var(--color-muted-fg)]">Folders</span>
-          <div className="flex flex-wrap gap-1.5">
-            {folders.map(([folder, count]) => (
-              <button
-                key={folder}
-                onClick={() => appendFilter("", "")}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-                title={`Folder: ${FOLDER_NAMES[folder as Folder] ?? folder}`}
-              >
-                {FOLDER_NAMES[folder as Folder] ?? folder} ({count})
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Label facets */}
-      {labels.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-[var(--color-muted-fg)]">Labels</span>
-          <div className="flex flex-wrap gap-1.5">
-            {labels.map(([label, count]) => (
-              <button
-                key={label}
-                onClick={() =>
-                  appendFilter("label", label.replace(/^label-/, ""))
-                }
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-              >
-                {label.replace(/^label-/, "")} ({count})
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Date range facets */}
-      {(facets.dateRanges.today > 0 ||
-        facets.dateRanges.week > 0 ||
-        facets.dateRanges.month > 0) && (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-[var(--color-muted-fg)]">Date</span>
-          <div className="flex flex-wrap gap-1.5">
-            {facets.dateRanges.today > 0 && (
-              <button
-                onClick={() => appendFilter("after", "1d")}
-                className="inline-flex items-center rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-              >
-                Today ({facets.dateRanges.today})
-              </button>
-            )}
-            {facets.dateRanges.week > 0 && (
-              <button
-                onClick={() => appendFilter("after", "7d")}
-                className="inline-flex items-center rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-              >
-                This week ({facets.dateRanges.week})
-              </button>
-            )}
-            {facets.dateRanges.month > 0 && (
-              <button
-                onClick={() => appendFilter("after", "30d")}
-                className="inline-flex items-center rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs transition-colors hover:bg-[var(--color-muted)]"
-              >
-                This month ({facets.dateRanges.month})
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Search Results
