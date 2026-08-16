@@ -175,8 +175,6 @@ export function ChatPanel({
     [taskItems]
   );
 
-  if (!isOpen) return null;
-
   const {
     dispatchPrompt,
     askForVariant,
@@ -218,6 +216,8 @@ export function ChatPanel({
     selectEmail,
     selectThread,
   });
+
+  if (!isOpen) return null;
 
   const confidenceLabel =
     traceStats.error > 0 ? "À vérifier" : isStreaming ? "Génération" : "Prêt";
