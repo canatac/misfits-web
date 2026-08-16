@@ -13,28 +13,10 @@ import {
   useSecurityIncidents,
   useSecurityLive,
 } from "@/hooks/use-security-dashboard";
-import {
-  useAdminAiActivity,
-  useAdminAuditLog,
-  useAdminChangelog,
-  useAdminUsers,
-  useAdminWhoami,
-  useChangeRequests,
-  useCreateAdminUser,
-  useCreateChangeRequest,
-  useDeleteChangeRequest,
-  useDeleteAdminUser,
-  useInviteAdminUser,
-  useResetAdminPassword,
-  useStartImplementationChangeRequest,
-  useTransitionChangeRequest,
-  useUpdateAdminUser,
-} from "@/hooks/use-admin-ops";
 import type {
   CreateAdminUserInput,
   CreateChangeRequestInput,
 } from "@/types/admin-ops";
-import { ChangelogTab } from "./tabs/ChangelogTab";
 import { ChangeRequestsTab } from "./tabs/ChangeRequestsTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
 import {
@@ -44,17 +26,14 @@ import {
 import { UsersTab } from "./tabs/UsersTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
-import { cn } from "@/lib/utils";
-import {
-  type AdminTab,
-  WINDOW_OPTIONS,
-  SEVERITY_OPTIONS,
-} from "./admin-console-constants";
+import { type AdminTab } from "./admin-console-constants";
 import { useAdminData } from "@/hooks/useAdminData";
 import { useCrGuide } from "@/hooks/useCrGuide";
 import { useAdminAssistant } from "@/hooks/useAdminAssistant";
 import { useAdminActions } from "@/hooks/useAdminActions";
 import { useAdminConsoleDerived } from "./hooks/useAdminConsoleDerived";
+import { useAdminMutations } from "./hooks/useAdminMutations";
+import { AdminConsoleHeader } from "./parts/AdminConsoleHeader";
 
 export function AdminConsolePage({
   initialTab = "overview",
@@ -85,22 +64,22 @@ export function AdminConsolePage({
   });
   const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
 
-  const adminChangelog = useAdminChangelog();
-  const changeRequests = useChangeRequests();
-  const adminUsers = useAdminUsers();
-  const whoami = useAdminWhoami();
-  const inviteAdminUser = useInviteAdminUser();
-  const resetAdminPassword = useResetAdminPassword();
-  const adminAuditLog = useAdminAuditLog(100);
-  const adminAiActivity = useAdminAiActivity(50);
-  const createChangeRequest = useCreateChangeRequest();
-  const transitionChangeRequest = useTransitionChangeRequest();
-  const deleteChangeRequest = useDeleteChangeRequest();
-  const startImplementationChangeRequest =
-    useStartImplementationChangeRequest();
-  const updateAdminUser = useUpdateAdminUser();
-  const createAdminUser = useCreateAdminUser();
-  const deleteAdminUser = useDeleteAdminUser();
+  const {
+    changeRequests,
+    adminUsers,
+    whoami,
+    inviteAdminUser,
+    resetAdminPassword,
+    adminAuditLog,
+    adminAiActivity,
+    createChangeRequest,
+    transitionChangeRequest,
+    deleteChangeRequest,
+    startImplementationChangeRequest,
+    updateAdminUser,
+    createAdminUser,
+    deleteAdminUser,
+  } = useAdminMutations();
 
   const [newRequest, setNewRequest] = useState<CreateChangeRequestInput>({
     title: "",
@@ -217,78 +196,14 @@ export function AdminConsolePage({
 
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
-      <header className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-[#F4F4F5]">
-              Console Admin
-            </h1>
-            <p className="text-sm text-[#A1A1AA]">
-              Monitoring SMTP, sécurité anti-phishing, incidents, change
-              requests.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {WINDOW_OPTIONS.map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => setWindowRange(opt)}
-                className={cn(
-                  "rounded-lg border px-2.5 py-1 text-xs",
-                  windowRange === opt
-                    ? "border-[#C49B66] bg-[#2A2218] text-[#F2D5A7]"
-                    : "border-[#2B2B31] bg-[#151518] text-[#B4B4BB] hover:border-[#3A3A42]"
-                )}
-              >
-                {opt}
-              </button>
-            ))}
-            <select
-              value={severity}
-              onChange={(e) =>
-                setSeverity(e.target.value as SecuritySeverity | "all")
-              }
-              className="rounded-lg border border-[#2B2B31] bg-[#151518] px-2.5 py-1 text-xs text-[#D4D4D8]"
-              aria-label="Filtrer la sévérité sécurité"
-            >
-              {SEVERITY_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  severity: {opt}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {(
-            [
-              ["overview", "Vue globale"],
-              ["monitoring", "Monitoring SMTP"],
-              ["security", "Sécurité"],
-              ["deliverability-ops", "Deliverability Ops"],
-              ["changelog", "Changelog"],
-              ["change-requests", "Change requests"],
-              ["users", "Utilisateurs"],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setActiveTab(key)}
-              className={cn(
-                "rounded-lg border px-3 py-1.5 text-xs font-medium",
-                activeTab === key
-                  ? "border-[#C49B66] bg-[#2A2218] text-[#F2D5A7]"
-                  : "border-[#2B2B31] bg-[#151518] text-[#B4B4BB] hover:border-[#3A3A42]"
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </header>
+      <AdminConsoleHeader
+        windowRange={windowRange}
+        setWindowRange={setWindowRange}
+        severity={severity}
+        setSeverity={setSeverity}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
 
       {(activeTab === "overview" ||
         activeTab === "monitoring" ||
