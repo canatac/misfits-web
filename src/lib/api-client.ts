@@ -36,6 +36,11 @@ import {
 const BASE_URL =
   (typeof process !== "undefined" && process.env?.BACKEND_URL) || "/api";
 
+/** Public accessor for the resolved API base URL (used by helpers). */
+export function getApiBaseUrl(): string {
+  return BASE_URL;
+}
+
 /** Single-flight refresh: avoid stampeding the refresh endpoint. */
 let refreshPromise: Promise<string | null> | null = null;
 
