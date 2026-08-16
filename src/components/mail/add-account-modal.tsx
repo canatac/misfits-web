@@ -10,8 +10,7 @@
  * the account is added to the store.
  */
 import * as React from "react";
-import { Check, Loader2, Mail, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,67 +53,133 @@ interface AddAccountModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Reducer — consolidates the account creation form + test session state.    */
+/* -------------------------------------------------------------------------- */
+
+interface FormState {
+  provider: AccountProvider;
+  email: string;
+  name: string;
+  password: string;
+  color: string;
+  customColor: string;
+  serverConfig: AccountServerConfig;
+  testing: boolean;
+  testResult: ValidationResult | null;
+}
+
+type FormAction =
+  | { type: "setProvider"; provider: AccountProvider }
+  | { type: "setEmail"; email: string }
+  | { type: "setName"; name: string }
+  | { type: "setPassword"; password: string }
+  | { type: "setColor"; color: string }
+  | { type: "setCustomColor"; customColor: string }
+  | { type: "setServerConfig"; serverConfig: AccountServerConfig }
+  | { type: "setTesting"; testing: boolean }
+  | { type: "setTestResult"; testResult: ValidationResult | null }
+  | { type: "startTest" }
+  | { type: "reset" };
+
+const initialFormState: FormState = {
+  provider: "gmail",
+  email: "",
+  name: "",
+  password: "",
+  color: ACCOUNT_COLORS[0],
+  customColor: "",
+  serverConfig: PROVIDER_PRESETS.gmail.serverConfig!,
+  testing: false,
+  testResult: null,
+};
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case "setProvider": {
+      const preset = PROVIDER_PRESETS[action.provider];
+      return {
+        ...state,
+        provider: action.provider,
+        serverConfig: preset.serverConfig
+          ? { ...preset.serverConfig }
+          : state.serverConfig,
+        testResult: null,
+      };
+    }
+    case "setEmail":
+      return { ...state, email: action.email, testResult: null };
+    case "setName":
+      return { ...state, name: action.name };
+    case "setPassword":
+      return { ...state, password: action.password, testResult: null };
+    case "setColor":
+      return { ...state, color: action.color, customColor: "" };
+    case "setCustomColor":
+      return { ...state, customColor: action.customColor };
+    case "setServerConfig":
+      return { ...state, serverConfig: action.serverConfig };
+    case "setTesting":
+      return { ...state, testing: action.testing };
+    case "setTestResult":
+      return { ...state, testResult: action.testResult };
+    case "startTest":
+      return { ...state, testing: true, testResult: null };
+    case "reset":
+      return initialFormState;
+    default:
+      return state;
+  }
+}
+
+type ProbeInput = {
+  host: string;
+  port: number;
+  tls: boolean;
+  username: string;
+  password: string;
+};
+
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const { addAccount } = useAccountMutations();
   const accounts = useAccountStore((s) => s.accounts);
   const setActiveAccount = useAccountStore((s) => s.setActiveAccount);
 
-  const [provider, setProvider] = React.useState<AccountProvider>("gmail");
-  const [email, setEmail] = React.useState("");
-  const [name, setName] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [color, setColor] = React.useState(ACCOUNT_COLORS[0]);
-  const [customColor, setCustomColor] = React.useState("");
-  const [serverConfig, setServerConfig] = React.useState<AccountServerConfig>(
-    PROVIDER_PRESETS.gmail.serverConfig!
-  );
-  const [testing, setTesting] = React.useState(false);
-  const [testResult, setTestResult] = React.useState<ValidationResult | null>(
-    null
-  );
+  const [state, dispatch] = React.useReducer(formReducer, initialFormState);
+  const {
+    provider,
+    email,
+    name,
+    password,
+    color,
+    customColor,
+    serverConfig,
+    testing,
+    testResult,
+  } = state;
+
+  const [probeInput, setProbeInput] = React.useState<ProbeInput | null>(null);
 
   const activeColor = customColor || color;
   const needsServerFields = PROVIDER_PRESETS[provider].needsServerFields;
 
   function reset() {
-    setProvider("gmail");
-    setEmail("");
-    setName("");
-    setPassword("");
-    setColor(ACCOUNT_COLORS[0]);
-    setCustomColor("");
-    setServerConfig(PROVIDER_PRESETS.gmail.serverConfig!);
-    setTesting(false);
-    setTestResult(null);
+    dispatch({ type: "reset" });
+    setProbeInput(null);
   }
 
   function handleProviderChange(next: AccountProvider) {
-    setProvider(next);
-    const preset = PROVIDER_PRESETS[next];
-    if (preset.serverConfig) setServerConfig({ ...preset.serverConfig });
-    // Provider switched → re-run validation context resets.
-    setTestResult(null);
+    dispatch({ type: "setProvider", provider: next });
   }
 
-  const [probeInput, setProbeInput] = React.useState<null | {
-    host: string;
-    port: number;
-    tls: boolean;
-    username: string;
-    password: string;
-  }>(null);
-
   function handleTestConnection() {
-    setTesting(true);
-    setTestResult(null);
-    // 1) Local syntactic validation stays as a first-line filter.
+    dispatch({ type: "startTest" });
     const result = validateConnection(email, password, serverConfig);
     if (!result.ok) {
-      setTestResult(result);
-      setTesting(false);
+      dispatch({ type: "setTestResult", testResult: result });
+      dispatch({ type: "setTesting", testing: false });
       return;
     }
-    // 2) Kick off the live IMAP probe so the user can see every command/response.
     setProbeInput({
       host: serverConfig.imapHost,
       port: serverConfig.imapPort,
@@ -122,14 +187,12 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       username: email,
       password,
     });
-    // The console component reports completion via onDone.
   }
 
   async function handleSave() {
-    // 1) Local syntactic validation.
     const result = validateConnection(email, password, serverConfig);
     if (!result.ok) {
-      setTestResult(result);
+      dispatch({ type: "setTestResult", testResult: result });
       return;
     }
 
@@ -137,12 +200,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       ? serverConfig
       : (PROVIDER_PRESETS[provider].serverConfig ?? serverConfig);
 
-    // 2) Push to backend: create + test + initial sync (today only).
-    //    Any backend failure surfaces in the modal — nothing is stored locally
-    //    if the account isn't actually reachable server-side.
     let backendId: string | undefined;
     try {
-      setTesting(true);
+      dispatch({ type: "setTesting", testing: true });
       const {
         createExternalAccount,
         testExternalAccount,
@@ -164,23 +224,23 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
 
       const test = await testExternalAccount(created.id);
       if (!test.ok) {
-        // Clean up so the user isn't stuck with a dead account.
         try {
           await deleteExternalAccount(created.id);
         } catch {
           // noop
         }
-        setTestResult({ ok: false, errors: [test.message || "IMAP test failed"] });
+        dispatch({
+          type: "setTestResult",
+          testResult: { ok: false, errors: [test.message || "IMAP test failed"] },
+        });
         return;
       }
 
-      // Default sync window = "today only" (matches user requirement).
       await startExternalAccountSync(created.id, {
         mode: "incremental",
         since: startOfTodayIso(),
       });
     } catch (err) {
-      // Roll back the backend account if create succeeded but a later step failed.
       if (backendId) {
         try {
           const { deleteExternalAccount } = await import(
@@ -192,13 +252,15 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
         }
       }
       const msg = err instanceof Error ? err.message : String(err);
-      setTestResult({ ok: false, errors: [`Backend error: ${msg}`] });
+      dispatch({
+        type: "setTestResult",
+        testResult: { ok: false, errors: [`Backend error: ${msg}`] },
+      });
       return;
     } finally {
-      setTesting(false);
+      dispatch({ type: "setTesting", testing: false });
     }
 
-    // 3) Only persist locally once backend setup succeeded.
     const account = await addAccount.mutateAsync({
       email,
       name: name.trim() || undefined,
@@ -270,10 +332,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   id="account-email"
                   type="email"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setTestResult(null);
-                  }}
+                  onChange={(e) =>
+                    dispatch({ type: "setEmail", email: e.target.value })
+                  }
                   placeholder="you@example.com"
                   autoFocus
                 />
@@ -283,7 +344,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 <Input
                   id="account-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    dispatch({ type: "setName", name: e.target.value })
+                  }
                   placeholder="Work, Personal…"
                 />
               </div>
@@ -296,10 +359,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 id="account-password"
                 type="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setTestResult(null);
-                }}
+                onChange={(e) =>
+                  dispatch({ type: "setPassword", password: e.target.value })
+                }
                 placeholder="••••••••••••"
               />
               <p className="text-xs text-[var(--color-muted-fg)]">
@@ -311,7 +373,17 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             {showServerFields && (
               <ServerSettingsFields
                 serverConfig={serverConfig}
-                setServerConfig={setServerConfig}
+                setServerConfig={(update) =>
+                  dispatch({
+                    type: "setServerConfig",
+                    serverConfig:
+                      typeof update === "function"
+                        ? (update as (
+                            s: AccountServerConfig
+                          ) => AccountServerConfig)(serverConfig)
+                        : update,
+                  })
+                }
               />
             )}
 
@@ -319,11 +391,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             <AccountColorPicker
               color={color}
               customColor={customColor}
-              onSelectColor={(c) => {
-                setColor(c);
-                setCustomColor("");
-              }}
-              onCustomColorChange={(c) => setCustomColor(c)}
+              onSelectColor={(c) => dispatch({ type: "setColor", color: c })}
+              onCustomColorChange={(c) =>
+                dispatch({ type: "setCustomColor", customColor: c })
+              }
               accountsCount={accounts.length}
             />
 
@@ -331,12 +402,13 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
             <ImapConsole
               input={probeInput}
               onDone={(r) => {
-                setTesting(false);
-                setTestResult(
-                  r.ok
+                dispatch({ type: "setTesting", testing: false });
+                dispatch({
+                  type: "setTestResult",
+                  testResult: r.ok
                     ? { ok: true, errors: [] }
-                    : { ok: false, errors: [r.error ?? "IMAP probe failed"] }
-                );
+                    : { ok: false, errors: [r.error ?? "IMAP probe failed"] },
+                });
               }}
               title="IMAP session"
             />
