@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { AlertTriangle, Activity, ShieldCheck, Clock3 } from "lucide-react";
+import { useState } from "react";
 import {
   useMonitoringAlerts,
   useMonitoringBounces,
   useMonitoringLive,
   useMonitoringProviders,
-  useMonitoringSummary
+  useMonitoringSummary,
 } from "@/hooks/use-monitoring";
 import {
   useSecurityActiveAlerts,
   useSecurityIncidents,
-  useSecurityLive
+  useSecurityLive,
 } from "@/hooks/use-security-dashboard";
 import {
   useAdminAiActivity,
@@ -29,71 +28,36 @@ import {
   useResetAdminPassword,
   useStartImplementationChangeRequest,
   useTransitionChangeRequest,
-  useUpdateAdminUser
+  useUpdateAdminUser,
 } from "@/hooks/use-admin-ops";
 import type {
-  ChangeRequestItem,
   CreateAdminUserInput,
   CreateChangeRequestInput,
-  WorkflowStatus,
-  AdminUserRecord} from "@/types/admin-ops";
-import {
-  Badge,
-  asDate,
-  asInt,
-  percent,
-  minutesBetween,
-  formatDurationMinutes,
-  priorityTone,
-  statusTone,
-  runStateFromStatus,
-  runStateTone,
-  runStateLabel,
-  executionStateTone,
-  executionStateLabel
-} from "./shared";
+} from "@/types/admin-ops";
 import { ChangelogTab } from "./tabs/ChangelogTab";
 import { ChangeRequestsTab } from "./tabs/ChangeRequestsTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
-import { AdminOverviewSections, type LocalSecurityPosture, type LocalObservabilityOverview } from "./tabs/AdminOverviewSections";
+import {
+  AdminOverviewSections,
+  type LocalObservabilityOverview,
+} from "./tabs/AdminOverviewSections";
 import { UsersTab } from "./tabs/UsersTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
 import { cn } from "@/lib/utils";
 import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalDescription,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-} from "@/components/ui/modal";
-
-// Types et constantes admin console — extraits vers un module dédié
-// (refactor itération architecte, novembre 2026) pour aérer ce fichier
-// et faciliter leur réutilisation par les sous-composants de tab.
-import {
   type AdminTab,
   WINDOW_OPTIONS,
   SEVERITY_OPTIONS,
-  WORKFLOW_STATUS_COLUMNS,
-  STATUS_LABEL,
 } from "./admin-console-constants";
-
-
-import type {
-  AdminDeliverabilityDiagnosticsResponse,
-  DeliverabilityProcedureData,
-  AdminObservabilityOverviewResponse,
-} from "@/types/admin-console";
 import { useAdminData } from "@/hooks/useAdminData";
-import { useCrGuide, type ChangeRequestChatMessage, type ChangeRequestGuideDraft, type ChangeRequestChatField } from "@/hooks/useCrGuide";
+import { useCrGuide } from "@/hooks/useCrGuide";
 import { useAdminAssistant } from "@/hooks/useAdminAssistant";
 import { useAdminActions } from "@/hooks/useAdminActions";
+import { useAdminConsoleDerived } from "./hooks/useAdminConsoleDerived";
 
 export function AdminConsolePage({
-  initialTab = "overview"
+  initialTab = "overview",
 }: {
   initialTab?: AdminTab;
 }) {
@@ -106,18 +70,18 @@ export function AdminConsolePage({
   const monitoringProviders = useMonitoringProviders(windowRange);
   const monitoringBounces = useMonitoringBounces(windowRange);
   const monitoringLive = useMonitoringLive({
-    enabled: activeTab !== "changelog"
+    enabled: activeTab !== "changelog",
   });
 
   const securitySeverityFilter = severity === "all" ? undefined : severity;
   const securityActive = useSecurityActiveAlerts({
     window: windowRange,
-    severity: securitySeverityFilter
+    severity: securitySeverityFilter,
   });
   const securityIncidents = useSecurityIncidents({
     page: 1,
     page_size: 20,
-    severity: securitySeverityFilter
+    severity: securitySeverityFilter,
   });
   const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
 
@@ -125,12 +89,6 @@ export function AdminConsolePage({
   const changeRequests = useChangeRequests();
   const adminUsers = useAdminUsers();
   const whoami = useAdminWhoami();
-  // Effective role gate: when RBAC is enforced on the backend, hide CRUD
-  // affordances for anything other than an admin. When RBAC is OFF, the
-  // backend answers { role: "admin", enforced: false } so canWriteUsers
-  // stays true and the current behaviour is preserved.
-  const canWriteUsers = (whoami.data?.role ?? "admin") === "admin";
-  const rbacEnforced = whoami.data?.enforced === true;
   const inviteAdminUser = useInviteAdminUser();
   const resetAdminPassword = useResetAdminPassword();
   const adminAuditLog = useAdminAuditLog(100);
@@ -152,14 +110,14 @@ export function AdminConsolePage({
     urgency: "medium",
     impact: "medium",
     requestedBy: "admin",
-    linkedRepo: "cross-repo"
+    linkedRepo: "cross-repo",
   });
   const [newAdminUser, setNewAdminUser] = useState<CreateAdminUserInput>({
     email: "",
     displayName: "",
     role: "user",
     status: "active",
-    twoFactorEnabled: false
+    twoFactorEnabled: false,
   });
 
   const [transitionNote, setTransitionNote] = useState("");
@@ -167,10 +125,9 @@ export function AdminConsolePage({
     id: string;
     title: string;
   } | null>(null);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
+
   const {
     crGuideDraft,
-    crGuideStepIndex,
     crGuideMessages,
     crGuideInput,
     setCrGuideInput,
@@ -197,7 +154,6 @@ export function AdminConsolePage({
     assistantAnswer,
     assistantLoading,
     assistantError,
-    adminAssistantSnapshot,
     askHermesForAdminPlan,
   } = useAdminAssistant({
     windowRange,
@@ -217,107 +173,26 @@ export function AdminConsolePage({
     adminDataError,
   });
 
-
-
-  const summaryCards = useMemo(() => {
-    const summary = monitoringSummary.data;
-    const activeMonAlerts = monitoringAlerts.data?.alerts?.length ?? 0;
-    const activeSecAlerts = securityActive.data?.alerts?.length ?? 0;
-
-    return [
-      {
-        label: "Delivery rate",
-        value: summary ? percent(summary.delivery_rate) : "—",
-        note: "Emails livrés",
-        icon: Activity
-      },
-      {
-        label: "Bounce rate",
-        value: summary ? percent(summary.bounce_rate) : "—",
-        note: "Hard + soft bounce",
-        icon: AlertTriangle
-      },
-      {
-        label: "Alertes Monitoring",
-        value: asInt(activeMonAlerts),
-        note: `Fenêtre ${windowRange}`,
-        icon: Clock3
-      },
-      {
-        label: "Alertes Sécurité",
-        value: asInt(activeSecAlerts),
-        note: severity === "all" ? "Toutes sévérités" : severity,
-        icon: ShieldCheck
-      },
-    ] as const;
-  }, [
-    monitoringAlerts.data,
-    monitoringSummary.data,
-    securityActive.data,
-    severity,
+  const {
+    selectedRunId,
+    setSelectedRunId,
+    summaryCards,
+    qualityChecks,
+    requestsByStatus,
+    workflowRunMonitoring,
+    selectedWorkflowRun,
+    selectedWorkflowRunEvents,
+    changeRequestMonitoring,
+  } = useAdminConsoleDerived({
     windowRange,
-  ]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const qualityChecks = useMemo(() => {
-    const checks = [
-      {
-        label: "Problème explicite (cause + symptôme)",
-        ok: newRequest.problem.trim().length >= 40
-      },
-      {
-        label: "Impact utilisateur/business explicite",
-        ok: /impact|client|utilisateur|business|latence|erreur/i.test(
-          `${newRequest.problem} ${crGuideDraft.impact}`
-        )
-      },
-      {
-        label: "Critères de succès mesurables",
-        ok: /%|ms|slo|sla|kpi|p95|objectif|mesurable|test/i.test(
-          `${newRequest.desiredOutcome} ${crGuideDraft.successCriteria}`
-        )
-      },
-      {
-        label: "Plan de rollback / mitigation",
-        ok: /rollback|revert|fallback|mitigation/i.test(
-          `${newRequest.desiredOutcome} ${crGuideDraft.rollbackPlan}`
-        )
-      },
-      {
-        label: "Portée repo + priorité cohérentes",
-        ok:
-          (newRequest.linkedRepo === "cross-repo" &&
-            newRequest.scope === "fullstack") ||
-          newRequest.linkedRepo !== "cross-repo"
-      },
-    ];
-
-    return {
-      checks,
-      score: checks.filter((c) => c.ok).length
-    };
-  }, [
-    newRequest.problem,
-    newRequest.desiredOutcome,
-    newRequest.linkedRepo,
-    newRequest.scope,
-    crGuideDraft.impact,
-    crGuideDraft.successCriteria,
-    crGuideDraft.rollbackPlan,
-  ]);
+    severity,
+    monitoringSummary,
+    monitoringAlerts,
+    securityActive,
+    changeRequests,
+    newRequest,
+    crGuideDraft,
+  });
 
   const {
     handleCreateChangeRequest,
@@ -325,10 +200,6 @@ export function AdminConsolePage({
     openDeleteChangeRequestDialog,
     handleDeleteChangeRequestConfirm,
     handleStartImplementation,
-    handleUserRoleChange,
-    handleUserStatusChange,
-    handleCreateUser,
-    handleDeleteUser,
   } = useAdminActions({
     newRequest, setNewRequest,
     newAdminUser, setNewAdminUser,
@@ -343,182 +214,6 @@ export function AdminConsolePage({
     createAdminUser,
     deleteAdminUser,
   });
-
-  const requestsByStatus = useMemo(() => {
-    const grouped = Object.fromEntries(
-      WORKFLOW_STATUS_COLUMNS.map((status: WorkflowStatus) => [
-        status,
-        [] as ChangeRequestItem[],
-      ])
-    ) as Record<WorkflowStatus, ChangeRequestItem[]>;
-
-    for (const item of changeRequests.data?.items ?? []) {
-      grouped[item.status].push(item);
-    }
-
-    return grouped;
-  }, [changeRequests.data?.items]);
-
-  const workflowRunMonitoring = useMemo(() => {
-    const items = changeRequests.data?.items ?? [];
-    const nowIso = new Date().toISOString();
-
-    const runs = items
-      .map((item) => {
-        const runState = runStateFromStatus(item.status);
-        const totalStages = item.workflow?.length ?? 0;
-        const doneStages = (item.workflow ?? []).filter(
-          (stage) => stage.status === "done"
-        ).length;
-        const progressPct =
-          totalStages > 0 ? Math.round((doneStages / totalStages) * 100) : 0;
-        const currentStage =
-          (item.workflow ?? []).find((stage) => stage.status === "active") ??
-          (item.workflow ?? [])[Math.max(0, doneStages - 1)] ??
-          null;
-        const startedAt = item.takenInChargeAt || item.createdAt;
-        const elapsedMinutes = minutesBetween(startedAt, nowIso);
-        const latestEvent = (item.workflowEvents ?? [])
-          .slice()
-          .sort(
-            (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
-          )[0];
-        const lastEventAt = latestEvent?.at || item.updatedAt;
-        const lastEventAgeMinutes = minutesBetween(lastEventAt, nowIso);
-        const executionState = item.executionState ?? "idle";
-        const executionHeartbeatAt = item.executionLastHeartbeatAt || null;
-        const executionHeartbeatAgeMinutes = minutesBetween(
-          executionHeartbeatAt || undefined,
-          nowIso
-        );
-        const hasExecutionSignal =
-          executionState === "running" ||
-          executionState === "success" ||
-          executionState === "failed";
-        const appearsWorkflowOnly =
-          runState === "running" &&
-          (executionState === "idle" || executionState === "queued") &&
-          (executionHeartbeatAgeMinutes === null ||
-            executionHeartbeatAgeMinutes > 5);
-
-        return {
-          item,
-          runState,
-          totalStages,
-          doneStages,
-          progressPct,
-          currentStage,
-          elapsedMinutes,
-          lastEventAt,
-          lastEventAgeMinutes,
-          executionState,
-          executionHeartbeatAt,
-          executionHeartbeatAgeMinutes,
-          hasExecutionSignal,
-          appearsWorkflowOnly
-        };
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime()
-      );
-
-    return {
-      runs,
-      running: runs.filter((run) => run.runState === "running").length,
-      queued: runs.filter((run) => run.runState === "queued").length,
-      completed: runs.filter((run) => run.runState === "completed").length,
-      failed: runs.filter((run) => run.runState === "failed").length,
-      workflowOnlyRunning: runs.filter((run) => run.appearsWorkflowOnly).length
-    };
-  }, [changeRequests.data?.items]);
-
-  useEffect(() => {
-    if (!workflowRunMonitoring.runs.length) {
-      setSelectedRunId(null);
-      return;
-    }
-
-    if (
-      selectedRunId &&
-      workflowRunMonitoring.runs.some((run) => run.item.id === selectedRunId)
-    ) {
-      return;
-    }
-
-    const preferred =
-      workflowRunMonitoring.runs.find((run) => run.runState === "running") ||
-      workflowRunMonitoring.runs.find((run) => run.runState === "queued") ||
-      workflowRunMonitoring.runs[0];
-
-    setSelectedRunId(preferred.item.id);
-  }, [workflowRunMonitoring.runs, selectedRunId]);
-
-  const selectedWorkflowRun = useMemo(() => {
-    if (!workflowRunMonitoring.runs.length) return null;
-    return (
-      workflowRunMonitoring.runs.find((run) => run.item.id === selectedRunId) ||
-      workflowRunMonitoring.runs[0]
-    );
-  }, [workflowRunMonitoring.runs, selectedRunId]);
-
-  const selectedWorkflowRunEvents = useMemo(() => {
-    if (!selectedWorkflowRun) return [];
-    return (selectedWorkflowRun.item.workflowEvents ?? [])
-      .slice()
-      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-      .slice(0, 20);
-  }, [selectedWorkflowRun]);
-
-  const changeRequestMonitoring = useMemo(() => {
-    const items = changeRequests.data?.items ?? [];
-    const nowIso = new Date().toISOString();
-
-    const taken = items.filter((item) => !!item.takenInChargeAt);
-    const triageMinutes = taken
-      .map((item) => minutesBetween(item.createdAt, item.takenInChargeAt))
-      .filter((v): v is number => v !== null);
-
-    const avgTriageMinutes = triageMinutes.length
-      ? Math.round(
-          triageMinutes.reduce((acc, value) => acc + value, 0) /
-            triageMinutes.length
-        )
-      : null;
-
-    const wip = items.filter(
-      (item) => item.status !== "released" && item.status !== "rejected"
-    ).length;
-
-    const stalled = items
-      .map((item) => ({
-        item,
-        ageMinutes: minutesBetween(item.updatedAt, nowIso) ?? 0
-      }))
-      .filter((entry) => entry.item.status !== "released")
-      .sort((a, b) => b.ageMinutes - a.ageMinutes)
-      .slice(0, 3);
-
-    const latestEvents = items
-      .flatMap((item) =>
-        (item.workflowEvents ?? []).map((event) => ({
-          ...event,
-          requestId: item.id,
-          requestTitle: item.title
-        }))
-      )
-      .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
-      .slice(0, 10);
-
-    return {
-      total: items.length,
-      wip,
-      takenCount: taken.length,
-      avgTriageMinutes,
-      stalled,
-      latestEvents
-    };
-  }, [changeRequests.data?.items]);
 
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
@@ -666,7 +361,6 @@ export function AdminConsolePage({
           setCrGuideInput={setCrGuideInput}
         />
       )}
-
 
       {activeTab === "users" && (
         <UsersTab

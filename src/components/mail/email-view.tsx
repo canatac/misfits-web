@@ -5,63 +5,29 @@
  * blocked external images (toggle to load), attachment list, action buttons,
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
  */
-import { useState, useMemo, useCallback, useEffect } from "react";
-import Link from "next/link";
-import DOMPurify from "dompurify";
+import { useState, useMemo, useEffect } from "react";
 import {
-  Star,
-  Reply,
-  ReplyAll,
-  Forward,
-  Archive,
-  Trash2,
-  MoreHorizontal,
   Paperclip,
-  FileText,
-  Image as ImageIcon,
-  FileSpreadsheet,
-  Presentation,
-  Archive as ArchiveIcon,
-  Music,
-  Video,
-  File as FileIcon,
   ImageOff,
   ChevronDown,
   MailOpen,
-  Tag,
-  Plus,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailSenderHeader } from "./email-sender-header";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { useEmailStore } from "@/stores/email-store";
-import { useComposerStore, uid } from "@/stores/composer-store";
 import { useLabelStore } from "@/stores/label-store";
-import { useChatStore } from "@/stores/chat-store";
-import { useAuthStore } from "@/stores/auth-store";
-import { LabelBadge } from "@/components/mail/label-badge";
 import { LabelManager } from "@/components/mail/label-manager";
 import { SecurityBanner } from "@/components/mail/security-banner";
-import type { Email, EmailAttachment, AttachmentType } from "@/types/email";
-import type { Recipient } from "@/types/composer";
-import { ATTACHMENT_ICONS, QUOTE_PATTERNS, formatFullDate, formatFileSize, getInitials, toPlainText } from "./email-view-utils";
+import type { Email } from "@/types/email";
 import { AttachmentCard } from "./attachment-card";
 import { useEmailActions } from "@/hooks/useEmailActions";
-
+import { useEmailBody } from "./hooks/useEmailBody";
+import { EmailToolbar } from "./email-view/email-toolbar";
+import { EmailLabelsBar } from "./email-view/email-labels-bar";
 
 interface EmailViewProps {
   className?: string;
@@ -70,11 +36,6 @@ interface EmailViewProps {
 export function EmailView({ className }: EmailViewProps) {
   const emails = useEmailStore((s) => s.emails);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
-  const toggleStar = useEmailStore((s) => s.toggleStar);
-  const markUnread = useEmailStore((s) => s.markUnread);
-  const archive = useEmailStore((s) => s.archive);
-  const deleteEmail = useEmailStore((s) => s.deleteEmail);
-  // Allow patching a list row with full body after detail fetch
   const setEmails = useEmailStore.setState;
 
   const labels = useLabelStore((s) => s.labels);
@@ -107,11 +68,7 @@ export function EmailView({ className }: EmailViewProps) {
         setEmails((s) => ({
           emails: s.emails.map((e) =>
             e.id === email.id
-              ? {
-                  ...e,
-                  body: full.body,
-                  bodyType: full.bodyType ?? e.bodyType,
-                }
+              ? { ...e, body: full.body, bodyType: full.bodyType ?? e.bodyType }
               : e
           ),
         }));
@@ -124,7 +81,6 @@ export function EmailView({ className }: EmailViewProps) {
     };
   }, [email, setEmails]);
 
-  // Merge static email.labels with store assignments.
   const emailLabelIds = useMemo(() => {
     if (!email) return [];
     return Array.from(
@@ -132,131 +88,14 @@ export function EmailView({ className }: EmailViewProps) {
     );
   }, [email, assignments]);
 
-  const [loadImages, setLoadImages] = useState(false);
-  const [showQuoted, setShowQuoted] = useState(false);
-  const [hasQuoted, setHasQuoted] = useState(false);
-
-  // Reset state when email changes
-  useEffect(() => {
-    setLoadImages(false);
-    setShowQuoted(false);
-    if (email) {
-      setHasQuoted(QUOTE_PATTERNS.some((p) => p.test(email.body)));
-    } else {
-      setHasQuoted(false);
-    }
-  }, [email]);
-
-  // Sanitize the HTML body with DOMPurify
-  const sanitizedBody = useMemo(() => {
-    if (!email) return "";
-    if (email.bodyType === "text") {
-      // Convert plaintext to HTML with line breaks
-      const escaped = email.body
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-      return escaped.replace(/\n/g, "<br>");
-    }
-    return DOMPurify.sanitize(email.body, {
-      ALLOWED_TAGS: [
-        "p",
-        "br",
-        "div",
-        "span",
-        "a",
-        "img",
-        "ul",
-        "ol",
-        "li",
-        "b",
-        "strong",
-        "i",
-        "em",
-        "u",
-        "s",
-        "del",
-        "blockquote",
-        "pre",
-        "code",
-        "h1",
-        "h2",
-        "h3",
-        "h4",
-        "h5",
-        "h6",
-        "table",
-        "thead",
-        "tbody",
-        "tr",
-        "th",
-        "td",
-        "hr",
-        "sub",
-        "sup",
-      ],
-      ALLOWED_ATTR: [
-        "href",
-        "src",
-        "alt",
-        "title",
-        "style",
-        "class",
-        "id",
-        "target",
-        "colspan",
-        "rowspan",
-      ],
-      ALLOW_DATA_ATTR: false,
-    });
-  }, [email]);
-
-  // Process body: block external images and collapse quoted replies
-  const processedBody = useMemo(() => {
-    let body = sanitizedBody;
-    if (!loadImages) {
-      // Replace img src with data attribute to block loading
-      body = body.replace(
-        /<img([^>]*?)\ssrc=(["']?)(https?:\/\/[^"'\s>]+)(["']?)([^>]*)>/gi,
-        (
-          _match,
-          pre: string,
-          _q1: string,
-          src: string,
-          _q2: string,
-          post: string
-        ) => `<img${pre} data-blocked-src="${src}" alt="Image blocked" ${post}>`
-      );
-    } else {
-      // Restore blocked images
-      body = body.replace(
-        /<img([^>]*?)\sdata-blocked-src=(["']?)([^"'\s>]+)(["']?)([^>]*)>/gi,
-        (
-          _match,
-          pre: string,
-          _q1: string,
-          src: string,
-          _q2: string,
-          post: string
-        ) => `<img${pre} src="${src}" ${post}>`
-      );
-    }
-
-    // Collapse quoted replies
-    if (hasQuoted && !showQuoted) {
-      for (const pattern of QUOTE_PATTERNS) {
-        if (pattern.test(body)) {
-          body = body.replace(
-            pattern,
-            '<div class="quoted-collapsed" style="border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0.5rem 1rem;color:var(--color-muted-fg);font-size:0.875rem;cursor:pointer;">... Show quoted text ...</div>'
-          );
-          break;
-        }
-      }
-    }
-
-    return body;
-  }, [sanitizedBody, loadImages, showQuoted, hasQuoted]);
+  const {
+    loadImages,
+    setLoadImages,
+    showQuoted,
+    setShowQuoted,
+    hasQuoted,
+    processedBody,
+  } = useEmailBody(email);
 
   const {
     handleReply,
@@ -299,211 +138,37 @@ export function EmailView({ className }: EmailViewProps) {
       )}
       data-testid="email-view"
     >
-      {/* Action toolbar */}
-      <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
-        <div className="mr-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-1 font-mono text-[10px] text-[#C49B66]">
-          Focus reader
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleArchive}
-          aria-label="Archive"
-        >
-          <Archive className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleDelete}
-          aria-label="Delete"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleMarkUnread}
-          aria-label="Mark as unread"
-        >
-          <MailOpen className="h-4 w-4" />
-        </Button>
-        <Separator orientation="vertical" className="mx-1 h-6" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleReply}
-          className="gap-1.5"
-        >
-          <Reply className="h-4 w-4" />
-          Reply
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleReplyAll}
-          className="gap-1.5"
-        >
-          <ReplyAll className="h-4 w-4" />
-          Reply All
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleForward}
-          className="gap-1.5"
-        >
-          <Forward className="h-4 w-4" />
-          Forward
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1.5"
-              aria-label="Demander à Hermes"
-            >
-              <Sparkles className="h-4 w-4" />
-              Demander à Hermes
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Actions Hermes</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleHermesSummarize}>
-              Résumer
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesReplyDraft}>
-              Proposer réponse
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesTranslate}>
-              Traduire
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleHermesTodos}>
-              Extraire TODO
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleToggleStar}
-          aria-label={email.isStarred ? "Unstar" : "Star"}
-        >
-          <Star
-            className={cn(
-              "h-4 w-4",
-              email.isStarred
-                ? "fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
-                : ""
-            )}
-          />
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="More actions">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleMarkUnread}>
-              <MailOpen className="mr-2 h-4 w-4" />
-              Mark as unread
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleArchive}>
-              <Archive className="mr-2 h-4 w-4" />
-              Archive
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className="text-[var(--color-danger-500)]"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <EmailToolbar
+        isStarred={email.isStarred}
+        onArchive={handleArchive}
+        onDelete={handleDelete}
+        onMarkUnread={handleMarkUnread}
+        onReply={handleReply}
+        onReplyAll={handleReplyAll}
+        onForward={handleForward}
+        onToggleStar={handleToggleStar}
+        onHermesSummarize={handleHermesSummarize}
+        onHermesReplyDraft={handleHermesReplyDraft}
+        onHermesTranslate={handleHermesTranslate}
+        onHermesTodos={handleHermesTodos}
+      />
 
-      {/* Email content */}
       <ScrollArea className="flex-1">
         <div className="mx-auto max-w-3xl p-6">
-          {/* Subject + labels */}
-          <div className="mb-4 flex flex-col gap-2">
-            <h1 className="text-xl font-semibold text-[var(--color-fg)]">
-              {email.subject}
-            </h1>
-            {emailLabelIds.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {emailLabelIds.map((labelId) => (
-                  <LabelBadge
-                    key={labelId}
-                    label={labelId}
-                    size="md"
-                    onRemove={() => removeLabelFromEmail(email.id, labelId)}
-                  />
-                ))}
-              </div>
-            )}
-            {/* Add label dropdown */}
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5">
-                    <Tag className="h-3.5 w-3.5" />
-                    Add label
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuLabel>Assign a label</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {labels.length === 0 && (
-                    <DropdownMenuItem disabled>
-                      No labels available
-                    </DropdownMenuItem>
-                  )}
-                  {labels.map((label) => {
-                    const alreadyAssigned = emailLabelIds.includes(label.id);
-                    return (
-                      <DropdownMenuItem
-                        key={label.id}
-                        disabled={alreadyAssigned}
-                        onClick={() => assignLabelToEmail(email.id, label.id)}
-                        className="gap-2"
-                      >
-                        <span
-                          className="h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: label.color }}
-                          aria-hidden="true"
-                        />
-                        <span className="flex-1">{label.name}</span>
-                        {alreadyAssigned && (
-                          <ChevronDown className="h-3 w-3 rotate-[-90deg]" />
-                        )}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => setLabelManagerOpen(true)}
-                    className="gap-2"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Manage labels
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+          <EmailLabelsBar
+            emailId={email.id}
+            subject={email.subject}
+            emailLabelIds={emailLabelIds}
+            labels={labels}
+            onAssign={assignLabelToEmail}
+            onRemove={removeLabelFromEmail}
+            onOpenManager={() => setLabelManagerOpen(true)}
+          />
 
-          {/* Sender header */}
           <EmailSenderHeader email={email} />
 
           <Separator className="mb-4" />
 
-          {/* Security / phishing banner */}
           <SecurityBanner
             result={{
               emailId: email.id,
@@ -524,7 +189,6 @@ export function EmailView({ className }: EmailViewProps) {
             emailId={email.id}
           />
 
-          {/* Image blocking toggle */}
           {!loadImages && email.bodyType === "html" && (
             <div className="mb-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2">
               <ImageOff className="h-4 w-4 text-[var(--color-muted-fg)]" />
@@ -542,18 +206,15 @@ export function EmailView({ className }: EmailViewProps) {
             </div>
           )}
 
-          {/* Email body */}
           <div
             className="prose-mail text-[var(--color-fg)]"
             // biome-ignore lint: HTML is sanitized via DOMPurify above
             dangerouslySetInnerHTML={{ __html: processedBody }}
             onClick={(e) => {
-              // Handle "show quoted text" click
               const target = e.target as HTMLElement;
               if (target.classList.contains("quoted-collapsed")) {
                 setShowQuoted(true);
               }
-              // Open links in new tab
               if (target.tagName === "A") {
                 e.preventDefault();
                 const href = target.getAttribute("href");
@@ -565,7 +226,6 @@ export function EmailView({ className }: EmailViewProps) {
             data-testid="email-body"
           />
 
-          {/* Quoted reply toggle */}
           {hasQuoted && !showQuoted && (
             <button
               onClick={() => setShowQuoted(true)}
@@ -585,7 +245,6 @@ export function EmailView({ className }: EmailViewProps) {
             </button>
           )}
 
-          {/* Attachments */}
           {email.attachments.length > 0 && (
             <div className="mt-6" data-testid="email-attachments">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--color-fg)]">
@@ -603,7 +262,6 @@ export function EmailView({ className }: EmailViewProps) {
         </div>
       </ScrollArea>
 
-      {/* Label manager modal (opened from the Add label dropdown) */}
       <LabelManager
         open={labelManagerOpen}
         onOpenChange={setLabelManagerOpen}
@@ -611,7 +269,3 @@ export function EmailView({ className }: EmailViewProps) {
     </div>
   );
 }
-
-/**
- * Attachment card with icon by file type and download link.
- */
