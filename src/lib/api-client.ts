@@ -2,7 +2,7 @@
  * Thin `fetch` wrapper used by every data hook and the auth store.
  *
  * Responsibilities:
- *  - inject `Authorization: Bearer <accessToken>` when a session is present,
+ *  - inject `Authorization: Bearer *** when a session is present,
  *  - transparently refresh the access token (once) on `401` using the
  *    refresh token, then replay the original request,
  *  - parse JSON errors into a consistent `ApiError` shape,
@@ -14,12 +14,7 @@
  * (RSC / middleware / route handlers) where the proxy is not available.
  */
 
-import type {
-  AuthApiResponse,
-  LoginResponse,
-  RefreshSessionResponse,
-  Session,
-} from "@/types/auth";
+import type { RefreshSessionResponse } from "@/types/auth";
 import {
   clearSession,
   getAccessToken,
@@ -28,20 +23,17 @@ import {
   storeSession,
 } from "@/lib/session";
 
-/* ------------------------------------------------------------------ *
- * Configuration
- * ------------------------------------------------------------------ */
-
 /** Same-origin proxy by default; overridable via env for SSR. */
 const BASE_URL =
   (typeof process !== "undefined" && process.env?.BACKEND_URL) || "/api";
 
+/** Read-only accessor for endpoint helpers. */
+export function getBaseUrl(): string {
+  return BASE_URL;
+}
+
 /** Single-flight refresh: avoid stampeding the refresh endpoint. */
 let refreshPromise: Promise<string | null> | null = null;
-
-/* ------------------------------------------------------------------ *
- * Errors
- * ------------------------------------------------------------------ */
 
 export interface ApiErrorBody {
   /** Machine-readable error code (mirrors backend). */
@@ -75,10 +67,6 @@ export class ApiError extends Error {
     return this.status === 0;
   }
 }
-
-/* ------------------------------------------------------------------ *
- * Refresh logic
- * ------------------------------------------------------------------ */
 
 /**
  * Exchange the refresh token for a new session. Returns the new access token
@@ -114,10 +102,6 @@ export async function refreshSession(): Promise<string | null> {
   return refreshPromise;
 }
 
-/* ------------------------------------------------------------------ *
- * Core request function
- * ------------------------------------------------------------------ */
-
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface RequestOptions extends Omit<RequestInit, "body"> {
@@ -127,6 +111,60 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
   skipAuth?: boolean;
   /** Override the base URL (rarely needed). */
   baseUrl?: string;
+}
+
+function applyAuthHeaders(headers: Headers): void {
+  const token = getAccessToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const session = loadSession();
+  const email = session?.user?.email?.trim();
+  if (email) {
+    headers.set("x-user-email", email);
+    headers.set(
+      "x-user-id",
+      email.includes("@") ? email.split("@")[0]! : email
+    );
+  }
+}
+
+async function parseResponse<T>(response: Response): Promise<T> {
+  if (response.status === 204) return undefined as T;
+
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (response.ok) {
+    if (contentType.includes("application/json")) {
+      return (await response.json()) as T;
+    }
+    return (await response.text()) as unknown as T;
+  }
+
+  if (contentType.includes("application/json")) {
+    let body: ApiErrorBody & { error?: { code?: string; message?: string } };
+    try {
+      body = (await response.json()) as ApiErrorBody & {
+        error?: { code?: string; message?: string };
+      };
+    } catch {
+      body = { message: response.statusText };
+    }
+    const retryAfter = response.headers.get("retry-after");
+    const nestedMsg = body.error?.message;
+    const nestedCode = body.error?.code;
+    throw new ApiError(
+      response.status,
+      body.message ?? nestedMsg ?? response.statusText,
+      {
+        code: body.code ?? nestedCode,
+        retryAfter:
+          body.retryAfter ??
+          (retryAfter ? Number(retryAfter) * 1000 + Date.now() : undefined),
+        body,
+      }
+    );
+  }
+
+  throw new ApiError(response.status, response.statusText || "Request failed");
 }
 
 async function request<T>(
@@ -141,20 +179,7 @@ async function request<T>(
   if (body !== undefined) {
     finalHeaders.set("Content-Type", "application/json");
   }
-  if (!skipAuth) {
-    const token = getAccessToken();
-    if (token) finalHeaders.set("Authorization", `Bearer ${token}`);
-    // Mail API wants local-part user id (Mongo user_id convention).
-    const session = loadSession();
-    const email = session?.user?.email?.trim();
-    if (email) {
-      finalHeaders.set("x-user-email", email);
-      finalHeaders.set(
-        "x-user-id",
-        email.includes("@") ? email.split("@")[0]! : email
-      );
-    }
-  }
+  if (!skipAuth) applyAuthHeaders(finalHeaders);
 
   const init: RequestInit = {
     method,
@@ -191,59 +216,6 @@ async function request<T>(
   return parseResponse<T>(response);
 }
 
-/* ------------------------------------------------------------------ *
- * Response parsing
- * ------------------------------------------------------------------ */
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  if (response.status === 204) return undefined as T;
-
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (response.ok) {
-    if (contentType.includes("application/json")) {
-      return (await response.json()) as T;
-    }
-    // Non-JSON success (e.g. text) — coerce to text typed as T.
-    return (await response.text()) as unknown as T;
-  }
-
-  // Error path
-  if (contentType.includes("application/json")) {
-    let body: ApiErrorBody & { error?: { code?: string; message?: string } };
-    try {
-      body = (await response.json()) as ApiErrorBody & {
-        error?: { code?: string; message?: string };
-      };
-    } catch {
-      body = { message: response.statusText };
-    }
-    const retryAfter = response.headers.get("retry-after");
-    // Backend also uses a nested shape `{ error: { code, message } }`
-    // (external-accounts, admin ops). Fall back to it when the flat
-    // fields are absent so the UI shows a meaningful message.
-    const nestedMsg = body.error?.message;
-    const nestedCode = body.error?.code;
-    throw new ApiError(
-      response.status,
-      body.message ?? nestedMsg ?? response.statusText,
-      {
-        code: body.code ?? nestedCode,
-        retryAfter:
-          body.retryAfter ??
-          (retryAfter ? Number(retryAfter) * 1000 + Date.now() : undefined),
-        body,
-      }
-    );
-  }
-
-  throw new ApiError(response.status, response.statusText || "Request failed");
-}
-
-/* ------------------------------------------------------------------ *
- * Convenience verbs
- * ------------------------------------------------------------------ */
-
 export const apiClient = {
   get: <T>(path: string, opts?: RequestOptions) =>
     request<T>(path, "GET", opts),
@@ -257,105 +229,13 @@ export const apiClient = {
     request<T>(path, "DELETE", opts),
 };
 
-/* ------------------------------------------------------------------ *
- * Auth-specific endpoint helpers
- * (Thin wrappers around apiClient so the store/hooks stay declarative.)
- * ------------------------------------------------------------------ */
-
-export async function apiLogin(
-  email: string,
-  password: string
-): Promise<LoginResponse> {
-  return apiClient.post<LoginResponse>(
-    "/auth/login",
-    { email, password },
-    { skipAuth: true }
-  );
-}
-
-export async function apiRegister(
-  first_name: string,
-  last_name: string,
-  password: string,
-  condition_accepted: boolean
-): Promise<AuthApiResponse> {
-  return apiClient.post<AuthApiResponse>(
-    "/auth/register",
-    { first_name, last_name, password, condition_accepted },
-    { skipAuth: true }
-  );
-}
-
-export async function apiLogout(): Promise<void> {
-  try {
-    await apiClient.post<void>("/auth/logout", {});
-  } catch {
-    // Even if the server call fails we clear locally — best effort.
-  }
-}
-
-export async function apiVerify2FA(
-  challengeId: string,
-  code: string
-): Promise<AuthApiResponse> {
-  return apiClient.post<AuthApiResponse>(
-    "/auth/2fa/verify",
-    { challengeId, code },
-    { skipAuth: true }
-  );
-}
-
-export async function apiRequestPasswordReset(
-  email: string
-): Promise<{ requested: boolean }> {
-  return apiClient.post<{ requested: boolean }>(
-    "/auth/password-reset/request",
-    { email },
-    { skipAuth: true }
-  );
-}
-
-export async function apiResetPassword(
-  token: string,
-  newPassword: string
-): Promise<{ success: boolean }> {
-  return apiClient.post<{ success: boolean }>(
-    "/auth/password-reset/confirm",
-    { token, newPassword },
-    { skipAuth: true }
-  );
-}
-
-/** Redirects the browser to the backend to initiate OAuth with GitHub. */
-export function initiateGithubLogin(redirectPath?: string): void {
-  const safeRedirect =
-    redirectPath &&
-    redirectPath.startsWith("/") &&
-    !redirectPath.startsWith("//")
-      ? redirectPath
-      : null;
-
-  try {
-    if (safeRedirect) {
-      document.cookie = `mfa_post_login_redirect=${encodeURIComponent(safeRedirect)}; Path=/; Max-Age=600; SameSite=Lax`;
-    }
-  } catch {
-    // ignore cookie write failures
-  }
-
-  const url = new URL(`${BASE_URL}/auth/oauth/github`);
-  if (safeRedirect) {
-    url.searchParams.set("redirect", safeRedirect);
-  }
-  window.location.href = url.toString();
-}
-
-/** Used by the store's `refreshSession` action when a manual refresh is needed. */
-export async function apiRefresh(refreshToken: string): Promise<Session> {
-  const res = await apiClient.post<RefreshSessionResponse>(
-    "/auth/refresh",
-    { refreshToken },
-    { skipAuth: true }
-  );
-  return res.session;
-}
+export {
+  apiLogin,
+  apiRegister,
+  apiLogout,
+  apiVerify2FA,
+  apiRequestPasswordReset,
+  apiResetPassword,
+  initiateGithubLogin,
+  apiRefresh,
+} from "./parts/api-client/auth-endpoints";
