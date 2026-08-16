@@ -1,37 +1,10 @@
 /**
  * Zustand auth store for misfits.ai Mail.
- *
- * The store is the single source of truth for the auth *state* (user,
- * session, errors, loading) and exposes high-level actions (`login`,
- * `logout`, …) that orchestrate the API client, session persistence and
- * audit logging. TanStack Query mutations (in `use-auth.ts`) call these
- * actions; the UI reads the reactive state.
- *
- * Persistence: rather than using zustand/middleware persist (which would
- * serialise the whole store and fight with our SSR-safe `loadSession`), we
- * delegate token storage to `src/lib/session.ts` and rehydrate only the
- * `session`/`user` slices on creation. This keeps cookies, localStorage and
- * the store in lock-step.
- *
- * Rate limiting: the store guards `login` with a client-side counter (max 5
- * attempts per 15 min window) to provide immediate feedback even before the
- * backend rejects the request. The backend remains authoritative.
+ * See docs in ./auth-store/* for helpers.
  */
 
 import { create } from "zustand";
-import type {
-  AuthError,
-  AuthState,
-  LoginCredentials,
-  LoginResponse,
-  PasswordResetConfirmation,
-  PasswordResetRequest,
-  RegisterCredentials,
-  Session,
-  TwoFactorChallenge,
-  TwoFactorRequiredResponse,
-  User,
-} from "@/types/auth";
+import type { AuthError, User } from "@/types/auth";
 import {
   ApiError,
   apiLogin,
@@ -46,186 +19,21 @@ import {
   audit,
   clearSession,
   consumePendingOAuthSession,
-  detectConcurrentSession,
   loadSession,
   recordSessionId,
-  storeSession,
 } from "@/lib/session";
-import { useAccountStore } from "@/stores/account-store";
 import { shouldUseDemoMode, createDemoSession } from "@/lib/demo-mode";
+import { normalizeSession } from "./auth-store/normalize";
+import {
+  canAttempt,
+  recordFailure,
+  toAuthError,
+  type RateLimiter,
+} from "./auth-store/rate-limit";
+import { applySession, isTwoFactorChallenge } from "./auth-store/apply-session";
+import type { AuthStore } from "./auth-store/types";
 
-/* ------------------------------------------------------------------ *
- * Helper: normalize snake_case session from backend to camelCase
- * ------------------------------------------------------------------ */
-
-function toCamel(key: string): string {
-  return key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-}
-
-function normalizeSession(raw: Record<string, unknown>): Session {
-  function deepMap(obj: unknown): unknown {
-    if (Array.isArray(obj)) return obj.map(deepMap);
-    if (obj !== null && typeof obj === "object") {
-      const out: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(obj)) {
-        out[toCamel(k)] = deepMap(v);
-      }
-      return out;
-    }
-    return obj;
-  }
-  return deepMap(raw) as Session;
-}
-
-/* ------------------------------------------------------------------ *
- * Rate limiting (client-side)
- * ------------------------------------------------------------------ */
-
-const MAX_ATTEMPTS = 20;
-const WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-
-interface RateLimiter {
-  attempts: number;
-  windowStart: number;
-  blockedUntil: number;
-}
-
-function canAttempt(limiter: RateLimiter): {
-  ok: boolean;
-  retryAfter?: number;
-} {
-  const now = Date.now();
-  if (limiter.windowStart + WINDOW_MS < now) {
-    limiter.attempts = 0;
-    limiter.windowStart = now;
-    limiter.blockedUntil = 0;
-  }
-  if (limiter.attempts >= MAX_ATTEMPTS) {
-    const retryAfter = limiter.windowStart + WINDOW_MS;
-    return { ok: false, retryAfter };
-  }
-  return { ok: true };
-}
-
-function recordFailure(limiter: RateLimiter): void {
-  limiter.attempts += 1;
-  if (limiter.attempts >= MAX_ATTEMPTS) {
-    limiter.blockedUntil = limiter.windowStart + WINDOW_MS;
-  }
-}
-
-/* ------------------------------------------------------------------ *
- * Error mapping
- * ------------------------------------------------------------------ */
-
-function toAuthError(err: unknown): AuthError {
-  if (err instanceof ApiError) {
-    if (err.status === 429) {
-      return {
-        code: "rate_limited",
-        message: "Too many attempts. Please try again later.",
-        status: 429,
-        retryAfter: err.retryAfter ?? Date.now() + WINDOW_MS,
-      };
-    }
-    if (err.status === 0) {
-      return {
-        code: "network",
-        message: err.message,
-        status: 0,
-      };
-    }
-    if (err.status === 401) {
-      return {
-        code: "invalid_credentials",
-        message: "Incorrect email or password.",
-        status: 401,
-      };
-    }
-    return {
-      code: "server",
-      message: err.message,
-      status: err.status,
-    };
-  }
-  return { code: "unknown", message: "Something went wrong." };
-}
-
-/* ------------------------------------------------------------------ *
- * Store shape
- * ------------------------------------------------------------------ */
-
-export interface AuthStore extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  verify2FA: (challenge: TwoFactorChallenge) => Promise<void>;
-  requestPasswordReset: (request: PasswordResetRequest) => Promise<void>;
-  resetPassword: (confirmation: PasswordResetConfirmation) => Promise<void>;
-  refreshSession: () => Promise<void>;
-  clearError: () => void;
-  /** Rehydrate from persisted storage (call once on app boot).
-   *  Returns `{ fromOAuth: true, provider }` when an OAuth session was consumed. */
-  hydrate: () => { fromOAuth: true; provider: string } | void;
-}
-
-/* ------------------------------------------------------------------ *
- * Internal helpers
- * ------------------------------------------------------------------ */
-
-function applySession(
-  set: (partial: Partial<AuthStore>) => void,
-  session: Session,
-  remember: boolean
-): void {
-  recordSessionId(session.id);
-  storeSession(session, remember);
-  const concurrent = detectConcurrentSession(session.id);
-  if (concurrent) {
-    audit("session_replaced", "Another session detected for this account.");
-  }
-  set({
-    user: session.user,
-    session,
-    isAuthenticated: true,
-    error: null,
-    pendingTwoFactorChallengeId: null,
-    isLoading: false,
-  });
-
-  // Sync the primary account with the real user and purge stale demo accounts.
-  const accountStore = useAccountStore.getState();
-  const { accounts, updateAccount, removeAccount } = accountStore;
-  const primary =
-    accounts.find((a: { isDefault: boolean }) => a.isDefault) ?? accounts[0];
-  if (primary) {
-    updateAccount(primary.id, {
-      email: session.user.email,
-      name: session.user.displayName ?? session.user.email.split("@")[0],
-    });
-  }
-  // Remove leftover demo accounts that are not the primary misfits account.
-  accounts
-    .filter((a: { id: string }) => a.id !== primary?.id)
-    .forEach((a: { id: string }) => removeAccount(a.id));
-}
-
-/* ------------------------------------------------------------------ *
- * Type guard: 2FA challenge vs. full session
- * ------------------------------------------------------------------ */
-
-function isTwoFactorChallenge(
-  res: LoginResponse
-): res is TwoFactorRequiredResponse {
-  return (
-    typeof (res as TwoFactorRequiredResponse).twoFactorRequired === "boolean" &&
-    (res as TwoFactorRequiredResponse).twoFactorRequired === true
-  );
-}
-
-/* ------------------------------------------------------------------ *
- * Store creation
- * ------------------------------------------------------------------ */
+export type { AuthStore } from "./auth-store/types";
 
 const limiter: RateLimiter = {
   attempts: 0,
@@ -234,15 +42,12 @@ const limiter: RateLimiter = {
 };
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
-  /* --- initial state --- */
   user: null,
   session: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
   pendingTwoFactorChallengeId: null,
-
-  /* --- actions --- */
 
   login: async (credentials) => {
     set({ isLoading: true, error: null });
@@ -262,7 +67,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
 
     try {
-      // Demo mode: when no backend is configured, accept any credentials.
       if (shouldUseDemoMode()) {
         const session = createDemoSession(credentials.email);
         applySession(set, session, credentials.remember ?? false);
@@ -272,7 +76,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
       const res = await apiLogin(credentials.email, credentials.password);
       if (isTwoFactorChallenge(res)) {
-        // Backend requires a 6-digit code before issuing a session.
         set({
           isLoading: false,
           pendingTwoFactorChallengeId: res.challengeId,
@@ -280,7 +83,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
         return;
       }
-      // Normalize snake_case from backend to camelCase before applying
       applySession(
         set,
         normalizeSession(res.session as unknown as Record<string, unknown>),
@@ -288,7 +90,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       );
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
-      // Network error → fall back to demo mode so the UI is still usable.
       if (
         err instanceof ApiError &&
         err.isNetworkError &&
@@ -322,7 +123,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         credentials.password,
         credentials.condition_accepted
       );
-      applySession(set, res.session, /* remember */ true);
+      applySession(set, res.session, true);
       audit("register", `New account ${res.session.user.email}`);
     } catch (err) {
       set({ isLoading: false, error: toAuthError(err) });
@@ -334,7 +135,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await apiVerify2FA(challenge.challengeId, challenge.code);
-      applySession(set, res.session, /* remember */ true);
+      applySession(set, res.session, true);
       audit("2fa_success", `2FA verified for ${res.session.user.email}`);
     } catch (err) {
       audit("2fa_fail", "2FA verification failed.");
@@ -390,10 +191,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     if (!current) return;
     try {
       const session = await apiRefresh(current.refreshToken);
-      applySession(set, session, /* remember */ true);
+      applySession(set, session, true);
       audit("refresh", "Access token refreshed.");
     } catch (err) {
-      // Refresh failed — session is dead, clear it.
       clearSession();
       set({
         session: null,
@@ -407,12 +207,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   clearError: () => set({ error: null }),
 
   hydrate: () => {
-    // Consume session deposited by the OAuth callback route handler first.
     const oauth = consumePendingOAuthSession();
     if (oauth) {
       audit("login", `oauth:${oauth.provider}`);
-      // applySession syncs the account store (name/email/avatar) in addition to auth state.
-      applySession(set, oauth.session, /* remember */ true);
+      applySession(set, oauth.session, true);
       return { fromOAuth: true, provider: oauth.provider };
     }
 
@@ -428,7 +226,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 }));
 
-/** Selectors for ergonomic consumption. */
 export const selectUser = (s: AuthStore): User | null => s.user;
 export const selectIsAuthenticated = (s: AuthStore): boolean =>
   s.isAuthenticated;
