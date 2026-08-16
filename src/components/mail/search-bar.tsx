@@ -10,16 +10,15 @@ import { Search, X, ChevronDown, History, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { OPERATOR_META, type OperatorMeta } from "@/types/search";
 import { getActiveOperator } from "@/lib/search-parser";
 import { useSearchStore } from "@/stores/search-store";
 import { useSearchHistory } from "@/hooks/use-search";
+import {
+  SearchHistoryPopover,
+  OperatorHintsPanel,
+} from "./search-bar-dropdowns";
 
 interface SearchBarProps {
   className?: string;
@@ -66,13 +65,9 @@ export function SearchBar({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearchQuery(value);
-
-      // Check if user is typing an operator
       const cursorPos = e.target.selectionStart ?? value.length;
       const activeOp = getActiveOperator(value, cursorPos);
       setShowOperatorHints(!!activeOp && activeOp.partial.length < 5);
-
-      // Execute search (debounced via the store/hook)
       executeSearch();
     },
     [setSearchQuery, executeSearch]
@@ -126,8 +121,6 @@ export function SearchBar({
       const cursorPos = inputRef.current?.selectionStart ?? query.length;
       const before = query.slice(0, cursorPos);
       const after = query.slice(cursorPos);
-
-      // Replace the partial operator being typed
       const match = before.match(/(\w+:)(?:"([^"]*)"|'([^']*)'?|(\S*))$/);
       let newQuery: string;
       if (match) {
@@ -141,8 +134,6 @@ export function SearchBar({
       }
       setSearchQuery(newQuery);
       setShowOperatorHints(false);
-
-      // Focus and position cursor after the operator
       requestAnimationFrame(() => {
         const pos =
           (match ? cursorPos - match[0].length : cursorPos) +
@@ -168,6 +159,15 @@ export function SearchBar({
       )
     : OPERATOR_META;
 
+  const handleHistorySelect = useCallback(
+    (q: string) => {
+      setSearchQuery(q);
+      executeSearch();
+      setShowHistory(false);
+    },
+    [setSearchQuery, executeSearch]
+  );
+
   return (
     <div className={cn("relative flex items-center gap-1", className)}>
       <div className="relative flex-1">
@@ -183,7 +183,6 @@ export function SearchBar({
             if (!query && searchHistory.length > 0) setShowHistory(true);
           }}
           onBlur={() => {
-            // Delay to allow click events on dropdown items
             setTimeout(() => {
               setShowHistory(false);
               setShowOperatorHints(false);
@@ -195,7 +194,6 @@ export function SearchBar({
           autoFocus={autoFocus}
         />
 
-        {/* Right-side actions */}
         <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5">
           {query && (
             <Button
@@ -222,94 +220,38 @@ export function SearchBar({
             </Button>
           )}
           {!query && searchHistory.length > 0 && (
-            <Popover open={showHistory} onOpenChange={setShowHistory}>
-              <PopoverTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7"
-                  aria-label="Search history"
-                  title="Recent searches"
-                >
-                  <History className="h-3.5 w-3.5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="end">
-                <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-2">
-                  <span className="text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-                    Recent Searches
-                  </span>
-                  {searchHistory.length > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 px-2 text-xs"
-                      onClick={clear}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-                <div className="max-h-64 overflow-y-auto p-1">
-                  {searchHistory.map((entry) => (
-                    <button
-                      key={entry.id}
-                      onClick={() => {
-                        setSearchQuery(entry.query);
-                        executeSearch();
-                        setShowHistory(false);
-                      }}
-                      className="flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-sm text-[var(--color-fg)] transition-colors hover:bg-[var(--color-muted)]"
-                    >
-                      <History className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted-fg)]" />
-                      <span className="flex-1 truncate">{entry.query}</span>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+            <SearchHistoryPopover
+              open={showHistory}
+              onOpenChange={setShowHistory}
+              searchHistory={searchHistory}
+              onSelect={handleHistorySelect}
+              onClear={clear}
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                aria-label="Search history"
+                title="Recent searches"
+              >
+                <History className="h-3.5 w-3.5" />
+              </Button>
+            </SearchHistoryPopover>
           )}
         </div>
       </div>
 
-      {/* Results count badge */}
       {query.trim() && (
         <Badge variant="secondary" className="shrink-0">
           {results.length} {results.length === 1 ? "result" : "results"}
         </Badge>
       )}
 
-      {/* Operator autocomplete dropdown */}
       {showOperatorHints && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-80 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-popover)] shadow-[var(--shadow-lg)]">
-          <div className="border-b border-[var(--color-border)] px-3 py-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-            Search Operators
-          </div>
-          <div className="max-h-64 overflow-y-auto p-1">
-            {filteredOperators.map((op) => (
-              <button
-                key={op.operator}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  insertOperator(op);
-                }}
-                className="flex w-full items-center gap-3 rounded-[var(--radius-sm)] px-2 py-2 text-left transition-colors hover:bg-[var(--color-muted)]"
-              >
-                <span className="w-20 shrink-0 font-mono text-xs font-medium text-[var(--color-brand-500)]">
-                  {op.label}
-                </span>
-                <div className="flex flex-1 flex-col gap-0.5">
-                  <span className="text-sm text-[var(--color-fg)]">
-                    {op.description}
-                  </span>
-                  <span className="text-xs text-[var(--color-muted-fg)]">
-                    {op.example}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        <OperatorHintsPanel
+          operators={filteredOperators}
+          onInsert={insertOperator}
+        />
       )}
     </div>
   );
