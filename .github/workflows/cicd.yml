@@ -38,13 +38,19 @@ jobs:
         run: pnpm install --frozen-lockfile || pnpm install
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm lint -- --max-warnings=0
 
       - name: Typecheck
         run: pnpm typecheck
 
       - name: Architecture guard (layer boundaries)
         run: node scripts/arch_guard.mjs
+
+      - name: LOC guard (max 300 lignes/fichier)
+        run: node scripts/loc_guard.mjs
+
+      - name: Dependency-cruiser (cycles/orphelins)
+        run: npx depcruise src --config .dependency-cruiser.cjs
 
       - name: Unit tests
         run: pnpm test
