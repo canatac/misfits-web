@@ -15,7 +15,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAIStore } from "@/stores/ai-store";
-import { smartComplete } from "@/lib/ai-client";
+import { smartComplete } from "@/lib/ai-prompts";
 import type {
   AIComposerRequest,
   AILength,

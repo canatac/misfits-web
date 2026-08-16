@@ -7,13 +7,13 @@
  * `onChunk` callback so the UI can render text as it arrives.
  */
 import { create } from "zustand";
+import { AIError } from "@/lib/ai-client";
 import {
-  AIError,
   generateEmail as clientGenerateEmail,
   generateSubject as clientGenerateSubject,
   rewriteText as clientRewriteText,
   translateText as clientTranslateText,
-} from "@/lib/ai-client";
+} from "@/lib/ai-prompts";
 import type {
   AIComposerRequest,
   AIConversation,
