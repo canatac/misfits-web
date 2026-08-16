@@ -15,15 +15,61 @@ import type {
   SendOptions,
 } from "@/types/composer";
 import { composerRepository } from "@/lib/repositories";
-import {
-  AUTOSAVE_INTERVAL,
-  buildOutboundPayload,
-  clearPersistedDraft,
-  persistDraft,
-  readPersistedDraft,
-  snapshot,
-  uid,
-} from "./parts/composer-store/persistence";
+
+const STORAGE_KEY = "misfits:composer-draft";
+const AUTOSAVE_INTERVAL = 10_000;
+
+function uid(prefix = "id"): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function nowISO(): string {
+  return new Date().toISOString();
+}
+
+/** Serialisable snapshot persisted to localStorage. */
+interface DraftSnapshot {
+  id: string;
+  to: Recipient[];
+  cc: Recipient[];
+  bcc: Recipient[];
+  subject: string;
+  body: string;
+  attachments: Attachment[];
+  signature: EmailSignature | null;
+  updatedAt: string;
+  inReplyTo?: string;
+  references?: string[];
+}
+
+function snapshot(state: ComposerStore): DraftSnapshot {
+  return {
+    id: state.draftId,
+    to: state.to,
+    cc: state.cc,
+    bcc: state.bcc,
+    subject: state.subject,
+    body: state.body,
+    attachments: state.attachments,
+    signature: state.signature,
+    updatedAt: nowISO(),
+    inReplyTo: state.inReplyTo,
+    references: state.references,
+  };
+}
+
+function persistDraft(state: ComposerStore): void {
+  if (typeof window === "undefined") return;
+  try {
+    const snap = snapshot(state);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+    state.draftId = snap.id;
+    state.lastSavedAt = snap.updatedAt;
+    state.isDirty = false;
+  } catch {
+    // localStorage may be full or unavailable; ignore.
+  }
+}
 
 export interface ComposerStore {
   // Recipients
@@ -119,6 +165,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
 
   addRecipient: (type, recipient) => {
     const list = get()[type];
+    // Avoid duplicates by email.
     if (list.some((r) => r.email === recipient.email)) return;
     set({
       [type]: [...list, recipient],
@@ -174,8 +221,24 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     set({ sending: true, sendError: null });
     try {
       const snap = snapshot(get());
-      await composerRepository.send(buildOutboundPayload(snap), options);
-      clearPersistedDraft();
+      await composerRepository.send(
+        {
+          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
+          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
+          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
+          subject: snap.subject,
+          body: snap.body,
+        },
+        options
+      );
+      // Clear the persisted draft on success.
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+      }
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
@@ -188,7 +251,16 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     set({ sending: true, sendError: null });
     try {
       const snap = snapshot(get());
-      await composerRepository.schedule(buildOutboundPayload(snap), date);
+      await composerRepository.schedule(
+        {
+          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
+          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
+          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
+          subject: snap.subject,
+          body: snap.body,
+        },
+        date
+      );
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
@@ -223,23 +295,29 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   loadPersistedDraft: () => {
-    const snap = readPersistedDraft();
-    if (!snap) return false;
-    set({
-      draftId: snap.id,
-      to: snap.to ?? [],
-      cc: snap.cc ?? [],
-      bcc: snap.bcc ?? [],
-      subject: snap.subject ?? "",
-      body: snap.body ?? "",
-      attachments: snap.attachments ?? [],
-      signature: snap.signature ?? null,
-      inReplyTo: snap.inReplyTo,
-      references: snap.references,
-      lastSavedAt: snap.updatedAt,
-      isDirty: false,
-    });
-    return true;
+    if (typeof window === "undefined") return false;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const snap = JSON.parse(raw) as DraftSnapshot;
+      set({
+        draftId: snap.id,
+        to: snap.to ?? [],
+        cc: snap.cc ?? [],
+        bcc: snap.bcc ?? [],
+        subject: snap.subject ?? "",
+        body: snap.body ?? "",
+        attachments: snap.attachments ?? [],
+        signature: snap.signature ?? null,
+        inReplyTo: snap.inReplyTo,
+        references: snap.references,
+        lastSavedAt: snap.updatedAt,
+        isDirty: false,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   startAutosave: () => {
@@ -262,6 +340,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   openComposer: (prefill) => {
+    // Reset to a fresh draft, then apply any pre-fill (reply/forward/template).
     const { _autosaveTimer } = get();
     if (_autosaveTimer) clearInterval(_autosaveTimer);
     set({
