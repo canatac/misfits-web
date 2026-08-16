@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { mailAuthHeaders } from "@/lib/mail-api";
 import type { Email } from "@/types/email";
 import {
@@ -60,29 +60,97 @@ async function writeBlobToDir(dir: DirectoryHandleLike, fileName: string, blob: 
   await writable.close();
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Reducer — consolidates all workspace state (data + view + workflow).      */
+/* -------------------------------------------------------------------------- */
+
+interface WorkspaceState {
+  loading: boolean;
+  error: string | null;
+  emails: Email[];
+  grouping: GroupingRule;
+  scope: ScopeRule;
+  expanded: Set<string>;
+  rules: WorkflowRule[];
+  workflowStatus: string;
+  runningWorkflow: boolean;
+}
+
+type WorkspaceAction =
+  | { type: "loadStart" }
+  | { type: "loadSuccess"; emails: Email[] }
+  | { type: "loadError"; error: string }
+  | { type: "setGrouping"; grouping: GroupingRule }
+  | { type: "setScope"; scope: ScopeRule }
+  | { type: "toggleExpanded"; id: string }
+  | { type: "setRules"; rules: WorkflowRule[] }
+  | { type: "setWorkflowStatus"; status: string }
+  | { type: "setRunningWorkflow"; running: boolean };
+
+const initialState: WorkspaceState = {
+  loading: false,
+  error: null,
+  emails: [],
+  grouping: "folder",
+  scope: "all",
+  expanded: new Set(["root"]),
+  rules: [makeRule()],
+  workflowStatus: "",
+  runningWorkflow: false,
+};
+
+function workspaceReducer(state: WorkspaceState, action: WorkspaceAction): WorkspaceState {
+  switch (action.type) {
+    case "loadStart":
+      return { ...state, loading: true, error: null };
+    case "loadSuccess":
+      return { ...state, loading: false, emails: action.emails };
+    case "loadError":
+      return { ...state, loading: false, error: action.error };
+    case "setGrouping":
+      return { ...state, grouping: action.grouping };
+    case "setScope":
+      return { ...state, scope: action.scope };
+    case "toggleExpanded": {
+      const next = new Set(state.expanded);
+      if (next.has(action.id)) next.delete(action.id);
+      else next.add(action.id);
+      return { ...state, expanded: next };
+    }
+    case "setRules":
+      return { ...state, rules: action.rules };
+    case "setWorkflowStatus":
+      return { ...state, workflowStatus: action.status };
+    case "setRunningWorkflow":
+      return { ...state, runningWorkflow: action.running };
+    default:
+      return state;
+  }
+}
+
 export function useFileWorkspace() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [emails, setEmails] = useState<Email[]>([]);
-  const [grouping, setGrouping] = useState<GroupingRule>("folder");
-  const [scope, setScope] = useState<ScopeRule>("all");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(["root"]));
-  const [rules, setRules] = useState<WorkflowRule[]>([makeRule()]);
-  const [workflowStatus, setWorkflowStatus] = useState<string>("");
-  const [runningWorkflow, setRunningWorkflow] = useState(false);
+  const [state, dispatch] = useReducer(workspaceReducer, initialState);
+  const {
+    loading,
+    error,
+    emails,
+    grouping,
+    scope,
+    expanded,
+    rules,
+    workflowStatus,
+    runningWorkflow,
+  } = state;
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "loadStart" });
     try {
       const [inbox, sent] = await Promise.all([fetchFolder("inbox"), fetchFolder("sent")]);
       const byId = new Map<string, Email>();
       [...inbox, ...sent].forEach((e) => byId.set(e.id, e));
-      setEmails(Array.from(byId.values()));
+      dispatch({ type: "loadSuccess", emails: Array.from(byId.values()) });
     } catch (e) {
-      setError((e as Error).message || "Failed to load workspace files");
-    } finally {
-      setLoading(false);
+      dispatch({ type: "loadError", error: (e as Error).message || "Failed to load workspace files" });
     }
   }, []);
 
@@ -96,7 +164,7 @@ export function useFileWorkspace() {
       if (!raw) return;
       const parsed = JSON.parse(raw) as WorkflowRule[];
       if (Array.isArray(parsed) && parsed.length > 0) {
-        setRules(parsed.map((r) => makeRule(r)));
+        dispatch({ type: "setRules", rules: parsed.map((r) => makeRule(r)) });
       }
     } catch {
       // ignore parse errors
@@ -110,21 +178,34 @@ export function useFileWorkspace() {
   const tree = useMemo(() => buildTree(emails, grouping, scope), [emails, grouping, scope]);
   const files = useMemo(() => collectFiles(emails, scope), [emails, scope]);
 
-  const toggleExpanded = useCallback((id: string) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  const setGrouping = useCallback(
+    (g: GroupingRule) => dispatch({ type: "setGrouping", grouping: g }),
+    []
+  );
+  const setScope = useCallback(
+    (s: ScopeRule) => dispatch({ type: "setScope", scope: s }),
+    []
+  );
+  const toggleExpanded = useCallback(
+    (id: string) => dispatch({ type: "toggleExpanded", id }),
+    []
+  );
+  const setRules = useCallback(
+    (updater: WorkflowRule[] | ((prev: WorkflowRule[]) => WorkflowRule[])) => {
+      dispatch({
+        type: "setRules",
+        rules: typeof updater === "function" ? updater(rules) : updater,
+      });
+    },
+    [rules]
+  );
 
   const runWorkflow = useCallback(async () => {
     const win = window as WindowWithDirectoryPicker;
     const activeRules = rules.filter((r) => r.enabled);
 
     if (activeRules.length === 0) {
-      setWorkflowStatus("Active au moins une règle de workflow.");
+      dispatch({ type: "setWorkflowStatus", status: "Active au moins une règle de workflow." });
       return;
     }
 
@@ -150,16 +231,18 @@ export function useFileWorkspace() {
       window.setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     };
 
-    setRunningWorkflow(true);
+    dispatch({ type: "setRunningWorkflow", running: true });
 
     try {
       let saved = 0;
       let skipped = 0;
 
       if (!win.showDirectoryPicker) {
-        setWorkflowStatus(
-          "Mode compatibilité: Firefox privé détecté, téléchargement local sans choix de dossier (noms préfixés par destination)."
-        );
+        dispatch({
+          type: "setWorkflowStatus",
+          status:
+            "Mode compatibilité: Firefox privé détecté, téléchargement local sans choix de dossier (noms préfixés par destination).",
+        });
 
         for (const file of files) {
           const rule = activeRules.find((r) => matchesRule(file, r));
@@ -186,13 +269,14 @@ export function useFileWorkspace() {
           saved += 1;
         }
 
-        setWorkflowStatus(
-          `Workflow compat terminé: ${saved} téléchargement(s) lancés, ${skipped} ignoré(s).`
-        );
+        dispatch({
+          type: "setWorkflowStatus",
+          status: `Workflow compat terminé: ${saved} téléchargement(s) lancés, ${skipped} ignoré(s).`,
+        });
         return;
       }
 
-      setWorkflowStatus("Demande d’autorisation dossier en cours...");
+      dispatch({ type: "setWorkflowStatus", status: "Demande d’autorisation dossier en cours..." });
       const root = await win.showDirectoryPicker();
 
       for (const file of files) {
@@ -213,12 +297,15 @@ export function useFileWorkspace() {
         saved += 1;
       }
 
-      setWorkflowStatus(`Workflow terminé: ${saved} fichier(s) enregistrés, ${skipped} ignoré(s).`);
+      dispatch({
+        type: "setWorkflowStatus",
+        status: `Workflow terminé: ${saved} fichier(s) enregistrés, ${skipped} ignoré(s).`,
+      });
     } catch (e) {
       const message = (e as Error).message || "workflow failed";
-      setWorkflowStatus(`Workflow interrompu: ${message}`);
+      dispatch({ type: "setWorkflowStatus", status: `Workflow interrompu: ${message}` });
     } finally {
-      setRunningWorkflow(false);
+      dispatch({ type: "setRunningWorkflow", running: false });
     }
   }, [files, rules]);
 
