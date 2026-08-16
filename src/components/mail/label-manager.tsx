@@ -2,22 +2,10 @@
 
 /**
  * Label Manager — modal panel for CRUD on labels.
- * Color picker (preset + custom), icon picker (lucide), hierarchical tree
- * with expand/collapse and up/down reorder buttons.
  */
 import * as React from "react";
 import { LabelTreeRow } from "./label-manager/label-tree-row";
-import * as Icons from "lucide-react";
-import {
-  ChevronRight,
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  Check,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Plus, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,109 +25,21 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { useLabelStore, buildLabelTree } from "@/stores/label-store";
+import type { Label } from "@/types/label";
 import {
-  useLabelStore,
-  LABEL_COLORS,
-  LABEL_ICONS,
-  buildLabelTree,
-} from "@/stores/label-store";
-import type { Label, LabelCreateInput, LabelTree } from "@/types/label";
+  formReducer,
+  initialFormState,
+} from "./parts/label-manager/form-reducer";
+import { ColorPicker, IconPicker } from "./parts/label-manager/pickers";
 
 interface LabelManagerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Reducer — form state for label create/edit.                               */
-/* -------------------------------------------------------------------------- */
-
-interface FormState {
-  editingId: string | null;
-  isCreating: boolean;
-  name: string;
-  color: string;
-  customColor: string;
-  icon: string;
-  parentId: string;
-  description: string;
-}
-
-type FormAction =
-  | { type: "reset" }
-  | { type: "startCreate" }
-  | { type: "startEdit"; label: Label }
-  | { type: "setName"; name: string }
-  | { type: "setColor"; color: string }
-  | { type: "setCustomColor"; customColor: string }
-  | { type: "setIcon"; icon: string }
-  | { type: "setParentId"; parentId: string }
-  | { type: "setDescription"; description: string };
-
-const initialFormState: FormState = {
-  editingId: null,
-  isCreating: false,
-  name: "",
-  color: LABEL_COLORS[0],
-  customColor: "",
-  icon: "",
-  parentId: "__none__",
-  description: "",
-};
-
-function formReducer(state: FormState, action: FormAction): FormState {
-  switch (action.type) {
-    case "reset":
-      return initialFormState;
-    case "startCreate":
-      return { ...initialFormState, isCreating: true };
-    case "startEdit":
-      return {
-        editingId: action.label.id,
-        isCreating: false,
-        name: action.label.name,
-        color: action.label.color,
-        customColor: "",
-        icon: action.label.icon,
-        parentId: action.label.parentId ?? "__none__",
-        description: action.label.description ?? "",
-      };
-    case "setName":
-      return { ...state, name: action.name };
-    case "setColor":
-      return { ...state, color: action.color, customColor: "" };
-    case "setCustomColor":
-      return { ...state, customColor: action.customColor };
-    case "setIcon":
-      return { ...state, icon: action.icon };
-    case "setParentId":
-      return { ...state, parentId: action.parentId };
-    case "setDescription":
-      return { ...state, description: action.description };
-    default:
-      return state;
-  }
-}
-
-function getIcon(
-  name: string
-): React.ComponentType<{ className?: string }> | undefined {
-  if (!name) return undefined;
-  const pascal = name
-    .split(/[-_]/)
-    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-    .join("");
-  const icons = Icons as unknown as Record<
-    string,
-    React.ComponentType<{ className?: string }>
-  >;
-  return icons[pascal];
-}
-
 export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
   const labels = useLabelStore((s) => s.labels);
-  // Stable when `labels` unchanged — calling getLabelTree() in the selector
-  // returns a fresh array every time and trips React max-update-depth (#185).
   const tree = React.useMemo(() => buildLabelTree(labels), [labels]);
   const createLabel = useLabelStore((s) => s.createLabel);
   const updateLabel = useLabelStore((s) => s.updateLabel);
@@ -160,37 +60,21 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
 
   const activeColor = customColor || color;
 
-  function resetForm() {
-    dispatch({ type: "reset" });
-  }
-
-  function startCreate() {
-    dispatch({ type: "startCreate" });
-  }
-
-  function startEdit(label: Label) {
-    dispatch({ type: "startEdit", label });
-  }
+  const resetForm = () => dispatch({ type: "reset" });
+  const startCreate = () => dispatch({ type: "startCreate" });
+  const startEdit = (label: Label) => dispatch({ type: "startEdit", label });
 
   function handleSave() {
     if (!name.trim()) return;
-    if (editingId) {
-      updateLabel(editingId, {
-        name,
-        color: activeColor,
-        icon,
-        parentId: parentId === "__none__" ? null : parentId,
-        description: description.trim() || undefined,
-      });
-    } else {
-      createLabel({
-        name,
-        color: activeColor,
-        icon,
-        parentId: parentId === "__none__" ? null : parentId,
-        description: description.trim() || undefined,
-      });
-    }
+    const payload = {
+      name,
+      color: activeColor,
+      icon,
+      parentId: parentId === "__none__" ? null : parentId,
+      description: description.trim() || undefined,
+    };
+    if (editingId) updateLabel(editingId, payload);
+    else createLabel(payload);
     resetForm();
   }
 
@@ -204,7 +88,6 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
     : null;
   const showForm = isCreating || !!editingLabel;
 
-  // Parent candidates exclude the editing label and its descendants.
   const parentCandidates = React.useMemo(() => {
     if (!editingId) return labels;
     const desc = new Set<string>([editingId]);
@@ -240,12 +123,7 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
         <ModalBody>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Labels</span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={startCreate}
-              disabled={showForm}
-            >
+            <Button size="sm" variant="outline" onClick={startCreate} disabled={showForm}>
               <Plus className="h-4 w-4" />
               New label
             </Button>
@@ -373,86 +251,5 @@ export function LabelManager({ open, onOpenChange }: LabelManagerProps) {
         </ModalFooter>
       </ModalContent>
     </Modal>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Tree row                                                           */
-/* ------------------------------------------------------------------ */
-
-
-/* ------------------------------------------------------------------ */
-/* Color & icon pickers                                               */
-/* ------------------------------------------------------------------ */
-
-function ColorPicker({
-  value,
-  customValue,
-  onPresetChange,
-  onCustomChange,
-}: {
-  value: string;
-  customValue: string;
-  onPresetChange: (color: string) => void;
-  onCustomChange: (color: string) => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {LABEL_COLORS.map((c) => (
-        <button
-          key={c}
-          type="button"
-          aria-label={`Color ${c}`}
-          onClick={() => onPresetChange(c)}
-          className={cn(
-            "h-6 w-6 rounded-full border-2 transition-transform",
-            !customValue && value === c
-              ? "scale-110 border-[var(--color-fg)]"
-              : "border-transparent hover:scale-110"
-          )}
-          style={{ backgroundColor: c }}
-        />
-      ))}
-      <label className="relative ml-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border border-[var(--color-border)]">
-        <input
-          type="color"
-          value={customValue || value}
-          onChange={(e) => onCustomChange(e.target.value)}
-          className="absolute inset-0 cursor-pointer opacity-0"
-          aria-label="Custom color"
-        />
-        <Icons.Palette className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" />
-      </label>
-    </div>
-  );
-}
-
-function IconPicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (name: string) => void;
-}) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger>
-        <SelectValue placeholder="No icon" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="">No icon</SelectItem>
-        {LABEL_ICONS.map((name) => {
-          const Icon = getIcon(name);
-          return (
-            <SelectItem key={name} value={name}>
-              <span className="flex items-center gap-2">
-                {Icon && <Icon className="h-3.5 w-3.5" />}
-                {name}
-              </span>
-            </SelectItem>
-          );
-        })}
-      </SelectContent>
-    </Select>
   );
 }
