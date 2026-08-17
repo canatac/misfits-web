@@ -19,8 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RecipientInput } from "@/components/mail/recipient-input";
 import { TiptapEditor } from "@/components/mail/tiptap-editor";
+import { ComposerRecipients } from "./composer/composer-recipients";
 import { AttachmentZone } from "@/components/mail/attachment-zone";
 import { useComposerStore } from "@/stores/composer-store";
 import { getActiveSignature } from "@/lib/signatures";
@@ -111,7 +111,7 @@ export function ComposerPanel({
   const onSet = (type: RecipientType) => (rs: Recipient[]) =>
     setRecipients(type, rs);
 
-  const showCcBccToggle = cc.length > 0 || bcc.length > 0 || showCcBcc;
+
 
   return (
     <div
@@ -164,43 +164,15 @@ export function ComposerPanel({
 
       <ScrollArea className="flex-1">
         <div className={cn("flex flex-col gap-0", isCompact ? "p-2" : "p-4")}>
-          <RecipientInput
-            type="to"
-            label="To"
-            recipients={to}
-            onAdd={onAdd("to")}
-            onRemove={onRemove("to")}
-            autoFocus
+          <ComposerRecipients
+            to={to}
+            cc={cc}
+            bcc={bcc}
+            showCcBcc={showCcBcc}
+            onShowCcBcc={() => setShowCcBcc(true)}
+            onAdd={onAdd}
+            onRemove={onRemove}
           />
-          {showCcBccToggle && (
-            <>
-              <Separator />
-              <RecipientInput
-                type="cc"
-                label="Cc"
-                recipients={cc}
-                onAdd={onAdd("cc")}
-                onRemove={onRemove("cc")}
-              />
-              <Separator />
-              <RecipientInput
-                type="bcc"
-                label="Bcc"
-                recipients={bcc}
-                onAdd={onAdd("bcc")}
-                onRemove={onRemove("bcc")}
-              />
-            </>
-          )}
-          {!showCcBcc && (
-            <button
-              type="button"
-              onClick={() => setShowCcBcc(true)}
-              className="self-end px-3 py-1 text-xs text-[var(--color-brand-500)] hover:underline"
-            >
-              + Cc / Bcc
-            </button>
-          )}
 
           <Separator />
 
