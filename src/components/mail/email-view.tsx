@@ -5,7 +5,8 @@
  * blocked external images (toggle to load), attachment list, action buttons,
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
  */
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useEmailBodyHydration } from "./hooks/useEmailBodyHydration";
 import {
   Paperclip,
   ImageOff,
@@ -22,7 +23,6 @@ import { useEmailStore } from "@/stores/email-store";
 import { useLabelStore } from "@/stores/label-store";
 import { LabelManager } from "@/components/mail/label-manager";
 import { SecurityBanner } from "@/components/mail/security-banner";
-import type { Email } from "@/types/email";
 import { AttachmentCard } from "./attachment-card";
 import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
@@ -36,50 +36,19 @@ interface EmailViewProps {
 export function EmailView({ className }: EmailViewProps) {
   const emails = useEmailStore((s) => s.emails);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
-  const setEmails = useEmailStore.setState;
 
   const labels = useLabelStore((s) => s.labels);
   const assignments = useLabelStore((s) => s.assignments);
   const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
-  const [, setDetailLoading] = useState(false);
 
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId]
   );
 
-  // List responses omit body for speed — hydrate on select
-  useEffect(() => {
-    if (!email || (email.body && email.body.length > 0)) return;
-    let cancelled = false;
-    setDetailLoading(true);
-    void (async () => {
-      try {
-        const { mailAuthHeaders } = await import("@/lib/mail-api");
-        const res = await fetch(`/api/emails/${encodeURIComponent(email.id)}`, {
-          headers: mailAuthHeaders(),
-          credentials: "include",
-        });
-        if (!res.ok || cancelled) return;
-        const full = (await res.json()) as Email;
-        if (cancelled || !full?.body) return;
-        setEmails((s) => ({
-          emails: s.emails.map((e) =>
-            e.id === email.id
-              ? { ...e, body: full.body, bodyType: full.bodyType ?? e.bodyType }
-              : e
-          ),
-        }));
-      } finally {
-        if (!cancelled) setDetailLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [email, setEmails]);
+  useEmailBodyHydration(email);
 
   const emailLabelIds = useMemo(() => {
     if (!email) return [];
