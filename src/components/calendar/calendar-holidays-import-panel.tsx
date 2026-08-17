@@ -1,117 +1,34 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useCalendarStore } from "@/stores/calendar-store";
 import { useCalendarMutations } from "@/hooks/use-calendar";
-
-interface CountryOption {
-  code: string;
-  label: string;
-}
-
-interface PublicHolidayApiItem {
-  date: string;
-  localName: string;
-  name: string;
-  countryCode: string;
-}
-
-interface NagerCountryItem {
-  countryCode: string;
-  name: string;
-}
-
-interface RestCountryItem {
-  cca2: string;
-  name?: { common?: string };
-  translations?: { fra?: { common?: string } | string };
-}
-
-function holidayKey(date: string, title: string): string {
-  return `${date}|${title.trim().toLowerCase()}`;
-}
+import {
+  fetchPublicHolidays,
+  holidayKey,
+  useHolidayCountries,
+} from "@/hooks/use-holidays-import";
 
 export function CalendarHolidaysImportPanel() {
   const selectedDate = useCalendarStore((s) => s.selectedDate);
   const events = useCalendarStore((s) => s.events);
   const { createEvent } = useCalendarMutations();
 
+  const {
+    holidayCountryOptions,
+    holidaySupportedCodes,
+    loadingHolidayCountries,
+  } = useHolidayCountries();
+
   const [selectedHolidayCountries, setSelectedHolidayCountries] = useState<
     string[]
   >(["FR"]);
-  const [holidayCountryOptions, setHolidayCountryOptions] = useState<
-    CountryOption[]
-  >([]);
   const [holidayCountriesSearch, setHolidayCountriesSearch] = useState("");
-  const [holidaySupportedCodes, setHolidaySupportedCodes] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [loadingHolidayCountries, setLoadingHolidayCountries] = useState(false);
   const [importingHolidays, setImportingHolidays] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadHolidayCountries() {
-      setLoadingHolidayCountries(true);
-      try {
-        const [worldRes, supportedRes] = await Promise.allSettled([
-          fetch(
-            "https://raw.githubusercontent.com/mledoze/countries/master/countries.json"
-          ),
-          fetch("https://date.nager.at/api/v3/AvailableCountries"),
-        ]);
-
-        let options: CountryOption[] = [];
-        if (worldRes.status === "fulfilled" && worldRes.value.ok) {
-          const world = (await worldRes.value.json()) as RestCountryItem[];
-          options = world
-            .filter((c) => typeof c.cca2 === "string" && c.cca2.length === 2)
-            .map((c) => {
-              const frTranslation =
-                typeof c.translations?.fra === "string"
-                  ? c.translations.fra
-                  : c.translations?.fra?.common;
-              return {
-                code: c.cca2.toUpperCase(),
-                label: frTranslation || c.name?.common || c.cca2.toUpperCase(),
-              };
-            })
-            .sort((a, b) => a.label.localeCompare(b.label, "fr"));
-        }
-
-        let supported = new Set<string>();
-        if (supportedRes.status === "fulfilled" && supportedRes.value.ok) {
-          const nager = (await supportedRes.value.json()) as NagerCountryItem[];
-          supported = new Set(
-            nager
-              .map((country) => country.countryCode?.toUpperCase())
-              .filter((code): code is string => Boolean(code))
-          );
-        }
-
-        if (!cancelled) {
-          setHolidayCountryOptions(options);
-          setHolidaySupportedCodes(supported);
-        }
-      } catch {
-        if (!cancelled) {
-          toast.error("Impossible de charger la liste mondiale des pays");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingHolidayCountries(false);
-        }
-      }
-    }
-    loadHolidayCountries();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const filteredHolidayCountryOptions = useMemo(() => {
     const q = holidayCountriesSearch.trim().toLowerCase();
@@ -131,28 +48,8 @@ export function CalendarHolidaysImportPanel() {
     const selectedYear = new Date(selectedDate).getFullYear();
     setImportingHolidays(true);
     try {
-      const fetchResults = await Promise.allSettled(
-        selectedHolidayCountries.map(async (countryCode) => {
-          const response = await fetch(
-            `https://date.nager.at/api/v3/PublicHolidays/${selectedYear}/${countryCode}`
-          );
-          if (!response.ok) {
-            throw new Error(`${countryCode} (${response.status})`);
-          }
-          const data = (await response.json()) as PublicHolidayApiItem[];
-          return data;
-        })
-      );
-
-      const failedCountries: string[] = [];
-      const fetchedHolidays: PublicHolidayApiItem[] = [];
-      fetchResults.forEach((result, idx) => {
-        if (result.status === "fulfilled") {
-          fetchedHolidays.push(...result.value);
-          return;
-        }
-        failedCountries.push(selectedHolidayCountries[idx]);
-      });
+      const { holidays: fetchedHolidays, failed: failedCountries } =
+        await fetchPublicHolidays(selectedYear, selectedHolidayCountries);
 
       if (fetchedHolidays.length === 0) {
         throw new Error("Aucun jour férié récupéré");
