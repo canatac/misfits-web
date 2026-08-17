@@ -5,8 +5,8 @@
 
 import { create } from "zustand";
 import type { AuthError, User } from "@/types/auth";
+import { ApiError } from "@/lib/api-client";
 import {
-  ApiError,
   apiLogin,
   apiLogout,
   apiRegister,
@@ -14,7 +14,7 @@ import {
   apiRequestPasswordReset,
   apiVerify2FA,
   apiRefresh,
-} from "@/lib/api-client";
+} from "@/lib/api-auth";
 import {
   audit,
   clearSession,
