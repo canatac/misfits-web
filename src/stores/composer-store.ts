@@ -183,14 +183,15 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   loadDraft: (draft) => {
+    const s = get();
     set({
-      to: draft.to ?? get().to,
-      cc: draft.cc ?? get().cc,
-      bcc: draft.bcc ?? get().bcc,
-      subject: draft.subject ?? get().subject,
-      body: draft.body ?? get().body,
-      attachments: draft.attachments ?? get().attachments,
-      signature: draft.signature ?? get().signature,
+      to: draft.to ?? s.to,
+      cc: draft.cc ?? s.cc,
+      bcc: draft.bcc ?? s.bcc,
+      subject: draft.subject ?? s.subject,
+      body: draft.body ?? s.body,
+      attachments: draft.attachments ?? s.attachments,
+      signature: draft.signature ?? s.signature,
       inReplyTo: draft.inReplyTo,
       references: draft.references,
       isDirty: true,
@@ -202,59 +203,40 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     if (!snap) return false;
     set({
       draftId: snap.id,
-      to: snap.to ?? [],
-      cc: snap.cc ?? [],
-      bcc: snap.bcc ?? [],
-      subject: snap.subject ?? "",
-      body: snap.body ?? "",
-      attachments: snap.attachments ?? [],
-      signature: snap.signature ?? null,
-      inReplyTo: snap.inReplyTo,
-      references: snap.references,
-      lastSavedAt: snap.updatedAt,
-      isDirty: false,
+      to: snap.to ?? [], cc: snap.cc ?? [], bcc: snap.bcc ?? [],
+      subject: snap.subject ?? "", body: snap.body ?? "",
+      attachments: snap.attachments ?? [], signature: snap.signature ?? null,
+      inReplyTo: snap.inReplyTo, references: snap.references,
+      lastSavedAt: snap.updatedAt, isDirty: false,
     });
     return true;
   },
 
   startAutosave: () => {
-    const state = get();
-    if (state._autosaveTimer) return;
+    if (get()._autosaveTimer) return;
     const timer = setInterval(() => {
-      if (get().isDirty) {
-        persistDraft(get());
-      }
+      if (get().isDirty) persistDraft(get());
     }, AUTOSAVE_INTERVAL);
     set({ _autosaveTimer: timer });
   },
 
   stopAutosave: () => {
     const timer = get()._autosaveTimer;
-    if (timer) {
-      clearInterval(timer);
-      set({ _autosaveTimer: null });
-    }
+    if (timer) { clearInterval(timer); set({ _autosaveTimer: null }); }
   },
 
   openComposer: (prefill) => {
     const { _autosaveTimer } = get();
     if (_autosaveTimer) clearInterval(_autosaveTimer);
     set({
-      ...initialState,
-      draftId: uid("draft"),
-      _autosaveTimer: null,
-      composerOpen: true,
-      prefill: prefill ?? null,
+      ...initialState, draftId: uid("draft"), _autosaveTimer: null,
+      composerOpen: true, prefill: prefill ?? null,
     });
     if (prefill) {
       get().loadDraft({
-        to: prefill.to,
-        cc: prefill.cc,
-        bcc: prefill.bcc,
-        subject: prefill.subject,
-        body: prefill.body,
-        inReplyTo: prefill.inReplyTo,
-        references: prefill.references,
+        to: prefill.to, cc: prefill.cc, bcc: prefill.bcc,
+        subject: prefill.subject, body: prefill.body,
+        inReplyTo: prefill.inReplyTo, references: prefill.references,
       });
     }
     get().startAutosave();
