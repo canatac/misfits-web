@@ -7,12 +7,8 @@
  */
 import { create } from "zustand";
 import type {
-  Attachment,
-  ComposeDraft,
-  EmailSignature,
-  Recipient,
-  RecipientType,
-  SendOptions,
+  Attachment, ComposeDraft, EmailSignature,
+  Recipient, RecipientType, SendOptions,
 } from "@/types/composer";
 import {
   AUTOSAVE_INTERVAL,
