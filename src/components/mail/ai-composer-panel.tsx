@@ -16,10 +16,7 @@ import {
 } from "@/hooks/use-ai";
 import { useAIStore } from "@/stores/ai-store";
 import type { AILength, AITone, AITranslationLang } from "@/types/ai";
-import {
-  ComposerOptions,
-  LANG_OPTIONS,
-} from "./parts/ai-composer/composer-options";
+import { ComposerOptions } from "./parts/ai-composer/composer-options";
 import {
   OutputPreview,
   type InsertMode,
@@ -28,6 +25,7 @@ import {
   QuickActions,
   PromptHistory,
 } from "./parts/ai-composer/quick-actions";
+import { useAIActions } from "./parts/ai-composer/use-ai-actions";
 
 interface AIComposerPanelProps {
   open: boolean;
@@ -78,13 +76,6 @@ export function AIComposerPanel({
     }
   }, [error, clearError]);
 
-  const getSelectedText = useCallback((): string | null => {
-    if (!editor) return null;
-    const { from, to, empty } = editor.state.selection;
-    if (empty) return null;
-    return editor.state.doc.textBetween(from, to, "\n");
-  }, [editor]);
-
   const insertIntoEditor = useCallback(
     (html: string, mode: InsertMode) => {
       if (!editor || !html.trim()) return;
@@ -104,77 +95,18 @@ export function AIComposerPanel({
     [editor]
   );
 
-  const handleGenerate = useCallback(async () => {
-    if (!prompt.trim()) {
-      toast.error("Décris d'abord ce que tu veux écrire.");
-      return;
-    }
-    setStreamingOutput("");
-    try {
-      const response = await generateMutation.mutateAsync({
-        req: { prompt, tone, length, language },
-        onChunk: (_c, full) => setStreamingOutput(full),
-      });
-      setStreamingOutput(response.content);
-    } catch {
-      // surfaced via store
-    }
-  }, [prompt, tone, length, language, generateMutation]);
-
-  const handleRewriteSelection = useCallback(async () => {
-    const selected = getSelectedText();
-    if (!selected) {
-      toast.error("Sélectionne d'abord le texte à réécrire.");
-      return;
-    }
-    try {
-      const response = await rewriteMutation.mutateAsync({
-        text: selected,
-        tone,
-        length,
-      });
-      if (editor) {
-        const { from, to } = editor.state.selection;
-        editor
-          .chain()
-          .focus()
-          .deleteRange({ from, to })
-          .insertContent(response.content)
-          .run();
-      }
-      toast.success("Sélection réécrite.");
-    } catch {
-      // surfaced via store
-    }
-  }, [getSelectedText, tone, length, rewriteMutation, editor]);
-
-  const handleTranslateSelection = useCallback(async () => {
-    const selected = getSelectedText();
-    if (!selected) {
-      toast.error("Sélectionne d'abord le texte à traduire.");
-      return;
-    }
-    try {
-      const response = await translateMutation.mutateAsync({
-        text: selected,
-        target: language,
-      });
-      if (editor) {
-        const { from, to } = editor.state.selection;
-        editor
-          .chain()
-          .focus()
-          .deleteRange({ from, to })
-          .insertContent(response.content)
-          .run();
-      }
-      toast.success(
-        `Sélection traduite en ${LANG_OPTIONS.find((l) => l.value === language)?.label}.`
-      );
-    } catch {
-      // surfaced via store
-    }
-  }, [getSelectedText, language, translateMutation, editor]);
+  const { handleGenerate, handleRewriteSelection, handleTranslateSelection } =
+    useAIActions({
+      editor,
+      prompt,
+      tone,
+      length,
+      language,
+      generateMutation,
+      rewriteMutation,
+      translateMutation,
+      setStreamingOutput,
+    });
 
   const recentPrompts = useMemo(
     () =>
