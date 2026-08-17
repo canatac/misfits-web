@@ -20,6 +20,7 @@ import type {
 } from "@/hooks/use-admin-ops";
 import { Badge, asDate, asInt } from "../shared";
 import { UsersAiActivityCard, UsersAuditLogCard } from "./users/UsersAuxCards";
+import { UsersCreateForm } from "./users/UsersCreateForm";
 
 interface UsersTabProps {
   adminUsers: UseQueryResult<AdminUsersResponse, Error>;
@@ -129,56 +130,12 @@ export function UsersTab({
         </div>
 
         {canWriteUsers && (
-        <form
+        <UsersCreateForm
+          newAdminUser={newAdminUser}
+          setNewAdminUser={setNewAdminUser}
+          isPending={createAdminUser.isPending}
           onSubmit={(e) => void handleCreateUser(e)}
-          className="mb-4 rounded-xl border border-[#232327] bg-[#151518] p-3"
-        >
-          <p className="text-xs text-[#A1A1AA]">Créer un utilisateur</p>
-          <div className="mt-2 grid gap-2 md:grid-cols-5">
-            <input
-              value={newAdminUser.email}
-              onChange={(e) => setNewAdminUser((prev) => ({ ...prev, email: e.target.value }))}
-              required
-              type="email"
-              className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
-              placeholder="email@misfits.ai"
-            />
-            <input
-              value={newAdminUser.displayName || ""}
-              onChange={(e) => setNewAdminUser((prev) => ({ ...prev, displayName: e.target.value }))}
-              className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
-              placeholder="Nom affiché"
-            />
-            <select
-              value={newAdminUser.role}
-              onChange={(e) =>
-                setNewAdminUser((prev) => ({ ...prev, role: e.target.value as AdminUserRecord["role"] }))
-              }
-              className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
-            >
-              <option value="user">user</option>
-              <option value="support">support</option>
-              <option value="admin">admin</option>
-            </select>
-            <select
-              value={newAdminUser.status}
-              onChange={(e) =>
-                setNewAdminUser((prev) => ({ ...prev, status: e.target.value as AdminUserRecord["status"] }))
-              }
-              className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
-            >
-              <option value="active">active</option>
-              <option value="restricted">restricted</option>
-            </select>
-            <button
-              type="submit"
-              disabled={createAdminUser.isPending}
-              className="rounded-lg border border-[#3A3A42] px-2 py-1.5 text-xs text-[#E4E4E7] disabled:opacity-50"
-            >
-              {createAdminUser.isPending ? "Création..." : "Créer"}
-            </button>
-          </div>
-        </form>
+        />
         )}
 
         <UsersAiActivityCard adminAiActivity={adminAiActivity} />
