@@ -8,25 +8,7 @@
  * action. Enriches contact history from the email store on mount.
  */
 import { useMemo, useState, useEffect } from "react";
-import {
-  Search,
-  Plus,
-  Upload,
-  Download,
-  ChevronDown,
-  FileText,
-  Contact as ContactIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { Contact as ContactIcon } from "lucide-react";
 import {
   Modal,
   ModalContent,
@@ -36,8 +18,8 @@ import {
   ModalBody,
   ModalFooter,
 } from "@/components/ui/modal";
-import { ContactCard } from "@/components/mail/contact-card";
 import { ContactDetail } from "@/components/mail/contact-detail";
+import { ContactListPanel } from "@/components/mail/contacts-page/contact-list-panel";
 import { ContactImporter } from "@/components/mail/contact-importer";
 import {
   useContacts,
@@ -137,87 +119,16 @@ export function ContactsPage() {
         onAddGroup={() => setAddGroupOpen(true)}
       />
 
-      {/* Contact list */}
-      <section className="flex w-full flex-col md:w-[340px] md:shrink-0 md:border-r md:border-[var(--color-border)]">
-        <div className="flex flex-col gap-2 p-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-[var(--color-muted-fg)]" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search contacts…"
-                className="pl-9"
-                aria-label="Search contacts"
-                data-testid="contact-search"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              size="sm"
-              className="flex-1 gap-1.5"
-              onClick={() => setAddOpen(true)}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              onClick={() => setImporterOpen(true)}
-            >
-              <Upload className="h-3.5 w-3.5" />
-              Import
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <Download className="h-3.5 w-3.5" />
-                  Export
-                  <ChevronDown className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => handleExport("csv")}
-                  className="gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Export as CSV
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleExport("vcard")}
-                  className="gap-2"
-                >
-                  <ContactIcon className="h-4 w-4" />
-                  Export as vCard
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        <Separator />
-        <ScrollArea className="flex-1">
-          <div className="flex flex-col gap-2 p-3">
-            {visible.length === 0 ? (
-              <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-fg)]">
-                No contacts found.
-              </p>
-            ) : (
-              visible.map((c) => (
-                <ContactCard
-                  key={c.id}
-                  contact={c}
-                  active={c.id === selectedId}
-                  onClick={() => setSelectedId(c.id)}
-                />
-              ))
-            )}
-          </div>
-        </ScrollArea>
-      </section>
+      <ContactListPanel
+        query={query}
+        setQuery={setQuery}
+        visible={visible}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
+        onAdd={() => setAddOpen(true)}
+        onImport={() => setImporterOpen(true)}
+        onExport={handleExport}
+      />
 
       {/* Detail panel */}
       <section className="hidden flex-1 md:block">
