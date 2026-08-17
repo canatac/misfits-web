@@ -13,10 +13,8 @@ import { emailTemplates } from "@/lib/email-templates";
 import type { EmailTemplate } from "@/lib/email-templates";
 import type { ComposeDraft, SendOptions } from "@/types/composer";
 import { mailAuthHeaders } from "@/lib/mail-api";
-import {
-  buildOutgoingAttachments,
-  type OutgoingAttachmentPayload,
-} from "./composer/outgoing-attachments";
+import type { OutgoingAttachmentPayload } from "./composer/outgoing-attachments";
+import { sendEmailRequest } from "./composer/send-email";
 
 /** Always hit same-origin `/api/*` (Next rewrite → email-api). Demo is login-only. */
 const BACKEND_AVAILABLE = true;
@@ -111,53 +109,7 @@ export function useSendEmail() {
       options?: SendOptions;
     }) => {
       if (BACKEND_AVAILABLE) {
-        const endpoint = options?.sendLater
-          ? "/api/send/schedule"
-          : "/api/send";
-        const attachments = await buildOutgoingAttachments(draft);
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: mailAuthHeaders(),
-          credentials: "include",
-          body: JSON.stringify({
-            to: draft.to.map((r) => ({ email: r.email, name: r.name })),
-            cc: draft.cc.map((r) => ({ email: r.email, name: r.name })),
-            bcc: draft.bcc.map((r) => ({ email: r.email, name: r.name })),
-            subject: draft.subject,
-            body: draft.body,
-            attachments,
-            inReplyTo: draft.inReplyTo,
-            references: draft.references,
-            ...options,
-          }),
-        });
-        if (!res.ok) {
-          const errBody = await res.text().catch(() => "");
-          throw new Error(
-            errBody || `Send failed: ${res.status} ${res.statusText}`
-          );
-        }
-
-        const responseText = await res.text().catch(() => "");
-        if (!responseText) {
-          return {
-            id: draft.id,
-            messageId: res.headers.get("x-message-id") ?? draft.id,
-            sent: true,
-            deliveryState: "sent",
-          };
-        }
-        try {
-          return JSON.parse(responseText) as unknown;
-        } catch {
-          return {
-            id: draft.id,
-            messageId: draft.id,
-            sent: true,
-            deliveryState: "sent",
-            raw: responseText,
-          };
-        }
+        return sendEmailRequest(draft, options);
       }
       // unreachable — BACKEND_AVAILABLE is always true; kept for tests override
       await new Promise((r) => setTimeout(r, 600));
