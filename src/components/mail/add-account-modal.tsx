@@ -34,9 +34,9 @@ import {
   TestResultBanner,
 } from "./add-account-modal/account-color-picker";
 import { ServerSettingsFields } from "./add-account-modal/server-settings-fields";
-import { PROVIDER_PRESETS, validateConnection } from "@/lib/account-presets";
+import { PROVIDER_PRESETS } from "@/lib/account-presets";
 import { formReducer, initialFormState } from "./parts/add-account-modal/form-reducer";
-import { performSave } from "./parts/add-account-modal/save-flow";
+import { useAddAccountHandlers } from "./add-account-modal/use-add-account-handlers";
 
 interface AddAccountModalProps {
   open: boolean;
@@ -74,53 +74,15 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const activeColor = customColor || color;
   const needsServerFields = PROVIDER_PRESETS[provider].needsServerFields;
 
-  function reset() {
-    dispatch({ type: "reset" });
-    setProbeInput(null);
-  }
-
-  function handleTestConnection() {
-    dispatch({ type: "startTest" });
-    const result = validateConnection(email, password, serverConfig);
-    if (!result.ok) {
-      dispatch({ type: "setTestResult", testResult: result });
-      dispatch({ type: "setTesting", testing: false });
-      return;
-    }
-    setProbeInput({
-      host: serverConfig.imapHost,
-      port: serverConfig.imapPort,
-      tls: serverConfig.imapSecurity !== "none",
-      username: email,
-      password,
-    });
-  }
-
-  async function handleSave() {
-    const result = validateConnection(email, password, serverConfig);
-    if (!result.ok) {
-      dispatch({ type: "setTestResult", testResult: result });
-      return;
-    }
-    await performSave(
-      { provider, email, password, name, serverConfig, needsServerFields, color: activeColor },
-      {
-        setTesting: (v) => dispatch({ type: "setTesting", testing: v }),
-        setTestResult: (r) => dispatch({ type: "setTestResult", testResult: r }),
-        addAccount: (input) => addAccount.mutateAsync(input),
-        setActiveAccount,
-        onDone: () => {
-          reset();
-          onOpenChange(false);
-        },
-      }
-    );
-  }
-
-  function handleClose(next: boolean) {
-    if (!next) reset();
-    onOpenChange(next);
-  }
+  const { reset, handleTestConnection, handleSave, handleClose } = useAddAccountHandlers({
+    state: { provider, email, name, password, serverConfig, activeColor, needsServerFields },
+    dispatch,
+    setProbeInput,
+    addAccountMutate: (input) => addAccount.mutateAsync(input),
+    setActiveAccount,
+    onOpenChange,
+  });
+  void reset;
 
   const canSave =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
