@@ -24,6 +24,12 @@ import {
   uid,
 } from "./composer-store-helpers";
 import { sendComposer, scheduleComposer } from "./composer-store-send";
+import {
+  addRecipientTo,
+  removeRecipientFrom,
+  updateAttachmentIn,
+  removeAttachmentFrom,
+} from "./composer-store-reducers";
 
 export type { ComposerPrefill } from "./composer-store-helpers";
 
@@ -101,18 +107,13 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   addRecipient: (type, recipient) => {
-    const list = get()[type];
-    if (list.some((r) => r.email === recipient.email)) return;
-    set({
-      [type]: [...list, recipient],
-      isDirty: true,
-    } as Partial<ComposerStore>);
+    const patch = addRecipientTo(get(), type, recipient);
+    if (patch) set({ ...patch, isDirty: true } as Partial<ComposerStore>);
   },
 
   removeRecipient: (type, id) => {
-    const list = get()[type];
     set({
-      [type]: list.filter((r) => r.id !== id),
+      ...removeRecipientFrom(get(), type, id),
       isDirty: true,
     } as Partial<ComposerStore>);
   },
@@ -128,21 +129,15 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
 
   updateAttachment: (id, patch) =>
     set((s) => ({
-      attachments: s.attachments.map((a) =>
-        a.id === id ? { ...a, ...patch } : a
-      ),
+      attachments: updateAttachmentIn(s.attachments, id, patch),
       isDirty: true,
     })),
 
   removeAttachment: (id) =>
-    set((s) => {
-      const att = s.attachments.find((a) => a.id === id);
-      if (att?.previewUrl) URL.revokeObjectURL(att.previewUrl);
-      return {
-        attachments: s.attachments.filter((a) => a.id !== id),
-        isDirty: true,
-      };
-    }),
+    set((s) => ({
+      attachments: removeAttachmentFrom(s.attachments, id),
+      isDirty: true,
+    })),
 
   setSignature: (signature) => set({ signature, isDirty: true }),
 
