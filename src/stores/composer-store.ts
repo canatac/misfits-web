@@ -7,25 +7,25 @@
  */
 import { create } from "zustand";
 import type {
-  Attachment,
-  ComposeDraft,
-  EmailSignature,
-  Recipient,
-  RecipientType,
-  SendOptions,
+  Attachment, ComposeDraft, EmailSignature,
+  Recipient, RecipientType, SendOptions,
 } from "@/types/composer";
-import { composerRepository } from "@/lib/repositories";
 import {
   AUTOSAVE_INTERVAL,
   type ComposerPrefill,
-  clearPersistedSnapshot,
   initialComposerState,
   nowISO,
   persistSnapshot,
   readPersistedSnapshot,
-  snapshot,
   uid,
 } from "./composer-store-helpers";
+import { sendComposer, scheduleComposer } from "./composer-store-send";
+import {
+  addRecipientTo,
+  removeRecipientFrom,
+  updateAttachmentIn,
+  removeAttachmentFrom,
+} from "./composer-store-reducers";
 
 export type { ComposerPrefill } from "./composer-store-helpers";
 
@@ -103,18 +103,13 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   addRecipient: (type, recipient) => {
-    const list = get()[type];
-    if (list.some((r) => r.email === recipient.email)) return;
-    set({
-      [type]: [...list, recipient],
-      isDirty: true,
-    } as Partial<ComposerStore>);
+    const patch = addRecipientTo(get(), type, recipient);
+    if (patch) set({ ...patch, isDirty: true } as Partial<ComposerStore>);
   },
 
   removeRecipient: (type, id) => {
-    const list = get()[type];
     set({
-      [type]: list.filter((r) => r.id !== id),
+      ...removeRecipientFrom(get(), type, id),
       isDirty: true,
     } as Partial<ComposerStore>);
   },
@@ -130,21 +125,15 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
 
   updateAttachment: (id, patch) =>
     set((s) => ({
-      attachments: s.attachments.map((a) =>
-        a.id === id ? { ...a, ...patch } : a
-      ),
+      attachments: updateAttachmentIn(s.attachments, id, patch),
       isDirty: true,
     })),
 
   removeAttachment: (id) =>
-    set((s) => {
-      const att = s.attachments.find((a) => a.id === id);
-      if (att?.previewUrl) URL.revokeObjectURL(att.previewUrl);
-      return {
-        attachments: s.attachments.filter((a) => a.id !== id),
-        isDirty: true,
-      };
-    }),
+    set((s) => ({
+      attachments: removeAttachmentFrom(s.attachments, id),
+      isDirty: true,
+    })),
 
   setSignature: (signature) => set({ signature, isDirty: true }),
 
@@ -158,18 +147,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   send: async (options) => {
     set({ sending: true, sendError: null });
     try {
-      const snap = snapshot(get());
-      await composerRepository.send(
-        {
-          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-          subject: snap.subject,
-          body: snap.body,
-        },
-        options
-      );
-      clearPersistedSnapshot();
+      await sendComposer(get(), options);
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
@@ -181,17 +159,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   scheduleSend: async (date) => {
     set({ sending: true, sendError: null });
     try {
-      const snap = snapshot(get());
-      await composerRepository.schedule(
-        {
-          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-          subject: snap.subject,
-          body: snap.body,
-        },
-        date
-      );
+      await scheduleComposer(get(), date);
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
@@ -211,14 +179,15 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   },
 
   loadDraft: (draft) => {
+    const s = get();
     set({
-      to: draft.to ?? get().to,
-      cc: draft.cc ?? get().cc,
-      bcc: draft.bcc ?? get().bcc,
-      subject: draft.subject ?? get().subject,
-      body: draft.body ?? get().body,
-      attachments: draft.attachments ?? get().attachments,
-      signature: draft.signature ?? get().signature,
+      to: draft.to ?? s.to,
+      cc: draft.cc ?? s.cc,
+      bcc: draft.bcc ?? s.bcc,
+      subject: draft.subject ?? s.subject,
+      body: draft.body ?? s.body,
+      attachments: draft.attachments ?? s.attachments,
+      signature: draft.signature ?? s.signature,
       inReplyTo: draft.inReplyTo,
       references: draft.references,
       isDirty: true,
@@ -230,59 +199,40 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
     if (!snap) return false;
     set({
       draftId: snap.id,
-      to: snap.to ?? [],
-      cc: snap.cc ?? [],
-      bcc: snap.bcc ?? [],
-      subject: snap.subject ?? "",
-      body: snap.body ?? "",
-      attachments: snap.attachments ?? [],
-      signature: snap.signature ?? null,
-      inReplyTo: snap.inReplyTo,
-      references: snap.references,
-      lastSavedAt: snap.updatedAt,
-      isDirty: false,
+      to: snap.to ?? [], cc: snap.cc ?? [], bcc: snap.bcc ?? [],
+      subject: snap.subject ?? "", body: snap.body ?? "",
+      attachments: snap.attachments ?? [], signature: snap.signature ?? null,
+      inReplyTo: snap.inReplyTo, references: snap.references,
+      lastSavedAt: snap.updatedAt, isDirty: false,
     });
     return true;
   },
 
   startAutosave: () => {
-    const state = get();
-    if (state._autosaveTimer) return;
+    if (get()._autosaveTimer) return;
     const timer = setInterval(() => {
-      if (get().isDirty) {
-        persistDraft(get());
-      }
+      if (get().isDirty) persistDraft(get());
     }, AUTOSAVE_INTERVAL);
     set({ _autosaveTimer: timer });
   },
 
   stopAutosave: () => {
     const timer = get()._autosaveTimer;
-    if (timer) {
-      clearInterval(timer);
-      set({ _autosaveTimer: null });
-    }
+    if (timer) { clearInterval(timer); set({ _autosaveTimer: null }); }
   },
 
   openComposer: (prefill) => {
     const { _autosaveTimer } = get();
     if (_autosaveTimer) clearInterval(_autosaveTimer);
     set({
-      ...initialState,
-      draftId: uid("draft"),
-      _autosaveTimer: null,
-      composerOpen: true,
-      prefill: prefill ?? null,
+      ...initialState, draftId: uid("draft"), _autosaveTimer: null,
+      composerOpen: true, prefill: prefill ?? null,
     });
     if (prefill) {
       get().loadDraft({
-        to: prefill.to,
-        cc: prefill.cc,
-        bcc: prefill.bcc,
-        subject: prefill.subject,
-        body: prefill.body,
-        inReplyTo: prefill.inReplyTo,
-        references: prefill.references,
+        to: prefill.to, cc: prefill.cc, bcc: prefill.bcc,
+        subject: prefill.subject, body: prefill.body,
+        inReplyTo: prefill.inReplyTo, references: prefill.references,
       });
     }
     get().startAutosave();
