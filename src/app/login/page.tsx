@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { useLogin, use2FA } from "@/hooks/use-auth";
 import { useAuthStore } from "@/stores/auth-store";
-import { initiateGithubLogin } from "@/lib/api-client";
+import { initiateGithubLogin } from "@/lib/api-auth";
 
 import { isValidLoginId, isRateLimited, formatRetry, getOAuthErrorMessage } from "./helpers";
 import { ErrorBanner } from "./parts";
