@@ -4,13 +4,11 @@ import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { ChatPanelHeader } from "@/components/mail/chat-panel/chat-panel-header";
 import { ChatPanelTabs } from "@/components/mail/chat-panel/chat-panel-tabs";
-import { ChatPanelWorkspace } from "@/components/mail/chat-panel/chat-panel-workspace";
 import { ChatPanelInput } from "@/components/mail/chat-panel/chat-panel-input";
 import { useChatPanelState } from "@/components/mail/chat-panel/use-chat-panel-state";
 import { useChatPanelHandlers } from "@/components/mail/chat-panel/use-chat-panel-handlers";
-import { ChatAiTab } from "@/components/mail/chat-panel/parts/chat-ai-tab";
-import { SensitivePromptBanner } from "@/components/mail/chat-panel/parts/sensitive-prompt-banner";
 import { useChatPanelDerived } from "@/components/mail/chat-panel/parts/use-chat-panel-derived";
+import { ChatPanelBody } from "@/components/mail/chat-panel/parts/chat-panel-body";
 import type { PersonaPreset } from "./chat-panel/chat-panel-utils";
 
 interface ChatPanelProps {
@@ -182,89 +180,44 @@ export function ChatPanel({
         pendingTasksCount={pendingTasks.length}
       />
 
-      {pendingSensitivePrompt && (
-        <SensitivePromptBanner
-          onConfirm={handleConfirmSensitivePrompt}
-          onCancel={() =>
-            dispatch({ type: "setPendingSensitivePrompt", value: null })
-          }
-        />
-      )}
-
-      {lastRedactionCount > 0 && (
-        <div className="mx-3 mt-2 rounded border border-[var(--color-border)] bg-[var(--color-muted)]/40 px-2 py-1 text-[11px] text-[var(--color-muted-fg)]">
-          PII masquée avant envoi: {lastRedactionCount} élément(s)
-        </div>
-      )}
-
-      <div className="min-h-0 flex-1 overflow-hidden p-3">
-        {workspaceTab === "ai" ? (
-          <ChatAiTab
-            uiMode={uiMode}
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            active={active}
-            lastAssistantMessage={lastAssistantMessage}
-            lastUserMessage={lastUserMessage}
-            isStreaming={isStreaming}
-            searchValue={searchValue}
-            setSearchValue={setSearchValue}
-            templateId={templateId}
-            onTemplateIdChange={(value) =>
-              dispatch({ type: "setTemplateId", value })
-            }
-            selectConversation={selectConversation}
-            dispatchPrompt={dispatchPrompt}
-            handleInsertToDraft={handleInsertToDraft}
-            handleCreateTasks={handleCreateTasks}
-            handleSourceClick={handleSourceClick}
-            handleFeedback={handleFeedback}
-            askForVariant={askForVariant}
-            regenerate={regenerate}
-            stopCurrent={stopCurrent}
-            traceEvents={traceEvents}
-            traceStats={traceStats}
-            clearTrace={clearTrace}
-            sessionId={sessionId}
-            sessionKey={sessionKey}
-            folderLabel={chatContext.currentFolder ?? "(none)"}
-            copySessionContext={copySessionContext}
-            persona={persona}
-            persistPersona={(next) =>
-              persistPersona({
-                tone: next.tone as PersonaPreset["tone"],
-                length: next.length as PersonaPreset["length"],
-                language: next.language as PersonaPreset["language"],
-              })
-            }
-            memoryNote={memoryNote}
-            onMemoryNoteChange={(value) =>
-              dispatch({ type: "setMemoryNote", value })
-            }
-            persistMemoryNote={persistMemoryNote}
-            clearMemoryNote={clearMemoryNote}
-            taskItems={taskItems}
-            toggleTask={toggleTask}
-            executeTaskOnBackend={executeTaskOnBackend}
-            lastExecError={lastExecError}
-            analytics={analytics}
-            lastLatencyMs={lastLatencyMs}
-            isAdmin={isAdmin}
-            opsDryRun={opsDryRun}
-            toggleOpsDryRun={() => dispatch({ type: "toggleOpsDryRun" })}
-            runAdminAction={runAdminAction}
-            opsHistory={opsHistory}
-          />
-        ) : (
-          <ChatPanelWorkspace
-            tab={workspaceTab}
-            agendaEmails={agendaEmails}
-            pendingTasks={pendingTasks}
-            onSelectEmail={selectEmail}
-            onToggleTask={toggleTask}
-          />
-        )}
-      </div>
+      <ChatPanelBody
+        pendingSensitivePrompt={pendingSensitivePrompt}
+        onConfirmSensitivePrompt={handleConfirmSensitivePrompt}
+        onCancelSensitivePrompt={() =>
+          dispatch({ type: "setPendingSensitivePrompt", value: null })
+        }
+        lastRedactionCount={lastRedactionCount}
+        workspaceTab={workspaceTab}
+        aiTabProps={{
+          uiMode, conversations, activeConversationId, active,
+          lastAssistantMessage, lastUserMessage, isStreaming,
+          searchValue, setSearchValue, templateId,
+          onTemplateIdChange: (value) => dispatch({ type: "setTemplateId", value }),
+          selectConversation, dispatchPrompt, handleInsertToDraft,
+          handleCreateTasks, handleSourceClick, handleFeedback,
+          askForVariant, regenerate, stopCurrent, traceEvents, traceStats,
+          clearTrace, sessionId, sessionKey,
+          folderLabel: chatContext.currentFolder ?? "(none)",
+          copySessionContext, persona,
+          persistPersona: (next) => persistPersona({
+            tone: next.tone as PersonaPreset["tone"],
+            length: next.length as PersonaPreset["length"],
+            language: next.language as PersonaPreset["language"],
+          }),
+          memoryNote,
+          onMemoryNoteChange: (value) => dispatch({ type: "setMemoryNote", value }),
+          persistMemoryNote, clearMemoryNote, taskItems, toggleTask,
+          executeTaskOnBackend, lastExecError, analytics, lastLatencyMs,
+          isAdmin, opsDryRun,
+          toggleOpsDryRun: () => dispatch({ type: "toggleOpsDryRun" }),
+          runAdminAction, opsHistory,
+        }}
+        workspaceProps={{
+          tab: workspaceTab as "agenda" | "tasks",
+          agendaEmails, pendingTasks,
+          onSelectEmail: selectEmail, onToggleTask: toggleTask,
+        }}
+      />
 
       <ChatPanelInput
         input={input}
