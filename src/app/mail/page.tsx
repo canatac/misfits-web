@@ -9,21 +9,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ComposerPanel } from "@/components/mail/composer-panel";
-import { SearchOverlay } from "@/components/mail/search-overlay";
-import { ChatPanel } from "@/components/mail/chat-panel";
-import { ChatTrigger } from "@/components/mail/chat-trigger";
-import { ReminderBanner } from "@/components/mail/reminder-banner";
-import { TerminalConsole } from "@/components/mail/terminal-console";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
 import { NovamailShellHeader } from "@/components/navigation/novamail-shell-header";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalBody,
-} from "@/components/ui/modal";
 import { useMailShortcuts } from "@/hooks/use-mail-shortcuts";
 import { useEmailStore } from "@/stores/email-store";
 import { useThreadStore } from "@/stores/thread-store";
@@ -31,17 +18,16 @@ import { useThreads } from "@/hooks/use-threads";
 import { useComposerStore } from "@/stores/composer-store";
 import { useAccountStore } from "@/stores/account-store";
 import { useChatStore } from "@/stores/chat-store";
-import { useMailLayoutStore } from "@/stores/mail-layout-store";
-import { useI18n } from "@/i18n/provider";
 import { MobileTopBar } from "./parts/MobileTopBar";
 import { MailSidebarHost } from "./parts/MailSidebarHost";
 import { MailWorkspace } from "./parts/MailWorkspace";
+import { MailPageOverlays } from "./parts/MailPageOverlays";
+import { useMailLayoutSelectors } from "./parts/useMailLayoutSelectors";
 import { useMailPageHandlers } from "./parts/useMailPageHandlers";
 
 type MobileView = "list" | "view";
 
 export default function MailPage() {
-  const { t } = useI18n();
   const router = useRouter();
   const [mobileView, setMobileView] = useState<MobileView>("list");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -62,24 +48,18 @@ export default function MailPage() {
   const toggleUnifiedInbox = useAccountStore((s) => s.toggleUnifiedInbox);
   const canToggleUnified = accountsCount > 1;
 
-  const desktopSidebarOpen = useMailLayoutStore((s) => s.desktopSidebarOpen);
-  const setDesktopSidebarOpen = useMailLayoutStore(
-    (s) => s.setDesktopSidebarOpen
-  );
-  const toggleDesktopSidebar = useMailLayoutStore(
-    (s) => s.toggleDesktopSidebar
-  );
-  const desktopChatOpen = useMailLayoutStore((s) => s.desktopChatOpen);
-  const setDesktopChatOpen = useMailLayoutStore((s) => s.setDesktopChatOpen);
-  const desktopHeaderOpen = useMailLayoutStore((s) => s.desktopHeaderOpen);
-  const toggleDesktopHeader = useMailLayoutStore((s) => s.toggleDesktopHeader);
-  const desktopConsoleOpen = useMailLayoutStore((s) => s.desktopConsoleOpen);
-  const setDesktopConsoleOpen = useMailLayoutStore(
-    (s) => s.setDesktopConsoleOpen
-  );
-  const toggleDesktopConsole = useMailLayoutStore(
-    (s) => s.toggleDesktopConsole
-  );
+  const {
+    desktopSidebarOpen,
+    setDesktopSidebarOpen,
+    toggleDesktopSidebar,
+    desktopChatOpen,
+    setDesktopChatOpen,
+    desktopHeaderOpen,
+    toggleDesktopHeader,
+    desktopConsoleOpen,
+    setDesktopConsoleOpen,
+    toggleDesktopConsole,
+  } = useMailLayoutSelectors();
 
   const chatOpen = useChatStore((s) => s.isOpen);
   const setChatOpen = useChatStore((s) => s.setOpen);
@@ -252,48 +232,17 @@ export default function MailPage() {
         />
       </div>
 
-      <Modal
-        open={composerOpen}
-        onOpenChange={(o) => {
-          if (!o) closeComposer();
-        }}
-      >
-        <ModalContent className="max-w-3xl gap-0 p-0">
-          <ModalHeader className="sr-only">
-            <ModalTitle>{t("nav.compose")}</ModalTitle>
-          </ModalHeader>
-          <ModalBody>
-            <ComposerPanel onClose={closeComposer} />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      <SearchOverlay
-        open={searchOverlayOpen}
-        onOpenChange={setSearchOverlayOpen}
+      <MailPageOverlays
+        composerOpen={composerOpen}
+        closeComposer={closeComposer}
+        searchOverlayOpen={searchOverlayOpen}
+        setSearchOverlayOpen={setSearchOverlayOpen}
+        isDesktop={isDesktop}
+        chatOpen={chatOpen}
+        setChatOpen={setChatOpen}
+        desktopConsoleOpen={desktopConsoleOpen}
+        setDesktopConsoleOpen={setDesktopConsoleOpen}
       />
-
-      {!isDesktop && chatOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-[var(--color-overlay)]"
-            onClick={() => setChatOpen(false)}
-            aria-hidden="true"
-          />
-          <ChatPanel
-            layout="overlay"
-            onRequestClose={() => setChatOpen(false)}
-          />
-        </>
-      )}
-      {!isDesktop && <ChatTrigger />}
-
-      <TerminalConsole
-        isOpen={desktopConsoleOpen}
-        onClose={() => setDesktopConsoleOpen(false)}
-      />
-
-      <ReminderBanner />
     </div>
   );
 }
