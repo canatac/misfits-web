@@ -12,15 +12,12 @@ import {
   Building2,
   Briefcase,
   Clock,
-  Tag,
   X,
-  Plus,
   Trash2,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TagsEditor } from "@/components/mail/contact-detail/tags-editor";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { contactInitials, FREQUENCY_LABELS } from "@/stores/contact-store";
@@ -184,61 +181,13 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
             />
           </dl>
 
-          {/* Tags editor */}
-          <div>
-            <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
-              <Tag className="h-3 w-3" />
-              Tags
-            </div>
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {contact.tags.length === 0 && (
-                <span className="text-xs text-[var(--color-muted-fg)]">
-                  No tags yet.
-                </span>
-              )}
-              {contact.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="gap-1 pr-1 pl-2"
-                >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => removeTag(tag)}
-                    className="rounded-full p-0.5 hover:bg-[var(--color-danger-500)]/15 hover:text-[var(--color-danger-500)]"
-                    aria-label={`Remove tag ${tag}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag();
-                  }
-                }}
-                placeholder="Add tag…"
-                className="h-8 text-xs"
-                aria-label="Add tag"
-              />
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-8 w-8"
-                onClick={addTag}
-                aria-label="Add tag"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
+          <TagsEditor
+            tags={contact.tags}
+            tagInput={tagInput}
+            setTagInput={setTagInput}
+            onAdd={addTag}
+            onRemove={removeTag}
+          />
 
           {/* Notes editor */}
           <div>
