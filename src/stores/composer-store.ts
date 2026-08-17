@@ -14,18 +14,16 @@ import type {
   RecipientType,
   SendOptions,
 } from "@/types/composer";
-import { composerRepository } from "@/lib/repositories";
 import {
   AUTOSAVE_INTERVAL,
   type ComposerPrefill,
-  clearPersistedSnapshot,
   initialComposerState,
   nowISO,
   persistSnapshot,
   readPersistedSnapshot,
-  snapshot,
   uid,
 } from "./composer-store-helpers";
+import { sendComposer, scheduleComposer } from "./composer-store-send";
 
 export type { ComposerPrefill } from "./composer-store-helpers";
 
@@ -158,18 +156,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   send: async (options) => {
     set({ sending: true, sendError: null });
     try {
-      const snap = snapshot(get());
-      await composerRepository.send(
-        {
-          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-          subject: snap.subject,
-          body: snap.body,
-        },
-        options
-      );
-      clearPersistedSnapshot();
+      await sendComposer(get(), options);
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
@@ -181,17 +168,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   scheduleSend: async (date) => {
     set({ sending: true, sendError: null });
     try {
-      const snap = snapshot(get());
-      await composerRepository.schedule(
-        {
-          to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-          cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-          bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-          subject: snap.subject,
-          body: snap.body,
-        },
-        date
-      );
+      await scheduleComposer(get(), date);
       set({ sending: false, sendError: null });
       return true;
     } catch (err) {
