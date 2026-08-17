@@ -2,7 +2,7 @@
  * Thin `fetch` wrapper used by every data hook and the auth store.
  *
  * Responsibilities:
- *  - inject `Authorization: Bearer <accessToken>` when a session is present,
+ *  - inject `Authorization: Bearer *** when a session is present,
  *  - transparently refresh the access token (once) on `401` using the
  *    refresh token, then replay the original request,
  *  - parse JSON errors into a consistent `ApiError` shape,
@@ -14,12 +14,7 @@
  * (RSC / middleware / route handlers) where the proxy is not available.
  */
 
-import type {
-  AuthApiResponse,
-  LoginResponse,
-  RefreshSessionResponse,
-  Session,
-} from "@/types/auth";
+import type { RefreshSessionResponse } from "@/types/auth";
 import {
   clearSession,
   getAccessToken,
@@ -27,6 +22,10 @@ import {
   loadSession,
   storeSession,
 } from "@/lib/session";
+import { ApiError, parseResponse } from "@/lib/api-client-errors";
+
+export { ApiError } from "@/lib/api-client-errors";
+export type { ApiErrorBody } from "@/lib/api-client-errors";
 
 /* ------------------------------------------------------------------ *
  * Configuration
@@ -43,43 +42,6 @@ export function getApiBaseUrl(): string {
 
 /** Single-flight refresh: avoid stampeding the refresh endpoint. */
 let refreshPromise: Promise<string | null> | null = null;
-
-/* ------------------------------------------------------------------ *
- * Errors
- * ------------------------------------------------------------------ */
-
-export interface ApiErrorBody {
-  /** Machine-readable error code (mirrors backend). */
-  code?: string;
-  message: string;
-  /** When the rate-limit window resets (epoch ms). */
-  retryAfter?: number;
-}
-
-export class ApiError extends Error {
-  readonly status: number;
-  readonly code?: string;
-  readonly retryAfter?: number;
-  readonly body?: unknown;
-
-  constructor(
-    status: number,
-    message: string,
-    opts?: { code?: string; retryAfter?: number; body?: unknown }
-  ) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.code = opts?.code;
-    this.retryAfter = opts?.retryAfter;
-    this.body = opts?.body;
-  }
-
-  /** Convenience: was the error caused by network unavailability? */
-  get isNetworkError(): boolean {
-    return this.status === 0;
-  }
-}
 
 /* ------------------------------------------------------------------ *
  * Refresh logic
@@ -197,55 +159,6 @@ async function request<T>(
 }
 
 /* ------------------------------------------------------------------ *
- * Response parsing
- * ------------------------------------------------------------------ */
-
-async function parseResponse<T>(response: Response): Promise<T> {
-  if (response.status === 204) return undefined as T;
-
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (response.ok) {
-    if (contentType.includes("application/json")) {
-      return (await response.json()) as T;
-    }
-    // Non-JSON success (e.g. text) — coerce to text typed as T.
-    return (await response.text()) as unknown as T;
-  }
-
-  // Error path
-  if (contentType.includes("application/json")) {
-    let body: ApiErrorBody & { error?: { code?: string; message?: string } };
-    try {
-      body = (await response.json()) as ApiErrorBody & {
-        error?: { code?: string; message?: string };
-      };
-    } catch {
-      body = { message: response.statusText };
-    }
-    const retryAfter = response.headers.get("retry-after");
-    // Backend also uses a nested shape `{ error: { code, message } }`
-    // (external-accounts, admin ops). Fall back to it when the flat
-    // fields are absent so the UI shows a meaningful message.
-    const nestedMsg = body.error?.message;
-    const nestedCode = body.error?.code;
-    throw new ApiError(
-      response.status,
-      body.message ?? nestedMsg ?? response.statusText,
-      {
-        code: body.code ?? nestedCode,
-        retryAfter:
-          body.retryAfter ??
-          (retryAfter ? Number(retryAfter) * 1000 + Date.now() : undefined),
-        body,
-      }
-    );
-  }
-
-  throw new ApiError(response.status, response.statusText || "Request failed");
-}
-
-/* ------------------------------------------------------------------ *
  * Convenience verbs
  * ------------------------------------------------------------------ */
 
@@ -261,4 +174,3 @@ export const apiClient = {
   delete: <T>(path: string, opts?: RequestOptions) =>
     request<T>(path, "DELETE", opts),
 };
-
