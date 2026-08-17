@@ -1,22 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useMonitoringAlerts,
-  useMonitoringBounces,
-  useMonitoringLive,
-  useMonitoringProviders,
-  useMonitoringSummary,
-} from "@/hooks/use-monitoring";
-import {
-  useSecurityActiveAlerts,
-  useSecurityIncidents,
-  useSecurityLive,
-} from "@/hooks/use-security-dashboard";
-import type {
-  CreateAdminUserInput,
-  CreateChangeRequestInput,
-} from "@/types/admin-ops";
 import { ChangeRequestsTab } from "./tabs/ChangeRequestsTab";
 import { DeliverabilityOpsTab } from "./tabs/DeliverabilityOpsTab";
 import {
@@ -33,6 +17,8 @@ import { useAdminAssistant } from "@/hooks/useAdminAssistant";
 import { useAdminActions } from "@/hooks/useAdminActions";
 import { useAdminConsoleDerived } from "./hooks/useAdminConsoleDerived";
 import { useAdminMutations } from "./hooks/useAdminMutations";
+import { useAdminMonitoringSelectors } from "./hooks/useAdminMonitoringSelectors";
+import { useAdminConsoleFormState } from "./hooks/useAdminConsoleFormState";
 import { AdminConsoleHeader } from "./parts/AdminConsoleHeader";
 
 export function AdminConsolePage({
@@ -44,88 +30,24 @@ export function AdminConsolePage({
   const [windowRange, setWindowRange] = useState<MonitoringWindow>("24h");
   const [severity, setSeverity] = useState<SecuritySeverity | "all">("all");
 
-  const monitoringSummary = useMonitoringSummary(windowRange);
-  const monitoringAlerts = useMonitoringAlerts(windowRange);
-  const monitoringProviders = useMonitoringProviders(windowRange);
-  const monitoringBounces = useMonitoringBounces(windowRange);
-  const monitoringLive = useMonitoringLive({
-    enabled: activeTab !== "changelog",
-  });
-
-  const securitySeverityFilter = severity === "all" ? undefined : severity;
-  const securityActive = useSecurityActiveAlerts({
-    window: windowRange,
-    severity: securitySeverityFilter,
-  });
-  const securityIncidents = useSecurityIncidents({
-    page: 1,
-    page_size: 20,
-    severity: securitySeverityFilter,
-  });
-  const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
-
   const {
-    changeRequests,
-    adminUsers,
-    whoami,
-    inviteAdminUser,
-    resetAdminPassword,
-    adminAuditLog,
-    adminAiActivity,
-    createChangeRequest,
-    transitionChangeRequest,
-    deleteChangeRequest,
-    startImplementationChangeRequest,
-    updateAdminUser,
-    createAdminUser,
-    deleteAdminUser,
-  } = useAdminMutations();
+    monitoringSummary,
+    monitoringAlerts,
+    monitoringProviders,
+    monitoringBounces,
+    monitoringLive,
+    securityActive,
+    securityIncidents,
+    securityLive,
+  } = useAdminMonitoringSelectors({ windowRange, severity, activeTab });
 
-  const [newRequest, setNewRequest] = useState<CreateChangeRequestInput>({
-    title: "",
-    problem: "",
-    desiredOutcome: "",
-    scope: "fullstack",
-    urgency: "medium",
-    impact: "medium",
-    requestedBy: "admin",
-    linkedRepo: "cross-repo",
-  });
-  const [newAdminUser, setNewAdminUser] = useState<CreateAdminUserInput>({
-    email: "",
-    displayName: "",
-    role: "user",
-    status: "active",
-    twoFactorEnabled: false,
-  });
+  const { changeRequests, adminUsers, whoami, inviteAdminUser, resetAdminPassword, adminAuditLog, adminAiActivity, createChangeRequest, transitionChangeRequest, deleteChangeRequest, startImplementationChangeRequest, updateAdminUser, createAdminUser, deleteAdminUser } = useAdminMutations();
 
-  const [transitionNote, setTransitionNote] = useState("");
-  const [deleteDialogTarget, setDeleteDialogTarget] = useState<{
-    id: string;
-    title: string;
-  } | null>(null);
+  const { newRequest, setNewRequest, newAdminUser, setNewAdminUser, transitionNote, setTransitionNote, deleteDialogTarget, setDeleteDialogTarget } = useAdminConsoleFormState();
 
-  const {
-    crGuideDraft,
-    crGuideMessages,
-    crGuideInput,
-    setCrGuideInput,
-    crGuideLoading,
-    crGuideError,
-    applyGuideToForm,
-    handleGuideChatSubmit,
-  } = useCrGuide(newRequest, setNewRequest);
+  const { crGuideDraft, crGuideMessages, crGuideInput, setCrGuideInput, crGuideLoading, crGuideError, applyGuideToForm, handleGuideChatSubmit } = useCrGuide(newRequest, setNewRequest);
 
-  const {
-    securityPosture,
-    deliverability,
-    deliverabilityProcedure,
-    observability,
-    adminDataLoading,
-    adminDataError,
-    procedureSaving,
-    saveProcedureUpdate,
-  } = useAdminData(windowRange);
+  const { securityPosture, deliverability, deliverabilityProcedure, observability, adminDataLoading, adminDataError, procedureSaving, saveProcedureUpdate } = useAdminData(windowRange);
 
   const {
     assistantPrompt,
