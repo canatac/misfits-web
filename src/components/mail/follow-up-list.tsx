@@ -2,33 +2,13 @@
 
 /**
  * Follow-up list — renders emails that need a follow-up (reply or promise).
- * Shows sender, subject, days waiting, urgency badge, and action buttons:
- * Reply, Snooze (tomorrow / 3 days / 1 week), Dismiss.
  * (Issue #151)
  */
 import { useMemo } from "react";
-import {
-  Clock,
-  Reply,
-  Clock3,
-  X,
-  AlertTriangle,
-  CircleDot,
-  Loader2,
-} from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   useFollowUps,
   useDismissFollowUp,
@@ -38,6 +18,10 @@ import { useEmailStore } from "@/stores/email-store";
 import { useComposerStore } from "@/stores/composer-store";
 import { getUrgency } from "@/lib/follow-up-detector";
 import type { FollowUpItem } from "@/types/follow-up";
+import {
+  FollowUpItemCard,
+  type SnoozeOption,
+} from "./follow-up-item-card";
 
 function daysBetween(fromISO: string, toISO: string): number {
   return Math.max(
@@ -49,30 +33,18 @@ function daysBetween(fromISO: string, toISO: string): number {
   );
 }
 
-function urgencyVariant(urgency: "info" | "warning" | "urgent") {
-  switch (urgency) {
-    case "urgent":
-      return "destructive" as const;
-    case "warning":
-      return "warning" as const;
-    default:
-      return "secondary" as const;
-  }
-}
-
-function urgencyLabel(urgency: "info" | "warning" | "urgent") {
-  switch (urgency) {
-    case "urgent":
-      return "Urgent";
-    case "warning":
-      return "Overdue";
-    default:
-      return "Due soon";
-  }
-}
-
-function typeIcon(type: FollowUpItem["type"]) {
-  return type === "promise" ? AlertTriangle : CircleDot;
+function makeSnoozeOptions(): SnoozeOption[] {
+  const at9 = (days: number) => () => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    d.setHours(9, 0, 0, 0);
+    return d.toISOString();
+  };
+  return [
+    { label: "Tomorrow", getISO: at9(1) },
+    { label: "In 3 days", getISO: at9(3) },
+    { label: "In 1 week", getISO: at9(7) },
+  ];
 }
 
 export function FollowUpList({ className }: { className?: string }) {
@@ -86,42 +58,9 @@ export function FollowUpList({ className }: { className?: string }) {
   const openComposer = useComposerStore((s) => s.openComposer);
 
   const now = useMemo(() => new Date(), []);
-
-  const snoozeOptions = useMemo(
-    () => [
-      {
-        label: "Tomorrow",
-        getISO: () => {
-          const d = new Date();
-          d.setDate(d.getDate() + 1);
-          d.setHours(9, 0, 0, 0);
-          return d.toISOString();
-        },
-      },
-      {
-        label: "In 3 days",
-        getISO: () => {
-          const d = new Date();
-          d.setDate(d.getDate() + 3);
-          d.setHours(9, 0, 0, 0);
-          return d.toISOString();
-        },
-      },
-      {
-        label: "In 1 week",
-        getISO: () => {
-          const d = new Date();
-          d.setDate(d.getDate() + 7);
-          d.setHours(9, 0, 0, 0);
-          return d.toISOString();
-        },
-      },
-    ],
-    []
-  );
+  const snoozeOptions = useMemo(makeSnoozeOptions, []);
 
   const handleReply = (fu: FollowUpItem) => {
-    // Navigate to the email, then open composer.
     const email = emails.find((e) => e.id === fu.emailId);
     if (email) {
       setFolder(email.folder);
@@ -175,100 +114,19 @@ export function FollowUpList({ className }: { className?: string }) {
         {followUps.map((fu) => {
           const urgency = getUrgency(fu, now);
           const daysWaiting = daysBetween(fu.emailDate, now.toISOString());
-          const UrgencyIcon = typeIcon(fu.type);
           return (
             <div key={fu.id}>
-              <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-3 transition-colors hover:bg-[var(--color-muted)]">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <UrgencyIcon
-                        className={cn(
-                          "h-3.5 w-3.5 shrink-0",
-                          urgency === "urgent"
-                            ? "text-[var(--color-danger-500)]"
-                            : urgency === "warning"
-                              ? "text-[var(--color-warning-500)]"
-                              : "text-[var(--color-muted-fg)]"
-                        )}
-                      />
-                      <span className="truncate text-sm font-medium">
-                        {fu.senderName}
-                      </span>
-                    </div>
-                    <p className="mt-1 truncate text-xs text-[var(--color-muted-fg)]">
-                      {fu.subject}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <Badge variant={urgencyVariant(urgency)}>
-                        {urgencyLabel(urgency)}
-                      </Badge>
-                      <span className="text-xs text-[var(--color-muted-fg)]">
-                        {daysWaiting} day{daysWaiting === 1 ? "" : "s"} waiting
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-[var(--color-muted-fg)]">
-                      {fu.type === "promise" ? "Promise" : "Needs reply"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center gap-1.5">
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="gap-1.5"
-                    onClick={() => handleReply(fu)}
-                    data-testid={`followup-reply-${fu.id}`}
-                  >
-                    <Reply className="h-3.5 w-3.5" />
-                    Reply
-                  </Button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1.5"
-                        data-testid={`followup-snooze-${fu.id}`}
-                      >
-                        <Clock3 className="h-3.5 w-3.5" />
-                        Snooze
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuLabel>Snooze for…</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {snoozeOptions.map((opt) => (
-                        <DropdownMenuItem
-                          key={opt.label}
-                          onClick={() =>
-                            snoozeMutation.mutate({
-                              id: fu.id,
-                              untilISO: opt.getISO(),
-                            })
-                          }
-                        >
-                          {opt.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="ml-auto gap-1.5 text-[var(--color-muted-fg)]"
-                    onClick={() => dismissMutation.mutate(fu.id)}
-                    data-testid={`followup-dismiss-${fu.id}`}
-                    aria-label="Dismiss follow-up"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Dismiss
-                  </Button>
-                </div>
-              </div>
+              <FollowUpItemCard
+                fu={fu}
+                urgency={urgency}
+                daysWaiting={daysWaiting}
+                snoozeOptions={snoozeOptions}
+                onReply={handleReply}
+                onSnooze={(id, untilISO) =>
+                  snoozeMutation.mutate({ id, untilISO })
+                }
+                onDismiss={(id) => dismissMutation.mutate(id)}
+              />
               <Separator className="my-0.5 opacity-0" />
             </div>
           );
