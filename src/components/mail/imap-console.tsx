@@ -1,19 +1,14 @@
 /**
  * <ImapConsole /> — live IMAP session viewer used inside the Add-Account modal.
- *
- * Streams every request/response line from the backend probe endpoint and
- * renders them in a scrollable, terminal-like block:
- *   > a1 CAPABILITY
- *   < * CAPABILITY IMAP4rev1 SASL-IR ...
- *   < a1 OK CAPABILITY completed
- *
- * The transport is a POST that returns text/event-stream (fetch + ReadableStream
- * parsing — EventSource can't POST, so we roll a minimal SSE parser inline).
+ * Streams request/response lines from the backend probe endpoint.
  */
 "use client";
 
 import * as React from "react";
-import { detectImapErrorHint } from "@/lib/imap-error-hints";
+import {
+  useImapStream,
+  ImapHintBlock,
+} from "@/components/mail/imap-console-stream";
 
 export interface ImapConsoleProbeInput {
   host: string;
@@ -21,156 +16,29 @@ export interface ImapConsoleProbeInput {
   tls: boolean;
   username: string;
   password: string;
-  /** Optional: exercise SELECT + SEARCH SINCE + FETCH headers. */
   folder?: string;
-  /** ISO-8601 date; when set the probe adds a SEARCH SINCE + FETCH pass. */
   since?: string;
-}
-
-interface Line {
-  dir: string; // ">" (client → server), "<" (server → client), "info", "error"
-  text: string;
 }
 
 interface Props {
   input: ImapConsoleProbeInput | null;
   onDone?: (result: { ok: boolean; error?: string }) => void;
-  /** Optional label rendered above the terminal. */
   title?: string;
 }
 
-/**
- * Public hook: consumers can `useImapProbe()` to trigger a probe run from a
- * button click, then render <ImapConsole input={probeInput} onDone={...} />.
- */
 export function ImapConsole({ input, onDone, title }: Props) {
-  const [lines, setLines] = React.useState<Line[]>([]);
-  const [status, setStatus] = React.useState<"idle" | "running" | "done" | "error">(
-    "idle"
-  );
-  const [finalError, setFinalError] = React.useState<string | null>(null);
+  const { lines, status, finalError } = useImapStream(input, onDone);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  // Sticky-bottom flag: if the user scrolls up we stop auto-scrolling.
   const stickyRef = React.useRef(true);
-  // Ref-buffered pending lines flushed on a fixed timer (60ms) to keep the
-  // re-render rate well below refresh rate — rAF was still firing too often
-  // when many frames arrived on the same tick, and each setState paints
-  // the whole list (scrollbar apparaît/disparaît, layout thrash).
-  const bufferRef = React.useRef<Line[]>([]);
-  const timerRef = React.useRef<number | null>(null);
-  const BATCH_MS = 60;
 
-  const flushBuffer = React.useCallback(() => {
-    timerRef.current = null;
-    if (bufferRef.current.length === 0) return;
-    const batch = bufferRef.current;
-    bufferRef.current = [];
-    setLines((prev) => prev.concat(batch));
-  }, []);
-
-  const pushLine = React.useCallback(
-    (line: Line) => {
-      bufferRef.current.push(line);
-      if (timerRef.current == null) {
-        timerRef.current = window.setTimeout(flushBuffer, BATCH_MS);
-      }
-    },
-    [flushBuffer]
-  );
-
-  React.useEffect(() => {
-    if (!input) return;
-    let aborted = false;
-    const controller = new AbortController();
-
-    async function run() {
-      setLines([]);
-      bufferRef.current = [];
-      setStatus("running");
-      setFinalError(null);
-      stickyRef.current = true;
-      try {
-        const res = await fetch("/api/external-accounts/probe-stream", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-          body: JSON.stringify(input),
-          signal: controller.signal,
-        });
-        if (!res.body) throw new Error("no response body");
-        const reader = res.body.getReader();
-        const dec = new TextDecoder();
-        let buf = "";
-        while (!aborted) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buf += dec.decode(value, { stream: true });
-          let idx = buf.indexOf("\n\n");
-          while (idx >= 0) {
-            const frame = buf.slice(0, idx);
-            buf = buf.slice(idx + 2);
-            handleFrame(frame);
-            idx = buf.indexOf("\n\n");
-          }
-        }
-      } catch (e) {
-        if (aborted) return;
-        setStatus("error");
-        setFinalError(e instanceof Error ? e.message : String(e));
-        onDone?.({ ok: false, error: e instanceof Error ? e.message : String(e) });
-      }
-    }
-
-    function handleFrame(frame: string) {
-      let event = "message";
-      let data = "";
-      for (const raw of frame.split("\n")) {
-        if (raw.startsWith("event:")) event = raw.slice(6).trim();
-        else if (raw.startsWith("data:")) data += raw.slice(5).trim();
-      }
-      if (!data) return;
-      try {
-        const parsed = JSON.parse(data);
-        if (event === "line") {
-          pushLine({ dir: parsed.dir ?? "", text: parsed.text ?? "" });
-        } else if (event === "done") {
-          // Flush any pending buffered lines synchronously before finishing.
-          if (timerRef.current != null) {
-            window.clearTimeout(timerRef.current);
-            timerRef.current = null;
-          }
-          flushBuffer();
-          setStatus(parsed.ok ? "done" : "error");
-          if (!parsed.ok) setFinalError(parsed.error ?? "IMAP probe failed");
-          onDone?.({ ok: !!parsed.ok, error: parsed.error });
-        }
-      } catch {
-        // ignore malformed frame
-      }
-    }
-
-    run();
-    return () => {
-      aborted = true;
-      controller.abort();
-      if (timerRef.current != null) {
-        window.clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [input, onDone, pushLine, flushBuffer]);
-
-  // Sticky-bottom auto-scroll: keep at bottom unless the user scrolled up.
   React.useEffect(() => {
     const el = scrollRef.current;
     if (!el || !stickyRef.current) return;
-    // No smooth scroll: instant jump to bottom avoids the visual "bounce"
-    // when many frames arrive in the same rAF tick.
     el.scrollTop = el.scrollHeight;
   }, [lines.length]);
 
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
     const el = e.currentTarget;
-    // Consider "stuck to bottom" when within a small threshold.
     const nearBottom =
       el.scrollHeight - el.scrollTop - el.clientHeight < 16;
     stickyRef.current = nearBottom;
@@ -226,35 +94,9 @@ export function ImapConsole({ input, onDone, title }: Props) {
           <div className="text-neutral-500">connecting…</div>
         )}
       </div>
-      {/* Actionable hint below the terminal — surfaces the fix path for
-          well-known errors (Gmail app password, TLS mismatch, DNS, etc.). */}
-      {status === "error" && (() => {
-        // Scan both the streamed error and every server-side "<" line so we
-        // catch signals like "* NO [ALERT] Application-specific password
-        // required" even when the top-level error is just "LOGIN failed".
-        const haystack = [
-          finalError ?? "",
-          ...lines.filter((l) => l.dir === "<").map((l) => l.text),
-        ].join("\n");
-        const hint = detectImapErrorHint(haystack);
-        if (!hint) return null;
-        return (
-          <div className="border-t border-neutral-800 bg-neutral-900 px-3 py-2 text-xs">
-            <div className="font-medium text-amber-300">{hint.title}</div>
-            <div className="mt-0.5 text-neutral-300">{hint.description}</div>
-            {hint.cta && (
-              <a
-                href={hint.cta.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-sky-300 underline hover:text-sky-200"
-              >
-                {hint.cta.label} ↗
-              </a>
-            )}
-          </div>
-        );
-      })()}
+      {status === "error" && (
+        <ImapHintBlock finalError={finalError} lines={lines} />
+      )}
     </div>
   );
 }
