@@ -13,11 +13,14 @@ import type {
 } from "@/types/label";
 import type { EmailLabel } from "@/types/email";
 import { mockLabels } from "@/lib/mock-emails";
+import {
+  buildNewLabel,
+  collectDescendants,
+  pruneAssignments,
+  reorderSiblings,
+} from "./parts/label-store/mutations";
 
-/** Generate a unique label id. */
-function genId(): string {
-  return `label-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
+export { LABEL_COLORS, LABEL_ICONS } from "./parts/label-store/presets";
 
 /** Seed labels derived from the mock labels on first load. */
 function seedLabels(): Label[] {
@@ -96,24 +99,7 @@ export const useLabelStore = create<LabelState>()(
       },
 
       createLabel: (input) => {
-        const now = new Date().toISOString();
-        const siblings = get().labels.filter(
-          (l) => (l.parentId ?? null) === (input.parentId ?? null)
-        );
-        const order =
-          siblings.length > 0
-            ? Math.max(...siblings.map((s) => s.order)) + 1
-            : 0;
-        const label: Label = {
-          id: genId(),
-          name: input.name.trim(),
-          color: input.color || "#3b5bff",
-          icon: input.icon ?? "",
-          parentId: input.parentId ?? null,
-          description: input.description,
-          order,
-          createdAt: now,
-        };
+        const label = buildNewLabel(input, get().labels);
         set((state) => ({ labels: [...state.labels, label] }));
         return label;
       },
@@ -133,52 +119,18 @@ export const useLabelStore = create<LabelState>()(
       },
 
       deleteLabel: (id) => {
-        // Also remove descendant labels and clear assignments referencing them.
         set((state) => {
-          const toDelete = new Set<string>([id]);
-          let added = true;
-          while (added) {
-            added = false;
-            for (const l of state.labels) {
-              if (
-                l.parentId &&
-                toDelete.has(l.parentId) &&
-                !toDelete.has(l.id)
-              ) {
-                toDelete.add(l.id);
-                added = true;
-              }
-            }
-          }
+          const toDelete = collectDescendants(state.labels, id);
           const labels = state.labels.filter((l) => !toDelete.has(l.id));
-          const assignments: Record<string, string[]> = {};
-          for (const [emailId, labelIds] of Object.entries(state.assignments)) {
-            const filtered = labelIds.filter((lid) => !toDelete.has(lid));
-            if (filtered.length > 0) assignments[emailId] = filtered;
-          }
+          const assignments = pruneAssignments(state.assignments, toDelete);
           return { labels, assignments };
         });
       },
 
       reorderLabel: (id, direction) => {
         set((state) => {
-          const label = state.labels.find((l) => l.id === id);
-          if (!label) return state;
-          const siblings = state.labels
-            .filter((l) => (l.parentId ?? null) === (label.parentId ?? null))
-            .sort((a, b) => a.order - b.order);
-          const idx = siblings.findIndex((l) => l.id === id);
-          if (idx < 0) return state;
-          const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-          if (swapIdx < 0 || swapIdx >= siblings.length) return state;
-          const a = siblings[idx];
-          const b = siblings[swapIdx];
-          const labels = state.labels.map((l) => {
-            if (l.id === a.id) return { ...l, order: b.order };
-            if (l.id === b.id) return { ...l, order: a.order };
-            return l;
-          });
-          return { labels };
+          const next = reorderSiblings(state.labels, id, direction);
+          return next ? { labels: next } : state;
         });
       },
 
@@ -221,37 +173,3 @@ export const useLabelStore = create<LabelState>()(
     }
   )
 );
-
-/* ------------------------------------------------------------------ */
-/* Preset colors & icons for the label manager UI                      */
-/* ------------------------------------------------------------------ */
-
-export const LABEL_COLORS: string[] = [
-  "#3b5bff",
-  "#10b981",
-  "#f59e0b",
-  "#0ea5e9",
-  "#a1a1aa",
-  "#ef4444",
-  "#8b5cf6",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
-  "#84cc16",
-  "#6366f1",
-];
-
-export const LABEL_ICONS: string[] = [
-  "briefcase",
-  "user",
-  "dollar-sign",
-  "plane",
-  "newspaper",
-  "alert-circle",
-  "star",
-  "heart",
-  "bookmark",
-  "flag",
-  "gift",
-  "calendar",
-];
