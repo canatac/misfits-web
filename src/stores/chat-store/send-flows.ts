@@ -1,4 +1,4 @@
-import type { ChatContext, ChatConversation, ChatMessage } from "@/types/chat";
+import type { ChatConversation, ChatMessage } from "@/types/chat";
 import type { ChatTraceEvent } from "../chat-types";
 import { chatRepository } from "@/lib/repositories";
 import { saveConversations } from "../chat-persistence";
@@ -9,6 +9,9 @@ import {
   deriveConfidence,
   updateAssistantDraft,
 } from "../chat-helpers";
+import { buildHermesRunInput, type SendContext } from "./send-context";
+export { resolveSendContext } from "./send-context";
+export type { SendContext } from "./send-context";
 
 interface StorePart {
   conversations: ChatConversation[];
@@ -20,52 +23,6 @@ interface StorePart {
 export type ChatSet = (
   partial: Partial<StorePart> | ((s: StorePart) => Partial<StorePart>)
 ) => void;
-
-interface SendContext {
-  convId: string;
-  messages: ChatMessage[];
-  context?: ChatContext;
-  startedAt: number;
-  signal: AbortSignal;
-  attachmentContextNote: string;
-  resolvedThreadId?: string;
-  resolvedUserId?: string;
-  resolvedSessionId?: string;
-  resolvedSessionKey?: string;
-}
-
-export function resolveSendContext(
-  context: ChatContext | undefined,
-  messages: ChatMessage[],
-  convId: string,
-  startedAt: number,
-  signal: AbortSignal
-): SendContext {
-  const resolvedThreadId = context?.threadId ?? context?.currentEmailId;
-  const resolvedUserId = context?.userId;
-  const resolvedSessionId =
-    context?.sessionId ??
-    (resolvedThreadId ? `mail-thread-${resolvedThreadId}` : undefined);
-  const resolvedSessionKey =
-    context?.sessionKey ??
-    (resolvedUserId ? `user-${resolvedUserId}` : undefined);
-  const attachmentContextNote =
-    (context?.attachmentNames?.length ?? 0) > 0
-      ? `Pièces jointes du mail courant: ${(context?.attachmentNames ?? []).join(", ")}. Si nécessaire, demande d'ouvrir la pièce jointe ciblée.`
-      : "Aucune pièce jointe signalée dans le contexte.";
-  return {
-    convId,
-    messages,
-    context,
-    startedAt,
-    signal,
-    attachmentContextNote,
-    resolvedThreadId,
-    resolvedUserId,
-    resolvedSessionId,
-    resolvedSessionKey,
-  };
-}
 
 export async function runStandardSend(set: ChatSet, ctx: SendContext): Promise<void> {
   const data = await chatRepository.postChat(
@@ -127,19 +84,11 @@ export async function runTraceSend(
     level: "info",
   });
 
-  const history = ctx.messages
-    .slice(-12)
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-    .join("\n");
-
-  const runInput = [
-    "Tu es l'assistant email de misfits.ai Mail. Réponds de façon concise en français ou anglais.",
+  const runInput = buildHermesRunInput(
+    ctx.messages,
     ctx.attachmentContextNote,
-    history ? `Historique:\n${history}` : "",
-    `Question actuelle:\n${content}`,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+    content
+  );
 
   const runData = await chatRepository.createRun(
     {
