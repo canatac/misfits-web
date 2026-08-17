@@ -13,44 +13,17 @@ import { emailTemplates } from "@/lib/email-templates";
 import type { EmailTemplate } from "@/lib/email-templates";
 import type { ComposeDraft, SendOptions } from "@/types/composer";
 import { mailAuthHeaders } from "@/lib/mail-api";
+import {
+  buildOutgoingAttachments,
+  type OutgoingAttachmentPayload,
+} from "./composer/outgoing-attachments";
 
 /** Always hit same-origin `/api/*` (Next rewrite → email-api). Demo is login-only. */
 const BACKEND_AVAILABLE = true;
 
 const DEBOUNCE_MS = 1500;
 
-interface OutgoingAttachmentPayload {
-  filename: string;
-  contentType: string;
-  size: number;
-  dataBase64: string;
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 1) {
-    binary += String.fromCharCode(bytes[i]!);
-  }
-  return btoa(binary);
-}
-
-async function buildOutgoingAttachments(
-  draft: ComposeDraft
-): Promise<OutgoingAttachmentPayload[]> {
-  const out: OutgoingAttachmentPayload[] = [];
-  for (const att of draft.attachments ?? []) {
-    if (!att.file) continue;
-    const dataBase64 = arrayBufferToBase64(await att.file.arrayBuffer());
-    out.push({
-      filename: att.filename,
-      contentType: att.contentType || att.file.type || "application/octet-stream",
-      size: att.size,
-      dataBase64,
-    });
-  }
-  return out;
-}
+export type { OutgoingAttachmentPayload };
 
 
 /**
