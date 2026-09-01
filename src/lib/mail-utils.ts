@@ -4,8 +4,15 @@
 
 export function toPlainText(body: string, bodyType: "html" | "text"): string {
   if (bodyType === "text") return body;
-  return body
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+  // Iteratively strip <style> blocks to handle nested/malformed tags that
+  // a single-pass replacement may miss.
+  let result = body;
+  let prev: string;
+  do {
+    prev = result;
+    result = result.replace(/<style[^>]*>[\s\S]*?<\/style\s*>/gi, "");
+  } while (result !== prev);
+  return result
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();

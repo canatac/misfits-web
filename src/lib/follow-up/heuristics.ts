@@ -6,16 +6,26 @@ import type { FollowUpEmailInput } from "@/types/follow-up";
 
 /** Strip HTML tags so regex runs against plain text. */
 export function stripHtml(html: string): string {
-  return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+  // Iteratively remove <style> and <script> blocks to prevent
+  // incomplete multi-character sanitization (e.g. nested/malformed tags).
+  let result = html;
+  let prev: string;
+  do {
+    prev = result;
+    result = result.replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/gi, " ");
+  } while (result !== prev);
+  do {
+    prev = result;
+    result = result.replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/gi, " ");
+  } while (result !== prev);
+  return result
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
 }
