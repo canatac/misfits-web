@@ -12,11 +12,11 @@ export function stripHtml(html: string): string {
   let prev: string;
   do {
     prev = result;
-    result = result.replace(/<style[^>]*>[\s\S]*?<\/style\s*>/gi, " ");
+    result = result.replace(/<style[^>]*>[\s\S]*?<\/style[^>]*>/gi, " ");
   } while (result !== prev);
   do {
     prev = result;
-    result = result.replace(/<script[^>]*>[\s\S]*?<\/script\s*>/gi, " ");
+    result = result.replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/gi, " ");
   } while (result !== prev);
   return result
     .replace(/<[^>]+>/g, " ")

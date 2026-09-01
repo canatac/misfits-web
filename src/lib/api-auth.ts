@@ -90,8 +90,7 @@ export function initiateGithubLogin(redirectPath?: string): void {
 
   try {
     if (safeRedirect) {
-      const secure = window.location.protocol === "https:" ? "; Secure" : "";
-      document.cookie = `mfa_post_login_redirect=${encodeURIComponent(safeRedirect)}; Path=/; Max-Age=600; SameSite=Lax${secure}`;
+      document.cookie = `mfa_post_login_redirect=${encodeURIComponent(safeRedirect)}; Path=/; Max-Age=600; SameSite=Lax; Secure`;
     }
   } catch {
     // ignore cookie write failures

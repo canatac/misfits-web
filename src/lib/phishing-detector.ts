@@ -40,15 +40,16 @@ export function analyzeLinks(html: string): SuspiciousLink[] {
   let match;
   while ((match = regex.exec(html)) !== null) {
     const url = match[1];
-    // Iteratively strip <script> blocks before stripping remaining tags to
-    // prevent incomplete multi-character sanitization bypasses.
+    // Iteratively strip <script> blocks before extracting plain text, to prevent
+    // incomplete multi-character sanitization bypasses.
     let rawDisplay = match[2];
     let prev: string;
     do {
       prev = rawDisplay;
-      rawDisplay = rawDisplay.replace(/<script[^>]*>[\s\S]*?<\/script\s*>/gi, "");
+      rawDisplay = rawDisplay.replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/gi, "");
     } while (rawDisplay !== prev);
-    const display = rawDisplay.replace(/<[^>]*>/g, "");
+    // Strip all remaining angle-bracket characters so no partial <script can survive.
+    const display = rawDisplay.replace(/[<>]/g, "");
     let riskScore = 0;
     const reasons: string[] = [];
     if (/^\d+\.\d+\.\d+\.\d+/.test(url)) {
