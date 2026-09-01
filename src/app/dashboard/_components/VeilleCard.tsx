@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { ArrowUpRight, ChevronRight, Newspaper } from "lucide-react";
-import { VEILLE } from "../dashboard-fixtures";
+import type { DashboardNewsletterItem } from "../types";
 
 export function VeilleCard({
+  items,
   onOpen,
 }: {
-  onOpen: (article: (typeof VEILLE)[number]) => void;
+  items: DashboardNewsletterItem[];
+  onOpen: (article: DashboardNewsletterItem) => void;
 }) {
   return (
     <div className="flex flex-col rounded-2xl border border-[#242427] bg-[#121214] shadow-xl">
@@ -24,7 +26,12 @@ export function VeilleCard({
         </Link>
       </div>
       <ul className="flex-1 space-y-2 px-4 py-3">
-        {VEILLE.map((article) => (
+        {items.length === 0 && (
+          <li className="rounded-xl border border-[#242427] bg-[#0A0A0B] p-3 text-[11px] text-[#71717A]">
+            Aucune newsletter détectée dans l’inbox pour le moment.
+          </li>
+        )}
+        {items.map((article) => (
           <li key={article.id}>
             <button
               type="button"

@@ -19,8 +19,8 @@ export function MetricsGrid({
   onOpenStorage,
 }: {
   metrics: Metric[];
-  storagePercentage: number;
-  onOpenStorage: () => void;
+  storagePercentage?: number | null;
+  onOpenStorage?: () => void;
 }) {
   return (
     <div className="mt-5 grid gap-2 border-t border-[#242427] pt-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -43,23 +43,25 @@ export function MetricsGrid({
         );
       })}
 
-      <button
-        type="button"
-        onClick={onOpenStorage}
-        className="rounded-xl border border-[#242427] bg-[#1D1D20]/70 p-3 text-left transition hover:border-[#F87171]/40"
-      >
-        <div className="mb-1 flex items-center justify-between text-[11px] text-[#71717A]">
-          <span className="inline-flex items-center gap-1">
-            <HardDrive className="h-3.5 w-3.5 text-[#F87171]" /> Stockage
-          </span>
-          {storagePercentage >= 80 && (
-            <span className="rounded-sm bg-[#F87171]/20 px-1 py-0.5 text-[9px] font-bold text-[#F87171] uppercase">
-              Critique
+      {typeof storagePercentage === "number" && onOpenStorage && (
+        <button
+          type="button"
+          onClick={onOpenStorage}
+          className="rounded-xl border border-[#242427] bg-[#1D1D20]/70 p-3 text-left transition hover:border-[#F87171]/40"
+        >
+          <div className="mb-1 flex items-center justify-between text-[11px] text-[#71717A]">
+            <span className="inline-flex items-center gap-1">
+              <HardDrive className="h-3.5 w-3.5 text-[#F87171]" /> Stockage
             </span>
-          )}
-        </div>
-        <StorageGauge percentage={storagePercentage} compact />
-      </button>
+            {storagePercentage >= 80 && (
+              <span className="rounded-sm bg-[#F87171]/20 px-1 py-0.5 text-[9px] font-bold text-[#F87171] uppercase">
+                Critique
+              </span>
+            )}
+          </div>
+          <StorageGauge percentage={storagePercentage} compact />
+        </button>
+      )}
     </div>
   );
 }

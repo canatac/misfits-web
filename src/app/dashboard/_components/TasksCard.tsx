@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { ArrowUpRight, CheckSquare, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TASKS } from "../dashboard-fixtures";
+import type { DashboardTaskItem } from "../types";
 import { RdvList } from "./RdvList";
 
 export function TasksCard({
+  tasks,
   doneIds,
   onToggle,
 }: {
+  tasks: DashboardTaskItem[];
   doneIds: Set<string>;
-  onToggle: (task: (typeof TASKS)[number]) => void;
+  onToggle: (task: DashboardTaskItem) => void;
 }) {
   return (
     <div className="flex flex-col rounded-2xl border border-[#242427] bg-[#121214] shadow-xl">
@@ -29,7 +31,12 @@ export function TasksCard({
       </div>
       <div className="flex-1 px-4 py-3">
         <ul className="space-y-1.5">
-          {TASKS.map((task) => {
+          {tasks.length === 0 && (
+            <li className="rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-2 text-[11px] text-[#71717A]">
+              Aucune action issue du calendrier pour aujourd’hui.
+            </li>
+          )}
+          {tasks.map((task) => {
             const done = doneIds.has(task.id);
             return (
               <li key={task.id}>
@@ -62,7 +69,7 @@ export function TasksCard({
             );
           })}
         </ul>
-        <RdvList />
+        <RdvList events={tasks.filter((t) => (t.ref ?? "").includes("Calendrier"))} />
       </div>
       <div className="border-t border-[#242427] px-4 py-3">
         <Link

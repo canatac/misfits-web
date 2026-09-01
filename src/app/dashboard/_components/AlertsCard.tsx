@@ -2,12 +2,14 @@
 
 import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ALERTS } from "../dashboard-fixtures";
+import type { DashboardAlertItem } from "../types";
 
 export function AlertsCard({
+  alerts,
   onOpen,
 }: {
-  onOpen: (alert: (typeof ALERTS)[number]) => void;
+  alerts: DashboardAlertItem[];
+  onOpen: (alert: DashboardAlertItem) => void;
 }) {
   return (
     <div className="flex flex-col rounded-2xl border border-[#242427] bg-[#121214] shadow-xl">
@@ -17,11 +19,16 @@ export function AlertsCard({
           <h2 className="text-sm font-bold text-white">Ops & Alertes</h2>
         </div>
         <span className="rounded-sm bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">
-          {ALERTS.length} actives
+          {alerts.length} actives
         </span>
       </div>
       <ul className="flex-1 space-y-2 px-4 py-3">
-        {ALERTS.map((alert) => (
+        {alerts.length === 0 && (
+          <li className="rounded-xl border border-[#242427] bg-[#0A0A0B] p-3 text-[11px] text-[#71717A]">
+            Aucune alerte active remontée par les APIs monitoring/sécurité.
+          </li>
+        )}
+        {alerts.map((alert) => (
           <li key={alert.id}>
             <button
               type="button"
