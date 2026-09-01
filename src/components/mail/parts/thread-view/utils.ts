@@ -46,7 +46,9 @@ export function sanitizeBody(email: Email): string {
 }
 
 export function getPreview(email: Email): string {
-  const text = email.preview || email.body.replace(/<[^>]*>/g, "");
-  const lines = text.split("\n").filter(Boolean);
+  const rawText =
+    email.preview ||
+    DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [], KEEP_CONTENT: true });
+  const lines = rawText.split("\n").filter(Boolean);
   return lines.slice(0, 2).join(" — ").slice(0, 200);
 }
