@@ -4,13 +4,17 @@ import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { formatTime } from "@/components/dashboard/StorageGauge";
 import type { Email } from "@/types/email";
-import type { VEILLE, TASKS, ALERTS } from "../dashboard-fixtures";
+import type {
+  DashboardAlertItem,
+  DashboardNewsletterItem,
+  DashboardTaskItem,
+} from "../types";
 
 export type DetailItem =
   | { type: "email"; data: Email & { score: number } }
-  | { type: "newsletter"; data: (typeof VEILLE)[number] }
-  | { type: "task"; data: (typeof TASKS)[number] }
-  | { type: "alert"; data: (typeof ALERTS)[number] };
+  | { type: "newsletter"; data: DashboardNewsletterItem }
+  | { type: "task"; data: DashboardTaskItem }
+  | { type: "alert"; data: DashboardAlertItem };
 
 export function DetailView({ item, onBack }: { item: DetailItem; onBack: () => void }) {
   return (

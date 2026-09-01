@@ -1,17 +1,19 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { BRIEFING } from "../_data/sample-content";
+import type { DashboardHighlight } from "../types";
 
 export function BriefingCard({
   dateLabel,
   badge,
   greeting,
+  highlights,
   children,
 }: {
   dateLabel: string;
   badge: string;
   greeting: string;
+  highlights: DashboardHighlight[];
   children?: React.ReactNode;
 }) {
   return (
@@ -29,7 +31,7 @@ export function BriefingCard({
         </div>
         <h1 className="text-2xl font-bold text-white">{greeting}</h1>
         <ul className="space-y-1 pt-1">
-          {BRIEFING.map((item) => (
+          {highlights.map((item) => (
             <li key={item.category} className="flex items-start gap-2 text-sm">
               <span
                 className="mt-[5px] h-2 w-2 shrink-0 rounded-full"
