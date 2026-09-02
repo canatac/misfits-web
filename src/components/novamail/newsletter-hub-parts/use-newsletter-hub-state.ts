@@ -1,20 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { listNewsletterItems, listNewsletterSources } from "@/lib/newsletters-api";
+import type { NewsletterItem, NewsletterSource, NewsletterTopic } from "@/types/newsletters";
 import {
-  createNewsletterItem,
-  createNewsletterSource,
-  deleteNewsletterSource,
-  listNewsletterItems,
-  listNewsletterSources,
-  updateNewsletterSource,
-} from "@/lib/newsletters-api";
-import type {
-  NewsletterItem,
-  NewsletterSource,
-  NewsletterTopic,
-} from "@/types/newsletters";
-import { inferSourceName, normalizeHttpUrl } from "./newsletter-hub-utils";
+  addContentAction,
+  addSourceAction,
+  deleteSourceAction,
+  updateSourceAction,
+} from "./newsletter-hub-actions";
+import { generateDigestAction } from "./newsletter-hub-digest-action";
 
 export function useNewsletterHubState() {
   const [sources, setSources] = useState<NewsletterSource[]>([]);
@@ -49,9 +44,7 @@ export function useNewsletterHubState() {
       ]);
       setSources(serverSources);
       setItems(serverItems);
-      if (!contentSourceId && serverSources[0]?.id) {
-        setContentSourceId(serverSources[0].id);
-      }
+      if (!contentSourceId && serverSources[0]?.id) setContentSourceId(serverSources[0].id);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur serveur";
       setNotice(`Chargement impossible: ${msg}`);
@@ -74,28 +67,10 @@ export function useNewsletterHubState() {
     });
   }, [items, query, sources]);
 
-  const addSource = async () => {
-    const normalizedUrl = normalizeHttpUrl(sourceUrl);
-    if (!normalizedUrl) {
-      setNotice("URL source requise.");
-      return;
-    }
-
-    const label = sourceName.trim() || inferSourceName(normalizedUrl);
-    setSubmitting(true);
-    try {
-      const created = await createNewsletterSource({ name: label, url: normalizedUrl });
-      setSourceName("");
-      setSourceUrl("");
-      setContentSourceId(created.id);
-      setNotice(`Source ajoutée: ${created.name}`);
-      await loadFromServer();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      setNotice(`Échec ajout source: ${msg}`);
-    } finally {
-      setSubmitting(false);
-    }
+  const cancelEditSource = () => {
+    setEditingSourceId(null);
+    setEditingSourceName("");
+    setEditingSourceUrl("");
   };
 
   const startEditSource = (src: NewsletterSource) => {
@@ -105,161 +80,66 @@ export function useNewsletterHubState() {
     setNotice(null);
   };
 
-  const cancelEditSource = () => {
-    setEditingSourceId(null);
-    setEditingSourceName("");
-    setEditingSourceUrl("");
-  };
+  const addSource = () =>
+    addSourceAction({
+      sourceName,
+      sourceUrl,
+      setSubmitting,
+      setSourceName,
+      setSourceUrl,
+      setContentSourceId,
+      setNotice,
+      reload: loadFromServer,
+    });
 
-  const updateSource = async (sourceId: string) => {
-    const normalizedUrl = normalizeHttpUrl(editingSourceUrl);
-    if (!normalizedUrl) {
-      setNotice("URL source requise.");
-      return;
-    }
+  const updateSource = (sourceId: string) =>
+    updateSourceAction({
+      sourceId,
+      editingSourceName,
+      editingSourceUrl,
+      setSavingSourceId,
+      setNotice,
+      cancelEditSource,
+      reload: loadFromServer,
+    });
 
-    const label = editingSourceName.trim() || inferSourceName(normalizedUrl);
-    setSavingSourceId(sourceId);
-    try {
-      await updateNewsletterSource(sourceId, { name: label, url: normalizedUrl });
-      setNotice("Source mise à jour.");
-      cancelEditSource();
-      await loadFromServer();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      setNotice(`Échec mise à jour source: ${msg}`);
-    } finally {
-      setSavingSourceId(null);
-    }
-  };
+  const deleteSource = (source: NewsletterSource) =>
+    deleteSourceAction({
+      source,
+      sources,
+      contentSourceId,
+      editingSourceId,
+      setDeletingSourceId,
+      setContentSourceId,
+      cancelEditSource,
+      setNotice,
+      reload: loadFromServer,
+    });
 
-  const deleteSource = async (src: NewsletterSource) => {
-    if (typeof window !== "undefined") {
-      const ok = window.confirm(
-        `Supprimer la source '${src.name}' ? Les résumés liés seront retirés.`
-      );
-      if (!ok) return;
-    }
+  const addContent = () =>
+    addContentAction({
+      contentSourceId,
+      contentTitle,
+      contentSummary,
+      contentTopic,
+      contentLink,
+      setSubmitting,
+      setContentTitle,
+      setContentSummary,
+      setContentLink,
+      setNotice,
+      reload: loadFromServer,
+    });
 
-    setDeletingSourceId(src.id);
-    try {
-      await deleteNewsletterSource(src.id);
-      if (contentSourceId === src.id) {
-        const fallback = sources.find((s) => s.id !== src.id)?.id ?? "";
-        setContentSourceId(fallback);
-      }
-      if (editingSourceId === src.id) {
-        cancelEditSource();
-      }
-      setNotice(`Source supprimée: ${src.name}`);
-      await loadFromServer();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      setNotice(`Échec suppression source: ${msg}`);
-    } finally {
-      setDeletingSourceId(null);
-    }
-  };
-
-  const addContent = async () => {
-    const title = contentTitle.trim();
-    const summary = contentSummary.trim();
-
-    if (!contentSourceId) {
-      setNotice("Ajoute d'abord une source URL.");
-      return;
-    }
-    if (!title || !summary) {
-      setNotice("Titre et résumé requis.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createNewsletterItem({
-        sourceId: contentSourceId,
-        title,
-        summary,
-        topic: contentTopic,
-        link: contentLink.trim() || undefined,
-      });
-      setContentTitle("");
-      setContentSummary("");
-      setContentLink("");
-      setNotice(`Résumé ajouté: ${title}`);
-      await loadFromServer();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      setNotice(`Échec ajout résumé: ${msg}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const generateDigest = async () => {
-    if (sources.length === 0) {
-      setNotice("Ajoute au moins une source URL avant de générer un digest.");
-      return;
-    }
-
-    setAiBusy(true);
-    try {
-      const sourceContext = sources
-        .slice(0, 12)
-        .map((src) => `- ${src.name}: ${src.url ?? "URL non renseignée"}`)
-        .join("\n");
-      const recentContext = visibleItems
-        .slice(0, 8)
-        .map((it) => `- ${it.title} (${it.topic}, signal ${it.signal}%): ${it.summary}`)
-        .join("\n");
-
-      const res = await fetch("/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content:
-                "Tu es un assistant de veille. Produis un résumé exécutif en français: 5 points max puis 3 actions recommandées. Base-toi sur ces URL de sources puis le contexte existant.\n\nSources:\n" +
-                sourceContext +
-                "\n\nContexte récent:\n" +
-                (recentContext || "(vide)"),
-            },
-          ],
-        }),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as {
-        content?: string;
-        error?: { message?: string };
-      };
-      const summary =
-        data.content || data.error?.message || "Briefing indisponible (fallback local).";
-
-      const selectedSourceId = contentSourceId || sources[0]?.id;
-      if (!selectedSourceId) {
-        setNotice("Aucune source disponible pour enregistrer le digest.");
-        return;
-      }
-
-      await createNewsletterItem({
-        sourceId: selectedSourceId,
-        title: "AI Executive Digest",
-        summary,
-        topic: "Tech",
-        signal: 95,
-      });
-
-      setNotice("Digest IA ajouté (visible dans le tableau de bord).");
-      await loadFromServer();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erreur serveur";
-      setNotice(`Digest IA indisponible: ${msg}`);
-    } finally {
-      setAiBusy(false);
-    }
-  };
+  const generateDigest = () =>
+    generateDigestAction({
+      sources,
+      visibleItems,
+      contentSourceId,
+      setAiBusy,
+      setNotice,
+      reload: loadFromServer,
+    });
 
   return {
     sources,
