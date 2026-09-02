@@ -4,28 +4,39 @@ import { buildForwardHeaders } from "@/lib/proxy-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const REPOS = [
-  { key: "frontend", owner: "canatac", repo: "misfits-web", displayName: "misfits-web", scope: "frontend" },
-  { key: "backend", owner: "canatac", repo: "reimagined-guide", displayName: "reimagined-guide", scope: "backend" },
-] as const;
-
-type Scope = "backend" | "frontend" | "infra" | "fullstack";
-type Priority = "P0" | "P1" | "P2" | "P3";
-type SourceType = "change_request" | "pull_request";
-
-type RepoChangelog = {
-  key: (typeof REPOS)[number]["key"];
-  displayName: string;
+type RepoDef = {
+  key: "web" | "backend";
   owner: string;
   repo: string;
-  commits: Array<{
-    sha: string;
-    shortSha: string;
-    message: string;
-    author: string;
-    date: string;
-    commitUrl: string;
-  }>;
+};
+
+type CommitItem = {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  committedAt: string;
+  commitUrl: string;
+  workflowUrl: string | null;
+  workflowName: string | null;
+};
+
+type WorkflowRun = {
+  head_sha?: string;
+  html_url?: string;
+  name?: string;
+  status?: string;
+  conclusion?: string | null;
+  event?: string;
+  updated_at?: string;
+};
+
+type RepoPayload = {
+  key: RepoDef["key"];
+  owner: string;
+  repo: string;
+  latestShortSha: string;
+  commits: CommitItem[];
 };
 
 type WorkflowRelease = {
@@ -34,52 +45,125 @@ type WorkflowRelease = {
   summary: string;
   releasedAt: string;
   sourceChangeRequestId: string;
-  priority: Priority;
-  scope: Scope;
-  sourceType: SourceType;
+  priority: "P0" | "P1" | "P2";
+  scope: "ux" | "backend" | "fullstack" | "security";
+  sourceType?: "change_request" | "pull_request";
   repository?: string;
-  prNumber?: number;
-  prUrl?: string;
+  pullRequestNumber?: number;
+  pullRequestUrl?: string;
   author?: string;
 };
 
-type ChangeRequestPayload = {
+type ChangeRequestsPayload = {
   items?: Array<{
     id: string;
     title: string;
-    desiredOutcome?: string;
-    priority?: Priority;
-    status?: string;
+    desiredOutcome: string;
+    status: string;
+    priority: "P0" | "P1" | "P2";
+    scope: "ux" | "backend" | "fullstack" | "security";
     updatedAt?: string;
     changelogEntry?: {
       summary?: string;
       releasedAt?: string;
-      commitSha?: string;
     };
   }>;
 };
 
-function resolveBackendBaseUrl(): string {
-  return (
-    process.env.BACKEND_API_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_API_URL ||
-    "https://mail.misfits.ai"
-  ).replace(/\/$/, "");
+type PullRequestPayload = {
+  number?: number;
+  title?: string;
+  body?: string | null;
+  html_url?: string;
+  merged_at?: string | null;
+  merge_commit_sha?: string;
+  user?: { login?: string };
+};
+
+const REPOS: RepoDef[] = [
+  { key: "web", owner: "canatac", repo: "misfits-web" },
+  { key: "backend", owner: "canatac", repo: "reimagined-guide" },
+];
+
+function firstLine(message: string | undefined): string {
+  if (!message) return "(no message)";
+  return message.split("\n")[0]?.trim() || "(no message)";
 }
 
-function shortSha5(sha: string | undefined): string {
-  if (!sha) return "unknown";
-  return sha.slice(0, 5);
+function resolveBackendBaseUrl(): string {
+  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+function asErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function isSuccessfulWorkflowRun(run: WorkflowRun): boolean {
+  return run.status === "completed" && run.conclusion === "success";
+}
+
+function isReleaseEvent(run: WorkflowRun): boolean {
+  return ["push", "workflow_dispatch", "repository_dispatch"].includes(
+    run.event || ""
+  );
+}
+
+async function fetchWorkflowReleases(
+  request: Request,
+  warnings: string[]
+): Promise<WorkflowRelease[]> {
+  const res = await fetch(
+    `${resolveBackendBaseUrl()}/api/admin/change-requests`,
+    {
+      headers: buildForwardHeaders(request),
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    warnings.push(
+      `change-requests upstream returned ${res.status}; workflow releases partiellement indisponible`
+    );
+    return [];
+  }
+
+  const payload = (await res.json().catch(() => ({}))) as ChangeRequestsPayload;
+  const items = payload.items || [];
+
+  return items
+    .filter((item) => item.status === "released")
+    .map((item) => ({
+      id: `release_${item.id}`,
+      title: item.title,
+      summary: item.changelogEntry?.summary || item.desiredOutcome,
+      releasedAt:
+        item.changelogEntry?.releasedAt ||
+        item.updatedAt ||
+        new Date().toISOString(),
+      sourceChangeRequestId: item.id,
+      priority: item.priority,
+      scope: item.scope,
+      sourceType: "change_request" as const,
+    }))
+    .sort((a, b) => b.releasedAt.localeCompare(a.releasedAt));
 }
 
 async function githubGet(path: string): Promise<any> {
+  const token =
+    process.env.GITHUB_TOKEN ||
+    process.env.GH_TOKEN ||
+    process.env.GITHUB_PAT ||
+    "";
+
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "misfits-web-admin-changelog",
   };
 
-  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   const res = await fetch(`https://api.github.com${path}`, {
     headers,
@@ -87,161 +171,201 @@ async function githubGet(path: string): Promise<any> {
   });
 
   if (!res.ok) {
-    throw new Error(`GitHub ${path} -> ${res.status}`);
+    const text = await res.text().catch(() => "");
+    throw new Error(`GitHub API ${res.status}: ${text || res.statusText}`);
   }
 
   return res.json();
 }
 
-async function fetchHtml(url: string): Promise<string> {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "misfits-web-changelog-feed",
-      Accept: "text/html,application/xhtml+xml",
-    },
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`HTML ${url} -> ${res.status}`);
-  return res.text();
+function buildScopeForRepo(repoKey: RepoDef["key"]): WorkflowRelease["scope"] {
+  if (repoKey === "backend") return "backend";
+  return "ux";
 }
 
-function uniq<T>(arr: T[]): T[] {
-  return [...new Set(arr)];
+function buildPrSummary(pr: PullRequestPayload): string {
+  const firstBodyLine = firstLine((pr.body || "").trim() || undefined);
+  if (firstBodyLine !== "(no message)") return firstBodyLine;
+
+  const mergeSha = pr.merge_commit_sha?.slice(0, 5);
+  return mergeSha
+    ? `PR mergée automatiquement (${mergeSha})`
+    : "PR mergée automatiquement";
 }
 
-async function scrapeRepoCommits(repo: (typeof REPOS)[number]): Promise<RepoChangelog["commits"]> {
-  const html = await fetchHtml(`https://github.com/${repo.owner}/${repo.repo}/commits/master`);
-  const shaMatches = uniq(Array.from(html.matchAll(new RegExp(`/${repo.owner}/${repo.repo}/commit/([0-9a-f]{7,40})`, "g"))).map((m) => m[1])).slice(0, 10);
-  return shaMatches.map((sha) => ({
-    sha,
-    shortSha: shortSha5(sha),
-    message: "Commit",
-    author: "unknown",
-    date: new Date().toISOString(),
-    commitUrl: `https://github.com/${repo.owner}/${repo.repo}/commit/${sha}`,
-  }));
-}
+async function fetchMergedPrReleases(
+  warnings: string[]
+): Promise<WorkflowRelease[]> {
+  const allReleases: WorkflowRelease[] = [];
 
-async function fetchRepoCommits(repo: (typeof REPOS)[number]): Promise<RepoChangelog["commits"]> {
-  try {
-    const commits = await githubGet(`/repos/${repo.owner}/${repo.repo}/commits?per_page=10`);
-    return (Array.isArray(commits) ? commits : []).map((c: any) => ({
-      sha: c.sha,
-      shortSha: shortSha5(c.sha),
-      message: c.commit?.message?.split("\n")[0] || "No message",
-      author: c.commit?.author?.name || c.author?.login || "unknown",
-      date: c.commit?.author?.date || new Date().toISOString(),
-      commitUrl: c.html_url || `https://github.com/${repo.owner}/${repo.repo}/commit/${c.sha}`,
-    }));
-  } catch {
-    return scrapeRepoCommits(repo);
-  }
-}
+  for (const repoDef of REPOS) {
+    let pulls: PullRequestPayload[] = [];
+    try {
+      pulls = (await githubGet(
+        `/repos/${repoDef.owner}/${repoDef.repo}/pulls?state=closed&sort=updated&direction=desc&per_page=30`
+      )) as PullRequestPayload[];
+    } catch (error) {
+      warnings.push(
+        `${repoDef.owner}/${repoDef.repo}: impossible de charger les PR mergées (${asErrorMessage(error)})`
+      );
+      continue;
+    }
 
-async function scrapeMergedPrReleases(repo: (typeof REPOS)[number]): Promise<WorkflowRelease[]> {
-  const html = await fetchHtml(`https://github.com/${repo.owner}/${repo.repo}/pulls?q=is%3Apr+is%3Amerged`);
-  const numbers = uniq(Array.from(html.matchAll(new RegExp(`/${repo.owner}/${repo.repo}/pull/(\\d+)`, "g"))).map((m) => Number(m[1]))).slice(0, 20);
-  const now = new Date().toISOString();
-  return numbers.map((n) => ({
-    id: `pr_${repo.repo}_${n}`,
-    title: `[${repo.displayName}] #${n}`,
-    summary: "Merged pull request",
-    releasedAt: now,
-    sourceChangeRequestId: `PR #${n}`,
-    priority: "P1",
-    scope: repo.scope as Scope,
-    sourceType: "pull_request",
-    repository: `${repo.owner}/${repo.repo}`,
-    prNumber: n,
-    prUrl: `https://github.com/${repo.owner}/${repo.repo}/pull/${n}`,
-    author: "unknown",
-  }));
-}
+    for (const pr of pulls) {
+      if (!pr.merged_at || !pr.number || !pr.title || !pr.html_url) continue;
 
-async function fetchMergedPrReleases(repo: (typeof REPOS)[number]): Promise<WorkflowRelease[]> {
-  try {
-    const pulls = await githubGet(`/repos/${repo.owner}/${repo.repo}/pulls?state=closed&sort=updated&direction=desc&per_page=30`);
-    return (Array.isArray(pulls) ? pulls : [])
-      .filter((pr: any) => Boolean(pr.merged_at))
-      .slice(0, 20)
-      .map((pr: any) => ({
-        id: `pr_${repo.repo}_${pr.number}`,
-        title: `[${repo.displayName}] #${pr.number} ${pr.title}`,
-        summary: (pr.body || "Merged pull request").split("\n")[0].slice(0, 220),
+      const mergeSha = pr.merge_commit_sha || "";
+      allReleases.push({
+        id: `pr_${repoDef.repo}_${pr.number}`,
+        title: `[${repoDef.repo}] #${pr.number} ${pr.title}`,
+        summary: buildPrSummary(pr),
         releasedAt: pr.merged_at,
         sourceChangeRequestId: `PR #${pr.number}`,
-        priority: "P1" as const,
-        scope: repo.scope as Scope,
+        priority: "P1",
+        scope: buildScopeForRepo(repoDef.key),
         sourceType: "pull_request" as const,
-        repository: `${repo.owner}/${repo.repo}`,
-        prNumber: pr.number,
-        prUrl: pr.html_url,
+        repository: `${repoDef.owner}/${repoDef.repo}`,
+        pullRequestNumber: pr.number,
+        pullRequestUrl: pr.html_url,
         author: pr.user?.login || "unknown",
-      }));
-  } catch {
-    return scrapeMergedPrReleases(repo);
+      });
+
+      if (mergeSha) {
+        allReleases.push({
+          id: `merge_${repoDef.repo}_${mergeSha}`,
+          title: `[${repoDef.repo}] merge ${mergeSha.slice(0, 5)}`,
+          summary: `Commit de merge de la PR #${pr.number}`,
+          releasedAt: pr.merged_at,
+          sourceChangeRequestId: `PR #${pr.number}`,
+          priority: "P1",
+          scope: buildScopeForRepo(repoDef.key),
+          sourceType: "pull_request" as const,
+          repository: `${repoDef.owner}/${repoDef.repo}`,
+          pullRequestNumber: pr.number,
+          pullRequestUrl: pr.html_url,
+          author: pr.user?.login || "unknown",
+        });
+      }
+    }
   }
+
+  const dedup = new Map<string, WorkflowRelease>();
+  for (const item of allReleases) {
+    if (!dedup.has(item.id)) dedup.set(item.id, item);
+  }
+
+  return [...dedup.values()]
+    .sort((a, b) => b.releasedAt.localeCompare(a.releasedAt))
+    .slice(0, 30);
 }
 
-async function fetchWorkflowReleases(request: Request): Promise<WorkflowRelease[]> {
+async function fetchRepoChangelog(
+  repoDef: RepoDef,
+  warnings: string[]
+): Promise<RepoPayload> {
+  let commits: any[] = [];
+  let runs: WorkflowRun[] = [];
+
   try {
-    const res = await fetch(`${resolveBackendBaseUrl()}/api/admin/change-requests`, {
-      headers: buildForwardHeaders(request),
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
+    const [commitsData, runsData] = await Promise.all([
+      githubGet(`/repos/${repoDef.owner}/${repoDef.repo}/commits?per_page=30`),
+      githubGet(
+        `/repos/${repoDef.owner}/${repoDef.repo}/actions/runs?per_page=100`
+      ),
+    ]);
 
-    const payload = (await res.json().catch(() => ({}))) as ChangeRequestPayload;
-    const items = payload.items || [];
-
-    return items
-      .filter((it) => it.status === "released")
-      .map((it) => ({
-        id: `release_${it.id}`,
-        title: it.title,
-        summary: it.changelogEntry?.summary || it.desiredOutcome || "Released",
-        releasedAt: it.changelogEntry?.releasedAt || it.updatedAt || new Date().toISOString(),
-        sourceChangeRequestId: `CR-${it.id.slice(0, 8)}`,
-        priority: it.priority || "P2",
-        scope: "fullstack" as const,
-        sourceType: "change_request" as const,
-      }));
-  } catch {
-    return [];
+    commits = commitsData as any[];
+    runs = ((runsData as any)?.workflow_runs || []) as WorkflowRun[];
+  } catch (error) {
+    warnings.push(
+      `${repoDef.owner}/${repoDef.repo}: impossible de charger commits/workflows (${asErrorMessage(error)})`
+    );
+    return {
+      key: repoDef.key,
+      owner: repoDef.owner,
+      repo: repoDef.repo,
+      latestShortSha: "unknown",
+      commits: [],
+    };
   }
+
+  const rankedRuns = [...runs]
+    .filter((run) => isSuccessfulWorkflowRun(run))
+    .sort((a, b) =>
+      String(b.updated_at || "").localeCompare(String(a.updated_at || ""))
+    );
+
+  const preferredRuns = rankedRuns.filter((run) => isReleaseEvent(run));
+  const runsForLinking = preferredRuns.length ? preferredRuns : rankedRuns;
+
+  const runBySha = new Map<string, WorkflowRun>();
+  for (const run of runsForLinking) {
+    const sha = run.head_sha;
+    if (!sha || runBySha.has(sha)) continue;
+    runBySha.set(sha, run);
+  }
+
+  const items: CommitItem[] = commits.slice(0, 20).map((c) => {
+    const sha = String(c.sha || "");
+    const shortSha = sha.slice(0, 5);
+    const author = c?.author?.login || c?.commit?.author?.name || "unknown";
+    const committedAt = c?.commit?.author?.date || "";
+    const message = firstLine(c?.commit?.message);
+    const commitUrl =
+      c?.html_url ||
+      `https://github.com/${repoDef.owner}/${repoDef.repo}/commit/${sha}`;
+    const workflow = runBySha.get(sha);
+
+    return {
+      sha,
+      shortSha,
+      author,
+      committedAt,
+      message,
+      commitUrl,
+      workflowUrl: workflow?.html_url || null,
+      workflowName: workflow?.name || null,
+    };
+  });
+
+  return {
+    key: repoDef.key,
+    owner: repoDef.owner,
+    repo: repoDef.repo,
+    latestShortSha: items[0]?.shortSha || "unknown",
+    commits: items,
+  };
 }
 
 export async function GET(request: Request) {
-  const repositories: RepoChangelog[] = [];
-  const mergedPrReleases: WorkflowRelease[] = [];
+  try {
+    const warnings: string[] = [];
 
-  for (const repo of REPOS) {
-    const [commits, prs] = await Promise.all([
-      fetchRepoCommits(repo),
-      fetchMergedPrReleases(repo),
+    const [repositories, workflowReleases, mergedPrReleases] = await Promise.all([
+      Promise.all(REPOS.map((repo) => fetchRepoChangelog(repo, warnings))),
+      fetchWorkflowReleases(request, warnings),
+      fetchMergedPrReleases(warnings),
     ]);
-    repositories.push({
-      key: repo.key,
-      displayName: repo.displayName,
-      owner: repo.owner,
-      repo: repo.repo,
-      commits,
-    });
-    mergedPrReleases.push(...prs);
+
+    const unifiedReleases = [...workflowReleases, ...mergedPrReleases]
+      .sort((a, b) => b.releasedAt.localeCompare(a.releasedAt))
+      .slice(0, 60);
+
+    return NextResponse.json(
+      {
+        generatedAt: new Date().toISOString(),
+        repositories,
+        workflowReleases: unifiedReleases,
+        warnings,
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to load changelog";
+    return NextResponse.json(
+      { error: { message } },
+      { status: 502, headers: { "Cache-Control": "no-store" } }
+    );
   }
-
-  const workflowReleases = await fetchWorkflowReleases(request);
-  const unifiedReleases = [...workflowReleases, ...mergedPrReleases]
-    .sort((a, b) => b.releasedAt.localeCompare(a.releasedAt))
-    .slice(0, 60);
-
-  return NextResponse.json(
-    {
-      generatedAt: new Date().toISOString(),
-      repositories,
-      workflowReleases: unifiedReleases,
-      warnings: [],
-    },
-    { headers: { "Cache-Control": "no-store" } }
-  );
 }

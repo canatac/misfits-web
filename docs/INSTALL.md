@@ -67,7 +67,7 @@ node .next/standalone/server.js
 
 ## Déploiement CI/CD (réel)
 
-Source: `.github/workflows/ci.yml`.
+Source: `.github/workflows/cicd.yml`.
 
 Pipeline `CI/CD` sur push `main`/`master` ou pull request:
 
@@ -85,7 +85,7 @@ Contrainte VM: **pas de build docker/pnpm sur la VM**. La VM ne fait que `docker
 
 ## Secrets GitHub attendus
 
-Source: `.github/workflows/ci.yml`.
+Source: `.github/workflows/cicd.yml`.
 
 | Secret                    | Usage                                                  |
 | ------------------------- | ------------------------------------------------------ |

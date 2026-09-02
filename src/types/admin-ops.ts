@@ -147,6 +147,7 @@ export interface AdminChangelogResponse {
   generatedAt: string;
   repositories: AdminChangelogRepository[];
   workflowReleases: AdminWorkflowRelease[];
+  warnings?: string[];
 }
 
 export type AdminUserStatus = "active" | "restricted";
