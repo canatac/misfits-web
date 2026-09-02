@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
 import { NovamailShellHeader } from "@/components/navigation/novamail-shell-header";
+import { WorkspaceBuildFooter } from "@/components/navigation/workspace-build-footer";
 import { useMailShortcuts } from "@/hooks/use-mail-shortcuts";
 import { useEmailStore } from "@/stores/email-store";
 import { useThreadStore } from "@/stores/thread-store";
@@ -231,6 +232,8 @@ export default function MailPage() {
           }}
         />
       </div>
+
+      <WorkspaceBuildFooter className="shrink-0 border-[#242427] bg-[#0A0A0B]/95 px-3 pb-2" />
 
       <MailPageOverlays
         composerOpen={composerOpen}
