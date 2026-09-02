@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 function extractCommitSha(label: string): string | null {
   const candidate = label.includes("@") ? label.split("@").at(-1) ?? "" : label;
@@ -9,8 +10,13 @@ function extractCommitSha(label: string): string | null {
   return /^[0-9a-f]{7,40}$/i.test(trimmed) ? trimmed : null;
 }
 
-export function WorkspaceBuildFooter() {
-  const label = (process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION || "unknown").trim() ||
+interface WorkspaceBuildFooterProps {
+  className?: string;
+}
+
+export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = {}) {
+  const label =
+    (process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION || "unknown").trim() ||
     "unknown";
   const commitSha = extractCommitSha(label);
   const commitUrl = commitSha
@@ -18,7 +24,12 @@ export function WorkspaceBuildFooter() {
     : null;
 
   return (
-    <footer className="mt-6 border-t border-[#242427] pt-3 text-[11px] text-[#8A8A92]">
+    <footer
+      className={cn(
+        "border-t border-[#242427] pt-3 text-[11px] text-[#8A8A92]",
+        className || "mt-6"
+      )}
+    >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span>
           Version: {label}
