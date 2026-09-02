@@ -45,7 +45,22 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                 <p className="mt-1 text-xs text-[#A1A1AA]">{release.summary}</p>
                 <p className="mt-1 text-[11px] text-[#71717A]">
                   {asDate(release.releasedAt)} · {release.scope} ·{" "}
-                  {release.sourceChangeRequestId}
+                  {release.sourceType === "pull_request" ? (
+                    release.pullRequestUrl ? (
+                      <a
+                        href={release.pullRequestUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#86EFAC] hover:underline"
+                      >
+                        {release.sourceChangeRequestId}
+                      </a>
+                    ) : (
+                      release.sourceChangeRequestId
+                    )
+                  ) : (
+                    release.sourceChangeRequestId
+                  )}
                 </p>
               </div>
             ))}

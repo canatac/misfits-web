@@ -136,6 +136,11 @@ export interface AdminWorkflowRelease {
   sourceChangeRequestId: string;
   priority: WorkflowPriority;
   scope: ChangeRequestItem["scope"];
+  sourceType?: "change_request" | "pull_request";
+  repository?: string;
+  pullRequestNumber?: number;
+  pullRequestUrl?: string;
+  author?: string;
 }
 
 export interface AdminChangelogResponse {
