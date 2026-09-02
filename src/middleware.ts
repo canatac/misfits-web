@@ -59,7 +59,8 @@ export function middleware(request: NextRequest): NextResponse {
   if (!sessionToken) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("redirect", pathname);
+    const redirectTarget = `${pathname}${request.nextUrl.search}`;
+    loginUrl.searchParams.set("redirect", redirectTarget);
     return NextResponse.redirect(loginUrl);
   }
 
