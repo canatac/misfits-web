@@ -83,7 +83,7 @@ export function NovamailShellHeader({
             <SlidersHorizontal className="h-3.5 w-3.5" />
           </span>
           <kbd className="rounded border border-[#242427] bg-[#1D1D20] px-1.5 py-0.5 text-[10px] text-[#71717A]">
-            ⌘K
+            ⌘K / Ctrl+K
           </kbd>
         </button>
 
