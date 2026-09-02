@@ -199,7 +199,19 @@ export function use2FA() {
     mutationFn: (challenge: TwoFactorChallenge) => verify2FA(challenge),
     onSuccess: () => {
       toast.success("Two-factor verified.");
-      router.push("/dashboard");
+      let dest = "/dashboard";
+      try {
+        const fromQs =
+          typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("redirect")
+            : null;
+        if (fromQs && fromQs.startsWith("/") && !fromQs.startsWith("//")) {
+          dest = fromQs;
+        }
+      } catch {
+        /* ignore */
+      }
+      router.push(dest);
     },
     onError: (error: unknown) => {
       const message =
