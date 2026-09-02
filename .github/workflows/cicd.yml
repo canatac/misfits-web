@@ -88,6 +88,8 @@ jobs:
           tags: |
             ${{ secrets.SCW_REGISTRY_ENDPOINT }}/misfits-web:latest
             ${{ secrets.SCW_REGISTRY_ENDPOINT }}/misfits-web:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=misfits-web@${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
