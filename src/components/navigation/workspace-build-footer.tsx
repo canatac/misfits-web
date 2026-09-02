@@ -49,7 +49,7 @@ export function WorkspaceBuildFooter() {
     let alive = true;
     const load = async () => {
       try {
-        const resp = await fetch("/api/build-info", { cache: "no-store" });
+        const resp = await fetch("/build-info", { cache: "no-store" });
         if (!resp.ok) return;
         const data = (await resp.json()) as BuildInfo;
         if (!alive) return;
