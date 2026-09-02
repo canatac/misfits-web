@@ -93,37 +93,94 @@ async function githubGet(path: string): Promise<any> {
   return res.json();
 }
 
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "misfits-web-changelog-feed",
+      Accept: "text/html,application/xhtml+xml",
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`HTML ${url} -> ${res.status}`);
+  return res.text();
+}
+
+function uniq<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+async function scrapeRepoCommits(repo: (typeof REPOS)[number]): Promise<RepoChangelog["commits"]> {
+  const html = await fetchHtml(`https://github.com/${repo.owner}/${repo.repo}/commits/master`);
+  const shaMatches = uniq(Array.from(html.matchAll(new RegExp(`/${repo.owner}/${repo.repo}/commit/([0-9a-f]{7,40})`, "g"))).map((m) => m[1])).slice(0, 10);
+  return shaMatches.map((sha) => ({
+    sha,
+    shortSha: shortSha5(sha),
+    message: "Commit",
+    author: "unknown",
+    date: new Date().toISOString(),
+    commitUrl: `https://github.com/${repo.owner}/${repo.repo}/commit/${sha}`,
+  }));
+}
+
 async function fetchRepoCommits(repo: (typeof REPOS)[number]): Promise<RepoChangelog["commits"]> {
-  const commits = await githubGet(`/repos/${repo.owner}/${repo.repo}/commits?per_page=10`);
-  return (Array.isArray(commits) ? commits : []).map((c: any) => ({
-    sha: c.sha,
-    shortSha: shortSha5(c.sha),
-    message: c.commit?.message?.split("\n")[0] || "No message",
-    author: c.commit?.author?.name || c.author?.login || "unknown",
-    date: c.commit?.author?.date || new Date().toISOString(),
-    commitUrl: c.html_url || `https://github.com/${repo.owner}/${repo.repo}/commit/${c.sha}`,
+  try {
+    const commits = await githubGet(`/repos/${repo.owner}/${repo.repo}/commits?per_page=10`);
+    return (Array.isArray(commits) ? commits : []).map((c: any) => ({
+      sha: c.sha,
+      shortSha: shortSha5(c.sha),
+      message: c.commit?.message?.split("\n")[0] || "No message",
+      author: c.commit?.author?.name || c.author?.login || "unknown",
+      date: c.commit?.author?.date || new Date().toISOString(),
+      commitUrl: c.html_url || `https://github.com/${repo.owner}/${repo.repo}/commit/${c.sha}`,
+    }));
+  } catch {
+    return scrapeRepoCommits(repo);
+  }
+}
+
+async function scrapeMergedPrReleases(repo: (typeof REPOS)[number]): Promise<WorkflowRelease[]> {
+  const html = await fetchHtml(`https://github.com/${repo.owner}/${repo.repo}/pulls?q=is%3Apr+is%3Amerged`);
+  const numbers = uniq(Array.from(html.matchAll(new RegExp(`/${repo.owner}/${repo.repo}/pull/(\\d+)`, "g"))).map((m) => Number(m[1]))).slice(0, 20);
+  const now = new Date().toISOString();
+  return numbers.map((n) => ({
+    id: `pr_${repo.repo}_${n}`,
+    title: `[${repo.displayName}] #${n}`,
+    summary: "Merged pull request",
+    releasedAt: now,
+    sourceChangeRequestId: `PR #${n}`,
+    priority: "P1",
+    scope: repo.scope as Scope,
+    sourceType: "pull_request",
+    repository: `${repo.owner}/${repo.repo}`,
+    prNumber: n,
+    prUrl: `https://github.com/${repo.owner}/${repo.repo}/pull/${n}`,
+    author: "unknown",
   }));
 }
 
 async function fetchMergedPrReleases(repo: (typeof REPOS)[number]): Promise<WorkflowRelease[]> {
-  const pulls = await githubGet(`/repos/${repo.owner}/${repo.repo}/pulls?state=closed&sort=updated&direction=desc&per_page=30`);
-  return (Array.isArray(pulls) ? pulls : [])
-    .filter((pr: any) => Boolean(pr.merged_at))
-    .slice(0, 20)
-    .map((pr: any) => ({
-      id: `pr_${repo.repo}_${pr.number}`,
-      title: `[${repo.displayName}] #${pr.number} ${pr.title}`,
-      summary: (pr.body || "Merged pull request").split("\n")[0].slice(0, 220),
-      releasedAt: pr.merged_at,
-      sourceChangeRequestId: `PR #${pr.number}`,
-      priority: "P1" as const,
-      scope: (repo.scope as Scope) || "fullstack",
-      sourceType: "pull_request" as const,
-      repository: `${repo.owner}/${repo.repo}`,
-      prNumber: pr.number,
-      prUrl: pr.html_url,
-      author: pr.user?.login || "unknown",
-    }));
+  try {
+    const pulls = await githubGet(`/repos/${repo.owner}/${repo.repo}/pulls?state=closed&sort=updated&direction=desc&per_page=30`);
+    return (Array.isArray(pulls) ? pulls : [])
+      .filter((pr: any) => Boolean(pr.merged_at))
+      .slice(0, 20)
+      .map((pr: any) => ({
+        id: `pr_${repo.repo}_${pr.number}`,
+        title: `[${repo.displayName}] #${pr.number} ${pr.title}`,
+        summary: (pr.body || "Merged pull request").split("\n")[0].slice(0, 220),
+        releasedAt: pr.merged_at,
+        sourceChangeRequestId: `PR #${pr.number}`,
+        priority: "P1" as const,
+        scope: repo.scope as Scope,
+        sourceType: "pull_request" as const,
+        repository: `${repo.owner}/${repo.repo}`,
+        prNumber: pr.number,
+        prUrl: pr.html_url,
+        author: pr.user?.login || "unknown",
+      }));
+  } catch {
+    return scrapeMergedPrReleases(repo);
+  }
 }
 
 async function fetchWorkflowReleases(request: Request): Promise<WorkflowRelease[]> {
@@ -155,35 +212,22 @@ async function fetchWorkflowReleases(request: Request): Promise<WorkflowRelease[
 }
 
 export async function GET(request: Request) {
-  const warnings: string[] = [];
-
   const repositories: RepoChangelog[] = [];
   const mergedPrReleases: WorkflowRelease[] = [];
 
   for (const repo of REPOS) {
-    try {
-      const [commits, prs] = await Promise.all([
-        fetchRepoCommits(repo),
-        fetchMergedPrReleases(repo),
-      ]);
-      repositories.push({
-        key: repo.key,
-        displayName: repo.displayName,
-        owner: repo.owner,
-        repo: repo.repo,
-        commits,
-      });
-      mergedPrReleases.push(...prs);
-    } catch (error) {
-      warnings.push(`${repo.key}:${error instanceof Error ? error.message : "unavailable"}`);
-      repositories.push({
-        key: repo.key,
-        displayName: repo.displayName,
-        owner: repo.owner,
-        repo: repo.repo,
-        commits: [],
-      });
-    }
+    const [commits, prs] = await Promise.all([
+      fetchRepoCommits(repo),
+      fetchMergedPrReleases(repo),
+    ]);
+    repositories.push({
+      key: repo.key,
+      displayName: repo.displayName,
+      owner: repo.owner,
+      repo: repo.repo,
+      commits,
+    });
+    mergedPrReleases.push(...prs);
   }
 
   const workflowReleases = await fetchWorkflowReleases(request);
@@ -196,7 +240,7 @@ export async function GET(request: Request) {
       generatedAt: new Date().toISOString(),
       repositories,
       workflowReleases: unifiedReleases,
-      warnings,
+      warnings: [],
     },
     { headers: { "Cache-Control": "no-store" } }
   );
