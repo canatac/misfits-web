@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useComposerStore } from "@/stores/composer-store";
+import { useEmailStore } from "@/stores/email-store";
 import {
   useSendEmail,
   useSaveDraft,
@@ -46,6 +47,8 @@ export function useComposerSend({ variant, onClose }: UseComposerSendOpts) {
     useComposerStore();
 
   const sendMutation = useSendEmail();
+  const fetchEmails = useEmailStore((s) => s.fetchEmails);
+  const currentFolder = useEmailStore((s) => s.currentFolder);
   const saveMutation = useSaveDraft();
   const undoSend = useUndoSend(UNDO_SEND_DEFAULT);
   const isSending = sendMutation.isPending;
@@ -109,6 +112,8 @@ export function useComposerSend({ variant, onClose }: UseComposerSendOpts) {
           message_id?: string;
           messageId?: string;
           deliveryState?: "queued" | "sending" | "sent" | "failed";
+          storedInSent?: boolean;
+          warning?: string | null;
         };
         const id =
           payload.message_id ?? payload.messageId ?? payload.id ?? draft.id;
@@ -126,6 +131,13 @@ export function useComposerSend({ variant, onClose }: UseComposerSendOpts) {
                   : "failed";
           toast.success(`Email ${stateLabel}. ID: ${id}`);
         }
+        if (payload.warning) {
+          toast.warning(payload.warning);
+        }
+        void fetchEmails("sent", { preserveSelection: true });
+        if (currentFolder !== "sent") {
+          void fetchEmails(currentFolder, { preserveSelection: true });
+        }
         reset();
         if (onClose) onClose();
         else if (variant === "page") router.push("/mail");
@@ -138,6 +150,8 @@ export function useComposerSend({ variant, onClose }: UseComposerSendOpts) {
       invalidRecipients,
       to.length,
       sendMutation,
+      fetchEmails,
+      currentFolder,
       onClose,
       reset,
       variant,
