@@ -131,89 +131,121 @@ export function AdminConsolePage({
       {(activeTab === "overview" ||
         activeTab === "monitoring" ||
         activeTab === "security") && (
-        <AdminOverviewSections
-          activeTab={activeTab as "overview" | "monitoring" | "security"}
-          observability={observability as unknown as LocalObservabilityOverview}
-          securityPosture={securityPosture}
-          deliverability={deliverability}
-          adminDataLoading={adminDataLoading}
-          adminDataError={adminDataError}
-          securityLive={securityLive}
-          monitoringLive={monitoringLive}
-          assistantLoading={assistantLoading}
-          assistantPrompt={assistantPrompt}
-          setAssistantPrompt={setAssistantPrompt}
-          assistantAnswer={assistantAnswer}
-          assistantError={assistantError}
-          askHermesForAdminPlan={askHermesForAdminPlan}
-          summaryCards={summaryCards}
-          monitoringProviders={monitoringProviders.data?.providers ?? []}
-          monitoringBounces={monitoringBounces.data?.bounces ?? []}
-          securityActiveAlerts={securityActive.data?.alerts ?? []}
-          securityIncidents={securityIncidents.data?.alerts ?? []}
-        />
+        <section
+          role="tabpanel"
+          id={`admin-panel-${activeTab}`}
+          aria-labelledby={`admin-tab-${activeTab}`}
+        >
+          <AdminOverviewSections
+            activeTab={activeTab as "overview" | "monitoring" | "security"}
+            observability={observability as unknown as LocalObservabilityOverview}
+            securityPosture={securityPosture}
+            deliverability={deliverability}
+            adminDataLoading={adminDataLoading}
+            adminDataError={adminDataError}
+            securityLive={securityLive}
+            monitoringLive={monitoringLive}
+            assistantLoading={assistantLoading}
+            assistantPrompt={assistantPrompt}
+            setAssistantPrompt={setAssistantPrompt}
+            assistantAnswer={assistantAnswer}
+            assistantError={assistantError}
+            askHermesForAdminPlan={askHermesForAdminPlan}
+            summaryCards={summaryCards}
+            monitoringProviders={monitoringProviders.data?.providers ?? []}
+            monitoringBounces={monitoringBounces.data?.bounces ?? []}
+            securityActiveAlerts={securityActive.data?.alerts ?? []}
+            securityIncidents={securityIncidents.data?.alerts ?? []}
+          />
+        </section>
       )}
       {activeTab === "deliverability-ops" && (
-        <DeliverabilityOpsTab
-          procedureSaving={procedureSaving}
-          deliverabilityProcedure={deliverabilityProcedure}
-          deliverability={deliverability}
-          saveProcedureUpdate={saveProcedureUpdate}
-        />
+        <section
+          role="tabpanel"
+          id="admin-panel-deliverability-ops"
+          aria-labelledby="admin-tab-deliverability-ops"
+        >
+          <DeliverabilityOpsTab
+            procedureSaving={procedureSaving}
+            deliverabilityProcedure={deliverabilityProcedure}
+            deliverability={deliverability}
+            saveProcedureUpdate={saveProcedureUpdate}
+          />
+        </section>
       )}
       {activeTab === "change-requests" && (
-        <ChangeRequestsTab
-          changeRequests={changeRequests}
-          changeRequestMonitoring={changeRequestMonitoring}
-          workflowRunMonitoring={workflowRunMonitoring}
-          selectedWorkflowRun={selectedWorkflowRun}
-          selectedWorkflowRunEvents={selectedWorkflowRunEvents}
-          requestsByStatus={requestsByStatus}
-          newRequest={newRequest}
-          setNewRequest={setNewRequest}
-          transitionNote={transitionNote}
-          setTransitionNote={setTransitionNote}
-          deleteDialogTarget={deleteDialogTarget}
-          setDeleteDialogTarget={setDeleteDialogTarget}
-          selectedRunId={selectedRunId}
-          setSelectedRunId={setSelectedRunId}
-          observability={observability}
-          qualityChecks={qualityChecks}
-          adminDataLoading={adminDataLoading}
-          adminDataError={adminDataError}
-          crGuideMessages={crGuideMessages}
-          crGuideInput={crGuideInput}
-          crGuideLoading={crGuideLoading}
-          crGuideError={crGuideError}
-          createChangeRequest={createChangeRequest}
-          deleteChangeRequest={deleteChangeRequest}
-          transitionChangeRequest={transitionChangeRequest}
-          startImplementationChangeRequest={startImplementationChangeRequest}
-          handleCreateChangeRequest={handleCreateChangeRequest}
-          handleTransition={handleTransition}
-          handleStartImplementation={handleStartImplementation}
-          handleDeleteChangeRequestConfirm={handleDeleteChangeRequestConfirm}
-          openDeleteChangeRequestDialog={openDeleteChangeRequestDialog}
-          handleGuideChatSubmit={handleGuideChatSubmit}
-          applyGuideToForm={applyGuideToForm}
-          setCrGuideInput={setCrGuideInput}
-        />
+        <section
+          role="tabpanel"
+          id="admin-panel-change-requests"
+          aria-labelledby="admin-tab-change-requests"
+        >
+          <ChangeRequestsTab
+            changeRequests={changeRequests}
+            changeRequestMonitoring={changeRequestMonitoring}
+            workflowRunMonitoring={workflowRunMonitoring}
+            selectedWorkflowRun={selectedWorkflowRun}
+            selectedWorkflowRunEvents={selectedWorkflowRunEvents}
+            requestsByStatus={requestsByStatus}
+            newRequest={newRequest}
+            setNewRequest={setNewRequest}
+            transitionNote={transitionNote}
+            setTransitionNote={setTransitionNote}
+            deleteDialogTarget={deleteDialogTarget}
+            setDeleteDialogTarget={setDeleteDialogTarget}
+            selectedRunId={selectedRunId}
+            setSelectedRunId={setSelectedRunId}
+            observability={observability}
+            qualityChecks={qualityChecks}
+            adminDataLoading={adminDataLoading}
+            adminDataError={adminDataError}
+            crGuideMessages={crGuideMessages}
+            crGuideInput={crGuideInput}
+            crGuideLoading={crGuideLoading}
+            crGuideError={crGuideError}
+            createChangeRequest={createChangeRequest}
+            deleteChangeRequest={deleteChangeRequest}
+            transitionChangeRequest={transitionChangeRequest}
+            startImplementationChangeRequest={startImplementationChangeRequest}
+            handleCreateChangeRequest={handleCreateChangeRequest}
+            handleTransition={handleTransition}
+            handleStartImplementation={handleStartImplementation}
+            handleDeleteChangeRequestConfirm={handleDeleteChangeRequestConfirm}
+            openDeleteChangeRequestDialog={openDeleteChangeRequestDialog}
+            handleGuideChatSubmit={handleGuideChatSubmit}
+            applyGuideToForm={applyGuideToForm}
+            setCrGuideInput={setCrGuideInput}
+          />
+        </section>
       )}
 
-      {activeTab === "changelog" && <ChangelogTab adminChangelog={adminChangelog} />}
+      {activeTab === "changelog" && (
+        <section
+          role="tabpanel"
+          id="admin-panel-changelog"
+          aria-labelledby="admin-tab-changelog"
+        >
+          <ChangelogTab adminChangelog={adminChangelog} />
+        </section>
+      )}
 
       {activeTab === "users" && (
-        <UsersTab
-          adminUsers={adminUsers}
-          adminWhoami={whoami}
-          adminAiActivity={adminAiActivity}
-          adminAuditLog={adminAuditLog}
-          createAdminUser={createAdminUser}
-          inviteAdminUser={inviteAdminUser}
-          resetAdminPassword={resetAdminPassword}
-          deleteAdminUser={deleteAdminUser}
-          updateAdminUser={updateAdminUser}
-        />
+        <section
+          role="tabpanel"
+          id="admin-panel-users"
+          aria-labelledby="admin-tab-users"
+        >
+          <UsersTab
+            adminUsers={adminUsers}
+            adminWhoami={whoami}
+            adminAiActivity={adminAiActivity}
+            adminAuditLog={adminAuditLog}
+            createAdminUser={createAdminUser}
+            inviteAdminUser={inviteAdminUser}
+            resetAdminPassword={resetAdminPassword}
+            deleteAdminUser={deleteAdminUser}
+            updateAdminUser={updateAdminUser}
+          />
+        </section>
       )}
     </div>
   );

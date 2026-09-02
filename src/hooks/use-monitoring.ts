@@ -23,37 +23,57 @@ function isMobileViewport(): boolean {
   return window.matchMedia("(max-width: 767px)").matches;
 }
 
-export function useMonitoringSummary(window: MonitoringWindow) {
+export function useMonitoringSummary(
+  window: MonitoringWindow,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["monitoring", "summary", window],
     queryFn: () => getMonitoringSummary(window),
+    enabled,
     refetchInterval: REFRESH_30S,
     staleTime: 10_000,
   });
 }
 
-export function useMonitoringAlerts(window: MonitoringWindow) {
+export function useMonitoringAlerts(
+  window: MonitoringWindow,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["monitoring", "alerts", window],
     queryFn: () => getMonitoringActiveAlerts(window),
+    enabled,
     refetchInterval: REFRESH_30S,
     staleTime: 10_000,
   });
 }
 
-export function useMonitoringProviders(window: MonitoringWindow) {
+export function useMonitoringProviders(
+  window: MonitoringWindow,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["monitoring", "providers", window],
     queryFn: () => getMonitoringTopProviders(window),
+    enabled,
     refetchInterval: REFRESH_30S,
     staleTime: 10_000,
   });
 }
 
-export function useMonitoringBounces(window: MonitoringWindow) {
+export function useMonitoringBounces(
+  window: MonitoringWindow,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["monitoring", "bounces", window],
     queryFn: () => getMonitoringBounces(window),
+    enabled,
     refetchInterval: REFRESH_30S,
     staleTime: 10_000,
   });

@@ -48,12 +48,17 @@ export function AdminConsoleHeader({
             requests.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          role="group"
+          aria-label="Fenêtre temporelle monitoring"
+        >
           {WINDOW_OPTIONS.map((opt) => (
             <button
               key={opt}
               type="button"
               onClick={() => setWindowRange(opt)}
+              aria-pressed={windowRange === opt}
               className={cn(
                 "rounded-lg border px-2.5 py-1 text-xs",
                 windowRange === opt
@@ -81,12 +86,20 @@ export function AdminConsoleHeader({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div
+        className="mt-4 flex flex-wrap gap-2"
+        role="tablist"
+        aria-label="Navigation de la console admin"
+      >
         {TABS.map(([key, label]) => (
           <button
             key={key}
             type="button"
             onClick={() => setActiveTab(key)}
+            role="tab"
+            id={`admin-tab-${key}`}
+            aria-selected={activeTab === key}
+            aria-controls={`admin-panel-${key}`}
             className={cn(
               "rounded-lg border px-3 py-1.5 text-xs font-medium",
               activeTab === key

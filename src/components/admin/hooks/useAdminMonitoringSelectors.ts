@@ -30,24 +30,44 @@ export function useAdminMonitoringSelectors({
   severity,
   activeTab,
 }: Args) {
-  const monitoringSummary = useMonitoringSummary(windowRange);
-  const monitoringAlerts = useMonitoringAlerts(windowRange);
-  const monitoringProviders = useMonitoringProviders(windowRange);
-  const monitoringBounces = useMonitoringBounces(windowRange);
+  const monitoringEnabled =
+    activeTab === "overview" ||
+    activeTab === "monitoring" ||
+    activeTab === "security" ||
+    activeTab === "change-requests";
+
+  const securityEnabled =
+    activeTab === "overview" ||
+    activeTab === "security" ||
+    activeTab === "monitoring" ||
+    activeTab === "change-requests";
+
+  const monitoringSummary = useMonitoringSummary(windowRange, {
+    enabled: monitoringEnabled,
+  });
+  const monitoringAlerts = useMonitoringAlerts(windowRange, {
+    enabled: monitoringEnabled,
+  });
+  const monitoringProviders = useMonitoringProviders(windowRange, {
+    enabled: monitoringEnabled,
+  });
+  const monitoringBounces = useMonitoringBounces(windowRange, {
+    enabled: monitoringEnabled,
+  });
   const monitoringLive = useMonitoringLive({
-    enabled: activeTab !== "changelog",
+    enabled: monitoringEnabled,
   });
   const securitySeverityFilter = severity === "all" ? undefined : severity;
   const securityActive = useSecurityActiveAlerts({
     window: windowRange,
     severity: securitySeverityFilter,
-  });
+  }, { enabled: securityEnabled });
   const securityIncidents = useSecurityIncidents({
     page: 1,
     page_size: 20,
     severity: securitySeverityFilter,
-  });
-  const securityLive = useSecurityLive({ enabled: activeTab !== "changelog" });
+  }, { enabled: securityEnabled });
+  const securityLive = useSecurityLive({ enabled: securityEnabled });
   return {
     monitoringSummary,
     monitoringAlerts,
