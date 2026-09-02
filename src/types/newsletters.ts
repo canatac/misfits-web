@@ -45,6 +45,11 @@ export type CreateNewsletterSourceInput = {
   url?: string;
 };
 
+export type UpdateNewsletterSourceInput = {
+  name?: string;
+  url?: string;
+};
+
 export type CreateNewsletterItemInput = {
   sourceId: string;
   title: string;
