@@ -15,19 +15,29 @@ import type { SecurityAlert } from "@/types/security";
 
 const ALERTS_POLL_MS = 60_000;
 
-export function useSecurityActiveAlerts(filters: SecurityAlertsFilters) {
+export function useSecurityActiveAlerts(
+  filters: SecurityAlertsFilters,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["security", "active-alerts", filters],
     queryFn: () => getSecurityActiveAlerts(filters),
+    enabled,
     refetchInterval: ALERTS_POLL_MS,
     staleTime: 10_000,
   });
 }
 
-export function useSecurityIncidents(filters: SecurityIncidentsFilters) {
+export function useSecurityIncidents(
+  filters: SecurityIncidentsFilters,
+  options: { enabled?: boolean } = {}
+) {
+  const { enabled = true } = options;
   return useQuery({
     queryKey: ["security", "incidents", filters],
     queryFn: () => getSecurityIncidents(filters),
+    enabled,
     placeholderData: (prev) => prev,
   });
 }
