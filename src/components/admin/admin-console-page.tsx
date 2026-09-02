@@ -8,6 +8,7 @@ import {
   type LocalObservabilityOverview,
 } from "./tabs/AdminOverviewSections";
 import { UsersTab } from "./tabs/UsersTab";
+import { ChangelogTab } from "./tabs/ChangelogTab";
 import type { MonitoringWindow } from "@/types/monitoring";
 import type { SecuritySeverity } from "@/types/security";
 import { type AdminTab } from "./admin-console-constants";
@@ -41,7 +42,7 @@ export function AdminConsolePage({
     securityLive,
   } = useAdminMonitoringSelectors({ windowRange, severity, activeTab });
 
-  const { changeRequests, adminUsers, whoami, inviteAdminUser, resetAdminPassword, adminAuditLog, adminAiActivity, createChangeRequest, transitionChangeRequest, deleteChangeRequest, startImplementationChangeRequest, updateAdminUser, createAdminUser, deleteAdminUser } = useAdminMutations();
+  const { changeRequests, adminChangelog, adminUsers, whoami, inviteAdminUser, resetAdminPassword, adminAuditLog, adminAiActivity, createChangeRequest, transitionChangeRequest, deleteChangeRequest, startImplementationChangeRequest, updateAdminUser, createAdminUser, deleteAdminUser } = useAdminMutations();
 
   const { newRequest, setNewRequest, newAdminUser, setNewAdminUser, transitionNote, setTransitionNote, deleteDialogTarget, setDeleteDialogTarget } = useAdminConsoleFormState();
 
@@ -198,6 +199,8 @@ export function AdminConsolePage({
           setCrGuideInput={setCrGuideInput}
         />
       )}
+
+      {activeTab === "changelog" && <ChangelogTab adminChangelog={adminChangelog} />}
 
       {activeTab === "users" && (
         <UsersTab
