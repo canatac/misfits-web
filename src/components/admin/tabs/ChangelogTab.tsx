@@ -62,6 +62,7 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                         href={release.pullRequestUrl}
                         target="_blank"
                         rel="noreferrer"
+                        aria-label={`Ouvrir ${release.sourceChangeRequestId} dans GitHub (nouvel onglet)`}
                         className="text-[#86EFAC] hover:underline"
                       >
                         {release.sourceChangeRequestId}
@@ -110,6 +111,8 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                           href={commit.commitUrl}
                           target="_blank"
                           rel="noreferrer"
+                          title={`${commit.shortSha} · ${commit.message}`}
+                          aria-label={`Ouvrir le commit ${commit.shortSha} dans GitHub (nouvel onglet)`}
                           className="truncate text-xs font-medium text-[#F2D5A7] hover:underline"
                         >
                           {commit.shortSha} · {commit.message}
@@ -119,6 +122,7 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                             href={commit.workflowUrl}
                             target="_blank"
                             rel="noreferrer"
+                            aria-label={`Ouvrir le workflow ${commit.workflowName || "workflow"} pour ${commit.shortSha} (nouvel onglet)`}
                             className="text-[11px] text-[#86EFAC] hover:underline"
                           >
                             {commit.workflowName || "workflow"}
@@ -134,6 +138,11 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                       </p>
                     </div>
                   ))}
+                  {!repo.commits.length && (
+                    <p className="text-[11px] text-[#71717A]">
+                      Aucun commit récupéré pour ce dépôt.
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
