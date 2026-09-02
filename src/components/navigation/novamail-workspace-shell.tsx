@@ -9,6 +9,7 @@ import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
 import { MailSidebar } from "@/components/mail/sidebar";
 import { NovaMailIconRail } from "@/components/mail/novamail-icon-rail";
 import { NovamailShellHeader } from "@/components/navigation/novamail-shell-header";
+import { WorkspaceBuildFooter } from "@/components/navigation/workspace-build-footer";
 import { useChatStore } from "@/stores/chat-store";
 import { useMailLayoutStore } from "@/stores/mail-layout-store";
 
@@ -111,7 +112,10 @@ export function NovamailWorkspaceShell({
             desktopConsoleOpen && "pb-[18rem]"
           )}
         >
-          {children}
+          <div className="mx-auto flex min-h-full w-full max-w-[1920px] flex-col">
+            <div className="flex-1">{children}</div>
+            <WorkspaceBuildFooter />
+          </div>
         </main>
 
         <div
