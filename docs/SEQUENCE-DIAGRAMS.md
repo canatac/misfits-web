@@ -193,13 +193,13 @@ sequenceDiagram
     autonumber
     participant Admin as Admin
     participant Page as /admin/changelog
-    participant Log as /api/admin/changelog
+    participant Log as /admin/changelog-feed
     participant AI as /api/admin/ai-activity
     participant Backend as email-api
 
     Admin->>Page: GET /admin/changelog
     par Changelog
-        Page->>Log: GET /api/admin/changelog
+        Page->>Log: GET /admin/changelog-feed
         Log->>Backend: GET /api/admin/change-requests
         Backend-->>Log: items[]
         Log-->>Page: entries[] (released/statuses)

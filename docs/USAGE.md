@@ -29,7 +29,7 @@ Structure sous `/admin`, layout dédié `src/app/admin/layout.tsx`.
 - **Overview**: `/admin` — `src/app/admin/page.tsx` → `AdminConsolePage initialTab="overview"`.
 - **Users**: `/admin/users` — `src/app/admin/users/page.tsx`.
 - **Change requests (workflow deliverability/backlog)**: `/admin/change-requests` — `src/app/admin/change-requests/page.tsx`. Backed by `/api/admin/change-requests` (`src/app/api/admin/change-requests/route.ts`) et `/api/admin/change-requests/[id]` (`.../[id]/route.ts`).
-- **Changelog**: `/admin/changelog` — `src/app/admin/changelog/page.tsx`. Backed by `/api/admin/changelog` (`src/app/api/admin/changelog/route.ts`) qui agrège les change-requests.
+- **Changelog**: `/admin/changelog` — `src/app/admin/changelog/page.tsx`. Backed by `/admin/changelog-feed` (`src/app/admin/changelog-feed/route.ts`) qui agrège les change-requests backend + commits/workflows GitHub.
 - **Dashboard (Overview global)**: `/dashboard` — `src/app/dashboard/page.tsx` + `dashboard/layout.tsx`.
 - **Security**: `/dashboard/security` — `src/app/dashboard/security/page.tsx`. Flux temps réel via `/api/security/live` (`src/app/api/security/live/route.ts`, hook `use-security-dashboard.ts`).
 - **Monitoring**: `/dashboard/monitoring` — `src/app/dashboard/monitoring/page.tsx` + `/monitoring` (`src/app/monitoring/page.tsx`). Flux via `/api/monitoring/live` (`src/app/api/monitoring/live/route.ts`, hook `use-monitoring.ts`).

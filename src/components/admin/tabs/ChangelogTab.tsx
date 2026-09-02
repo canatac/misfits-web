@@ -26,6 +26,17 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
+        {!!adminChangelog.data?.warnings?.length && (
+          <div className="rounded-lg border border-amber-700/40 bg-amber-950/20 p-3 text-xs text-amber-200 xl:col-span-3">
+            <p className="font-medium">Mode dégradé partiel</p>
+            <ul className="mt-1 list-disc space-y-1 pl-4">
+              {adminChangelog.data.warnings.map((warning, idx) => (
+                <li key={`${warning}_${idx}`}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <article className="rounded-xl border border-[#232327] bg-[#151518] p-3 xl:col-span-1">
           <h3 className="text-xs font-semibold tracking-wide text-[#D4D4D8] uppercase">
             Releases issues du workflow
