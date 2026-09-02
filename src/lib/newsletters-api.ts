@@ -6,6 +6,8 @@ import type {
   NewsletterItemsResponse,
   NewsletterSource,
   NewsletterSourcesResponse,
+  SummarizeNewsletterSourceInput,
+  SummarizeNewsletterSourceResponse,
   UpdateNewsletterSourceInput,
 } from "@/types/newsletters";
 
@@ -40,4 +42,14 @@ export async function createNewsletterItem(
   payload: CreateNewsletterItemInput
 ): Promise<NewsletterItem> {
   return apiClient.post<NewsletterItem>("/newsletters/items", payload);
+}
+
+export async function summarizeNewsletterSource(
+  sourceId: string,
+  payload: SummarizeNewsletterSourceInput = {}
+): Promise<SummarizeNewsletterSourceResponse> {
+  return apiClient.post<SummarizeNewsletterSourceResponse>(
+    `/newsletters/sources/${sourceId}/summarize`,
+    payload
+  );
 }

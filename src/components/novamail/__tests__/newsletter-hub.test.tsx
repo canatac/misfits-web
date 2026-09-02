@@ -10,6 +10,7 @@ vi.mock("@/lib/newsletters-api", () => ({
   updateNewsletterSource: vi.fn(),
   deleteNewsletterSource: vi.fn(),
   createNewsletterItem: vi.fn(),
+  summarizeNewsletterSource: vi.fn(),
 }));
 
 describe("NewsletterHub server mode", () => {

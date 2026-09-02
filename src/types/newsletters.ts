@@ -58,3 +58,18 @@ export type CreateNewsletterItemInput = {
   link?: string;
   signal?: number;
 };
+
+export type SummarizeNewsletterSourceInput = {
+  topic?: NewsletterTopic | string;
+};
+
+export type SummarizeNewsletterSourceResponse = {
+  item: NewsletterItem;
+  source: {
+    id: string;
+    name: string;
+    url: string;
+  };
+  model: string;
+  fetchedChars: number;
+};
