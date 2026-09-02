@@ -27,7 +27,9 @@ import type {
 // ─── Changelog ───────────────────────────────────────────────────────────────
 
 export function getAdminChangelog() {
-  return apiClient.get<AdminChangelogResponse>("/admin/changelog");
+  return apiClient.get<AdminChangelogResponse>("/admin/changelog-feed", {
+    baseUrl: "",
+  });
 }
 
 // ─── Change requests ─────────────────────────────────────────────────────────
