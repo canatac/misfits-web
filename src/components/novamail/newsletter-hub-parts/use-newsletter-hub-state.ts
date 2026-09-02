@@ -134,8 +134,8 @@ export function useNewsletterHubState() {
   const generateDigest = () =>
     generateDigestAction({
       sources,
-      visibleItems,
       contentSourceId,
+      contentTopic,
       setAiBusy,
       setNotice,
       reload: loadFromServer,
