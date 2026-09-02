@@ -28,7 +28,7 @@ export function VeilleCard({
       <ul className="flex-1 space-y-2 px-4 py-3">
         {items.length === 0 && (
           <li className="rounded-xl border border-[#242427] bg-[#0A0A0B] p-3 text-[11px] text-[#71717A]">
-            Aucune newsletter détectée dans l’inbox pour le moment.
+            Aucune synthèse newsletter pour le moment. Ajoute des URL dans le Hub puis génère un digest.
           </li>
         )}
         {items.map((article) => (

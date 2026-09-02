@@ -7,12 +7,16 @@ vi.mock("@/lib/newsletters-api", () => ({
   listNewsletterSources: vi.fn(),
   listNewsletterItems: vi.fn(),
   createNewsletterSource: vi.fn(),
+  updateNewsletterSource: vi.fn(),
+  deleteNewsletterSource: vi.fn(),
   createNewsletterItem: vi.fn(),
 }));
 
 describe("NewsletterHub server mode", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
     vi.spyOn(newsletterApi, "listNewsletterSources").mockResolvedValue([
       {
         id: "src-1",
@@ -30,6 +34,14 @@ describe("NewsletterHub server mode", () => {
       createdAt: "2026-09-01T00:00:00Z",
       updatedAt: "2026-09-01T00:00:00Z",
     });
+    vi.spyOn(newsletterApi, "updateNewsletterSource").mockResolvedValue({
+      id: "src-1",
+      name: "TechCrunch",
+      url: "https://techcrunch.com/feed",
+      createdAt: "2026-09-01T00:00:00Z",
+      updatedAt: "2026-09-01T00:00:01Z",
+    });
+    vi.spyOn(newsletterApi, "deleteNewsletterSource").mockResolvedValue({ deleted: true });
     vi.spyOn(newsletterApi, "createNewsletterItem").mockResolvedValue({
       id: "it-1",
       sourceId: "src-1",
@@ -53,53 +65,58 @@ describe("NewsletterHub server mode", () => {
     expect(screen.getByText(/Sources actives: 1/i)).toBeTruthy();
   });
 
-  it("creates a source via server API", async () => {
+  it("creates a source URL via server API", async () => {
     render(<NewsletterHub />);
 
     await waitFor(() => {
       expect(newsletterApi.listNewsletterSources).toHaveBeenCalled();
     });
 
-    fireEvent.change(screen.getByLabelText("Nom de la source"), {
-      target: { value: "Stratechery" },
-    });
     fireEvent.change(screen.getByLabelText("URL de la source"), {
       target: { value: "stratechery.com" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /Ajouter source/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Ajouter URL/i }));
 
     await waitFor(() => {
       expect(newsletterApi.createNewsletterSource).toHaveBeenCalledWith({
-        name: "Stratechery",
-        url: "stratechery.com",
+        name: "stratechery.com",
+        url: "https://stratechery.com",
       });
     });
   });
 
-  it("creates content via server API", async () => {
+  it("updates an existing source URL", async () => {
     render(<NewsletterHub />);
 
     await waitFor(() => {
       expect(newsletterApi.listNewsletterSources).toHaveBeenCalled();
     });
 
-    fireEvent.change(screen.getByLabelText("Titre du contenu"), {
-      target: { value: "OpenAI update" },
+    fireEvent.click(screen.getByRole("button", { name: /Modifier/i }));
+    fireEvent.change(screen.getByLabelText("URL source édition"), {
+      target: { value: "https://techcrunch.com/feed" },
     });
-    fireEvent.change(screen.getByLabelText("Résumé du contenu"), {
-      target: { value: "Résumé test" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Ajouter contenu/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Enregistrer/i }));
 
     await waitFor(() => {
-      expect(newsletterApi.createNewsletterItem).toHaveBeenCalledWith(
-        expect.objectContaining({
-          sourceId: "src-1",
-          title: "OpenAI update",
-          summary: "Résumé test",
-          topic: "Tech",
-        })
-      );
+      expect(newsletterApi.updateNewsletterSource).toHaveBeenCalledWith("src-1", {
+        name: "TechCrunch",
+        url: "https://techcrunch.com/feed",
+      });
+    });
+  });
+
+  it("deletes a source", async () => {
+    render(<NewsletterHub />);
+
+    await waitFor(() => {
+      expect(newsletterApi.listNewsletterSources).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Supprimer/i }));
+
+    await waitFor(() => {
+      expect(newsletterApi.deleteNewsletterSource).toHaveBeenCalledWith("src-1");
     });
   });
 });

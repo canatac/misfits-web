@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   CheckSquare,
@@ -14,7 +15,8 @@ import { useCalendarEvents } from "@/hooks/use-calendar";
 import { useMonitoringAlerts, useMonitoringSummary } from "@/hooks/use-monitoring";
 import { useSecurityActiveAlerts } from "@/hooks/use-security-dashboard";
 import { useChangeRequests } from "@/hooks/use-admin-ops";
-import { calculatePriority, categorizeEmail } from "@/lib/ai-triage";
+import { calculatePriority } from "@/lib/ai-triage";
+import { listNewsletterItems } from "@/lib/newsletters-api";
 import { BriefingCard } from "./_components/BriefingCard";
 import { MetricsGrid, type Metric } from "./_components/MetricsGrid";
 import { InboxScoresCard } from "./_components/InboxScoresCard";
@@ -117,6 +119,12 @@ export default function DashboardIndexPage() {
   const monitoringAlertsQuery = useMonitoringAlerts("24h");
   const securityAlertsQuery = useSecurityActiveAlerts({ window: "24h" });
   const changeRequestsQuery = useChangeRequests();
+  const newsletterItemsQuery = useQuery({
+    queryKey: ["newsletters", "items", "dashboard"],
+    queryFn: listNewsletterItems,
+    refetchInterval: 60_000,
+    staleTime: 15_000,
+  });
 
   const firstName = useMemo(() => {
     const raw = user?.displayName ?? user?.email?.split("@")[0] ?? "Joey";
@@ -149,29 +157,16 @@ export default function DashboardIndexPage() {
   }, [inboxQuery.data?.emails]);
 
   const newsletterItems = useMemo<DashboardNewsletterItem[]>(() => {
-    const source = inboxQuery.data?.emails ?? [];
-    return source
-      .filter((email) => {
-        const c = categorizeEmail(email).category;
-        const text = `${email.subject} ${email.preview} ${email.from.address}`.toLowerCase();
-        return (
-          c === "newsletter" ||
-          email.labels.includes("label-newsletter") ||
-          text.includes("newsletter") ||
-          text.includes("digest") ||
-          text.includes("unsubscribe")
-        );
-      })
-      .slice(0, 4)
-      .map((email) => ({
-        id: email.id,
-        title: email.from.name || email.from.address,
-        signal: calculatePriority(email),
-        tags: ["#newsletter"],
-        summary: email.preview,
-        takeaways: [email.subject],
-      }));
-  }, [inboxQuery.data?.emails]);
+    const source = newsletterItemsQuery.data ?? [];
+    return source.slice(0, 4).map((item) => ({
+      id: item.id,
+      title: item.title,
+      signal: item.signal,
+      tags: [item.topic ? `#${String(item.topic).toLowerCase()}` : "#newsletter"],
+      summary: item.summary,
+      takeaways: item.links.map((link) => link.name).slice(0, 2),
+    }));
+  }, [newsletterItemsQuery.data]);
 
   const taskItems = useMemo<DashboardTaskItem[]>(() => {
     const events = (calendarQuery.data ?? [])
