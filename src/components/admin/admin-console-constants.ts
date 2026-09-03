@@ -56,6 +56,6 @@ export const STATUS_LABEL: Record<WorkflowStatus, string> = {
   planned: "Planifiée",
   in_progress: "En cours",
   qa: "QA",
-  released: "Released",
+  released: "Publiée",
   rejected: "Rejetée",
 };
