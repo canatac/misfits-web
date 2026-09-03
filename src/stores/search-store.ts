@@ -15,7 +15,7 @@ import type {
 } from "@/types/search";
 import { parseSearchQuery } from "@/lib/search-parser";
 import { searchEmails } from "@/lib/search-engine";
-import { mockEmails } from "@/lib/mock-emails";
+import { useEmailStore } from "@/stores/email-store";
 
 const SAVED_SEARCHES_KEY = "misfits:saved-searches";
 const SEARCH_HISTORY_KEY = "misfits:search-history";
@@ -118,7 +118,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
     }
     set({ isSearching: true });
     try {
-      const corpus = emails ?? mockEmails;
+      const corpus = emails ?? useEmailStore.getState().emails;
       const { results, facets } = searchEmails(query, corpus, sort);
       set({ results, facets, isSearching: false });
     } catch {
