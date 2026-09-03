@@ -12,6 +12,7 @@ import type {
   SortBy,
 } from "@/types/email";
 import { mockFolders, mockLabels } from "@/lib/mock-emails";
+import { hasMailIdentity, mailAuthHeaders } from "@/lib/mail-api";
 import {
   applyBulkAction,
   filterEmails,
@@ -24,6 +25,30 @@ import {
 } from "./parts/email-store/fetch-emails";
 
 export type { BulkActionType };
+
+const SYNTHETIC_EMAIL_ID_PREFIX = "inbox-seed-";
+
+function isSyntheticEmail(id: string): boolean {
+  return id.startsWith(SYNTHETIC_EMAIL_ID_PREFIX);
+}
+
+async function persistEmailAction(
+  id: string,
+  action: "markRead" | "markUnread"
+): Promise<void> {
+  if (!hasMailIdentity() || isSyntheticEmail(id)) return;
+  const res = await fetch(`/api/emails/${encodeURIComponent(id)}/action`, {
+    method: "POST",
+    headers: mailAuthHeaders(),
+    credentials: "include",
+    body: JSON.stringify({ action }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      `Failed to persist email action ${action}: ${res.status} ${res.statusText}`
+    );
+  }
+}
 
 interface EmailState {
   // Data
@@ -94,6 +119,9 @@ export const useEmailStore = create<EmailState>((set, get) => ({
             e.id === id ? { ...e, isRead: true } : e
           ),
         }));
+        void persistEmailAction(id, "markRead").catch((err) => {
+          console.error("selectEmail markRead persistence failed", err);
+        });
       }
     }
   },
@@ -106,18 +134,32 @@ export const useEmailStore = create<EmailState>((set, get) => ({
     })),
 
   markRead: (id) =>
-    set((state) => ({
-      emails: state.emails.map((e) =>
-        e.id === id ? { ...e, isRead: true } : e
-      ),
-    })),
+    set((state) => {
+      const email = state.emails.find((e) => e.id === id);
+      if (!email || email.isRead) return { emails: state.emails };
+      void persistEmailAction(id, "markRead").catch((err) => {
+        console.error("markRead persistence failed", err);
+      });
+      return {
+        emails: state.emails.map((e) =>
+          e.id === id ? { ...e, isRead: true } : e
+        ),
+      };
+    }),
 
   markUnread: (id) =>
-    set((state) => ({
-      emails: state.emails.map((e) =>
-        e.id === id ? { ...e, isRead: false } : e
-      ),
-    })),
+    set((state) => {
+      const email = state.emails.find((e) => e.id === id);
+      if (!email || !email.isRead) return { emails: state.emails };
+      void persistEmailAction(id, "markUnread").catch((err) => {
+        console.error("markUnread persistence failed", err);
+      });
+      return {
+        emails: state.emails.map((e) =>
+          e.id === id ? { ...e, isRead: false } : e
+        ),
+      };
+    }),
 
   archive: (id) => {
     set((state) => ({
