@@ -30,6 +30,7 @@ describe("/build-meta route", () => {
 
   it("falls back to NEXT_PUBLIC labels when runtime labels are absent", async () => {
     delete process.env.MISFITS_WEB_BUILD_VERSION;
+    delete process.env.MISFITS_WEB_IMAGE_TAG;
     delete process.env.REIMAGINED_GUIDE_BUILD_VERSION;
     process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION = "misfits-web@11111";
     process.env.NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION =
@@ -42,5 +43,19 @@ describe("/build-meta route", () => {
       webLabel: "misfits-web@11111",
       backendLabel: "reimagined-guide@22222",
     });
+  });
+
+  it("prefers a git SHA candidate and ignores sha256 digest labels", async () => {
+    process.env.MISFITS_WEB_BUILD_VERSION = "misfits-web@sha256:deadbeef";
+    process.env.MISFITS_WEB_IMAGE_TAG = "a9e180ea0ef162255bac85ebacb7f754293864dc";
+    process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION =
+      "misfits-web@sha256:anotherdigest";
+
+    const res = await GET();
+    const payload = await res.json();
+
+    expect(payload.webLabel).toBe(
+      "misfits-web@a9e180ea0ef162255bac85ebacb7f754293864dc"
+    );
   });
 });
