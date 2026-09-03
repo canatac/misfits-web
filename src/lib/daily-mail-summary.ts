@@ -11,8 +11,14 @@ export interface DailyMailPriorityLink {
   priorityScore: number;
 }
 
+export interface DailyMailAction {
+  text: string;
+  emailId?: string;
+}
+
 export interface DailyMailSummary {
-  pendingActions: string[];
+  mailboxActivity: string[];
+  pendingActions: DailyMailAction[];
   exchangedInfo: string[];
   priorityEmails: DailyMailPriorityLink[];
   generatedAt: string;
@@ -31,26 +37,57 @@ function extractJsonObject(raw: string): string | null {
   return candidate.slice(start, end + 1);
 }
 
-function asTextArray(value: unknown): string[] {
+function asTextArray(value: unknown, max = 6): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((v) => (typeof v === "string" ? v.trim() : ""))
     .filter(Boolean)
-    .slice(0, 6);
+    .slice(0, max);
 }
 
-function fallbackAction(email: Email): string {
+function inferEmailIdFromActionText(text: string, emailsById: Map<string, Email>): string | undefined {
+  const normalized = text.toLowerCase();
+  const isReadAction = normalized.startsWith("lire ") || normalized.includes(" lire ");
+  if (!isReadAction) return undefined;
+
+  const subjectMatch = text.match(/«\s*([^»]+)\s*»/) ?? text.match(/"\s*([^"]+)\s*"/);
+  if (subjectMatch?.[1]) {
+    const subject = subjectMatch[1].trim().toLowerCase();
+    for (const [id, email] of emailsById.entries()) {
+      if (email.subject.trim().toLowerCase() === subject) return id;
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeActionText(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function fallbackAction(email: Email): DailyMailAction {
   const score = calculatePriority(email);
+  const sender = email.from.name || email.from.address;
+
   if (!email.isRead && score >= 70) {
-    return `Répondre rapidement à « ${email.subject} » (${email.from.name || email.from.address}).`;
+    return {
+      text: `Répondre rapidement à « ${email.subject} » (${sender}).`,
+    };
   }
   if (!email.isRead) {
-    return `Lire « ${email.subject} » (${email.from.name || email.from.address}).`;
+    return {
+      text: `Lire « ${email.subject} » (${sender}).`,
+      emailId: email.id,
+    };
   }
   if (email.isStarred) {
-    return `Planifier un suivi pour « ${email.subject} ».`;
+    return {
+      text: `Planifier un suivi pour « ${email.subject} ».`,
+    };
   }
-  return `Archiver ou classer « ${email.subject} ».`;
+  return {
+    text: `Archiver ou classer « ${email.subject} ».`,
+  };
 }
 
 function buildFallbackSummary(emails: Email[]): DailyMailSummary {
@@ -58,13 +95,21 @@ function buildFallbackSummary(emails: Email[]): DailyMailSummary {
     .slice()
     .sort((a, b) => calculatePriority(b) - calculatePriority(a));
 
+  const unreadCount = sorted.filter((email) => !email.isRead).length;
+  const urgentCount = sorted.filter((email) => calculatePriority(email) >= 70).length;
+
+  const mailboxActivity = [
+    `${sorted.length} échange(s) sur les dernières 24h (${unreadCount} non lu(s)).`,
+    `${urgentCount} mail(s) à signal prioritaire nécessitent une attention rapide.`,
+  ];
+
   const pending = sorted.filter((e) => !e.isRead || e.isStarred).slice(0, 4);
   const pendingActions =
     pending.length > 0
       ? pending.map(fallbackAction)
       : [
-          "Aucune action urgente détectée sur les mails des dernières 24h.",
-          "Vérifier rapidement l’inbox pour confirmer qu’aucune demande n’est bloquante.",
+          { text: "Aucune action urgente détectée sur les mails des dernières 24h." },
+          { text: "Vérifier rapidement l’inbox pour confirmer qu’aucune demande n’est bloquante." },
         ];
 
   const exchangedInfo = sorted.slice(0, 4).map((e) => {
@@ -81,6 +126,7 @@ function buildFallbackSummary(emails: Email[]): DailyMailSummary {
   }));
 
   return {
+    mailboxActivity,
     pendingActions,
     exchangedInfo,
     priorityEmails,
@@ -123,6 +169,43 @@ function normalizePriorityItems(
   return out;
 }
 
+function normalizePendingActions(
+  value: unknown,
+  emailsById: Map<string, Email>,
+  fallback: DailyMailAction[]
+): DailyMailAction[] {
+  const fromStrings: DailyMailAction[] = asTextArray(value).map((text) => ({ text }));
+  const out: DailyMailAction[] = [];
+
+  const sourceItems = Array.isArray(value) ? value : [];
+  for (const item of sourceItems) {
+    if (typeof item === "string") {
+      out.push({ text: item.trim() });
+      continue;
+    }
+    if (!item || typeof item !== "object") continue;
+    const obj = item as Record<string, unknown>;
+    const text = typeof obj.text === "string" ? normalizeActionText(obj.text) : "";
+    if (!text) continue;
+    const rawEmailId = typeof obj.emailId === "string" ? obj.emailId.trim() : "";
+    const validEmailId = rawEmailId && emailsById.has(rawEmailId) ? rawEmailId : undefined;
+    out.push({
+      text,
+      emailId: validEmailId ?? inferEmailIdFromActionText(text, emailsById),
+    });
+  }
+
+  const normalized = (out.length > 0 ? out : fromStrings)
+    .map((item) => ({
+      text: normalizeActionText(item.text),
+      emailId: item.emailId && emailsById.has(item.emailId) ? item.emailId : inferEmailIdFromActionText(item.text, emailsById),
+    }))
+    .filter((item) => item.text.length > 0)
+    .slice(0, 5);
+
+  return normalized.length > 0 ? normalized : fallback;
+}
+
 function buildPrompt(emails: Email[]): ChatMessage[] {
   const compact = emails.slice(0, MAX_SOURCE_EMAILS).map((e) => ({
     id: e.id,
@@ -147,13 +230,15 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
       content: [
         "Résume les emails des 24 dernières heures.",
         "Objectif:",
-        "1) actions en attente",
-        "2) informations échangées",
-        "3) liens vers les emails les plus prioritaires",
+        "1) résumé global activité messagerie (max 2 lignes)",
+        "2) actions en attente",
+        "3) informations échangées",
+        "4) liens vers les emails les plus prioritaires",
         "Format JSON strict:",
-        '{"pendingActions":["..."],"exchangedInfo":["..."],"priorityEmails":[{"emailId":"...","reason":"...","priorityScore":0}]}',
+        '{"mailboxActivity":["..."],"pendingActions":[{"text":"...","emailId":"..."}],"exchangedInfo":["..."],"priorityEmails":[{"emailId":"...","reason":"...","priorityScore":0}]}',
         "Contraintes:",
-        "- pendingActions: 2 à 5 points, actionnables",
+        "- mailboxActivity: max 2 points, synthèse globale de la période",
+        "- pendingActions: 2 à 5 points, actionnables ; quand l’action est de lire un mail précis, renseigne emailId",
         "- exchangedInfo: 2 à 5 points factuels",
         "- priorityEmails: max 3 items, emailId doit exister dans la liste fournie",
         "Emails:",
@@ -166,7 +251,11 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
 export async function summarizeDailyMail(emails: Email[]): Promise<DailyMailSummary> {
   if (emails.length === 0) {
     return {
-      pendingActions: ["Aucun mail reçu sur les dernières 24h."],
+      mailboxActivity: [
+        "Aucun mail reçu sur les dernières 24h.",
+        "La messagerie est calme sur la période.",
+      ],
+      pendingActions: [{ text: "Aucune action en attente détectée." }],
       exchangedInfo: ["Pas de nouvel échange détecté sur cette période."],
       priorityEmails: [],
       generatedAt: new Date().toISOString(),
@@ -179,19 +268,21 @@ export async function summarizeDailyMail(emails: Email[]): Promise<DailyMailSumm
 
   try {
     const response = await chatCompletionDirect(buildPrompt(emails), {
-      maxTokens: 700,
+      maxTokens: 800,
       temperature: 0.2,
     });
     const payload = extractJsonObject(response.content);
     if (!payload) return fallback;
 
     const parsed = JSON.parse(payload) as Record<string, unknown>;
-    const pendingActions = asTextArray(parsed.pendingActions);
+    const mailboxActivity = asTextArray(parsed.mailboxActivity, 2);
+    const pendingActions = normalizePendingActions(parsed.pendingActions, emailsById, fallback.pendingActions);
     const exchangedInfo = asTextArray(parsed.exchangedInfo);
     const priorityEmails = normalizePriorityItems(parsed.priorityEmails, emailsById);
 
     return {
-      pendingActions: pendingActions.length > 0 ? pendingActions : fallback.pendingActions,
+      mailboxActivity: mailboxActivity.length > 0 ? mailboxActivity : fallback.mailboxActivity,
+      pendingActions,
       exchangedInfo: exchangedInfo.length > 0 ? exchangedInfo : fallback.exchangedInfo,
       priorityEmails: priorityEmails.length > 0 ? priorityEmails : fallback.priorityEmails,
       generatedAt: new Date().toISOString(),

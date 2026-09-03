@@ -47,10 +47,17 @@ describe("daily-mail-summary", () => {
     expect(out.map((e) => e.id)).toEqual(["r-1"]);
   });
 
-  it("uses AI JSON output when valid", async () => {
+  it("uses AI JSON output when valid including action links", async () => {
     chatCompletionDirectMock.mockResolvedValue({
       content: JSON.stringify({
-        pendingActions: ["Répondre au client A"],
+        mailboxActivity: [
+          "14 échanges détectés sur les dernières 24h.",
+          "3 messages demandent une action rapide.",
+        ],
+        pendingActions: [
+          { text: "Lire « Budget review » avant 15h.", emailId: "e-1" },
+          { text: "Répondre au client A." },
+        ],
         exchangedInfo: ["Le planning de migration est confirmé"],
         priorityEmails: [{ emailId: "e-1", reason: "Deadline aujourd’hui", priorityScore: 91 }],
       }),
@@ -58,12 +65,30 @@ describe("daily-mail-summary", () => {
 
     const result = await summarizeDailyMail([email()]);
     expect(result.source).toBe("ai");
-    expect(result.pendingActions[0]).toContain("Répondre");
+    expect(result.mailboxActivity).toHaveLength(2);
+    expect(result.pendingActions[0]).toMatchObject({
+      text: "Lire « Budget review » avant 15h.",
+      emailId: "e-1",
+    });
     expect(result.priorityEmails[0]).toMatchObject({
       emailId: "e-1",
       subject: "Budget review",
       priorityScore: 91,
     });
+  });
+
+  it("infers emailId for lire-actions when omitted", async () => {
+    chatCompletionDirectMock.mockResolvedValue({
+      content: JSON.stringify({
+        mailboxActivity: ["2 échanges sur 24h."],
+        pendingActions: [{ text: "Lire « Budget review » maintenant." }],
+        exchangedInfo: ["Un compte-rendu a été envoyé"],
+        priorityEmails: [{ emailId: "e-1", reason: "Suivi client", priorityScore: 80 }],
+      }),
+    });
+
+    const result = await summarizeDailyMail([email()]);
+    expect(result.pendingActions[0].emailId).toBe("e-1");
   });
 
   it("falls back to rules when AI fails", async () => {
@@ -73,6 +98,7 @@ describe("daily-mail-summary", () => {
     ]);
 
     expect(result.source).toBe("rules");
+    expect(result.mailboxActivity.length).toBeGreaterThan(0);
     expect(result.pendingActions.length).toBeGreaterThan(0);
     expect(result.priorityEmails.length).toBeGreaterThan(0);
   });
