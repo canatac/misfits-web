@@ -18,6 +18,7 @@ export interface DailyMailAction {
 
 export interface DailyMailSummary {
   mailboxActivity: string[];
+  contentSummary: string[];
   pendingActions: DailyMailAction[];
   exchangedInfo: string[];
   priorityEmails: DailyMailPriorityLink[];
@@ -63,6 +64,13 @@ function inferEmailIdFromActionText(text: string, emailsById: Map<string, Email>
 
 function normalizeActionText(text: string): string {
   return text.replace(/\s+/g, " ").trim();
+}
+
+function summarizeContentLine(email: Email): string {
+  const sender = email.from.name || email.from.address;
+  const preview = normalizeActionText(email.preview || email.subject);
+  const shortPreview = preview.length > 140 ? `${preview.slice(0, 137)}…` : preview;
+  return `${sender} — ${email.subject}: ${shortPreview}`;
 }
 
 function fallbackAction(email: Email): DailyMailAction {
@@ -117,6 +125,8 @@ function buildFallbackSummary(emails: Email[]): DailyMailSummary {
     return `${sender}: ${e.subject}`;
   });
 
+  const contentSummary = sorted.slice(0, 4).map(summarizeContentLine);
+
   const priorityEmails = sorted.slice(0, MAX_PRIORITY_LINKS).map((e) => ({
     emailId: e.id,
     subject: e.subject,
@@ -127,6 +137,7 @@ function buildFallbackSummary(emails: Email[]): DailyMailSummary {
 
   return {
     mailboxActivity,
+    contentSummary,
     pendingActions,
     exchangedInfo,
     priorityEmails,
@@ -231,13 +242,15 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
         "Résume les emails des 24 dernières heures.",
         "Objectif:",
         "1) résumé global activité messagerie (max 2 lignes)",
-        "2) actions en attente",
-        "3) informations échangées",
-        "4) liens vers les emails les plus prioritaires",
+        "2) résumé des contenus des mails (pas des stats)",
+        "3) actions en attente",
+        "4) informations échangées",
+        "5) liens vers les emails les plus prioritaires",
         "Format JSON strict:",
-        '{"mailboxActivity":["..."],"pendingActions":[{"text":"...","emailId":"..."}],"exchangedInfo":["..."],"priorityEmails":[{"emailId":"...","reason":"...","priorityScore":0}]}',
+        '{"mailboxActivity":["..."],"contentSummary":["..."],"pendingActions":[{"text":"...","emailId":"..."}],"exchangedInfo":["..."],"priorityEmails":[{"emailId":"...","reason":"...","priorityScore":0}]}',
         "Contraintes:",
         "- mailboxActivity: max 2 points, synthèse globale de la période",
+        "- contentSummary: 2 à 5 points, chaque point résume le contenu concret d’un email (faits, demandes, décisions)",
         "- pendingActions: 2 à 5 points, actionnables ; quand l’action est de lire un mail précis, renseigne emailId",
         "- exchangedInfo: 2 à 5 points factuels",
         "- priorityEmails: max 3 items, emailId doit exister dans la liste fournie",
@@ -255,6 +268,7 @@ export async function summarizeDailyMail(emails: Email[]): Promise<DailyMailSumm
         "Aucun mail reçu sur les dernières 24h.",
         "La messagerie est calme sur la période.",
       ],
+      contentSummary: ["Aucun contenu de mail à résumer sur la période."],
       pendingActions: [{ text: "Aucune action en attente détectée." }],
       exchangedInfo: ["Pas de nouvel échange détecté sur cette période."],
       priorityEmails: [],
@@ -276,12 +290,14 @@ export async function summarizeDailyMail(emails: Email[]): Promise<DailyMailSumm
 
     const parsed = JSON.parse(payload) as Record<string, unknown>;
     const mailboxActivity = asTextArray(parsed.mailboxActivity, 2);
+    const contentSummary = asTextArray(parsed.contentSummary, 5);
     const pendingActions = normalizePendingActions(parsed.pendingActions, emailsById, fallback.pendingActions);
     const exchangedInfo = asTextArray(parsed.exchangedInfo);
     const priorityEmails = normalizePriorityItems(parsed.priorityEmails, emailsById);
 
     return {
       mailboxActivity: mailboxActivity.length > 0 ? mailboxActivity : fallback.mailboxActivity,
+      contentSummary: contentSummary.length > 0 ? contentSummary : fallback.contentSummary,
       pendingActions,
       exchangedInfo: exchangedInfo.length > 0 ? exchangedInfo : fallback.exchangedInfo,
       priorityEmails: priorityEmails.length > 0 ? priorityEmails : fallback.priorityEmails,

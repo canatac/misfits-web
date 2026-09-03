@@ -177,6 +177,7 @@ export default function DashboardIndexPage() {
       const summary = await summarizeDailyMail(last24hEmails);
       return {
         mailboxActivity: summary.mailboxActivity,
+        contentSummary: summary.contentSummary,
         pendingActions: summary.pendingActions,
         exchangedInfo: summary.exchangedInfo,
         priorityEmails: summary.priorityEmails,
