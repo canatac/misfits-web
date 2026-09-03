@@ -3,6 +3,16 @@
 import { Sparkles } from "lucide-react";
 import type { DashboardHighlight, DashboardSuggestedNewsItem } from "../types";
 
+function formatPublishedAt(value: string) {
+  const ts = new Date(value).getTime();
+  if (!Number.isFinite(ts)) return value;
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(ts));
+}
+
 export function BriefingCard({
   dateLabel,
   badge,
@@ -69,6 +79,9 @@ export function BriefingCard({
                   >
                     {item.title}
                   </a>
+                  <p className="text-xs text-[#A1A1AA]">
+                    {item.source} • {formatPublishedAt(item.publishedAt)}
+                  </p>
                   <p className="text-[#D4D4D8]">{item.reason}</p>
                 </li>
               ))}

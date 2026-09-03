@@ -44,6 +44,8 @@ export interface DashboardSuggestedNewsItem {
   title: string;
   url: string;
   reason: string;
+  source: string;
+  publishedAt: string;
   category: "defaillance" | "capital" | "bourse" | "emploi" | "scandale";
 }
 
@@ -51,6 +53,12 @@ export interface DashboardSuggestedNews {
   items: DashboardSuggestedNewsItem[];
   generatedAt: string;
   source: "ai" | "none";
+}
+
+export interface DashboardBusinessBrief {
+  text: string;
+  generatedAt: string;
+  source: "ai" | "rules";
 }
 
 export interface DashboardTaskItem {

@@ -17,6 +17,7 @@ import { useChangeRequests } from "@/hooks/use-admin-ops";
 import { calculatePriority } from "@/lib/ai-triage";
 import { selectEmailsFromLast24h, summarizeDailyMail } from "@/lib/daily-mail-summary";
 import { suggestNewsFromDailyBrief } from "@/lib/daily-news-opportunities";
+import { generateDailyNewsletterBusinessBrief } from "@/lib/daily-newsletter-business-brief";
 import { summarizeDailyNewsletters } from "@/lib/daily-newsletter-summary";
 import { onNewsletterUpdated } from "@/lib/newsletter-events";
 import { listNewsletterItems } from "@/lib/newsletters-api";
@@ -29,6 +30,7 @@ import { AlertsCard } from "./_components/AlertsCard";
 import { DetailView, type DetailItem } from "./_components/DetailView";
 import type {
   DashboardAlertItem,
+  DashboardBusinessBrief,
   DashboardDailyMailSummary,
   DashboardHighlight,
   DashboardNewsletterItem,
@@ -209,6 +211,26 @@ export default function DashboardIndexPage() {
     [allNewsletterItems]
   );
 
+  const businessBriefQuery = useQuery<DashboardBusinessBrief>({
+    queryKey: [
+      "dashboard",
+      "newsletter-business-brief",
+      newsletterBrief.windowStartIso,
+      newsletterBrief.nextRefreshIso,
+      newsletterDigestFingerprint,
+      locale,
+    ],
+    queryFn: () =>
+      generateDailyNewsletterBusinessBrief({
+        newsletters: allNewsletterItems,
+        locale: locale === "fr" ? "fr" : "en",
+      }),
+    enabled: allNewsletterItems.length > 0,
+    staleTime: 5 * 60_000,
+    refetchInterval: 5 * 60_000,
+    refetchOnWindowFocus: true,
+  });
+
   const suggestedNewsQuery = useQuery<DashboardSuggestedNews>({
     queryKey: [
       "dashboard",
@@ -216,20 +238,25 @@ export default function DashboardIndexPage() {
       newsletterBrief.windowStartIso,
       newsletterBrief.nextRefreshIso,
       newsletterDigestFingerprint,
+      businessBriefQuery.data?.generatedAt ?? "",
     ],
     queryFn: () =>
       suggestNewsFromDailyBrief({
-        summaryText: newsletterBrief.text,
+        summaryText: businessBriefQuery.data?.text ?? "",
         newsletters: allNewsletterItems,
         locale: locale === "fr" ? "fr" : "en",
       }),
-    enabled: allNewsletterItems.length > 0,
+    enabled: allNewsletterItems.length > 0 && Boolean(businessBriefQuery.data?.text),
     staleTime: 10 * 60_000,
     refetchInterval: 10 * 60_000,
     refetchOnWindowFocus: true,
   });
 
-  const greeting = newsletterBrief.text;
+  const greeting =
+    businessBriefQuery.data?.text ||
+    (locale === "fr"
+      ? "Analyse métier de la veille en cours…"
+      : "Business watch analysis in progress…");
 
   const newsletterItems = useMemo<DashboardNewsletterItem[]>(() => {
     const source = allNewsletterItems;
