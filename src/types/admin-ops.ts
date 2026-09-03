@@ -257,6 +257,42 @@ export interface AdminAiActivityByModel {
   avgTokensPerRun: number;
 }
 
+export interface AdminAiActivityByFeature {
+  feature: string;
+  runs: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  avgTokensPerRun: number;
+}
+
+export interface AdminAiActivityTrendPoint {
+  day: string;
+  runs: number;
+  completedRuns: number;
+  failedRuns: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  successRate: number;
+}
+
+export interface AdminAiActivityTrendByUser {
+  userId: string;
+  days: AdminAiActivityTrendPoint[];
+}
+
+export interface AdminAiActivityPricing {
+  source: string;
+  provider: string;
+  openRouterRatesCount: number;
+  envModelOverridesCount: number;
+  defaultInputPer1MUsd: number;
+  defaultOutputPer1MUsd: number;
+}
+
 export interface AdminAiActivityResponse {
   generatedAt: string;
   limit: number;
@@ -264,6 +300,12 @@ export interface AdminAiActivityResponse {
   runs: AdminAiRunItem[];
   byUser?: AdminAiActivityByUser[];
   byModel?: AdminAiActivityByModel[];
+  byFeature?: AdminAiActivityByFeature[];
+  trends?: {
+    global: AdminAiActivityTrendPoint[];
+    byUser: AdminAiActivityTrendByUser[];
+  };
+  pricing?: AdminAiActivityPricing;
   warnings?: string[];
 }
 

@@ -19,6 +19,10 @@ export function UsersAiActivityCard({
   const metrics = adminAiActivity.data?.metrics;
   const byUser = adminAiActivity.data?.byUser ?? [];
   const byModel = adminAiActivity.data?.byModel ?? [];
+  const byFeature = adminAiActivity.data?.byFeature ?? [];
+  const trendGlobal = adminAiActivity.data?.trends?.global ?? [];
+  const trendByUser = adminAiActivity.data?.trends?.byUser ?? [];
+  const pricing = adminAiActivity.data?.pricing;
   const warnings = adminAiActivity.data?.warnings ?? [];
 
   return (
@@ -48,6 +52,9 @@ export function UsersAiActivityCard({
         </p>
         <p className="text-xs text-[#D4D4D8]">
           Runs pricés/non pricés: {asInt(metrics?.pricedRuns ?? 0)} / {asInt(metrics?.unpricedRuns ?? 0)}
+        </p>
+        <p className="text-xs text-[#D4D4D8]">
+          Pricing: {pricing?.source ?? "unconfigured"} · {pricing?.provider ?? "n/a"}
         </p>
       </div>
 
@@ -83,6 +90,53 @@ export function UsersAiActivityCard({
           ))}
           {!byModel.length && (
             <p className="text-[11px] text-[#71717A]">Pas encore de données modèle.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <p className="mb-1 text-xs text-[#A1A1AA]">Répartition par feature</p>
+        <div className="space-y-1">
+          {byFeature.slice(0, 8).map((f) => (
+            <p key={f.feature} className="text-[11px] text-[#A1A1AA]">
+              {f.feature} · runs={asInt(f.runs)} · tok={asInt(f.totalTokens)} · coût={asUsd(f.totalCostUsd)}
+            </p>
+          ))}
+          {!byFeature.length && (
+            <p className="text-[11px] text-[#71717A]">Pas encore de données feature.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <p className="mb-1 text-xs text-[#A1A1AA]">Évolution globale (jour)</p>
+        <div className="space-y-1">
+          {trendGlobal.slice(-7).map((d) => (
+            <p key={d.day} className="text-[11px] text-[#A1A1AA]">
+              {d.day} · runs={asInt(d.runs)} · tok={asInt(d.totalTokens)} · coût={asUsd(d.totalCostUsd)} · success={percent(d.successRate)}
+            </p>
+          ))}
+          {!trendGlobal.length && (
+            <p className="text-[11px] text-[#71717A]">Pas encore d’historique global.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <p className="mb-1 text-xs text-[#A1A1AA]">Évolution par utilisateur (jour)</p>
+        <div className="space-y-2">
+          {trendByUser.slice(0, 4).map((u) => (
+            <div key={u.userId}>
+              <p className="text-[11px] text-[#D4D4D8]">{u.userId}</p>
+              {u.days.slice(-5).map((d) => (
+                <p key={`${u.userId}-${d.day}`} className="text-[11px] text-[#71717A]">
+                  {d.day} · runs={asInt(d.runs)} · tok={asInt(d.totalTokens)} · coût={asUsd(d.totalCostUsd)}
+                </p>
+              ))}
+            </div>
+          ))}
+          {!trendByUser.length && (
+            <p className="text-[11px] text-[#71717A]">Pas encore d’historique utilisateur.</p>
           )}
         </div>
       </div>
