@@ -11,7 +11,7 @@ type BuildInfo = {
   shortSha5: string | null;
 };
 
-type BackendFallback = {
+type RepoFallback = {
   repoLabel: string;
   shortSha5: string;
   commitUrl: string;
@@ -55,15 +55,11 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
     "reimagined-guide"
   );
 
-  const [backendFallback, setBackendFallback] =
-    useState<BackendFallback | null>(null);
+  const [backendFallback, setBackendFallback] = useState<RepoFallback | null>(null);
+  const [webFallback, setWebFallback] = useState<RepoFallback | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-
-    if (backend.shortSha5 && backend.commitSha) {
-      return;
-    }
 
     fetch("/admin/changelog-feed", {
       method: "GET",
@@ -80,21 +76,32 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
         const repositories = Array.isArray(payload.repositories)
           ? payload.repositories
           : [];
-        const backendRepo = repositories.find(
-          (repo: any) => repo?.key === "backend"
-        );
+        const backendRepo = repositories.find((repo: any) => repo?.key === "backend");
+        const webRepo = repositories.find((repo: any) => repo?.key === "web");
         const latestCommit = backendRepo?.commits?.[0];
+        const latestWebCommit = webRepo?.commits?.[0];
 
         const sha = String(latestCommit?.sha || "").trim();
         const commitUrl = String(latestCommit?.commitUrl || "").trim();
 
-        if (!sha || !commitUrl) return;
+        if (sha && commitUrl) {
+          setBackendFallback({
+            repoLabel: String(backendRepo?.repo || "reimagined-guide"),
+            shortSha5: sha.slice(0, 5),
+            commitUrl,
+          });
+        }
 
-        setBackendFallback({
-          repoLabel: String(backendRepo?.repo || "reimagined-guide"),
-          shortSha5: sha.slice(0, 5),
-          commitUrl,
-        });
+        const webSha = String(latestWebCommit?.sha || "").trim();
+        const webCommitUrl = String(latestWebCommit?.commitUrl || "").trim();
+
+        if (webSha && webCommitUrl) {
+          setWebFallback({
+            repoLabel: String(webRepo?.repo || "misfits-web"),
+            shortSha5: webSha.slice(0, 5),
+            commitUrl: webCommitUrl,
+          });
+        }
       })
       .catch(() => {
         // silent fallback
@@ -103,11 +110,12 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
     return () => {
       cancelled = true;
     };
-  }, [backend.commitSha, backend.shortSha5]);
+  }, []);
 
-  const webCommitUrl = web.commitSha
-    ? `https://github.com/canatac/misfits-web/commit/${web.commitSha}`
-    : null;
+  const webCommitUrl = webFallback?.commitUrl ||
+    (web.commitSha
+      ? `https://github.com/canatac/misfits-web/commit/${web.commitSha}`
+      : null);
 
   const backendCommitUrl = useMemo(() => {
     if (backend.commitSha) {
@@ -117,6 +125,8 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
   }, [backend.commitSha, backendFallback?.commitUrl]);
 
   const backendShortSha5 = backend.shortSha5 || backendFallback?.shortSha5 || null;
+  const webShortSha5 = webFallback?.shortSha5 || web.shortSha5 || null;
+  const webRepoLabel = webFallback?.repoLabel || web.repoLabel;
   const backendRepoLabel =
     backend.shortSha5 || backend.commitSha
       ? backend.repoLabel
@@ -131,8 +141,8 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
     >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span>
-          Web: {web.repoLabel}
-          {web.shortSha5 ? `@${web.shortSha5}` : ` (${web.rawLabel})`}
+          Web: {webRepoLabel}
+          {webShortSha5 ? `@${webShortSha5}` : ` (${web.rawLabel})`}
         </span>
         {webCommitUrl ? (
           <a
