@@ -235,6 +235,11 @@ export default function MailPage() {
           selectedThread={selectedThread}
           viewMode={viewMode}
           desktopChatOpen={desktopChatOpen}
+          onCloseDetail={() => {
+            selectThread(null);
+            selectEmail(null);
+            setMobileView("list");
+          }}
           onCloseChat={() => {
             setDesktopChatOpen(false);
             setChatOpen(false);

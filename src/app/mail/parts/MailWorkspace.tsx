@@ -6,6 +6,7 @@ import { ThreadView } from "@/components/mail/thread-view";
 import { ChatPanel } from "@/components/mail/chat-panel";
 import { cn } from "@/lib/utils";
 import type { Thread } from "@/types/thread";
+import { X } from "lucide-react";
 
 export interface MailWorkspaceProps {
   mobileView: "list" | "view";
@@ -15,6 +16,7 @@ export interface MailWorkspaceProps {
   viewMode: "list" | "timeline";
   desktopChatOpen: boolean;
   onCloseChat: () => void;
+  onCloseDetail: () => void;
 }
 
 export function MailWorkspace({
@@ -25,6 +27,7 @@ export function MailWorkspace({
   viewMode,
   desktopChatOpen,
   onCloseChat,
+  onCloseDetail,
 }: MailWorkspaceProps) {
   return (
     <>
@@ -44,7 +47,7 @@ export function MailWorkspace({
       <div
         data-testid="mail-detail-pane"
         className={cn(
-          "h-full flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
+          "relative h-full flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
           hasDesktopSelection
             ? mobileView === "view"
               ? "block lg:block"
@@ -52,6 +55,16 @@ export function MailWorkspace({
             : "hidden"
         )}
       >
+        {hasDesktopSelection && (
+          <button
+            type="button"
+            aria-label="Fermer le détail du mail"
+            onClick={onCloseDetail}
+            className="absolute top-3 right-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#2A2A2E] bg-[#141417] text-[#A1A1AA] transition hover:bg-[#1C1C20] hover:text-[#E4E4E7]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
         {hasDesktopSelection &&
           (threadingEnabled && selectedThread ? (
             <ThreadView thread={selectedThread} viewMode={viewMode} />
