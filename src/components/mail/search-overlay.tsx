@@ -14,8 +14,6 @@ import { useSearchStore } from "@/stores/search-store";
 import { useEmailStore } from "@/stores/email-store";
 import { OPERATOR_META, type OperatorMeta } from "@/types/search";
 import { getActiveOperator } from "@/lib/search-parser";
-import { searchEmails } from "@/lib/search-engine";
-import { mockEmails } from "@/lib/mock-emails";
 import {
   OperatorHints,
   ResultsList,
@@ -39,19 +37,21 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
   const query = useSearchStore((s) => s.query);
   const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
   const executeSearch = useSearchStore((s) => s.executeSearch);
+  const results = useSearchStore((s) => s.results);
+  const isSearching = useSearchStore((s) => s.isSearching);
   const addHistoryEntry = useSearchStore((s) => s.addHistoryEntry);
   const saveSearch = useSearchStore((s) => s.saveSearch);
   const savedSearches = useSearchStore((s) => s.savedSearches);
   const searchHistory = useSearchStore((s) => s.searchHistory);
   const deleteSavedSearch = useSearchStore((s) => s.deleteSavedSearch);
   const applySavedSearch = useSearchStore((s) => s.applySavedSearch);
+  const emails = useEmailStore((s) => s.emails);
   const selectEmail = useEmailStore((s) => s.selectEmail);
 
-  const { results, isSearching } = (() => {
-    if (!query.trim()) return { results: [], isSearching: false };
-    const { results } = searchEmails(query, mockEmails, "relevance");
-    return { results, isSearching: false };
-  })();
+  useEffect(() => {
+    if (!query.trim()) return;
+    executeSearch(emails);
+  }, [query, emails, executeSearch]);
 
   useEffect(() => {
     if (open) {
@@ -76,9 +76,9 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       const cursorPos = e.target.selectionStart ?? value.length;
       const activeOp = getActiveOperator(value, cursorPos);
       setShowOperatorHints(!!activeOp && activeOp.partial.length < 5);
-      executeSearch();
+      executeSearch(emails);
     },
-    [setSearchQuery, executeSearch]
+    [setSearchQuery, executeSearch, emails]
   );
 
   const handleSelectResult = useCallback(
@@ -135,7 +135,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       }
       setSearchQuery(newQuery);
       setShowOperatorHints(false);
-      executeSearch();
+      executeSearch(emails);
       requestAnimationFrame(() => {
         const pos =
           (match ? cursorPos - match[0].length : cursorPos) +
@@ -145,7 +145,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         inputRef.current?.setSelectionRange(pos, pos);
       });
     },
-    [query, setSearchQuery, executeSearch]
+    [query, setSearchQuery, executeSearch, emails]
   );
 
   const activeOperator = (() => {
@@ -193,7 +193,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
               className="h-7 w-7 shrink-0"
               onClick={() => {
                 setSearchQuery("");
-                executeSearch();
+                executeSearch(emails);
               }}
               aria-label="Clear search"
             >
@@ -224,7 +224,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
               history={searchHistory}
               onPick={(q) => {
                 setSearchQuery(q);
-                executeSearch();
+                executeSearch(emails);
               }}
             />
           )}
