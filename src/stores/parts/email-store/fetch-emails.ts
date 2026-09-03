@@ -25,6 +25,40 @@ interface FetchDeps {
   set: (partial: Partial<StoreSlice>) => void;
 }
 
+function createDefaultInboxTestEmail(): Email {
+  const now = new Date().toISOString();
+  const id = "inbox-seed-default-test-email";
+  return {
+    id,
+    threadId: `thread-${id}`,
+    folder: "inbox",
+    from: { name: "Misfits QA", address: "qa@misfits.ai" },
+    to: [{ name: "admin", address: "admin@misfits.ai" }],
+    subject: "Test Inbox — comportement panneau détail",
+    preview:
+      "Email de test injecté automatiquement pour valider le split liste/détail.",
+    body: "<p>Email de test.</p><p>Sélectionnez-moi pour ouvrir le panneau de droite.</p>",
+    bodyType: "html",
+    date: now,
+    receivedAt: now,
+    isRead: false,
+    isStarred: false,
+    isImportant: false,
+    hasAttachments: false,
+    attachments: [],
+    labels: ["label-work"],
+    size: 128,
+    messageId: `<${id}@misfits.ai>`,
+    headers: {},
+    accountId: "acc-1",
+  };
+}
+
+function ensureDefaultInboxEmail(folder: Folder, emails: Email[]): Email[] {
+  if (folder !== "inbox" || emails.length > 0) return emails;
+  return [createDefaultInboxTestEmail()];
+}
+
 export async function performFetchEmails(
   deps: FetchDeps,
   folder: Folder | undefined,
@@ -54,7 +88,7 @@ export async function performFetchEmails(
       pageSize: 50,
     });
     if (get()._fetchGen !== myGen) return;
-    const emails = data.emails;
+    const emails = ensureDefaultInboxEmail(targetFolder, data.emails);
     const selectedEmailId = get().selectedEmailId;
     const selectedEmailIds = get().selectedEmailIds;
     const allowedIds = new Set(emails.map((e) => e.id));
@@ -78,7 +112,7 @@ export async function performFetchEmails(
         f.id === targetFolder
           ? {
               ...f,
-              totalCount: data.total ?? emails.length,
+              totalCount: Math.max(data.total ?? 0, emails.length),
               unreadCount: emails.filter((e) => !e.isRead).length,
             }
           : f
