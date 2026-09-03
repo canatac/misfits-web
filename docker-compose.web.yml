@@ -14,6 +14,7 @@ services:
       # Backend email_api HTTP (rewrites are baked at image build time)
       - BACKEND_URL=http://email-api:8000
       # Runtime build labels displayed in footer
+      - MISFITS_WEB_IMAGE_TAG=${MISFITS_WEB_IMAGE_TAG:-unknown}
       - MISFITS_WEB_BUILD_VERSION=${MISFITS_WEB_BUILD_VERSION:-unknown}
       - REIMAGINED_GUIDE_BUILD_VERSION=${REIMAGINED_GUIDE_BUILD_VERSION:-unknown}
       - NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=${NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION:-unknown}
