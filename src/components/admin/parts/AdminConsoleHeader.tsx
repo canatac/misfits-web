@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import type { KeyboardEvent } from "react";
 import {
   type AdminTab,
   WINDOW_OPTIONS,
@@ -28,6 +29,17 @@ const TABS: ReadonlyArray<readonly [AdminTab, string]> = [
   ["users", "Utilisateurs"],
 ] as const;
 
+const TAB_KEYS = TABS.map(([key]) => key);
+
+const SEVERITY_LABELS: Record<SecuritySeverity | "all", string> = {
+  all: "Toutes",
+  info: "Info",
+  low: "Faible",
+  medium: "Moyenne",
+  high: "Élevée",
+  critical: "Critique",
+};
+
 export function AdminConsoleHeader({
   windowRange,
   setWindowRange,
@@ -36,6 +48,34 @@ export function AdminConsoleHeader({
   activeTab,
   setActiveTab,
 }: AdminConsoleHeaderProps) {
+  const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, key: AdminTab) => {
+    const index = TAB_KEYS.indexOf(key);
+    if (index < 0) return;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveTab(TAB_KEYS[(index + 1) % TAB_KEYS.length]);
+      return;
+    }
+
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveTab(TAB_KEYS[(index - 1 + TAB_KEYS.length) % TAB_KEYS.length]);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      setActiveTab(TAB_KEYS[0]);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      setActiveTab(TAB_KEYS[TAB_KEYS.length - 1]);
+    }
+  };
+
   return (
     <header className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-4 shadow-2xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -79,7 +119,7 @@ export function AdminConsoleHeader({
           >
             {SEVERITY_OPTIONS.map((opt) => (
               <option key={opt} value={opt}>
-                severity: {opt}
+                Sévérité: {SEVERITY_LABELS[opt]}
               </option>
             ))}
           </select>
@@ -96,10 +136,12 @@ export function AdminConsoleHeader({
             key={key}
             type="button"
             onClick={() => setActiveTab(key)}
+            onKeyDown={(event) => onTabKeyDown(event, key)}
             role="tab"
             id={`admin-tab-${key}`}
             aria-selected={activeTab === key}
             aria-controls={`admin-panel-${key}`}
+            tabIndex={activeTab === key ? 0 : -1}
             className={cn(
               "rounded-lg border px-3 py-1.5 text-xs font-medium",
               activeTab === key
