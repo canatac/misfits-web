@@ -13,6 +13,23 @@ function formatPublishedAt(value: string) {
   }).format(new Date(ts));
 }
 
+function formatCategoryLabel(value: DashboardSuggestedNewsItem["category"]) {
+  switch (value) {
+    case "defaillance":
+      return "Défaillance";
+    case "capital":
+      return "Capital";
+    case "bourse":
+      return "Bourse";
+    case "emploi":
+      return "Emploi";
+    case "scandale":
+      return "Scandale";
+    default:
+      return value;
+  }
+}
+
 export function BriefingCard({
   dateLabel,
   badge,
@@ -31,63 +48,73 @@ export function BriefingCard({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="relative overflow-hidden rounded-2xl border border-[#242427] bg-gradient-to-r from-[#121214] via-[#161619] to-[#121214] p-6 shadow-2xl">
+    <header className="relative overflow-hidden rounded-2xl border border-[#242427] bg-gradient-to-r from-[#121214] via-[#161619] to-[#121214] p-5 shadow-2xl md:p-6">
       <div className="pointer-events-none absolute top-0 right-0 h-72 w-72 rounded-full bg-[#C49B66]/10 blur-3xl" />
-      <div className="relative z-10 space-y-3">
-        {dateLabel && (
-          <p className="font-mono text-[11px] font-semibold tracking-widest text-[#C49B66]">
-            {dateLabel}
-          </p>
-        )}
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#3A3126] bg-[#1A1611] px-3 py-1 text-[11px] font-semibold text-[#E9C995]">
-          <Sparkles className="h-3.5 w-3.5" />
-          {badge}
-        </div>
-        <h1 className="text-2xl font-bold text-white">{greeting}</h1>
-        <ul className="space-y-1 pt-1">
-          {highlights.map((item) => (
-            <li key={item.category} className="flex items-start gap-2 text-sm">
-              <span
-                className="mt-[5px] h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span>
-                <span className="font-semibold" style={{ color: item.color }}>
-                  {item.category} :
-                </span>{" "}
-                <span className="text-[#D4D4D8]">{item.text}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+      <div className="relative z-10 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:gap-5">
+        <div className="space-y-3">
+          {dateLabel && (
+            <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[#C49B66]">
+              {dateLabel}
+            </p>
+          )}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#3A3126] bg-[#1A1611] px-2.5 py-1 text-[10px] font-semibold text-[#E9C995]">
+            <Sparkles className="h-3 w-3" />
+            {badge}
+          </div>
+          <h1 className="max-w-4xl text-lg leading-6 font-semibold text-white md:text-xl md:leading-7">
+            {greeting}
+          </h1>
 
-        <section className="rounded-xl border border-[#2A2A2E] bg-[#101014]/70 p-3">
+          <ul className="grid gap-2 pt-1 sm:grid-cols-2">
+            {highlights.map((item) => (
+              <li
+                key={item.category}
+                className="rounded-lg border border-[#2A2A2E] bg-[#111115]/75 px-3 py-2"
+              >
+                <p className="text-[11px] font-semibold" style={{ color: item.color }}>
+                  {item.category}
+                </p>
+                <p className="mt-0.5 text-[12px] leading-5 text-[#D4D4D8]">{item.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <section className="rounded-xl border border-[#2A2A2E] bg-[#101014]/70 p-3.5">
           <p className="text-[11px] font-semibold tracking-wide text-[#C49B66] uppercase">
             Recommandations d&apos;actualités
           </p>
           {suggestedNewsLoading ? (
-            <p className="mt-2 text-sm text-[#A1A1AA]">Analyse en cours…</p>
+            <p className="mt-2 text-[13px] text-[#A1A1AA]">Analyse en cours…</p>
           ) : suggestedNews && suggestedNews.length > 0 ? (
-            <ul className="mt-2 space-y-2 text-sm">
+            <ul className="mt-2 space-y-2.5">
               {suggestedNews.map((item) => (
-                <li key={`${item.url}-${item.category}`} className="space-y-0.5">
+                <li
+                  key={`${item.url}-${item.category}`}
+                  className="rounded-lg border border-[#28282C] bg-[#121216] px-3 py-2"
+                >
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-semibold tracking-wide text-[#9CA3AF] uppercase">
+                      {formatCategoryLabel(item.category)}
+                    </p>
+                    <p className="text-[10px] text-[#9CA3AF]">
+                      {item.source} • {formatPublishedAt(item.publishedAt)}
+                    </p>
+                  </div>
                   <a
                     href={item.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold text-[#E4CFA4] underline-offset-4 hover:underline"
+                    className="text-[13px] font-semibold leading-5 text-[#E4CFA4] underline-offset-4 hover:underline"
                   >
                     {item.title}
                   </a>
-                  <p className="text-xs text-[#A1A1AA]">
-                    {item.source} • {formatPublishedAt(item.publishedAt)}
-                  </p>
-                  <p className="text-[#D4D4D8]">{item.reason}</p>
+                  <p className="mt-1 text-[12px] leading-5 text-[#D4D4D8]">{item.reason}</p>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-[#A1A1AA]">
+            <p className="mt-2 text-[13px] text-[#A1A1AA]">
               Pas d&apos;actualité externe prioritaire identifiée pour le moment.
             </p>
           )}
