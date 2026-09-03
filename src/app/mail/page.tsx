@@ -37,11 +37,14 @@ export default function MailPage() {
   const [activeVibe, setActiveVibe] = useState("Formal");
 
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
+  const hasSelectedEmailInList = useEmailStore((s) =>
+    Boolean(s.selectedEmailId && s.emails.some((e) => e.id === s.selectedEmailId))
+  );
   const selectEmail = useEmailStore((s) => s.selectEmail);
   const setAccountId = useEmailStore((s) => s.setAccountId);
   const selectedThreadId = useThreadStore((s) => s.selectedThreadId);
   const selectThread = useThreadStore((s) => s.selectThread);
-  const hasDesktopSelection = Boolean(selectedEmailId);
+  const hasDesktopSelection = hasSelectedEmailInList;
 
   const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
   const activeAccountId = useAccountStore((s) => s.activeAccountId);
@@ -112,6 +115,12 @@ export default function MailPage() {
       selectThread(null);
     }
   }, [selectedEmailId, selectedThreadId, selectThread]);
+
+  useEffect(() => {
+    if (selectedEmailId && !hasSelectedEmailInList) {
+      selectEmail(null);
+    }
+  }, [selectedEmailId, hasSelectedEmailInList, selectEmail]);
 
   const openComposer = useComposerStore((s) => s.openComposer);
   const composerOpen = useComposerStore((s) => s.composerOpen);
