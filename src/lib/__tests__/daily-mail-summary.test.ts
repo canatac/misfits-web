@@ -54,6 +54,10 @@ describe("daily-mail-summary", () => {
           "14 échanges détectés sur les dernières 24h.",
           "3 messages demandent une action rapide.",
         ],
+        contentSummary: [
+          "Alice demande une validation budget avant 15h.",
+          "Le mail précise les points à confirmer côté planning.",
+        ],
         pendingActions: [
           { text: "Lire « Budget review » avant 15h.", emailId: "e-1" },
           { text: "Répondre au client A." },
@@ -66,6 +70,7 @@ describe("daily-mail-summary", () => {
     const result = await summarizeDailyMail([email()]);
     expect(result.source).toBe("ai");
     expect(result.mailboxActivity).toHaveLength(2);
+    expect(result.contentSummary[0]).toContain("validation budget");
     expect(result.pendingActions[0]).toMatchObject({
       text: "Lire « Budget review » avant 15h.",
       emailId: "e-1",
@@ -81,6 +86,7 @@ describe("daily-mail-summary", () => {
     chatCompletionDirectMock.mockResolvedValue({
       content: JSON.stringify({
         mailboxActivity: ["2 échanges sur 24h."],
+        contentSummary: ["Alice partage un point d’avancement budgétaire."],
         pendingActions: [{ text: "Lire « Budget review » maintenant." }],
         exchangedInfo: ["Un compte-rendu a été envoyé"],
         priorityEmails: [{ emailId: "e-1", reason: "Suivi client", priorityScore: 80 }],
@@ -99,6 +105,7 @@ describe("daily-mail-summary", () => {
 
     expect(result.source).toBe("rules");
     expect(result.mailboxActivity.length).toBeGreaterThan(0);
+    expect(result.contentSummary.length).toBeGreaterThan(0);
     expect(result.pendingActions.length).toBeGreaterThan(0);
     expect(result.priorityEmails.length).toBeGreaterThan(0);
   });

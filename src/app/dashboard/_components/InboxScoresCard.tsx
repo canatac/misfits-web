@@ -14,6 +14,7 @@ function fallbackSummary(actionableEmails: ScoredEmail[]): DashboardDailyMailSum
         "Aucun mail récent sur les dernières 24h.",
         "Pas d’activité notable détectée.",
       ],
+      contentSummary: ["Aucun contenu de mail à résumer."],
       pendingActions: [{ text: "Aucune action en attente." }],
       exchangedInfo: ["Pas de nouvel échange à résumer."],
       priorityEmails: [],
@@ -30,6 +31,9 @@ function fallbackSummary(actionableEmails: ScoredEmail[]): DashboardDailyMailSum
       `${actionableEmails.length} échange(s) sur 24h, dont ${unreadCount} non lu(s).`,
       `${urgentCount} mail(s) restent prioritaires à traiter.`,
     ],
+    contentSummary: actionableEmails
+      .slice(0, 3)
+      .map((email) => `${email.from.name || email.from.address} — ${email.subject}: ${email.preview}`),
     pendingActions: [
       { text: `Traiter ${unreadCount} mail(s) non lu(s).` },
       { text: "Vérifier les messages avec score prioritaire élevé." },
@@ -103,6 +107,20 @@ export function InboxScoresCard({
                 {mailboxActivity.map((line) => (
                   <li key={line} className="flex gap-2">
                     <span className="text-[#A1A1AA]">•</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#F5F5F5]">
+                Résumé contenus mails (24h)
+              </p>
+              <ul className="space-y-1 text-[#D4D4D8]">
+                {resolvedSummary.contentSummary.map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <span className="text-[#F5F5F5]">•</span>
                     <span>{line}</span>
                   </li>
                 ))}

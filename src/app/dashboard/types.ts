@@ -32,6 +32,7 @@ export interface DashboardDailyMailActionItem {
 
 export interface DashboardDailyMailSummary {
   mailboxActivity: string[];
+  contentSummary: string[];
   pendingActions: DashboardDailyMailActionItem[];
   exchangedInfo: string[];
   priorityEmails: DashboardDailyMailPriorityItem[];
