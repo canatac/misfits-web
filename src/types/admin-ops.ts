@@ -201,12 +201,15 @@ export interface AdminAiRunItem {
   id: string;
   status: string;
   model: string;
+  feature?: string;
   startedAt?: string;
   completedAt?: string;
   latencyMs?: number;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
+  estimatedCostUsd?: number;
+  pricingApplied?: string;
   sessionId?: string;
   userId?: string;
   error?: string;
@@ -223,6 +226,35 @@ export interface AdminAiActivityMetrics {
   completionTokens: number;
   totalTokens: number;
   avgTokensPerRun: number;
+  currency?: string;
+  totalCostUsd?: number;
+  avgCostPerRunUsd?: number;
+  pricedRuns?: number;
+  unpricedRuns?: number;
+}
+
+export interface AdminAiActivityByUser {
+  userId: string;
+  runs: number;
+  completedRuns: number;
+  failedRuns: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  avgTokensPerRun: number;
+  avgCostPerRunUsd: number;
+  successRate: number;
+}
+
+export interface AdminAiActivityByModel {
+  model: string;
+  runs: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  totalCostUsd: number;
+  avgTokensPerRun: number;
 }
 
 export interface AdminAiActivityResponse {
@@ -230,6 +262,9 @@ export interface AdminAiActivityResponse {
   limit: number;
   metrics: AdminAiActivityMetrics;
   runs: AdminAiRunItem[];
+  byUser?: AdminAiActivityByUser[];
+  byModel?: AdminAiActivityByModel[];
+  warnings?: string[];
 }
 
 // ─── Deliverability + Whoami (extracted) ──────────────────────────────────────
