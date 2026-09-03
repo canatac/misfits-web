@@ -15,6 +15,11 @@ type SummaryViewModel = {
   sources: NewsletterLink[];
 };
 
+const summaryDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
 function sanitizeUrl(url: string): string {
   const trimmed = url.trim();
   if (!trimmed) return "";
@@ -128,10 +133,17 @@ function parseSummary(summary: string, links: NewsletterLink[]): SummaryViewMode
   };
 }
 
+function formatSummaryDate(value?: string): string {
+  if (!value) return "Date inconnue";
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return "Date inconnue";
+  return summaryDateFormatter.format(parsedDate);
+}
+
 function renderBlock(block: SummaryBlock, key: string): ReactNode {
   if (block.type === "heading") {
     return (
-      <h3 key={key} className="mt-4 text-sm font-semibold text-[#F4F4F5] first:mt-0">
+      <h3 key={key} className="mt-4 text-sm font-semibold tracking-wide text-[#F4F4F5] first:mt-0">
         {block.text}
       </h3>
     );
@@ -139,7 +151,7 @@ function renderBlock(block: SummaryBlock, key: string): ReactNode {
 
   if (block.type === "paragraph") {
     return (
-      <p key={key} className="text-sm leading-relaxed text-[#D4D4D8]">
+      <p key={key} className="text-sm leading-7 text-[#D4D4D8]">
         {block.text}
       </p>
     );
@@ -149,10 +161,10 @@ function renderBlock(block: SummaryBlock, key: string): ReactNode {
   return (
     <ListTag
       key={key}
-      className={`space-y-1 pl-5 text-sm text-[#D4D4D8] ${block.ordered ? "list-decimal" : "list-disc"}`}
+      className={`space-y-1.5 pl-5 text-sm leading-7 text-[#D4D4D8] ${block.ordered ? "list-decimal" : "list-disc"}`}
     >
       {block.items.map((item, idx) => (
-        <li key={`${key}_${idx}`} className="leading-relaxed">
+        <li key={`${key}_${idx}`} className="leading-7 marker:text-[#BFA27A]">
           {item}
         </li>
       ))}
@@ -177,50 +189,57 @@ export function SummaryList({
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-5 lg:gap-6">
       {items.map((item) => {
         const source = sources.find((s) => s.id === item.sourceId);
         const parsed = parseSummary(item.summary, item.links ?? []);
+        const signalSafe = Math.min(100, Math.max(0, Math.round(item.signal)));
+        const summaryDate = formatSummaryDate(item.updatedAt || item.createdAt);
 
         return (
           <article
             key={item.id}
-            className="rounded-2xl border border-[#242427] bg-[linear-gradient(180deg,#121217_0%,#0F0F12_100%)] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+            className="group overflow-hidden rounded-2xl border border-[#2A2A2F] bg-[linear-gradient(165deg,#141419_0%,#0F0F13_60%,#0D0D11_100%)] p-5 shadow-[0_14px_38px_rgba(0,0,0,0.28)] transition-colors hover:border-[#3A3A42] lg:p-6"
           >
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="bg-[#1D1D21] text-[#D4D4D8]">
+            <div className="mb-4 flex flex-wrap items-center gap-2.5">
+              <Badge
+                variant="secondary"
+                className="border border-[#2C2C32] bg-[#1A1A1F] px-2.5 py-1 text-[11px] font-medium tracking-wide text-[#D4D4D8]"
+              >
                 {item.topic}
               </Badge>
-              <Badge className="bg-[#1E1A15] text-[#F2D5A7]">Signal {item.signal}%</Badge>
-              <span className="ml-auto inline-flex items-center gap-1 text-xs text-[#71717A]">
+              <Badge className="border border-[#3A3126] bg-[#1B1712] px-2.5 py-1 text-[11px] font-semibold text-[#F2D5A7]">
+                Signal {signalSafe}%
+              </Badge>
+              <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-[#25252A] bg-[#151519] px-2.5 py-1 text-[11px] text-[#9F9FA8]">
                 <CalendarDays className="h-3.5 w-3.5" />
-                {new Date(item.updatedAt || item.createdAt).toLocaleString()}
+                {summaryDate}
               </span>
             </div>
 
-            <h2 className="text-base font-semibold text-white">{item.title}</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-white">{item.title}</h2>
 
-            <p className="mt-1 text-xs text-[#A1A1AA]">
-              Source: <span className="text-[#D4D4D8]">{source?.name ?? "N/A"}</span>
+            <p className="mt-1.5 text-xs text-[#9C9CA6]">
+              Source principale: <span className="font-medium text-[#DADAE0]">{source?.name ?? "N/A"}</span>
             </p>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-5 space-y-3.5 rounded-xl border border-[#232329] bg-[#121217]/70 p-4 lg:p-5">
               {parsed.blocks.map((block, idx) => renderBlock(block, `${item.id}_${idx}`))}
             </div>
 
             {parsed.sources.length > 0 && (
-              <div className="mt-5 border-t border-[#232327] pt-3">
-                <p className="mb-2 text-xs font-medium tracking-wide text-[#A1A1AA] uppercase">
+              <div className="mt-5 border-t border-[#232327] pt-4">
+                <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-[#A1A1AA] uppercase">
                   Sources
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {parsed.sources.map((link) => (
                     <a
                       key={`${item.id}-${link.url}`}
                       href={link.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex max-w-full items-center gap-1 rounded-full border border-[#2A2A30] bg-[#141419] px-2.5 py-1 text-xs text-[#E9C995] hover:border-[#3A3126] hover:text-[#F2D5A7]"
+                      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-[#2F2F37] bg-[#17171D] px-3 py-1.5 text-xs text-[#F0CF9C] transition-colors hover:border-[#4A3E30] hover:bg-[#1C1A16] hover:text-[#F7DCB5]"
                     >
                       <span className="truncate">{link.name}</span>
                       <ExternalLink className="h-3 w-3 shrink-0" />
