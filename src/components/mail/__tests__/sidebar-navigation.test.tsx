@@ -92,4 +92,19 @@ describe("MailSidebar folder navigation", () => {
     });
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("shows Files workspace entry in sidebar", () => {
+    pathname = "/mail";
+
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={qc}>
+        <MailSidebar />
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByTestId("files-link")).toBeTruthy();
+  });
 });

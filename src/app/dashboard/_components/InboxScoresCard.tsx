@@ -25,6 +25,7 @@ function fallbackSummary(actionableEmails: ScoredEmail[]): DashboardDailyMailSum
 
   const unreadCount = actionableEmails.filter((email) => !email.isRead).length;
   const urgentCount = actionableEmails.filter((email) => email.score >= 70).length;
+  const attachments = actionableEmails.flatMap((email) => email.attachments ?? []);
 
   return {
     mailboxActivity: [
@@ -36,10 +37,15 @@ function fallbackSummary(actionableEmails: ScoredEmail[]): DashboardDailyMailSum
         .slice(0, 3)
         .map((email) => email.subject)
         .join(" ; ")}.`,
-      `Les demandes récurrentes concernent ${actionableEmails
-        .slice(0, 2)
-        .map((email) => email.preview)
-        .join(" Puis ")}.`,
+      attachments.length > 0
+        ? `Documents analysés: ${attachments.length} pièce(s) jointe(s), dont ${attachments
+            .slice(0, 3)
+            .map((att) => att.filename)
+            .join(", ")}.`
+        : `Les demandes récurrentes concernent ${actionableEmails
+            .slice(0, 2)
+            .map((email) => email.preview)
+            .join(" Puis ")}.`,
     ],
     pendingActions: [
       { text: `Traiter ${unreadCount} mail(s) non lu(s).` },

@@ -17,6 +17,7 @@ import {
   isAllowed,
   fileIcon,
   formatSize,
+  inferContentType,
   simulateUpload,
 } from "./attachment-zone-helpers";
 
@@ -50,11 +51,12 @@ export function AttachmentZone({
           );
           continue;
         }
-        const isImage = file.type.startsWith("image/");
+        const contentType = inferContentType(file);
+        const isImage = contentType.startsWith("image/");
         const attachment: Attachment = {
           id: uid("att"),
           filename: file.name,
-          contentType: file.type || "application/octet-stream",
+          contentType,
           size: file.size,
           previewUrl: isImage ? URL.createObjectURL(file) : undefined,
           progress: 0,

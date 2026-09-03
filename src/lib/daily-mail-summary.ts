@@ -66,6 +66,19 @@ function normalizeActionText(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function buildDocumentsInsight(sorted: Email[]): string | null {
+  const attachments = sorted.flatMap((email) => email.attachments ?? []);
+  if (attachments.length === 0) return null;
+
+  const topDocs = attachments
+    .slice(0, 3)
+    .map((att) => normalizeActionText(att.filename))
+    .filter(Boolean);
+  const docsList = topDocs.length > 0 ? topDocs.join(", ") : "documents joints";
+
+  return `Documents analysés: ${attachments.length} pièce(s) jointe(s), dont ${docsList}.`;
+}
+
 function buildGlobalContentSummary(sorted: Email[]): string[] {
   const top = sorted.slice(0, 6);
   if (top.length === 0) return ["Aucun contenu de mail à résumer sur la période."];
@@ -85,8 +98,14 @@ function buildGlobalContentSummary(sorted: Email[]): string[] {
       ? `Globalement, les échanges portent sur ${subjects.join(" ; ")}.`
       : "Globalement, les échanges couvrent plusieurs suivis opérationnels en cours.";
 
-  const asksLine =
-    keyAsks.length > 0
+  const docsInsight = buildDocumentsInsight(top);
+  const asksLine = docsInsight
+    ? `${docsInsight} Demandes clés: ${
+        keyAsks.length > 0
+          ? keyAsks.join(" Puis ")
+          : "validations, retours et suivi opérationnel"
+      }.`
+    : keyAsks.length > 0
       ? `En synthèse, les demandes clés concernent ${keyAsks.join(" Puis ")}.`
       : "En synthèse, les messages demandent surtout des validations et des réponses de suivi.";
 
@@ -248,6 +267,11 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
     isImportant: e.isImportant,
     date: e.date,
     priorityScore: calculatePriority(e),
+    attachments: (e.attachments ?? []).map((att) => ({
+      filename: att.filename,
+      contentType: att.contentType,
+      size: att.size,
+    })),
   }));
 
   return [
@@ -262,7 +286,7 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
         "Résume les emails des 24 dernières heures.",
         "Objectif:",
         "1) résumé global activité messagerie (max 2 lignes)",
-        "2) résumé des contenus des mails (pas des stats)",
+        "2) résumé des contenus des mails (pas des stats), avec prise en compte explicite des documents/pièces jointes",
         "3) actions en attente",
         "4) informations échangées",
         "5) liens vers les emails les plus prioritaires",
@@ -271,6 +295,7 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
         "Contraintes:",
         "- mailboxActivity: max 2 points, synthèse globale de la période",
         "- contentSummary: 1 à 2 points maximum, synthèse globale de tous les mails (pas un point par mail)",
+        "- si des pièces jointes existent, mentionne ce qu'elles apportent (types/docs clés, éléments à traiter)",
         "- pendingActions: 2 à 5 points, actionnables ; quand l’action est de lire un mail précis, renseigne emailId",
         "- exchangedInfo: 2 à 5 points factuels",
         "- priorityEmails: max 3 items, emailId doit exister dans la liste fournie",

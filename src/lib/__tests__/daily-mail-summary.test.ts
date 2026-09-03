@@ -111,4 +111,26 @@ describe("daily-mail-summary", () => {
     expect(result.pendingActions.length).toBeGreaterThan(0);
     expect(result.priorityEmails.length).toBeGreaterThan(0);
   });
+
+  it("mentions attached documents in global content summary", async () => {
+    chatCompletionDirectMock.mockRejectedValue(new Error("boom"));
+    const result = await summarizeDailyMail([
+      email({
+        id: "e-doc",
+        hasAttachments: true,
+        attachments: [
+          {
+            id: "a-1",
+            filename: "Contrat_Client.pdf",
+            contentType: "application/pdf",
+            size: 42000,
+            type: "pdf",
+          },
+        ],
+      }),
+    ]);
+
+    expect(result.contentSummary[1]).toContain("Documents analysés");
+    expect(result.contentSummary[1]).toContain("Contrat_Client.pdf");
+  });
 });
