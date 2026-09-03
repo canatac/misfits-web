@@ -195,6 +195,10 @@ export default function DashboardIndexPage() {
       signal: item.signal,
       tags: [item.topic ? `#${String(item.topic).toLowerCase()}` : "#newsletter"],
       summary: item.summary,
+      topic: item.topic,
+      updatedAt: item.updatedAt,
+      createdAt: item.createdAt,
+      links: item.links,
       takeaways: item.links.map((link) => link.name).slice(0, 2),
     }));
   }, [newsletterItemsQuery.data]);
