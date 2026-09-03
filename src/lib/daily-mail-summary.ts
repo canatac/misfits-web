@@ -66,11 +66,31 @@ function normalizeActionText(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-function summarizeContentLine(email: Email): string {
-  const sender = email.from.name || email.from.address;
-  const preview = normalizeActionText(email.preview || email.subject);
-  const shortPreview = preview.length > 140 ? `${preview.slice(0, 137)}…` : preview;
-  return `${sender} — ${email.subject}: ${shortPreview}`;
+function buildGlobalContentSummary(sorted: Email[]): string[] {
+  const top = sorted.slice(0, 6);
+  if (top.length === 0) return ["Aucun contenu de mail à résumer sur la période."];
+
+  const subjects = top
+    .map((email) => normalizeActionText(email.subject))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const keyAsks = top
+    .map((email) => normalizeActionText(email.preview || ""))
+    .filter((preview) => preview.length > 0)
+    .slice(0, 2);
+
+  const subjectLine =
+    subjects.length > 0
+      ? `Globalement, les échanges portent sur ${subjects.join(" ; ")}.`
+      : "Globalement, les échanges couvrent plusieurs suivis opérationnels en cours.";
+
+  const asksLine =
+    keyAsks.length > 0
+      ? `En synthèse, les demandes clés concernent ${keyAsks.join(" Puis ")}.`
+      : "En synthèse, les messages demandent surtout des validations et des réponses de suivi.";
+
+  return [subjectLine, asksLine];
 }
 
 function fallbackAction(email: Email): DailyMailAction {
@@ -125,7 +145,7 @@ function buildFallbackSummary(emails: Email[]): DailyMailSummary {
     return `${sender}: ${e.subject}`;
   });
 
-  const contentSummary = sorted.slice(0, 4).map(summarizeContentLine);
+  const contentSummary = buildGlobalContentSummary(sorted);
 
   const priorityEmails = sorted.slice(0, MAX_PRIORITY_LINKS).map((e) => ({
     emailId: e.id,
@@ -250,7 +270,7 @@ function buildPrompt(emails: Email[]): ChatMessage[] {
         '{"mailboxActivity":["..."],"contentSummary":["..."],"pendingActions":[{"text":"...","emailId":"..."}],"exchangedInfo":["..."],"priorityEmails":[{"emailId":"...","reason":"...","priorityScore":0}]}',
         "Contraintes:",
         "- mailboxActivity: max 2 points, synthèse globale de la période",
-        "- contentSummary: 2 à 5 points, chaque point résume le contenu concret d’un email (faits, demandes, décisions)",
+        "- contentSummary: 1 à 2 points maximum, synthèse globale de tous les mails (pas un point par mail)",
         "- pendingActions: 2 à 5 points, actionnables ; quand l’action est de lire un mail précis, renseigne emailId",
         "- exchangedInfo: 2 à 5 points factuels",
         "- priorityEmails: max 3 items, emailId doit exister dans la liste fournie",
@@ -290,7 +310,7 @@ export async function summarizeDailyMail(emails: Email[]): Promise<DailyMailSumm
 
     const parsed = JSON.parse(payload) as Record<string, unknown>;
     const mailboxActivity = asTextArray(parsed.mailboxActivity, 2);
-    const contentSummary = asTextArray(parsed.contentSummary, 5);
+    const contentSummary = asTextArray(parsed.contentSummary, 2);
     const pendingActions = normalizePendingActions(parsed.pendingActions, emailsById, fallback.pendingActions);
     const exchangedInfo = asTextArray(parsed.exchangedInfo);
     const priorityEmails = normalizePriorityItems(parsed.priorityEmails, emailsById);
