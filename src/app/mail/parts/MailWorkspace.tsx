@@ -29,9 +29,12 @@ export function MailWorkspace({
   return (
     <>
       <div
+        data-testid="mail-list-pane"
         className={cn(
           "h-full w-full overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
-          hasDesktopSelection ? "lg:w-80 xl:w-96" : "lg:flex-1",
+          hasDesktopSelection
+            ? "lg:w-80 xl:w-96 2xl:w-[30rem] lg:shrink-0"
+            : "lg:flex-1 lg:w-full",
           mobileView === "list" ? "block" : "hidden lg:block"
         )}
       >
@@ -39,31 +42,33 @@ export function MailWorkspace({
       </div>
 
       <div
+        data-testid="mail-detail-pane"
         className={cn(
           "h-full flex-1 overflow-hidden rounded-2xl border border-[#202024] bg-[#0F0F11]/92 shadow-2xl",
-          mobileView === "view"
-            ? hasDesktopSelection
+          hasDesktopSelection
+            ? mobileView === "view"
               ? "block lg:block"
-              : "block lg:hidden"
-            : hasDesktopSelection
-              ? "hidden lg:block"
-              : "hidden lg:hidden"
+              : "hidden lg:block"
+            : "hidden"
         )}
       >
-        {threadingEnabled && selectedThread ? (
-          <ThreadView thread={selectedThread} viewMode={viewMode} />
-        ) : (
-          <EmailView />
-        )}
+        {hasDesktopSelection &&
+          (threadingEnabled && selectedThread ? (
+            <ThreadView thread={selectedThread} viewMode={viewMode} />
+          ) : (
+            <EmailView />
+          ))}
       </div>
 
       <div
         className={cn(
           "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
-          desktopChatOpen ? "lg:w-[34rem]" : "lg:w-0"
+          hasDesktopSelection && desktopChatOpen
+            ? "lg:w-[34rem]"
+            : "lg:w-0 lg:border-transparent"
         )}
       >
-        {desktopChatOpen && (
+        {hasDesktopSelection && desktopChatOpen && (
           <ChatPanel layout="docked" onRequestClose={onCloseChat} />
         )}
       </div>
