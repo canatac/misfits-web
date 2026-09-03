@@ -16,6 +16,7 @@ import { useMonitoringAlerts, useMonitoringSummary } from "@/hooks/use-monitorin
 import { useSecurityActiveAlerts } from "@/hooks/use-security-dashboard";
 import { useChangeRequests } from "@/hooks/use-admin-ops";
 import { calculatePriority } from "@/lib/ai-triage";
+import { selectEmailsFromLast24h, summarizeDailyMail } from "@/lib/daily-mail-summary";
 import { listNewsletterItems } from "@/lib/newsletters-api";
 import { BriefingCard } from "./_components/BriefingCard";
 import { MetricsGrid, type Metric } from "./_components/MetricsGrid";
@@ -26,6 +27,7 @@ import { AlertsCard } from "./_components/AlertsCard";
 import { DetailView, type DetailItem } from "./_components/DetailView";
 import type {
   DashboardAlertItem,
+  DashboardDailyMailSummary,
   DashboardHighlight,
   DashboardNewsletterItem,
   DashboardTaskItem,
@@ -98,6 +100,7 @@ export default function DashboardIndexPage() {
   };
 
   const inboxQuery = useEmailList({ folder: "inbox", page: 1, pageSize: 50, sortBy: "date" });
+  const sentQuery = useEmailList({ folder: "sent", page: 1, pageSize: 50, sortBy: "date" });
   const unreadCountQuery = useEmailList({
     folder: "inbox",
     filterType: "unread",
@@ -155,6 +158,34 @@ export default function DashboardIndexPage() {
     const source = inboxQuery.data?.emails ?? [];
     return source.slice(0, 4).map((e) => ({ ...e, score: calculatePriority(e) }));
   }, [inboxQuery.data?.emails]);
+
+  const last24hEmails = useMemo(() => {
+    const inbox = inboxQuery.data?.emails ?? [];
+    const sent = sentQuery.data?.emails ?? [];
+    const merged = [...inbox, ...sent];
+    const dedup = new Map(merged.map((email) => [email.id, email]));
+    return selectEmailsFromLast24h(Array.from(dedup.values()), now ?? new Date());
+  }, [inboxQuery.data?.emails, sentQuery.data?.emails, now]);
+
+  const dailyMailSummaryQuery = useQuery<DashboardDailyMailSummary>({
+    queryKey: [
+      "dashboard",
+      "daily-mail-summary",
+      ...last24hEmails.map((email) => `${email.id}:${email.isRead ? "r" : "u"}:${email.isStarred ? "s" : "n"}`),
+    ],
+    queryFn: async () => {
+      const summary = await summarizeDailyMail(last24hEmails);
+      return {
+        pendingActions: summary.pendingActions,
+        exchangedInfo: summary.exchangedInfo,
+        priorityEmails: summary.priorityEmails,
+        generatedAt: summary.generatedAt,
+        source: summary.source,
+      };
+    },
+    staleTime: 5 * 60_000,
+    refetchInterval: 5 * 60_000,
+  });
 
   const newsletterItems = useMemo<DashboardNewsletterItem[]>(() => {
     const source = newsletterItemsQuery.data ?? [];
@@ -330,7 +361,9 @@ export default function DashboardIndexPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
         <InboxScoresCard
-          emails={inboxEmails}
+          summary={dailyMailSummaryQuery.data}
+          isLoading={dailyMailSummaryQuery.isLoading}
+          priorityEmails={inboxEmails}
           onOpen={(email) => setDetailItem({ type: "email", data: email })}
         />
         <VeilleCard
