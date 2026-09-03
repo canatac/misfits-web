@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { formatTime } from "@/components/dashboard/StorageGauge";
 import type { Email } from "@/types/email";
+import { NewsletterDetailContent } from "./newsletter-detail-content";
 import type {
   DashboardAlertItem,
   DashboardNewsletterItem,
@@ -61,21 +62,7 @@ export function DetailView({ item, onBack }: { item: DetailItem; onBack: () => v
 
         {item.type === "newsletter" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white">{item.data.title}</h2>
-              <span className="rounded-sm bg-[#4ADE80]/15 px-2 py-1 text-xs font-bold text-[#4ADE80]">
-                Signal {item.data.signal}%
-              </span>
-            </div>
-            <p className="text-sm text-[#D4D4D8]">{item.data.summary}</p>
-            <ul className="space-y-1 rounded-xl border border-[#242427] bg-[#0A0A0B] p-4 text-sm text-[#A1A1AA]">
-              {(item.data.takeaways ?? []).map((takeaway) => (
-                <li key={takeaway} className="flex gap-2">
-                  <span className="text-[#4ADE80]">•</span>
-                  <span>{takeaway}</span>
-                </li>
-              ))}
-            </ul>
+            <NewsletterDetailContent item={item.data} />
             <div className="flex justify-end">
               <Link
                 href="/newsletters"

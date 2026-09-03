@@ -10,6 +10,10 @@ export interface DashboardNewsletterItem {
   signal: number;
   tags: string[];
   summary: string;
+  topic?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  links?: Array<{ name: string; url: string }>;
   takeaways?: string[];
 }
 
