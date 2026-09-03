@@ -21,7 +21,7 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
           </p>
         </div>
         <Badge tone={adminChangelog.isFetching ? "warn" : "ok"}>
-          {adminChangelog.isFetching ? "refreshing" : "live"}
+          {adminChangelog.isFetching ? "rafraîchissement" : "à jour"}
         </Badge>
       </div>
 
@@ -129,7 +129,7 @@ export function ChangelogTab({ adminChangelog }: ChangelogTabProps) {
                           </a>
                         ) : (
                           <span className="text-[11px] text-[#71717A]">
-                            no run
+                            aucun run
                           </span>
                         )}
                       </div>
