@@ -40,9 +40,74 @@ export const ALLOWED_PREFIXES = [
   "video/",
 ];
 
+const ALLOWED_EXTENSIONS = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "odt",
+  "ods",
+  "odp",
+  "txt",
+  "csv",
+  "md",
+  "json",
+  "zip",
+  "gz",
+  "tgz",
+  "tar",
+  "7z",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "heic",
+  "mp3",
+  "wav",
+  "m4a",
+  "mp4",
+  "mov",
+  "avi",
+]);
+
+function getExtension(filename: string): string {
+  const idx = filename.lastIndexOf(".");
+  if (idx < 0 || idx === filename.length - 1) return "";
+  return filename.slice(idx + 1).toLowerCase();
+}
+
+export function inferContentType(file: File): string {
+  if (file.type?.trim()) return file.type;
+  const ext = getExtension(file.name);
+  const map: Record<string, string> = {
+    pdf: "application/pdf",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    txt: "text/plain",
+    csv: "text/csv",
+    md: "text/markdown",
+    json: "application/json",
+    zip: "application/zip",
+    gz: "application/gzip",
+    tar: "application/x-tar",
+    "7z": "application/x-7z-compressed",
+  };
+  return map[ext] ?? "application/octet-stream";
+}
+
 export function isAllowed(file: File): boolean {
   if (file.size > MAX_FILE_SIZE) return false;
-  return ALLOWED_PREFIXES.some((p) => file.type.startsWith(p));
+  const contentType = inferContentType(file);
+  if (ALLOWED_PREFIXES.some((p) => contentType.startsWith(p))) return true;
+  return ALLOWED_EXTENSIONS.has(getExtension(file.name));
 }
 
 export function fileIcon(contentType: string): typeof FileIcon {

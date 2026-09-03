@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   Calendar as CalendarIcon,
+  Folder,
   Languages,
   LayoutDashboard,
   Newspaper,
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/docs", label: "Docs", icon: BookOpen, testId: "docs-link" },
   { href: "/admin", label: "Console Admin", icon: ShieldCheck, testId: "admin-link" },
   { href: "/calendar", label: "Calendar", icon: CalendarIcon, testId: "calendar-link" },
+  { href: "/files", label: "Files", icon: Folder, testId: "files-link" },
   { href: "/newsletters", label: "Newsletters", icon: Newspaper, testId: "newsletters-link" },
   { href: "/translation", label: "Translation", icon: Languages, testId: "translation-link" },
 ] as const;
