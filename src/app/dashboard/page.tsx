@@ -9,7 +9,6 @@ import {
   Newspaper,
 } from "lucide-react";
 import { useI18n } from "@/i18n/provider";
-import { useAuthStore } from "@/stores/auth-store";
 import { useEmailList } from "@/hooks/use-emails";
 import { useCalendarEvents } from "@/hooks/use-calendar";
 import { useMonitoringAlerts, useMonitoringSummary } from "@/hooks/use-monitoring";
@@ -17,6 +16,8 @@ import { useSecurityActiveAlerts } from "@/hooks/use-security-dashboard";
 import { useChangeRequests } from "@/hooks/use-admin-ops";
 import { calculatePriority } from "@/lib/ai-triage";
 import { selectEmailsFromLast24h, summarizeDailyMail } from "@/lib/daily-mail-summary";
+import { summarizeDailyNewsletters } from "@/lib/daily-newsletter-summary";
+import { onNewsletterUpdated } from "@/lib/newsletter-events";
 import { listNewsletterItems } from "@/lib/newsletters-api";
 import { BriefingCard } from "./_components/BriefingCard";
 import { MetricsGrid, type Metric } from "./_components/MetricsGrid";
@@ -77,7 +78,6 @@ function asSeverity(value: string): "critical" | "high" | "medium" | "low" | "in
 
 export default function DashboardIndexPage() {
   const { locale, t } = useI18n();
-  const user = useAuthStore((s) => s.user);
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
   const [now, setNow] = useState<Date | null>(null);
@@ -127,17 +127,16 @@ export default function DashboardIndexPage() {
     queryFn: listNewsletterItems,
     refetchInterval: 60_000,
     staleTime: 15_000,
+    refetchOnWindowFocus: true,
   });
 
-  const firstName = useMemo(() => {
-    const raw = user?.displayName ?? user?.email?.split("@")[0] ?? "Joey";
-    return raw.split(/[\s.]/)[0] ?? raw;
-  }, [user]);
+  const refetchNewsletters = newsletterItemsQuery.refetch;
 
-  const greeting =
-    locale === "fr"
-      ? `Bonjour ${firstName}. Voici l’état réel de votre activité.`
-      : `Good morning ${firstName}. Here is your live activity status.`;
+  useEffect(() => {
+    return onNewsletterUpdated(() => {
+      void refetchNewsletters();
+    });
+  }, [refetchNewsletters]);
 
   const dateLabel = useMemo(() => {
     if (!now) return "";
@@ -189,8 +188,20 @@ export default function DashboardIndexPage() {
     refetchInterval: 5 * 60_000,
   });
 
+  const allNewsletterItems = useMemo(
+    () => newsletterItemsQuery.data ?? [],
+    [newsletterItemsQuery.data]
+  );
+
+  const newsletterBrief = useMemo(
+    () => summarizeDailyNewsletters(allNewsletterItems, now ?? new Date(), locale === "fr" ? "fr" : "en"),
+    [allNewsletterItems, now, locale]
+  );
+
+  const greeting = newsletterBrief.text;
+
   const newsletterItems = useMemo<DashboardNewsletterItem[]>(() => {
-    const source = newsletterItemsQuery.data ?? [];
+    const source = allNewsletterItems;
     return source.slice(0, 4).map((item) => ({
       id: item.id,
       title: item.title,
@@ -203,7 +214,7 @@ export default function DashboardIndexPage() {
       links: item.links,
       takeaways: item.links.map((link) => link.name).slice(0, 2),
     }));
-  }, [newsletterItemsQuery.data]);
+  }, [allNewsletterItems]);
 
   const taskItems = useMemo<DashboardTaskItem[]>(() => {
     const events = (calendarQuery.data ?? [])

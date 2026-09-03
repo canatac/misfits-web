@@ -4,6 +4,7 @@ import {
   deleteNewsletterSource,
   updateNewsletterSource,
 } from "@/lib/newsletters-api";
+import { emitNewsletterUpdated } from "@/lib/newsletter-events";
 import type { NewsletterSource, NewsletterTopic } from "@/types/newsletters";
 import { inferSourceName, normalizeHttpUrl } from "./newsletter-hub-utils";
 
@@ -31,6 +32,7 @@ export async function addSourceAction(args: {
     args.setContentSourceId(created.id);
     args.setNotice(`Source ajoutée: ${created.name}`);
     await args.reload();
+    emitNewsletterUpdated();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Échec ajout source: ${msg}`);
@@ -58,6 +60,7 @@ export async function updateSourceAction(args: {
     args.setNotice("Source mise à jour.");
     args.cancelEditSource();
     await args.reload();
+    emitNewsletterUpdated();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Échec mise à jour source: ${msg}`);
@@ -94,6 +97,7 @@ export async function deleteSourceAction(args: {
     if (args.editingSourceId === args.source.id) args.cancelEditSource();
     args.setNotice(`Source supprimée: ${args.source.name}`);
     await args.reload();
+    emitNewsletterUpdated();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Échec suppression source: ${msg}`);
@@ -134,6 +138,7 @@ export async function addContentAction(args: {
     args.setContentLink("");
     args.setNotice(`Résumé ajouté: ${title}`);
     await args.reload();
+    emitNewsletterUpdated();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Échec ajout résumé: ${msg}`);

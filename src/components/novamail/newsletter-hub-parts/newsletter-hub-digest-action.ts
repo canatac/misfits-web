@@ -1,4 +1,5 @@
 import { summarizeNewsletterSource } from "@/lib/newsletters-api";
+import { emitNewsletterUpdated } from "@/lib/newsletter-events";
 import type { NewsletterSource, NewsletterTopic } from "@/types/newsletters";
 
 type Setter<T> = (value: T) => void;
@@ -40,6 +41,7 @@ export async function generateDigestAction(args: {
       `Digest généré depuis ${result.source.url} (${result.fetchedChars} caractères analysés).`
     );
     await args.reload();
+    emitNewsletterUpdated();
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Digest IA indisponible: ${msg}`);
