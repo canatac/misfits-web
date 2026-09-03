@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import MailLayout from "@/app/mail/layout";
 
 describe("MailLayout", () => {
-  it("is a transparent pass-through to avoid nested shell wrappers", () => {
+  it("returns children without adding a nested shell wrapper", () => {
     render(
       <MailLayout>
         <section data-testid="mail-page-root">Mail page</section>
