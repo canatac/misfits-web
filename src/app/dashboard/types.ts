@@ -13,6 +13,22 @@ export interface DashboardNewsletterItem {
   takeaways?: string[];
 }
 
+export interface DashboardDailyMailPriorityItem {
+  emailId: string;
+  subject: string;
+  from: string;
+  reason: string;
+  priorityScore: number;
+}
+
+export interface DashboardDailyMailSummary {
+  pendingActions: string[];
+  exchangedInfo: string[];
+  priorityEmails: DashboardDailyMailPriorityItem[];
+  generatedAt: string;
+  source: "ai" | "rules";
+}
+
 export interface DashboardTaskItem {
   id: string;
   label: string;
