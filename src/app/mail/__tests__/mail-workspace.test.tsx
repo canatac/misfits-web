@@ -20,6 +20,7 @@ vi.mock("@/components/mail/chat-panel", () => ({
 
 describe("MailWorkspace", () => {
   it("keeps list at full width and hides detail pane when no email is selected", () => {
+    const onCloseDetail = vi.fn();
     render(
       <MailWorkspace
         mobileView="list"
@@ -29,6 +30,7 @@ describe("MailWorkspace", () => {
         viewMode="list"
         desktopChatOpen={true}
         onCloseChat={() => {}}
+        onCloseDetail={onCloseDetail}
       />
     );
 
@@ -39,9 +41,13 @@ describe("MailWorkspace", () => {
     expect(listPane.className).toContain("lg:w-full");
     expect(detailPane.className).toContain("hidden");
     expect(screen.queryByTestId("mock-email-view")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /fermer le détail du mail/i })
+    ).toBeNull();
   });
 
   it("shows detail pane after selection on desktop", () => {
+    const onCloseDetail = vi.fn();
     render(
       <MailWorkspace
         mobileView="list"
@@ -51,11 +57,18 @@ describe("MailWorkspace", () => {
         viewMode="list"
         desktopChatOpen={false}
         onCloseChat={() => {}}
+        onCloseDetail={onCloseDetail}
       />
     );
 
     const detailPane = screen.getByTestId("mail-detail-pane");
+    const closeButton = screen.getByRole("button", {
+      name: /fermer le détail du mail/i,
+    });
     expect(detailPane.className).toContain("lg:block");
     expect(screen.getByTestId("mock-email-view")).toBeTruthy();
+
+    closeButton.click();
+    expect(onCloseDetail).toHaveBeenCalledTimes(1);
   });
 });
