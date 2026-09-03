@@ -27,6 +27,12 @@ function extractJsonObject(raw: string): string | null {
   return candidate.slice(start, end + 1);
 }
 
+function asIsoDate(value: string): string {
+  const ts = new Date(value).getTime();
+  if (!Number.isFinite(ts)) return "";
+  return new Date(ts).toISOString();
+}
+
 function normalizeItems(value: unknown): DashboardSuggestedNewsItem[] {
   if (!Array.isArray(value)) return [];
   const out: DashboardSuggestedNewsItem[] = [];
@@ -37,16 +43,34 @@ function normalizeItems(value: unknown): DashboardSuggestedNewsItem[] {
     const title = typeof obj.title === "string" ? obj.title.trim() : "";
     const url = typeof obj.url === "string" ? obj.url.trim() : "";
     const reason = typeof obj.reason === "string" ? obj.reason.trim() : "";
-    const categoryRaw = typeof obj.category === "string" ? obj.category.trim().toLowerCase() : "";
-    if (!title || !url || !/^https?:\/\//i.test(url) || !reason || !ALLOWED_CATEGORIES.has(categoryRaw as never)) {
+    const source = typeof obj.source === "string" ? obj.source.trim() : "";
+    const categoryRaw =
+      typeof obj.category === "string" ? obj.category.trim().toLowerCase() : "";
+    const publishedAtRaw =
+      typeof obj.publishedAt === "string" ? obj.publishedAt.trim() : "";
+    const publishedAt = asIsoDate(publishedAtRaw);
+
+    if (
+      !title ||
+      !url ||
+      !/^https?:\/\//i.test(url) ||
+      !reason ||
+      !source ||
+      !publishedAt ||
+      !ALLOWED_CATEGORIES.has(categoryRaw as never)
+    ) {
       continue;
     }
+
     out.push({
       title,
       url,
       reason,
+      source,
+      publishedAt,
       category: categoryRaw as DashboardSuggestedNewsItem["category"],
     });
+
     if (out.length >= 5) break;
   }
 
@@ -61,13 +85,13 @@ function buildPrompt(summaryText: string, newsletters: NewsletterItem[], locale:
     signal: item.signal,
     updatedAt: item.updatedAt,
     links: item.links.slice(0, 3),
-    summary: item.summary.slice(0, 350),
+    summary: item.summary.slice(0, 450),
   }));
 
   const instruction =
     locale === "fr"
-      ? "Tu es un analyste veille marché/risque. Tu dois chercher des actualités web pertinentes à partager au dirigeant, en te basant sur le résumé newsletter du jour et les critères demandés."
-      : "You are a market/risk intelligence analyst. Search the web for relevant news to share with the founder based on today's newsletter summary and required criteria.";
+      ? "Tu es un analyste veille marché/risque. Tu dois chercher des actualités web pertinentes à partager au dirigeant, en te basant sur le résumé métier du jour et les critères demandés."
+      : "You are a market/risk intelligence analyst. Search the web for relevant news to share with the founder based on today's business brief and required criteria.";
 
   return [
     {
@@ -81,12 +105,13 @@ function buildPrompt(summaryText: string, newsletters: NewsletterItem[], locale:
           ? "Utilise une recherche web actuelle puis retourne au plus 5 actualités prioritaires."
           : "Use current web search then return up to 5 priority news items.",
         locale === "fr"
-          ? "Format JSON strict:"
-          : "Strict JSON format:",
-        '{"items":[{"title":"...","url":"https://...","reason":"...","category":"defaillance|capital|bourse|emploi|scandale"}]}',
+          ? "Chaque actualité DOIT inclure une date de publication et un nom de source média."
+          : "Each news item MUST include publication date and media source name.",
+        locale === "fr" ? "Format JSON strict:" : "Strict JSON format:",
+        '{"items":[{"title":"...","url":"https://...","reason":"...","source":"Reuters","publishedAt":"2026-09-03T08:30:00Z","category":"defaillance|capital|bourse|emploi|scandale"}]}',
         locale === "fr" ? "Critères obligatoires:" : "Mandatory criteria:",
         ...CRITERIA.map((v) => `- ${v}`),
-        locale === "fr" ? "Résumé du jour:" : "Daily summary:",
+        locale === "fr" ? "Résumé métier du jour:" : "Daily business brief:",
         summaryText,
         locale === "fr" ? "Contexte newsletters (JSON):" : "Newsletter context (JSON):",
         JSON.stringify(compact),

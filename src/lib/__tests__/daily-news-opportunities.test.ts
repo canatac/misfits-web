@@ -35,6 +35,8 @@ describe("daily-news-opportunities", () => {
                       title: "Acme lève 50M€",
                       url: "https://news.example.com/acme-fundraise",
                       reason: "Apport de capital significatif",
+                      source: "Les Echos",
+                      publishedAt: "2026-09-03T09:00:00Z",
                       category: "capital",
                     },
                   ],
@@ -56,6 +58,8 @@ describe("daily-news-opportunities", () => {
     expect(out.source).toBe("ai");
     expect(out.items).toHaveLength(1);
     expect(out.items[0]?.category).toBe("capital");
+    expect(out.items[0]?.source).toBe("Les Echos");
+    expect(out.items[0]?.publishedAt).toBe("2026-09-03T09:00:00.000Z");
   });
 
   it("falls back to none when upstream fails", async () => {
