@@ -25,8 +25,14 @@ export interface DashboardDailyMailPriorityItem {
   priorityScore: number;
 }
 
+export interface DashboardDailyMailActionItem {
+  text: string;
+  emailId?: string;
+}
+
 export interface DashboardDailyMailSummary {
-  pendingActions: string[];
+  mailboxActivity: string[];
+  pendingActions: DashboardDailyMailActionItem[];
   exchangedInfo: string[];
   priorityEmails: DashboardDailyMailPriorityItem[];
   generatedAt: string;

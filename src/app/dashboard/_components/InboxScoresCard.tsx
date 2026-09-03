@@ -7,10 +7,14 @@ import type { DashboardDailyMailSummary } from "../types";
 
 type ScoredEmail = Email & { score: number };
 
-function fallbackSummary(priorityEmails: ScoredEmail[]): DashboardDailyMailSummary {
-  if (priorityEmails.length === 0) {
+function fallbackSummary(actionableEmails: ScoredEmail[]): DashboardDailyMailSummary {
+  if (actionableEmails.length === 0) {
     return {
-      pendingActions: ["Aucun mail récent sur les dernières 24h."],
+      mailboxActivity: [
+        "Aucun mail récent sur les dernières 24h.",
+        "Pas d’activité notable détectée.",
+      ],
+      pendingActions: [{ text: "Aucune action en attente." }],
       exchangedInfo: ["Pas de nouvel échange à résumer."],
       priorityEmails: [],
       generatedAt: new Date().toISOString(),
@@ -18,16 +22,23 @@ function fallbackSummary(priorityEmails: ScoredEmail[]): DashboardDailyMailSumma
     };
   }
 
+  const unreadCount = actionableEmails.filter((email) => !email.isRead).length;
+  const urgentCount = actionableEmails.filter((email) => email.score >= 70).length;
+
   return {
-    pendingActions: [
-      `Traiter ${priorityEmails.filter((email) => !email.isRead).length} mail(s) non lu(s).`,
-      "Vérifier les messages avec score prioritaire élevé.",
+    mailboxActivity: [
+      `${actionableEmails.length} échange(s) sur 24h, dont ${unreadCount} non lu(s).`,
+      `${urgentCount} mail(s) restent prioritaires à traiter.`,
     ],
-    exchangedInfo: priorityEmails.slice(0, 3).map((email) => {
+    pendingActions: [
+      { text: `Traiter ${unreadCount} mail(s) non lu(s).` },
+      { text: "Vérifier les messages avec score prioritaire élevé." },
+    ],
+    exchangedInfo: actionableEmails.slice(0, 3).map((email) => {
       const sender = email.from.name || email.from.address;
       return `${sender}: ${email.subject}`;
     }),
-    priorityEmails: priorityEmails.slice(0, 3).map((email) => ({
+    priorityEmails: actionableEmails.slice(0, 3).map((email) => ({
       emailId: email.id,
       subject: email.subject,
       from: email.from.name || email.from.address,
@@ -42,23 +53,29 @@ function fallbackSummary(priorityEmails: ScoredEmail[]): DashboardDailyMailSumma
 export function InboxScoresCard({
   summary,
   isLoading,
-  priorityEmails,
+  actionableEmails,
   onOpen,
 }: {
   summary: DashboardDailyMailSummary | undefined;
   isLoading: boolean;
-  priorityEmails: ScoredEmail[];
+  actionableEmails: ScoredEmail[];
   onOpen: (email: ScoredEmail) => void;
 }) {
-  const resolvedSummary = summary ?? fallbackSummary(priorityEmails);
+  const resolvedSummary = summary ?? fallbackSummary(actionableEmails);
+  const emailById = new Map(actionableEmails.map((email) => [email.id, email]));
 
   const linkedPriority = resolvedSummary.priorityEmails
     .map((priority) => {
-      const email = priorityEmails.find((candidate) => candidate.id === priority.emailId);
+      const email = emailById.get(priority.emailId);
       if (!email) return null;
       return { priority, email };
     })
-    .filter((item): item is { priority: DashboardDailyMailSummary["priorityEmails"][number]; email: ScoredEmail } => Boolean(item));
+    .filter(
+      (item): item is { priority: DashboardDailyMailSummary["priorityEmails"][number]; email: ScoredEmail } =>
+        Boolean(item)
+    );
+
+  const mailboxActivity = resolvedSummary.mailboxActivity.slice(0, 2);
 
   return (
     <div className="flex flex-col rounded-2xl border border-[#242427] bg-[#121214] shadow-xl">
@@ -79,16 +96,47 @@ export function InboxScoresCard({
         ) : (
           <>
             <div>
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#C49B66]">
-                Actions en attente
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#D4D4D8]">
+                Activité messagerie
               </p>
               <ul className="space-y-1 text-[#D4D4D8]">
-                {resolvedSummary.pendingActions.map((line) => (
+                {mailboxActivity.map((line) => (
                   <li key={line} className="flex gap-2">
-                    <span className="text-[#C49B66]">•</span>
+                    <span className="text-[#A1A1AA]">•</span>
                     <span>{line}</span>
                   </li>
                 ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#C49B66]">
+                Actions en attente
+              </p>
+              <ul className="space-y-1.5 text-[#D4D4D8]">
+                {resolvedSummary.pendingActions.map((action, index) => {
+                  const actionEmail = action.emailId ? emailById.get(action.emailId) : undefined;
+                  const key = `${action.text}-${index}`;
+                  return (
+                    <li key={key} className="rounded-lg border border-[#242427] bg-[#0A0A0B] px-2.5 py-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex gap-2">
+                          <span className="text-[#C49B66]">•</span>
+                          <span>{action.text}</span>
+                        </div>
+                        {actionEmail && (
+                          <button
+                            type="button"
+                            onClick={() => onOpen(actionEmail)}
+                            className="shrink-0 rounded-md border border-[#3A3A3F] px-1.5 py-0.5 text-[10px] font-semibold text-[#C49B66] hover:border-[#C49B66]/60"
+                          >
+                            Ouvrir
+                          </button>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 

@@ -154,11 +154,6 @@ export default function DashboardIndexPage() {
     return `${date} • ${time}`;
   }, [now, loc]);
 
-  const inboxEmails = useMemo(() => {
-    const source = inboxQuery.data?.emails ?? [];
-    return source.slice(0, 4).map((e) => ({ ...e, score: calculatePriority(e) }));
-  }, [inboxQuery.data?.emails]);
-
   const last24hEmails = useMemo(() => {
     const inbox = inboxQuery.data?.emails ?? [];
     const sent = sentQuery.data?.emails ?? [];
@@ -166,6 +161,12 @@ export default function DashboardIndexPage() {
     const dedup = new Map(merged.map((email) => [email.id, email]));
     return selectEmailsFromLast24h(Array.from(dedup.values()), now ?? new Date());
   }, [inboxQuery.data?.emails, sentQuery.data?.emails, now]);
+
+  const actionableDailyEmails = useMemo(() => {
+    return last24hEmails
+      .map((email) => ({ ...email, score: calculatePriority(email) }))
+      .sort((a, b) => b.score - a.score);
+  }, [last24hEmails]);
 
   const dailyMailSummaryQuery = useQuery<DashboardDailyMailSummary>({
     queryKey: [
@@ -176,6 +177,7 @@ export default function DashboardIndexPage() {
     queryFn: async () => {
       const summary = await summarizeDailyMail(last24hEmails);
       return {
+        mailboxActivity: summary.mailboxActivity,
         pendingActions: summary.pendingActions,
         exchangedInfo: summary.exchangedInfo,
         priorityEmails: summary.priorityEmails,
@@ -367,7 +369,7 @@ export default function DashboardIndexPage() {
         <InboxScoresCard
           summary={dailyMailSummaryQuery.data}
           isLoading={dailyMailSummaryQuery.isLoading}
-          priorityEmails={inboxEmails}
+          actionableEmails={actionableDailyEmails}
           onOpen={(email) => setDetailItem({ type: "email", data: email })}
         />
         <VeilleCard
