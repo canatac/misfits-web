@@ -161,16 +161,6 @@ jobs:
           echo "REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
 
-      - name: Deploy via SSH
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: 22
-          source: docker-compose.web.yml
-          target: ${{ secrets.VM_DEPLOY_DIR }}
-
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -189,6 +179,7 @@ jobs:
             set -euo pipefail
             cd ${{ secrets.VM_DEPLOY_DIR }}
             MISFITS_WEB_IMAGE_TAG="$MISFITS_WEB_IMAGE_TAG" docker compose -f docker-compose.web.yml pull web
+            docker rm -f misfits-web || true
             MISFITS_WEB_IMAGE_TAG="$MISFITS_WEB_IMAGE_TAG" \
             MISFITS_WEB_BUILD_VERSION="$MISFITS_WEB_BUILD_VERSION" \
             REIMAGINED_GUIDE_BUILD_VERSION="$REIMAGINED_GUIDE_BUILD_VERSION" \
