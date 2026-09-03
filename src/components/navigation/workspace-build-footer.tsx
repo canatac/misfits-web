@@ -65,30 +65,40 @@ export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = 
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/build-meta", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    })
-      .then(async (res) => {
-        if (!res.ok) return null;
-        return res.json().catch(() => null);
-      })
-      .then((payload) => {
-        if (cancelled || !payload) return;
+    const loadRuntimeBuildMeta = async () => {
+      const endpoints = ["/build-meta", "/api/build-meta"];
 
-        const webLabel = String(payload.webLabel || "unknown").trim() || "unknown";
-        const backendLabel =
-          String(payload.backendLabel || "unknown").trim() || "unknown";
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              Pragma: "no-cache",
+              "Cache-Control": "no-cache",
+            },
+          });
+          if (!res.ok) continue;
+          const payload = await res.json().catch(() => null);
+          if (!payload || cancelled) return;
 
-        setRuntimeBuilds({
-          web: normalizeBuildInfo(webLabel, "misfits-web"),
-          backend: normalizeBuildInfo(backendLabel, "reimagined-guide"),
-        });
-      })
-      .catch(() => {
-        // silent fallback
-      });
+          const webLabel = String(payload.webLabel || "unknown").trim() || "unknown";
+          const backendLabel =
+            String(payload.backendLabel || "unknown").trim() || "unknown";
+
+          setRuntimeBuilds({
+            web: normalizeBuildInfo(webLabel, "misfits-web"),
+            backend: normalizeBuildInfo(backendLabel, "reimagined-guide"),
+          });
+          return;
+        } catch {
+          // try next endpoint
+        }
+      }
+    };
+
+    void loadRuntimeBuildMeta();
 
     return () => {
       cancelled = true;
