@@ -16,6 +16,14 @@ describe("attachment-zone-helpers", () => {
     expect(isAllowed(file)).toBe(true);
   });
 
+  it("maps generic octet-stream PDFs to application/pdf", () => {
+    const file = new File(["hello"], "scan.PDF", {
+      type: "application/octet-stream",
+    });
+    expect(inferContentType(file)).toBe("application/pdf");
+    expect(isAllowed(file)).toBe(true);
+  });
+
   it("rejects oversized files", () => {
     const huge = new File([new Uint8Array(MAX_FILE_SIZE + 1)], "video.mp4", {
       type: "video/mp4",
