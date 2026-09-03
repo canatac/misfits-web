@@ -40,6 +40,19 @@ export interface DashboardDailyMailSummary {
   source: "ai" | "rules";
 }
 
+export interface DashboardSuggestedNewsItem {
+  title: string;
+  url: string;
+  reason: string;
+  category: "defaillance" | "capital" | "bourse" | "emploi" | "scandale";
+}
+
+export interface DashboardSuggestedNews {
+  items: DashboardSuggestedNewsItem[];
+  generatedAt: string;
+  source: "ai" | "none";
+}
+
 export interface DashboardTaskItem {
   id: string;
   label: string;

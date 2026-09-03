@@ -16,6 +16,7 @@ import { useSecurityActiveAlerts } from "@/hooks/use-security-dashboard";
 import { useChangeRequests } from "@/hooks/use-admin-ops";
 import { calculatePriority } from "@/lib/ai-triage";
 import { selectEmailsFromLast24h, summarizeDailyMail } from "@/lib/daily-mail-summary";
+import { suggestNewsFromDailyBrief } from "@/lib/daily-news-opportunities";
 import { summarizeDailyNewsletters } from "@/lib/daily-newsletter-summary";
 import { onNewsletterUpdated } from "@/lib/newsletter-events";
 import { listNewsletterItems } from "@/lib/newsletters-api";
@@ -31,6 +32,7 @@ import type {
   DashboardDailyMailSummary,
   DashboardHighlight,
   DashboardNewsletterItem,
+  DashboardSuggestedNews,
   DashboardTaskItem,
 } from "./types";
 
@@ -198,6 +200,34 @@ export default function DashboardIndexPage() {
     () => summarizeDailyNewsletters(allNewsletterItems, now ?? new Date(), locale === "fr" ? "fr" : "en"),
     [allNewsletterItems, now, locale]
   );
+
+  const newsletterDigestFingerprint = useMemo(
+    () =>
+      allNewsletterItems
+        .map((item) => `${item.id}:${item.updatedAt ?? item.createdAt}:${item.signal}`)
+        .join("|"),
+    [allNewsletterItems]
+  );
+
+  const suggestedNewsQuery = useQuery<DashboardSuggestedNews>({
+    queryKey: [
+      "dashboard",
+      "veille-news-opportunities",
+      newsletterBrief.windowStartIso,
+      newsletterBrief.nextRefreshIso,
+      newsletterDigestFingerprint,
+    ],
+    queryFn: () =>
+      suggestNewsFromDailyBrief({
+        summaryText: newsletterBrief.text,
+        newsletters: allNewsletterItems,
+        locale: locale === "fr" ? "fr" : "en",
+      }),
+    enabled: allNewsletterItems.length > 0,
+    staleTime: 10 * 60_000,
+    refetchInterval: 10 * 60_000,
+    refetchOnWindowFocus: true,
+  });
 
   const greeting = newsletterBrief.text;
 
@@ -373,6 +403,8 @@ export default function DashboardIndexPage() {
         badge={t("dashboard.badge")}
         greeting={greeting}
         highlights={highlights}
+        suggestedNews={suggestedNewsQuery.data?.items ?? []}
+        suggestedNewsLoading={suggestedNewsQuery.isLoading}
       >
         <MetricsGrid metrics={metrics} />
       </BriefingCard>
