@@ -1,7 +1,7 @@
 "use client";
 
 // UsersTab.tsx — extracted from admin-console-page.tsx Sprint 3
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type {
   AdminUserRecord,
@@ -21,6 +21,12 @@ import type {
 import { Badge, asDate, asInt } from "../shared";
 import { UsersAiActivityCard, UsersAuditLogCard } from "./users/UsersAuxCards";
 import { UsersCreateForm } from "./users/UsersCreateForm";
+import { UserListItem } from "./users/UserListItem";
+import {
+  UserActivityModal,
+  UserDeleteModal,
+  UserResetPasswordModal,
+} from "./users/UserManagementModals";
 
 interface UsersTabProps {
   adminUsers: UseQueryResult<AdminUsersResponse, Error>;
@@ -54,17 +60,81 @@ export function UsersTab({
     status: "active",
     displayName: "",
   });
+  const [userDrafts, setUserDrafts] = useState<
+    Record<string, Pick<AdminUserRecord, "role" | "status">>
+  >({});
+  const [deleteDialogTarget, setDeleteDialogTarget] =
+    useState<AdminUserRecord | null>(null);
+  const [resetDialogTarget, setResetDialogTarget] =
+    useState<AdminUserRecord | null>(null);
+  const [activityDialogTarget, setActivityDialogTarget] =
+    useState<AdminUserRecord | null>(null);
+  const [resetPasswordDraft, setResetPasswordDraft] = useState("");
+  const [resetRevokeSessions, setResetRevokeSessions] = useState(true);
 
-  async function handleUserRoleChange(id: string, role: AdminUserRecord["role"]) {
-    await updateAdminUser.mutateAsync({ id, role });
+  function userDraftFor(user: AdminUserRecord) {
+    return userDrafts[user.id] ?? { role: user.role, status: user.status };
   }
-  async function handleUserStatusChange(id: string, status: AdminUserRecord["status"]) {
-    await updateAdminUser.mutateAsync({ id, status });
+
+  function setUserDraftRole(id: string, role: AdminUserRecord["role"]) {
+    setUserDrafts((prev) => {
+      const current = prev[id] ?? { role: "user" as const, status: "active" as const };
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          role,
+        },
+      };
+    });
   }
-  async function handleDeleteUser(id: string) {
-    if (!window.confirm("Supprimer cet utilisateur ?")) return;
-    deleteAdminUser.mutate({ id });
+
+  function setUserDraftStatus(id: string, status: AdminUserRecord["status"]) {
+    setUserDrafts((prev) => {
+      const current = prev[id] ?? { role: "user" as const, status: "active" as const };
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          status,
+        },
+      };
+    });
   }
+
+  async function handleSaveUser(user: AdminUserRecord) {
+    const draft = userDraftFor(user);
+    await updateAdminUser.mutateAsync({
+      id: user.id,
+      role: draft.role,
+      status: draft.status,
+    });
+    setUserDrafts((prev) => {
+      const next = { ...prev };
+      delete next[user.id];
+      return next;
+    });
+  }
+
+  async function handleDeleteUserConfirm() {
+    if (!deleteDialogTarget) return;
+    await deleteAdminUser.mutateAsync({ id: deleteDialogTarget.id });
+    setDeleteDialogTarget(null);
+  }
+
+  async function handleResetPasswordConfirm() {
+    if (!resetDialogTarget) return;
+    const cleanPassword = resetPasswordDraft.trim();
+    await resetAdminPassword.mutateAsync({
+      id: resetDialogTarget.id,
+      newPassword: cleanPassword || undefined,
+      revokeSessions: resetRevokeSessions,
+    });
+    setResetDialogTarget(null);
+    setResetPasswordDraft("");
+    setResetRevokeSessions(true);
+  }
+
   function handleCreateUser(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     createAdminUser.mutate({
@@ -73,6 +143,23 @@ export function UsersTab({
     });
     setNewAdminUser({ email: "", role: "user", status: "active", displayName: "" });
   }
+
+  const selectedUserAuditEntries = useMemo(() => {
+    if (!activityDialogTarget) return [];
+    const userId = activityDialogTarget.id;
+    const userEmail = activityDialogTarget.email.toLowerCase();
+    return (adminAuditLog.data?.entries ?? [])
+      .filter((entry) => {
+        const targetId = entry.targetId?.toLowerCase?.() ?? "";
+        const actorEmail = entry.actorEmail?.toLowerCase?.() ?? "";
+        return (
+          targetId === userId.toLowerCase() ||
+          targetId === userEmail ||
+          actorEmail === userEmail
+        );
+      })
+      .slice(0, 25);
+  }, [activityDialogTarget, adminAuditLog.data?.entries]);
 
   return (
     <section className="rounded-2xl border border-[#242427] bg-[#0F0F11]/92 p-5 shadow-2xl">
@@ -101,6 +188,16 @@ export function UsersTab({
             </p>
           </div>
         )}
+
+        <div className="mb-4 rounded-xl border border-[#2A2A30] bg-[#151518] p-3">
+          <p className="text-xs font-medium text-[#E4E4E7]">Mode d&apos;emploi rapide</p>
+          <ul className="mt-2 space-y-1 text-xs text-[#A1A1AA]">
+            <li>1. Créer: remplir le formulaire “Créer un utilisateur”, puis “Créer”.</li>
+            <li>2. Mettre à jour: modifier rôle/statut puis cliquer “Enregistrer”.</li>
+            <li>3. Supprimer: cliquer “Supprimer”, confirmer dans la modale.</li>
+            <li>4. Activité: cliquer “Voir activité” pour le détail timeline + audit.</li>
+          </ul>
+        </div>
 
         <div className="mb-4 grid gap-3 md:grid-cols-4">
           <article className="rounded-xl border border-[#232327] bg-[#151518] p-3">
@@ -142,78 +239,27 @@ export function UsersTab({
 
         <div className="space-y-3">
           {(adminUsers.data?.users ?? []).map((user) => (
-            <article key={user.id} className="rounded-xl border border-[#232327] bg-[#151518] p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-sm font-medium text-[#E4E4E7]">{user.displayName || user.email}</p>
-                  <p className="text-xs text-[#71717A]">{user.email}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={user.status}
-                    onChange={(e) => void handleUserStatusChange(user.id, e.target.value as AdminUserRecord["status"])}
-                    disabled={updateAdminUser.isPending || !canWriteUsers}
-                    className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
-                  >
-                    <option value="active">active</option>
-                    <option value="restricted">restricted</option>
-                  </select>
-                  <Badge tone={user.twoFactorEnabled ? "ok" : "warn"}>
-                    2FA {user.twoFactorEnabled ? "on" : "off"}
-                  </Badge>
-                  <select
-                    value={user.role}
-                    onChange={(e) => void handleUserRoleChange(user.id, e.target.value as AdminUserRecord["role"])}
-                    disabled={updateAdminUser.isPending || !canWriteUsers}
-                    className="rounded-lg border border-[#2A2A30] bg-[#111114] px-2 py-1 text-xs text-[#D4D4D8]"
-                  >
-                    <option value="user">user</option>
-                    <option value="support">support</option>
-                    <option value="admin">admin</option>
-                  </select>
-                  {canWriteUsers && (
-                  <button type="button" onClick={() => inviteAdminUser.mutate(user.id)}
-                    disabled={inviteAdminUser.isPending}
-                    className="rounded-md border border-[#1F3B5B] px-2 py-1 text-[11px] text-[#93C5FD] disabled:opacity-50"
-                    title="Envoyer un lien d'invitation (72h)"
-                  >Inviter</button>
-                  )}
-                  {canWriteUsers && (
-                  <button type="button" onClick={() => {
-                    const p = window.prompt("Nouveau mot de passe (vide = générer)", "");
-                    if (p === null) return;
-                    resetAdminPassword.mutate({ id: user.id, newPassword: p.trim() || undefined, revokeSessions: true });
-                  }}
-                    disabled={resetAdminPassword.isPending}
-                    className="rounded-md border border-[#3B4A1F] px-2 py-1 text-[11px] text-[#BEF264] disabled:opacity-50"
-                    title="Réinitialiser mot de passe + révoquer sessions"
-                  >Reset MDP</button>
-                  )}
-                  {canWriteUsers && (
-                  <button type="button" onClick={() => void handleDeleteUser(user.id)}
-                    disabled={deleteAdminUser.isPending}
-                    className="rounded-md border border-[#5B1F27] px-2 py-1 text-[11px] text-[#FCA5A5] disabled:opacity-50"
-                  >Supprimer</button>
-                  )}
-                </div>
-              </div>
-              <div className="mt-2 grid gap-2 text-xs text-[#A1A1AA] md:grid-cols-4">
-                <p>Dernier login: {asDate(user.lastLoginAt || "")}</p>
-                <p>Dernière activité: {asDate(user.lastActivityAt || "")}</p>
-                <p>Sessions 24h: {asInt(user.sessions24h)}</p>
-                <p>Actions 7j: {asInt(user.actions7d)}</p>
-              </div>
-              <div className="mt-2">
-                <p className="text-xs text-[#A1A1AA]">Activité récente</p>
-                <div className="mt-1 space-y-1">
-                  {user.recentActivity.slice(0, 3).map((evt, index) => (
-                    <p key={`${user.id}_${index}`} className="text-xs text-[#D4D4D8]">
-                      {asDate(evt.at)} · {evt.kind} · {evt.label}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </article>
+            <UserListItem
+              key={user.id}
+              user={user}
+              draft={userDraftFor(user)}
+              canWriteUsers={canWriteUsers}
+              updatePending={updateAdminUser.isPending}
+              invitePending={inviteAdminUser.isPending}
+              resetPending={resetAdminPassword.isPending}
+              deletePending={deleteAdminUser.isPending}
+              onDraftStatusChange={setUserDraftStatus}
+              onDraftRoleChange={setUserDraftRole}
+              onSave={(target) => void handleSaveUser(target)}
+              onOpenActivity={setActivityDialogTarget}
+              onInvite={(id) => inviteAdminUser.mutate(id)}
+              onOpenReset={(target) => {
+                setResetDialogTarget(target);
+                setResetPasswordDraft("");
+                setResetRevokeSessions(true);
+              }}
+              onOpenDelete={setDeleteDialogTarget}
+            />
           ))}
 
           {adminUsers.isError && (
@@ -225,6 +271,34 @@ export function UsersTab({
 
           <UsersAuditLogCard adminAuditLog={adminAuditLog} />
         </div>
+
+        <UserDeleteModal
+          target={deleteDialogTarget}
+          isPending={deleteAdminUser.isPending}
+          onClose={() => setDeleteDialogTarget(null)}
+          onConfirm={() => void handleDeleteUserConfirm()}
+        />
+
+        <UserResetPasswordModal
+          target={resetDialogTarget}
+          passwordDraft={resetPasswordDraft}
+          revokeSessions={resetRevokeSessions}
+          isPending={resetAdminPassword.isPending}
+          onChangePasswordDraft={setResetPasswordDraft}
+          onChangeRevokeSessions={setResetRevokeSessions}
+          onClose={() => {
+            setResetDialogTarget(null);
+            setResetPasswordDraft("");
+            setResetRevokeSessions(true);
+          }}
+          onConfirm={() => void handleResetPasswordConfirm()}
+        />
+
+        <UserActivityModal
+          target={activityDialogTarget}
+          linkedAuditEntries={selectedUserAuditEntries}
+          onClose={() => setActivityDialogTarget(null)}
+        />
     </section>
   );
 }
