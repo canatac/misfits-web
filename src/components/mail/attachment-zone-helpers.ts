@@ -81,7 +81,7 @@ function getExtension(filename: string): string {
 }
 
 export function inferContentType(file: File): string {
-  if (file.type?.trim()) return file.type;
+  const rawType = file.type?.trim().toLowerCase() ?? "";
   const ext = getExtension(file.name);
   const map: Record<string, string> = {
     pdf: "application/pdf",
@@ -100,7 +100,21 @@ export function inferContentType(file: File): string {
     tar: "application/x-tar",
     "7z": "application/x-7z-compressed",
   };
-  return map[ext] ?? "application/octet-stream";
+
+  const inferred = map[ext];
+  const genericTypes = new Set([
+    "",
+    "application/octet-stream",
+    "binary/octet-stream",
+    "application/unknown",
+    "application/download",
+  ]);
+
+  if (genericTypes.has(rawType) && inferred) {
+    return inferred;
+  }
+
+  return rawType || inferred || "application/octet-stream";
 }
 
 export function isAllowed(file: File): boolean {
