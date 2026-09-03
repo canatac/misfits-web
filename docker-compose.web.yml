@@ -4,7 +4,7 @@
 
 services:
   web:
-    image: rg.fr-par.scw.cloud/smtp-rust-registry/misfits-web:latest
+    image: rg.fr-par.scw.cloud/smtp-rust-registry/misfits-web:${MISFITS_WEB_IMAGE_TAG:-latest}
     container_name: misfits-web
     ports:
       - "3001:3000"
