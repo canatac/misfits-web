@@ -1,6 +1,7 @@
 "use client";
 
 import { NewsletterHubHeader } from "./newsletter-hub-parts/newsletter-hub-header";
+import { NewsletterMonitoringCockpit } from "./newsletter-hub-parts/newsletter-monitoring-cockpit";
 import { SourceManagerCard } from "./newsletter-hub-parts/source-manager-card";
 import { SummaryControls } from "./newsletter-hub-parts/summary-controls";
 import { SummaryList } from "./newsletter-hub-parts/summary-list";
@@ -12,6 +13,7 @@ export function NewsletterHub() {
   return (
     <section className="h-full overflow-auto p-4 text-[#E4E4E7] md:p-6">
       <NewsletterHubHeader />
+      <NewsletterMonitoringCockpit state={state} />
 
       <div className="mb-2 text-xs text-[#A1A1AA]">
         Sources actives: {state.sources.length} · Résumés: {state.items.length}

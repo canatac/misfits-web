@@ -91,3 +91,18 @@ export type NewsletterSuggestionsResponse = {
   generatedAt: string;
   total: number;
 };
+
+export type NewsletterMonitoringSnapshot = {
+  status: "idle" | "running";
+  updatedAt: string;
+  lastSummaryAt?: string;
+  activeSources: number;
+  totalSummaries: number;
+  summaries24h: number;
+  runCount: number;
+  runningCount: number;
+  failedCount: number;
+  successRate: number;
+  totalTokens: number;
+  totalCostUsd: number;
+};

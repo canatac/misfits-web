@@ -12,6 +12,8 @@ vi.mock("@/lib/newsletters-api", () => ({
   createNewsletterItem: vi.fn(),
   summarizeNewsletterSource: vi.fn(),
   listNewsletterSuggestions: vi.fn(),
+  getNewsletterMonitoringActivity: vi.fn(),
+  buildNewsletterMonitoringSnapshot: vi.fn(),
 }));
 
 describe("NewsletterHub server mode", () => {
@@ -41,6 +43,38 @@ describe("NewsletterHub server mode", () => {
           matchScore: 8,
         },
       ],
+    });
+    vi.spyOn(newsletterApi, "getNewsletterMonitoringActivity").mockResolvedValue({
+      generatedAt: "2026-09-04T00:00:00Z",
+      limit: 80,
+      metrics: {
+        totalRuns: 1,
+        completedRuns: 1,
+        failedRuns: 0,
+        successRate: 100,
+        avgLatencyMs: 1000,
+        p95LatencyMs: 1000,
+        promptTokens: 100,
+        completionTokens: 20,
+        totalTokens: 120,
+        avgTokensPerRun: 120,
+      },
+      runs: [],
+      byFeature: [],
+    } as any);
+    vi.spyOn(newsletterApi, "buildNewsletterMonitoringSnapshot").mockReturnValue({
+      status: "idle",
+      updatedAt: "2026-09-04T00:00:00Z",
+      lastSummaryAt: "2026-09-04T00:00:00Z",
+      activeSources: 1,
+      totalSummaries: 0,
+      summaries24h: 0,
+      runCount: 1,
+      runningCount: 0,
+      failedCount: 0,
+      successRate: 100,
+      totalTokens: 120,
+      totalCostUsd: 0,
     });
     vi.spyOn(newsletterApi, "createNewsletterSource").mockResolvedValue({
       id: "src-2",
@@ -78,6 +112,7 @@ describe("NewsletterHub server mode", () => {
       expect(newsletterApi.listNewsletterItems).toHaveBeenCalledTimes(1);
     });
     expect(screen.getByText(/Sources actives: 1/i)).toBeTruthy();
+    expect(screen.getByText(/Mini cockpit newsletters/i)).toBeTruthy();
   });
 
   it("creates a source URL via server API", async () => {
