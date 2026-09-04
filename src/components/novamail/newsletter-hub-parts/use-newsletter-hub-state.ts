@@ -2,12 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  buildNewsletterMonitoringSnapshot,
+  getNewsletterMonitoringActivity,
   listNewsletterItems,
   listNewsletterSources,
   listNewsletterSuggestions,
 } from "@/lib/newsletters-api";
 import type {
   NewsletterItem,
+  NewsletterMonitoringSnapshot,
   NewsletterSource,
   NewsletterSubscriptionSuggestion,
   NewsletterTopic,
@@ -26,6 +29,19 @@ export function useNewsletterHubState() {
   const [items, setItems] = useState<NewsletterItem[]>([]);
   const [suggestions, setSuggestions] = useState<NewsletterSubscriptionSuggestion[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
+  const [monitoring, setMonitoring] = useState<NewsletterMonitoringSnapshot>({
+    status: "idle",
+    updatedAt: new Date().toISOString(),
+    activeSources: 0,
+    totalSummaries: 0,
+    summaries24h: 0,
+    runCount: 0,
+    runningCount: 0,
+    failedCount: 0,
+    successRate: 0,
+    totalTokens: 0,
+    totalCostUsd: 0,
+  });
   const [query, setQuery] = useState("");
 
   const [sourceName, setSourceName] = useState("");
@@ -60,6 +76,22 @@ export function useNewsletterHubState() {
       setSuggestions(serverSuggestions.suggestions);
       setInterests(serverSuggestions.interests);
       if (!contentSourceId && serverSources[0]?.id) setContentSourceId(serverSources[0].id);
+
+      let activity = null;
+      try {
+        activity = await getNewsletterMonitoringActivity(80);
+      } catch {
+        activity = null;
+      }
+
+      setMonitoring(
+        buildNewsletterMonitoringSnapshot({
+          activeSources: serverSources.length,
+          items: serverItems,
+          aiBusy,
+          activity,
+        })
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur serveur";
       setNotice(`Chargement impossible: ${msg}`);
@@ -72,6 +104,14 @@ export function useNewsletterHubState() {
     void loadFromServer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setMonitoring((prev) => ({
+      ...prev,
+      status: aiBusy ? "running" : prev.runningCount > 0 ? "running" : "idle",
+      updatedAt: new Date().toISOString(),
+    }));
+  }, [aiBusy]);
 
   const visibleItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -170,6 +210,7 @@ export function useNewsletterHubState() {
     items,
     suggestions,
     interests,
+    monitoring,
     visibleItems,
     query,
     setQuery,
