@@ -79,7 +79,14 @@ export function UsersTab({
   const currentUser = useMemo(() => {
     const users = adminUsers.data?.users ?? [];
     const whoami = adminWhoami.data;
-    if (!whoami?.email) return null;
+    if (!whoami) return null;
+
+    if (whoami.userId) {
+      const byId = users.find((user) => user.id === whoami.userId);
+      if (byId) return byId;
+    }
+
+    if (!whoami.email) return null;
     const targetEmail = whoami.email.toLowerCase();
     return users.find((user) => user.email.toLowerCase() === targetEmail) ?? null;
   }, [adminUsers.data?.users, adminWhoami.data]);
@@ -89,8 +96,10 @@ export function UsersTab({
   const selfPasswordMismatch =
     selfConfirmPasswordDraft.length > 0 &&
     selfPasswordDraft.trim() !== selfConfirmPasswordDraft.trim();
+  const effectiveCurrentUserId = adminWhoami.data?.userId ?? currentUser?.id ?? null;
+
   const canSubmitSelfPassword =
-    Boolean(currentUser) &&
+    Boolean(effectiveCurrentUserId) &&
     selfPasswordDraft.trim().length >= 8 &&
     selfPasswordDraft.trim() === selfConfirmPasswordDraft.trim();
 
@@ -158,9 +167,9 @@ export function UsersTab({
   }
 
   async function handleSelfPasswordChange() {
-    if (!currentUser || !canSubmitSelfPassword) return;
+    if (!effectiveCurrentUserId || !canSubmitSelfPassword) return;
     await resetAdminPassword.mutateAsync({
-      id: currentUser.id,
+      id: effectiveCurrentUserId,
       newPassword: selfPasswordDraft.trim(),
       revokeSessions: selfRevokeSessions,
     });
@@ -292,7 +301,7 @@ export function UsersTab({
             </button>
           </div>
 
-          {!currentUser && (
+          {!adminWhoami.isLoading && !adminUsers.isLoading && !effectiveCurrentUserId && (
             <p className="mt-2 text-[11px] text-[#FCA5A5]">
               Utilisateur courant introuvable dans la liste. Utiliser le flux “Mot de passe oublié”.
             </p>
