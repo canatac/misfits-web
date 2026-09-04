@@ -11,6 +11,7 @@ vi.mock("@/lib/newsletters-api", () => ({
   deleteNewsletterSource: vi.fn(),
   createNewsletterItem: vi.fn(),
   summarizeNewsletterSource: vi.fn(),
+  listNewsletterSuggestions: vi.fn(),
 }));
 
 describe("NewsletterHub server mode", () => {
@@ -28,6 +29,19 @@ describe("NewsletterHub server mode", () => {
       },
     ]);
     vi.spyOn(newsletterApi, "listNewsletterItems").mockResolvedValue([]);
+    vi.spyOn(newsletterApi, "listNewsletterSuggestions").mockResolvedValue({
+      interests: ["tech", "ai"],
+      suggestions: [
+        {
+          title: "Hacker News",
+          url: "https://news.ycombinator.com/rss",
+          kind: "rss",
+          reason: "Veille tech généraliste.",
+          matchedInterests: ["tech"],
+          matchScore: 8,
+        },
+      ],
+    });
     vi.spyOn(newsletterApi, "createNewsletterSource").mockResolvedValue({
       id: "src-2",
       name: "Stratechery",
@@ -118,6 +132,23 @@ describe("NewsletterHub server mode", () => {
 
     await waitFor(() => {
       expect(newsletterApi.deleteNewsletterSource).toHaveBeenCalledWith("src-1");
+    });
+  });
+
+  it("subscribes from suggested feeds", async () => {
+    render(<NewsletterHub />);
+
+    await waitFor(() => {
+      expect(newsletterApi.listNewsletterSuggestions).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /S'abonner/i }));
+
+    await waitFor(() => {
+      expect(newsletterApi.createNewsletterSource).toHaveBeenCalledWith({
+        name: "Hacker News",
+        url: "https://news.ycombinator.com/rss",
+      });
     });
   });
 });
