@@ -3,6 +3,7 @@
  * No import from use-file-workspace.ts.
  */
 import { mailAuthHeaders } from "@/lib/mail-api";
+import { normalizeEmailRecord } from "@/lib/email-normalization";
 import type { Email } from "@/types/email";
 import {
   makeRule,
@@ -42,7 +43,9 @@ export async function fetchFolder(folder: string): Promise<Email[]> {
   });
   if (!res.ok) throw new Error(`Failed to load ${folder}: ${res.status}`);
   const data = (await res.json()) as { emails?: Email[] };
-  return Array.isArray(data.emails) ? data.emails : [];
+  return Array.isArray(data.emails)
+    ? data.emails.map((email) => normalizeEmailRecord(email))
+    : [];
 }
 
 export async function ensureNestedDir(
