@@ -15,6 +15,7 @@ import type {
   Folder,
 } from "@/types/email";
 import { mailAuthHeaders, hasMailIdentity } from "@/lib/mail-api";
+import { normalizeEmailRecord } from "@/lib/email-normalization";
 import { useEmailStore } from "@/stores/email-store";
 
 async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
@@ -35,8 +36,11 @@ async function fetchEmailList(query: EmailQuery): Promise<EmailListResponse> {
   });
   if (!res.ok) throw new Error(`Failed to fetch emails: ${res.statusText}`);
   const data = await res.json();
+  const emails = Array.isArray(data.emails)
+    ? data.emails.map((email: Email) => normalizeEmailRecord(email))
+    : [];
   return {
-    emails: data.emails ?? [],
+    emails,
     total: data.total ?? 0,
     page: data.page ?? query.page ?? 1,
     pageSize: data.pageSize ?? query.pageSize ?? 50,
@@ -54,7 +58,8 @@ async function fetchEmailById(id: string): Promise<Email | null> {
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Failed to fetch email: ${res.statusText}`);
-  return res.json();
+  const email = (await res.json()) as Email;
+  return normalizeEmailRecord(email);
 }
 
 async function postEmailAction(

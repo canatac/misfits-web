@@ -10,6 +10,7 @@
  */
 import type { Email } from "@/types/email";
 import { mailAuthHeaders } from "@/lib/mail-api";
+import { normalizeEmailRecord } from "@/lib/email-normalization";
 
 export interface FetchEmailsParams {
   folder: string;
@@ -48,7 +49,9 @@ export class HttpEmailRepository implements EmailRepository {
       emails?: Email[];
       total?: number;
     };
-    const emails = Array.isArray(data.emails) ? data.emails : [];
+    const emails = Array.isArray(data.emails)
+      ? data.emails.map((email) => normalizeEmailRecord(email))
+      : [];
     return { emails, total: data.total ?? emails.length };
   }
 }
