@@ -96,7 +96,11 @@ export function UsersTab({
   const selfPasswordMismatch =
     selfConfirmPasswordDraft.length > 0 &&
     selfPasswordDraft.trim() !== selfConfirmPasswordDraft.trim();
-  const effectiveCurrentUserId = adminWhoami.data?.userId ?? currentUser?.id ?? null;
+  const effectiveCurrentUserId =
+    adminWhoami.data?.userId ??
+    currentUser?.id ??
+    adminWhoami.data?.email?.trim() ??
+    null;
 
   const canSubmitSelfPassword =
     Boolean(effectiveCurrentUserId) &&
