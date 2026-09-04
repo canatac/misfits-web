@@ -38,7 +38,9 @@ export interface AdminDeliverabilityDiagnosticsResponse {
 }
 
 export interface AdminWhoamiResponse {
+  userId?: string;
   email: string;
   role: string;
   display_name?: string;
+  enforced?: boolean;
 }
