@@ -4,6 +4,8 @@ import type {
   CreateNewsletterSourceInput,
   NewsletterItem,
   NewsletterItemsResponse,
+  NewsletterSuggestionsResponse,
+  NewsletterSubscriptionSuggestion,
   NewsletterSource,
   NewsletterSourcesResponse,
   SummarizeNewsletterSourceInput,
@@ -52,4 +54,17 @@ export async function summarizeNewsletterSource(
     `/newsletters/sources/${sourceId}/summarize`,
     payload
   );
+}
+
+export async function listNewsletterSuggestions(): Promise<{
+  suggestions: NewsletterSubscriptionSuggestion[];
+  interests: string[];
+}> {
+  const data = await apiClient.get<NewsletterSuggestionsResponse>(
+    "/newsletters/suggestions"
+  );
+  return {
+    suggestions: Array.isArray(data.suggestions) ? data.suggestions : [],
+    interests: Array.isArray(data.interests) ? data.interests : [],
+  };
 }

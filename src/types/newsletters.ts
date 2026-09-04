@@ -73,3 +73,21 @@ export type SummarizeNewsletterSourceResponse = {
   model: string;
   fetchedChars: number;
 };
+
+export type NewsletterSuggestionKind = "rss" | "site" | "article";
+
+export type NewsletterSubscriptionSuggestion = {
+  title: string;
+  url: string;
+  kind: NewsletterSuggestionKind;
+  reason: string;
+  matchedInterests: string[];
+  matchScore: number;
+};
+
+export type NewsletterSuggestionsResponse = {
+  suggestions: NewsletterSubscriptionSuggestion[];
+  interests: string[];
+  generatedAt: string;
+  total: number;
+};

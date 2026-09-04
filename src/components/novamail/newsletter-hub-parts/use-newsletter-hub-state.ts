@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { listNewsletterItems, listNewsletterSources } from "@/lib/newsletters-api";
-import type { NewsletterItem, NewsletterSource, NewsletterTopic } from "@/types/newsletters";
+import {
+  listNewsletterItems,
+  listNewsletterSources,
+  listNewsletterSuggestions,
+} from "@/lib/newsletters-api";
+import type {
+  NewsletterItem,
+  NewsletterSource,
+  NewsletterSubscriptionSuggestion,
+  NewsletterTopic,
+} from "@/types/newsletters";
 import {
   addContentAction,
+  addSuggestedSourceAction,
   addSourceAction,
   deleteSourceAction,
   updateSourceAction,
@@ -14,6 +24,8 @@ import { generateDigestAction } from "./newsletter-hub-digest-action";
 export function useNewsletterHubState() {
   const [sources, setSources] = useState<NewsletterSource[]>([]);
   const [items, setItems] = useState<NewsletterItem[]>([]);
+  const [suggestions, setSuggestions] = useState<NewsletterSubscriptionSuggestion[]>([]);
+  const [interests, setInterests] = useState<string[]>([]);
   const [query, setQuery] = useState("");
 
   const [sourceName, setSourceName] = useState("");
@@ -38,12 +50,15 @@ export function useNewsletterHubState() {
   const loadFromServer = async () => {
     setLoading(true);
     try {
-      const [serverSources, serverItems] = await Promise.all([
+      const [serverSources, serverItems, serverSuggestions] = await Promise.all([
         listNewsletterSources(),
         listNewsletterItems(),
+        listNewsletterSuggestions(),
       ]);
       setSources(serverSources);
       setItems(serverItems);
+      setSuggestions(serverSuggestions.suggestions);
+      setInterests(serverSuggestions.interests);
       if (!contentSourceId && serverSources[0]?.id) setContentSourceId(serverSources[0].id);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur serveur";
@@ -141,9 +156,20 @@ export function useNewsletterHubState() {
       reload: loadFromServer,
     });
 
+  const addSuggestedSource = (suggestion: NewsletterSubscriptionSuggestion) =>
+    addSuggestedSourceAction({
+      suggestion,
+      setSubmitting,
+      setContentSourceId,
+      setNotice,
+      reload: loadFromServer,
+    });
+
   return {
     sources,
     items,
+    suggestions,
+    interests,
     visibleItems,
     query,
     setQuery,
@@ -179,5 +205,6 @@ export function useNewsletterHubState() {
     deleteSource,
     addContent,
     generateDigest,
+    addSuggestedSource,
   };
 }

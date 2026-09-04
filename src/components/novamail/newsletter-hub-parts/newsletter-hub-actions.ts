@@ -5,7 +5,11 @@ import {
   updateNewsletterSource,
 } from "@/lib/newsletters-api";
 import { emitNewsletterUpdated } from "@/lib/newsletter-events";
-import type { NewsletterSource, NewsletterTopic } from "@/types/newsletters";
+import type {
+  NewsletterSource,
+  NewsletterSubscriptionSuggestion,
+  NewsletterTopic,
+} from "@/types/newsletters";
 import { inferSourceName, normalizeHttpUrl } from "./newsletter-hub-utils";
 
 type Setter<T> = (value: T) => void;
@@ -142,6 +146,31 @@ export async function addContentAction(args: {
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Erreur serveur";
     args.setNotice(`Échec ajout résumé: ${msg}`);
+  } finally {
+    args.setSubmitting(false);
+  }
+}
+
+export async function addSuggestedSourceAction(args: {
+  suggestion: NewsletterSubscriptionSuggestion;
+  setSubmitting: Setter<boolean>;
+  setContentSourceId: Setter<string>;
+  setNotice: Setter<string | null>;
+  reload: () => Promise<void>;
+}) {
+  args.setSubmitting(true);
+  try {
+    const created = await createNewsletterSource({
+      name: args.suggestion.title.trim(),
+      url: args.suggestion.url.trim(),
+    });
+    args.setContentSourceId(created.id);
+    args.setNotice(`Source suggérée ajoutée: ${created.name}`);
+    await args.reload();
+    emitNewsletterUpdated();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Erreur serveur";
+    args.setNotice(`Échec ajout suggestion: ${msg}`);
   } finally {
     args.setSubmitting(false);
   }

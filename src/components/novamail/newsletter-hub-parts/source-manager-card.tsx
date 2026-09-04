@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent } from "react";
-import { ExternalLink, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { ExternalLink, Pencil, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNewsletterHubState } from "./use-newsletter-hub-state";
@@ -128,6 +128,55 @@ export function SourceManagerCard({ state }: { state: NewsletterHubState }) {
               </div>
             );
           })
+        )}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-[#242427] bg-[#0A0A0B] p-3">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
+          <Sparkles className="h-4 w-4 text-[#E9C995]" /> Suggestions d&apos;abonnements
+        </div>
+        {state.interests.length > 0 ? (
+          <p className="mb-3 text-xs text-[#A1A1AA]">
+            Intérêts détectés: {state.interests.join(" · ")}
+          </p>
+        ) : null}
+
+        {state.suggestions.length === 0 ? (
+          <p className="text-xs text-[#71717A]">
+            Pas encore de suggestions. Ajoute quelques sources/résumés pour affiner.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {state.suggestions.map((s) => (
+              <div
+                key={`${s.kind}-${s.url}`}
+                className="flex flex-col gap-2 rounded-lg border border-[#242427] bg-[#101012] p-3 md:flex-row md:items-center md:justify-between"
+              >
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    {s.title} <span className="text-xs text-[#A1A1AA]">({s.kind})</span>
+                  </p>
+                  <a
+                    href={s.url}
+                    className="inline-flex items-center gap-1 text-xs text-[#E9C995] hover:underline"
+                  >
+                    {s.url}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                  <p className="mt-1 text-xs text-[#A1A1AA]">{s.reason}</p>
+                </div>
+                <Button
+                  type="button"
+                  disabled={state.submitting || state.loading}
+                  onClick={() => void state.addSuggestedSource(s)}
+                  variant="outline"
+                  className="gap-2 border-[#2A2A2D] bg-[#141417] text-[#E4E4E7] hover:bg-[#1B1B1F]"
+                >
+                  <Plus className="h-4 w-4" /> S&apos;abonner
+                </Button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
