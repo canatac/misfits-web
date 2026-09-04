@@ -3,6 +3,7 @@
 // UsersTab.tsx — extracted from admin-console-page.tsx Sprint 3
 import { useMemo, useState, type FormEvent } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
+import { toast } from "sonner";
 import type {
   AdminUserRecord,
   AdminUsersResponse,
@@ -10,6 +11,7 @@ import type {
   CreateAdminUserInput,
   AdminAiActivityResponse,
 } from "@/types/admin-ops";
+import { useAuthStore } from "@/stores/auth-store";
 import type { AdminAuditLogResponse } from "@/lib/admin-ops-api";
 import type {
   useUpdateAdminUser,
@@ -52,6 +54,7 @@ export function UsersTab({
   deleteAdminUser,
   updateAdminUser,
 }: UsersTabProps) {
+  const authUser = useAuthStore((s) => s.user);
   const rbacEnforced = adminWhoami.data?.enforced === true;
   const canWriteUsers = (adminWhoami.data?.role ?? "admin") === "admin";
 
@@ -78,6 +81,16 @@ export function UsersTab({
 
   const currentUser = useMemo(() => {
     const users = adminUsers.data?.users ?? [];
+    if (authUser?.id) {
+      const byAuthId = users.find((user) => user.id === authUser.id);
+      if (byAuthId) return byAuthId;
+    }
+    if (authUser?.email) {
+      const authEmail = authUser.email.toLowerCase();
+      const byAuthEmail = users.find((user) => user.email.toLowerCase() === authEmail);
+      if (byAuthEmail) return byAuthEmail;
+    }
+
     const whoami = adminWhoami.data;
     if (!whoami) return null;
 
@@ -89,7 +102,7 @@ export function UsersTab({
     if (!whoami.email) return null;
     const targetEmail = whoami.email.toLowerCase();
     return users.find((user) => user.email.toLowerCase() === targetEmail) ?? null;
-  }, [adminUsers.data?.users, adminWhoami.data]);
+  }, [adminUsers.data?.users, adminWhoami.data, authUser?.email, authUser?.id]);
 
   const selfPasswordTooShort =
     selfPasswordDraft.length > 0 && selfPasswordDraft.trim().length < 8;
@@ -97,13 +110,14 @@ export function UsersTab({
     selfConfirmPasswordDraft.length > 0 &&
     selfPasswordDraft.trim() !== selfConfirmPasswordDraft.trim();
   const effectiveCurrentUserId =
+    authUser?.id ??
     adminWhoami.data?.userId ??
     currentUser?.id ??
+    authUser?.email?.trim() ??
     adminWhoami.data?.email?.trim() ??
     null;
 
   const canSubmitSelfPassword =
-    Boolean(effectiveCurrentUserId) &&
     selfPasswordDraft.trim().length >= 8 &&
     selfPasswordDraft.trim() === selfConfirmPasswordDraft.trim();
 
@@ -171,7 +185,11 @@ export function UsersTab({
   }
 
   async function handleSelfPasswordChange() {
-    if (!effectiveCurrentUserId || !canSubmitSelfPassword) return;
+    if (!canSubmitSelfPassword) return;
+    if (!effectiveCurrentUserId) {
+      toast.error("Impossible d'identifier le compte courant. Utiliser le flux “Mot de passe oublié”.");
+      return;
+    }
     await resetAdminPassword.mutateAsync({
       id: effectiveCurrentUserId,
       newPassword: selfPasswordDraft.trim(),
@@ -305,11 +323,14 @@ export function UsersTab({
             </button>
           </div>
 
-          {!adminWhoami.isLoading && !adminUsers.isLoading && !effectiveCurrentUserId && (
+          {!adminWhoami.isLoading &&
+            !adminUsers.isLoading &&
+            !authUser &&
+            !effectiveCurrentUserId && (
             <p className="mt-2 text-[11px] text-[#FCA5A5]">
               Utilisateur courant introuvable dans la liste. Utiliser le flux “Mot de passe oublié”.
             </p>
-          )}
+            )}
         </div>
 
         <div className="mb-4 grid gap-3 md:grid-cols-4">
