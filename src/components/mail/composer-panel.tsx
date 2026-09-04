@@ -11,7 +11,7 @@
  *  - "panel" (default): bordered card, used inside the mail-page modal.
  *  - "page": full-height, used by the /compose route.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -76,6 +76,7 @@ export function ComposerPanel({
   const [sendLaterDate, setSendLaterDate] = useState<string>("");
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [aiEditor, setAiEditor] = useState<Editor | null>(null);
+  const attachmentsSectionRef = useRef<HTMLDivElement>(null);
   const aiGenerating = useAIStore((s) => s.isGenerating);
 
   const {
@@ -110,6 +111,13 @@ export function ComposerPanel({
     removeRecipient(type, id);
   const onSet = (type: RecipientType) => (rs: Recipient[]) =>
     setRecipients(type, rs);
+
+  const jumpToAttachments = () => {
+    attachmentsSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
 
 
@@ -205,6 +213,19 @@ export function ComposerPanel({
             aiLoading={aiGenerating}
           />
 
+          <div ref={attachmentsSectionRef}>
+            <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-[var(--color-fg)]">
+              <Paperclip className="h-4 w-4" />
+              Attachments {attachments.length > 0 ? `(${attachments.length})` : ""}
+            </div>
+            <AttachmentZone
+              attachments={attachments}
+              onAdd={addAttachment}
+              onUpdate={updateAttachment}
+              onRemove={removeAttachment}
+            />
+          </div>
+
           {signature && (
             <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)]/40 p-3">
               <div className="mb-1 text-xs font-medium tracking-wide text-[var(--color-muted-fg)] uppercase">
@@ -217,25 +238,14 @@ export function ComposerPanel({
               />
             </div>
           )}
-
-          <div>
-            <div className="mb-1.5 flex items-center gap-2 text-sm font-medium text-[var(--color-fg)]">
-              <Paperclip className="h-4 w-4" />
-              Attachments
-            </div>
-            <AttachmentZone
-              attachments={attachments}
-              onAdd={addAttachment}
-              onUpdate={updateAttachment}
-              onRemove={removeAttachment}
-            />
-          </div>
         </div>
       </ScrollArea>
 
       <ComposerFooter
         isSending={isSending}
         canSend={canSend}
+        attachments={attachments}
+        onJumpToAttachments={jumpToAttachments}
         onSend={() => handleSend()}
         onDiscard={handleDiscard}
       />
