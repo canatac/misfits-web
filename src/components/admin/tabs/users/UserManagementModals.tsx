@@ -115,7 +115,7 @@ export function UserResetPasswordModal({
           <label className="block">
             <span className="mb-1 block text-xs text-[#A1A1AA]">Nouveau mot de passe (optionnel)</span>
             <input
-              type="text"
+              type="password"
               value={passwordDraft}
               onChange={(event) => onChangePasswordDraft(event.target.value)}
               className="w-full rounded-md border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"

@@ -27,6 +27,7 @@ import {
   UserDeleteModal,
   UserResetPasswordModal,
 } from "./users/UserManagementModals";
+import { PasswordStrengthIndicator } from "@/components/password-strength-indicator";
 
 interface UsersTabProps {
   adminUsers: UseQueryResult<AdminUsersResponse, Error>;
@@ -71,6 +72,27 @@ export function UsersTab({
     useState<AdminUserRecord | null>(null);
   const [resetPasswordDraft, setResetPasswordDraft] = useState("");
   const [resetRevokeSessions, setResetRevokeSessions] = useState(true);
+  const [selfPasswordDraft, setSelfPasswordDraft] = useState("");
+  const [selfConfirmPasswordDraft, setSelfConfirmPasswordDraft] = useState("");
+  const [selfRevokeSessions, setSelfRevokeSessions] = useState(true);
+
+  const currentUser = useMemo(() => {
+    const users = adminUsers.data?.users ?? [];
+    const whoami = adminWhoami.data;
+    if (!whoami?.email) return null;
+    const targetEmail = whoami.email.toLowerCase();
+    return users.find((user) => user.email.toLowerCase() === targetEmail) ?? null;
+  }, [adminUsers.data?.users, adminWhoami.data]);
+
+  const selfPasswordTooShort =
+    selfPasswordDraft.length > 0 && selfPasswordDraft.trim().length < 8;
+  const selfPasswordMismatch =
+    selfConfirmPasswordDraft.length > 0 &&
+    selfPasswordDraft.trim() !== selfConfirmPasswordDraft.trim();
+  const canSubmitSelfPassword =
+    Boolean(currentUser) &&
+    selfPasswordDraft.trim().length >= 8 &&
+    selfPasswordDraft.trim() === selfConfirmPasswordDraft.trim();
 
   function userDraftFor(user: AdminUserRecord) {
     return userDrafts[user.id] ?? { role: user.role, status: user.status };
@@ -135,6 +157,18 @@ export function UsersTab({
     setResetRevokeSessions(true);
   }
 
+  async function handleSelfPasswordChange() {
+    if (!currentUser || !canSubmitSelfPassword) return;
+    await resetAdminPassword.mutateAsync({
+      id: currentUser.id,
+      newPassword: selfPasswordDraft.trim(),
+      revokeSessions: selfRevokeSessions,
+    });
+    setSelfPasswordDraft("");
+    setSelfConfirmPasswordDraft("");
+    setSelfRevokeSessions(true);
+  }
+
   function handleCreateUser(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     createAdminUser.mutate({
@@ -197,6 +231,72 @@ export function UsersTab({
             <li>3. Supprimer: cliquer “Supprimer”, confirmer dans la modale.</li>
             <li>4. Activité: cliquer “Voir activité” pour le détail timeline + audit.</li>
           </ul>
+        </div>
+
+        <div className="mb-4 rounded-xl border border-[#2A2A30] bg-[#151518] p-3">
+          <p className="text-xs font-medium text-[#E4E4E7]">Modifier mon mot de passe</p>
+          <p className="mt-1 text-xs text-[#A1A1AA]">
+            Accessible à tous les utilisateurs, y compris admin.
+          </p>
+
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs text-[#A1A1AA]">Nouveau mot de passe</span>
+              <input
+                type="password"
+                value={selfPasswordDraft}
+                onChange={(event) => setSelfPasswordDraft(event.target.value)}
+                className="w-full rounded-md border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+                placeholder="8 caractères minimum"
+                autoComplete="new-password"
+              />
+              <PasswordStrengthIndicator password={selfPasswordDraft} />
+              {selfPasswordTooShort && (
+                <p className="mt-1 text-[11px] text-[#FCA5A5]">Minimum 8 caractères.</p>
+              )}
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs text-[#A1A1AA]">Confirmer le mot de passe</span>
+              <input
+                type="password"
+                value={selfConfirmPasswordDraft}
+                onChange={(event) => setSelfConfirmPasswordDraft(event.target.value)}
+                className="w-full rounded-md border border-[#2A2A30] bg-[#111114] px-2 py-1.5 text-xs text-[#D4D4D8]"
+                placeholder="Retaper le mot de passe"
+                autoComplete="new-password"
+              />
+              {selfPasswordMismatch && (
+                <p className="mt-1 text-[11px] text-[#FCA5A5]">Les mots de passe ne correspondent pas.</p>
+              )}
+            </label>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <label className="flex items-center gap-2 text-xs text-[#D4D4D8]">
+              <input
+                type="checkbox"
+                checked={selfRevokeSessions}
+                onChange={(event) => setSelfRevokeSessions(event.target.checked)}
+              />
+              Révoquer mes sessions actives
+            </label>
+
+            <button
+              type="button"
+              disabled={resetAdminPassword.isPending || !canSubmitSelfPassword}
+              onClick={() => void handleSelfPasswordChange()}
+              className="rounded-md border border-[#3B4A1F] bg-[#1B2310] px-3 py-1.5 text-xs font-semibold text-[#BEF264] disabled:opacity-50"
+            >
+              {resetAdminPassword.isPending ? "Mise à jour..." : "Mettre à jour mon mot de passe"}
+            </button>
+          </div>
+
+          {!currentUser && (
+            <p className="mt-2 text-[11px] text-[#FCA5A5]">
+              Utilisateur courant introuvable dans la liste. Utiliser le flux “Mot de passe oublié”.
+            </p>
+          )}
         </div>
 
         <div className="mb-4 grid gap-3 md:grid-cols-4">
