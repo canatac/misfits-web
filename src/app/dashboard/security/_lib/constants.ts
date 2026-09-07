@@ -23,10 +23,6 @@ export type MailboxSecret = {
 export type MailboxSecretMap = Record<string, MailboxSecret>;
 export type LlmSecrets = Record<LlmProvider, string>;
 
-export const STORAGE_MAILBOX_KEYS = "misfits.security.mailbox-secrets";
-export const STORAGE_LLM_KEYS = "misfits.security.llm-secrets";
-export const STORAGE_LLM_PROVIDER = "misfits.security.llm-provider";
-
 import type { UserRole } from "@/types/auth";
 import type { EmailAccount } from "@/types/account";
 

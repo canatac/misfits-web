@@ -51,7 +51,7 @@ export function ProfileSection() {
     useAuthStore.setState({ user: updatedUser, session: updatedSession });
     const remember =
       typeof window !== "undefined" &&
-      window.localStorage.getItem("mfa.session") !== null;
+      window.sessionStorage.getItem("mfa.session") !== null;
     storeSession(updatedSession, remember);
     setProfileFeedback("Profil mis à jour localement (avatar, nom/prénom, rôle).");
   }
