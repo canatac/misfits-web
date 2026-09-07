@@ -2,10 +2,10 @@
  * Search hooks — debounced search execution with TanStack Query,
  * saved searches CRUD, and search history management.
  */
-import { useEffect, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { mockEmails } from "@/lib/mock-emails";
 import { useSearchStore } from "@/stores/search-store";
+import { useEmailStore } from "@/stores/email-store";
 import { searchEmails } from "@/lib/search-engine";
 import type { SearchSort } from "@/types/search";
 
@@ -24,7 +24,8 @@ export function useSearch(query: string, sort: SearchSort = "relevance") {
       if (!trimmed) return { results: [], facets: null };
       // Simulate a tiny delay for the debounce UX; actual search is synchronous.
       await new Promise((r) => setTimeout(r, DEBOUNCE_MS));
-      const { results, facets } = searchEmails(trimmed, mockEmails, sort);
+      const corpus = useEmailStore.getState().emails;
+      const { results, facets } = searchEmails(trimmed, corpus, sort);
       return { results, facets };
     },
     enabled: trimmed.length > 0,

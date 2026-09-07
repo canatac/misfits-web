@@ -8,9 +8,6 @@ import {
 import { fetchAiSettings, saveAiSettings } from "@/lib/ai-settings";
 import {
   LLM_PROVIDER_OPTIONS,
-  STORAGE_LLM_KEYS,
-  STORAGE_LLM_PROVIDER,
-  STORAGE_MAILBOX_KEYS,
   type LlmProvider,
   type LlmSecrets,
   type MailboxSecret,
@@ -34,29 +31,10 @@ export function useSecurityState() {
   const [llmFeedback, setLlmFeedback] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const rawMailbox = window.localStorage.getItem(STORAGE_MAILBOX_KEYS);
-      if (rawMailbox) {
-        const parsed = JSON.parse(rawMailbox) as MailboxSecretMap;
-        setMailboxSecrets(parsed || {});
-      }
-
-      const rawLlm = window.localStorage.getItem(STORAGE_LLM_KEYS);
-      if (rawLlm) {
-        const parsed = JSON.parse(rawLlm) as Partial<LlmSecrets>;
-        setLlmSecrets((prev) => ({ ...prev, ...parsed }));
-      }
-
-      const rawProvider = window.localStorage.getItem(STORAGE_LLM_PROVIDER);
-      if (
-        rawProvider &&
-        LLM_PROVIDER_OPTIONS.includes(rawProvider as LlmProvider)
-      ) {
-        setLlmProvider(rawProvider as LlmProvider);
-      }
-    } catch {
-      // ignore malformed local cache
-    }
+    // Secrets are intentionally memory-only (no browser persistent storage).
+    setLlmProvider((prev) =>
+      LLM_PROVIDER_OPTIONS.includes(prev) ? prev : "openrouter",
+    );
 
     let mounted = true;
     fetchAiSettings()
@@ -90,34 +68,32 @@ export function useSecurityState() {
   }
 
   function handleSaveMailboxSecrets() {
-    try {
-      window.localStorage.setItem(
-        STORAGE_MAILBOX_KEYS,
-        JSON.stringify(mailboxSecrets),
-      );
-      setMailboxFeedback("Clés et identifiants IMAP/SMTP sauvegardés localement.");
-    } catch {
-      setMailboxFeedback("Impossible de sauvegarder les clés mailbox localement.");
-    }
+    const hasAnyValue = Object.values(mailboxSecrets).some((secret) =>
+      [secret.imapLogin, secret.imapPassword, secret.smtpLogin, secret.smtpPassword]
+        .map((value) => value.trim())
+        .some(Boolean),
+    );
+    setMailboxFeedback(
+      hasAnyValue
+        ? "Clés mailbox conservées en mémoire de session (non persistées navigateur)."
+        : "Aucune clé mailbox à conserver.",
+    );
   }
 
   async function handleSaveLlmSettings() {
     setLlmSaving(true);
     try {
-      window.localStorage.setItem(STORAGE_LLM_KEYS, JSON.stringify(llmSecrets));
-      window.localStorage.setItem(STORAGE_LLM_PROVIDER, llmProvider);
-
       const saved = await saveAiSettings({
         defaultModel: aiSettings.defaultModel,
         features: aiSettings.features,
       });
       setAiSettings(saved);
       setLlmFeedback(
-        "Configuration LLM sauvegardée (provider local + modèles système). ",
+        "Configuration LLM sauvegardée côté serveur (secrets conservés en mémoire de session).",
       );
     } catch {
       setLlmFeedback(
-        "Sauvegarde partielle: clés locales OK, mais la sauvegarde des modèles système a échoué.",
+        "Échec de sauvegarde des modèles système. Les secrets restent uniquement en mémoire de session.",
       );
     } finally {
       setLlmSaving(false);
