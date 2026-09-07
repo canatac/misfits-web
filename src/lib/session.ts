@@ -9,8 +9,8 @@
  *
  * Storage strategy: the backend should set an HttpOnly `mfa_session` cookie
  * for first-party requests (preferred, immune to JS exfiltration). On the
- * client we only keep the full session in `sessionStorage` (tab-scoped,
- * volatile) so access/refresh tokens are never written to `localStorage`.
+ * client we keep the full session in memory only (tab process scope) so
+ * access/refresh tokens are never written to browser storage.
  */
 
 import type { Session } from "@/types/auth";
@@ -28,8 +28,9 @@ export {
  * Storage keys
  * ------------------------------------------------------------------ */
 
-const STORAGE_KEY = "mfa.session";
 const SESSION_COOKIE = "mfa_session";
+let inMemorySession: Session | null = null;
+let inMemoryLastSessionId: string | null = null;
 
 /* ------------------------------------------------------------------ *
  * Cookie helpers (browser-only, SSR-safe)
@@ -64,17 +65,11 @@ function readCookie(name: string): string | null {
  * Token storage
  * ------------------------------------------------------------------ */
 
-interface PersistedSession {
-  session: Session;
-  /** epoch ms — when the persisted entry was written. */
-  storedAt: number;
-}
-
-/** Persist the session to sessionStorage and (optionally) a cookie. */
+/** Persist the session in memory and (optionally) a cookie. */
 export function storeSession(session: Session, remember: boolean): void {
   if (!isBrowser()) return;
   void remember;
-  const payload: PersistedSession = { session, storedAt: Date.now() };
+  inMemorySession = session;
   const rfa =
     (session as unknown as Record<string, unknown>).refreshExpiresAt ??
     (session as unknown as Record<string, unknown>).refresh_expires_at;
@@ -86,12 +81,6 @@ export function storeSession(session: Session, remember: boolean): void {
     )
   );
 
-  try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    // sessionStorage may be unavailable (private mode, quota) — fail soft.
-  }
-
   // The cookie is httpOnly-preferred when set by the backend; this client-side
   // copy is a fallback for environments where the backend cannot set cookies.
   // Always set the cookie so the Edge middleware can read it regardless of
@@ -101,33 +90,24 @@ export function storeSession(session: Session, remember: boolean): void {
   }
 }
 
-/** Read the persisted session from sessionStorage. */
+/** Read the in-memory session. */
 export function loadSession(): Session | null {
-  if (!isBrowser()) return null;
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as PersistedSession;
-    if (!parsed?.session) return null;
-    // Refresh token expired? Drop it.
-    if (parsed.session.refreshExpiresAt <= Date.now()) {
-      clearSession();
-      return null;
-    }
-    return parsed.session;
-  } catch {
+  const session = inMemorySession;
+  if (!session) {
     return null;
   }
+  if (session.refreshExpiresAt <= Date.now()) {
+    clearSession();
+    return null;
+  }
+  return session;
 }
 
-/** Remove the session from every storage location. */
+/** Remove the session from memory and cookie. */
 export function clearSession(): void {
   if (!isBrowser()) return;
-  try {
-    sessionStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // ignore
-  }
+  inMemorySession = null;
+  inMemoryLastSessionId = null;
   clearCookie(SESSION_COOKIE);
 }
 
@@ -180,25 +160,13 @@ export function formatExpiry(session: Session | null): string {
  * different id — a pragmatic, client-side heuristic only.
  * ------------------------------------------------------------------ */
 
-const LAST_SESSION_ID_KEY = "mfa.lastSessionId";
-
 export function recordSessionId(id: string): void {
-  if (!isBrowser()) return;
-  try {
-    sessionStorage.setItem(LAST_SESSION_ID_KEY, id);
-  } catch {
-    // ignore
-  }
+  inMemoryLastSessionId = id;
 }
 
 export function detectConcurrentSession(currentId: string): boolean {
-  if (!isBrowser()) return false;
-  try {
-    const known = sessionStorage.getItem(LAST_SESSION_ID_KEY);
-    return known !== null && known !== currentId;
-  } catch {
-    return false;
-  }
+  const known = inMemoryLastSessionId;
+  return known !== null && known !== currentId;
 }
 
 /** Re-exported for middleware/tests that only need the cookie name. */
