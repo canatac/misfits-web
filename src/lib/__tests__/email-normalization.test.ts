@@ -35,6 +35,10 @@ describe("email-normalization", () => {
     expect(decodeMimeHeaderValue("=?UTF-8?Q?Lis_=C3=A7a?=")).toBe("Lis ça");
   });
 
+  it("decodes RFC2047 B-encoded UTF-8 subject", () => {
+    expect(decodeMimeHeaderValue("=?UTF-8?B?Qm9uam91ciDDqQ==?=")).toBe("Bonjour é");
+  });
+
   it("keeps plain subject unchanged", () => {
     expect(decodeMimeHeaderValue("Hello world")).toBe("Hello world");
   });
@@ -57,5 +61,20 @@ describe("email-normalization", () => {
 
     expect(normalized.hasAttachments).toBe(true);
     expect(normalized.attachments).toHaveLength(1);
+  });
+
+  it("normalizes encoded subject through normalizeEmailRecord", () => {
+    const normalized = normalizeEmailRecord(
+      makeEmail({
+        subject: "=?UTF-8?B?Q2Fmw6k=?=",
+      })
+    );
+
+    expect(normalized.subject).toBe("Café");
+  });
+
+  it("returns original chunk when encoded-word is malformed", () => {
+    const malformed = "=?UTF-8?B?%%%?=";
+    expect(decodeMimeHeaderValue(malformed)).toBe(malformed);
   });
 });
