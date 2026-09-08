@@ -152,6 +152,7 @@ without an issue and a validated dispatch.
 | **Dev-web**         | Frontend fixes and features (Next.js).                                      | Yes (draft PRs)        |
 | **Dev-back**        | Backend fixes and features (Rust).                                          | Yes (draft PRs)        |
 | **Dev-int**         | Cross-repo integration, contracts, wiring, integration tests.               | Yes (draft PRs)        |
+| **Auditor**         | Continuous audit of open draft PRs: scope, conventions, CI, size, drift.    | No (review comments)   |
 
 ### 5.2 Interaction model
 
@@ -173,6 +174,9 @@ without an issue and a validated dispatch.
                  +----> GitHub  <----   Production surface
                         (issues,          (public web app)
                          PRs, CI)
+                            ^
+                            |
+                        Auditor (review-only)
 ```
 
 Rules:
@@ -185,6 +189,11 @@ Rules:
   public surface and opens GitHub issues with reproducible evidence.
 - **Dev agents** only act on tickets they have been formally dispatched. They
   open draft PRs and rely on CI to validate.
+- **Auditor** is *review-only*: it reads every open draft PR and posts a
+  structured audit report as a GitHub comment (scope, branch pattern, commit
+  convention, CI status, size, routing coherence, drift). It never modifies
+  code, never marks a PR ready for review, never closes a PR. Those actions
+  remain the operator's privilege.
 
 ### 5.3 Ticket lifecycle
 
@@ -206,9 +215,14 @@ Rules:
    change, commits, pushes, and opens a **draft** PR. No local build occurs.
 6. **CI verification** — the dev polls `gh pr checks` non-blockingly and reports
    the status back to the fleet.
-7. **Review** — humans (or Root) mark the PR ready for review when CI is green
-   and the change matches scope.
-8. **Merge & deploy** — merging triggers the deploy workflow.
+7. **Audit** — the Auditor picks up the draft PR, runs a structured checklist
+   (issue reference, branch pattern, commit convention, CI status, size,
+   routing coherence, drift), and posts a verdict comment
+   (`READY_FOR_REVIEW`, `NEEDS_FIXES`, or `BLOCKED_CI`). This provides an
+   automatic first pass before human review.
+8. **Review** — humans (or Root) mark the PR ready for review when checks are
+   green and the audit verdict is `READY_FOR_REVIEW`.
+9. **Merge & deploy** — merging triggers the deploy workflow.
 
 ### 5.4 Continuous default missions
 
@@ -222,6 +236,8 @@ When no ticket is dispatched, each agent has a default loop:
   security, admin) and open issues on any regression.
 - **Dev agents** — incremental refactors, unit test additions, API catalog
   maintenance, dependency hygiene.
+- **Auditor** — continuous audit of any open draft PR across all repos; posts
+  an audit report even when no new PR was opened during the cycle.
 
 All default work still respects the "no PR without an issue and Root approval"
 rule.
@@ -304,6 +320,8 @@ Operational documentation lives elsewhere, in access-controlled locations.
 - **Testeur** — black-box testing agent operating on the public surface.
 - **Dev-web / Dev-back / Dev-int** — implementation agents for frontend, backend,
   and integration respectively.
+- **Auditor** — review-only agent auditing open draft PRs against scope,
+  conventions, CI status, size, and drift.
 - **TICKET_ASSIGN** — dispatch message from Scrum Master to a dev agent, carrying
   issue URL, priority, scope, and branch hint.
 - **STATUS_UPDATE** — one-line structured message emitted by every agent each
