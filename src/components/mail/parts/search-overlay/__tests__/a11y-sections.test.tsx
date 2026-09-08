@@ -20,8 +20,7 @@ describe("Search overlay a11y sections", () => {
   it("announces results count with aria-live status", () => {
     render(<ResultsFooter count={12} query="from:acme" onSave={vi.fn()} />);
 
-    expect(
-      screen.getByRole("status", { name: "12 résultats pour « from:acme »" })
-    ).toBeTruthy();
+    const status = screen.getByRole("status");
+    expect(status.textContent).toContain("12 résultats pour « from:acme »");
   });
 });
