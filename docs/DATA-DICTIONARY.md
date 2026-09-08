@@ -128,6 +128,16 @@ Source: `src/lib/mail-api.ts` (`mailAuthHeaders`).
 | `x-user-email`     | email complet de la session                                    |
 | `Authorization`    | `Bearer <accessToken>` si présent (`getAccessToken`)           |
 
+### Contrat d'erreur inbox auth guard (issue #263)
+
+Source: `src/stores/parts/email-store/fetch-emails.ts`, `src/stores/__tests__/fetch-emails-default-inbox-seed.test.ts`.
+
+| Condition backend / repo | Contrat UI attendu |
+| --- | --- |
+| Erreur fetch contenant un token `404` (ex: `Failed to fetch emails: 404`, `HTTP 404`, `status 404 Not Found`) sur le chargement inbox | `error = "Inbox auth guard unexpected response (404). Please sign in again."` |
+| Erreur fetch non-404 (ex: `Failed to fetch emails: 500`) | Message backend conservé tel quel |
+| Rejet non-`Error` (valeur brute) | Fallback `"Failed to fetch emails"` |
+
 ### Résolution `BACKEND_URL`
 
 - Client (browser): rewrites Next configurées au build (`next.config.ts`), base `/api` (`src/lib/api-client.ts`).
