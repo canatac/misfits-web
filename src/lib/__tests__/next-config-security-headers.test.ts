@@ -12,4 +12,14 @@ describe("next config security headers", () => {
     expect(permissionsPolicy?.value).toContain("camera=()");
     expect(permissionsPolicy?.value).toContain("microphone=()");
   });
+
+  it("defines Cross-Origin-Opener-Policy for all routes", async () => {
+    const headerRules = await nextConfig.headers?.();
+    const globalRule = headerRules?.find((rule) => rule.source === "/(.*)");
+    const coop = globalRule?.headers.find(
+      (header) => header.key.toLowerCase() === "cross-origin-opener-policy"
+    );
+
+    expect(coop?.value).toBe("same-origin");
+  });
 });
