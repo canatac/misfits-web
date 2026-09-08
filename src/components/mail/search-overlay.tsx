@@ -31,8 +31,12 @@ interface SearchOverlayProps {
 
 export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<number | null>(null);
+  const searchTokenRef = useRef(0);
   const [showOperatorHints, setShowOperatorHints] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isDebouncing, setIsDebouncing] = useState(false);
+  const [searchLatencyMs, setSearchLatencyMs] = useState(0);
 
   const query = useSearchStore((s) => s.query);
   const setSearchQuery = useSearchStore((s) => s.setSearchQuery);
@@ -48,10 +52,60 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
   const emails = useEmailStore((s) => s.emails);
   const selectEmail = useEmailStore((s) => s.selectEmail);
 
+  const runSearch = useCallback(
+    (
+      nextQuery: string,
+      corpus: typeof emails,
+      opts?: {
+        immediate?: boolean;
+      }
+    ) => {
+      const immediate = opts?.immediate ?? false;
+
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+
+      if (!nextQuery.trim()) {
+        searchTokenRef.current += 1;
+        setIsDebouncing(false);
+        setSearchLatencyMs(0);
+        executeSearch(corpus);
+        return;
+      }
+
+      const run = () => {
+        const token = ++searchTokenRef.current;
+        setIsDebouncing(false);
+        const startedAt = performance.now();
+        executeSearch(corpus);
+        if (token === searchTokenRef.current) {
+          setSearchLatencyMs(Math.max(0, Math.round(performance.now() - startedAt)));
+        }
+      };
+
+      if (immediate) {
+        run();
+        return;
+      }
+
+      setIsDebouncing(true);
+      debounceTimerRef.current = window.setTimeout(() => {
+        debounceTimerRef.current = null;
+        run();
+      }, 120);
+    },
+    [executeSearch]
+  );
+
   useEffect(() => {
-    if (!query.trim()) return;
-    executeSearch(emails);
-  }, [query, emails, executeSearch]);
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -76,9 +130,9 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       const cursorPos = e.target.selectionStart ?? value.length;
       const activeOp = getActiveOperator(value, cursorPos);
       setShowOperatorHints(!!activeOp && activeOp.partial.length < 5);
-      executeSearch(emails);
+      runSearch(value, emails);
     },
-    [setSearchQuery, executeSearch, emails]
+    [setSearchQuery, runSearch, emails]
   );
 
   const handleSelectResult = useCallback(
@@ -135,7 +189,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
       }
       setSearchQuery(newQuery);
       setShowOperatorHints(false);
-      executeSearch(emails);
+      runSearch(newQuery, emails, { immediate: true });
       requestAnimationFrame(() => {
         const pos =
           (match ? cursorPos - match[0].length : cursorPos) +
@@ -145,7 +199,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         inputRef.current?.setSelectionRange(pos, pos);
       });
     },
-    [query, setSearchQuery, executeSearch, emails]
+    [query, setSearchQuery, runSearch, emails]
   );
 
   const activeOperator = (() => {
@@ -162,10 +216,11 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
     : OPERATOR_META;
 
   const hasQuery = query.trim().length > 0;
+  const showSkeleton = hasQuery && (isDebouncing || isSearching);
   const showRecentSearches = !hasQuery && searchHistory.length > 0;
   const showSavedSearches = !hasQuery && savedSearches.length > 0;
-  const showResults = hasQuery && results.length > 0;
-  const showEmpty = hasQuery && results.length === 0 && !isSearching;
+  const showResults = hasQuery && results.length > 0 && !showSkeleton;
+  const showEmpty = hasQuery && results.length === 0 && !showSkeleton;
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
@@ -193,7 +248,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
               className="h-7 w-7 shrink-0"
               onClick={() => {
                 setSearchQuery("");
-                executeSearch(emails);
+                runSearch("", emails, { immediate: true });
               }}
               aria-label="Clear search"
             >
@@ -211,6 +266,16 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         )}
 
         <ScrollArea className="max-h-[400px]">
+          {showSkeleton && (
+            <div className="space-y-2 p-3" data-testid="search-overlay-skeleton">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-10 animate-pulse rounded-md border border-[#242427] bg-[#121214]"
+                />
+              ))}
+            </div>
+          )}
           {showResults && (
             <ResultsList
               results={results}
@@ -224,7 +289,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
               history={searchHistory}
               onPick={(q) => {
                 setSearchQuery(q);
-                executeSearch(emails);
+                runSearch(q, emails, { immediate: true });
               }}
             />
           )}
