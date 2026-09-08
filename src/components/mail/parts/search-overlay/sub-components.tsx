@@ -139,12 +139,13 @@ export function EmptyResult({ query }: { query: string }) {
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
       <div>
-        <p className="text-sm font-medium text-[var(--color-fg)]">
-          Aucun résultat
-        </p>
+        <p className="text-sm font-medium text-[var(--color-fg)]">Aucun résultat</p>
         <p className="text-xs text-[var(--color-muted-fg)]">
           No emails match &ldquo;{query}&rdquo;. Try different keywords or
           operators.
+        </p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          0 résultat pour « {query} ». Essayez un autre opérateur.
         </p>
       </div>
     </div>
@@ -184,7 +185,7 @@ export function ResultsFooter({
   return (
     <div className="flex items-center justify-between border-t border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#A1A1AA]">
       <span>{resultLabel}</span>
-      <p className="sr-only" role="status" aria-live="polite">
+      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {resultLabel} pour « {query} »
       </p>
       <div className="flex items-center gap-2">

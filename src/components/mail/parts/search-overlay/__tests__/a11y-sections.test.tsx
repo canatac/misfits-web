@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { RecentSearches, ResultsFooter } from "../sub-components";
+import { EmptyResult, RecentSearches, ResultsFooter } from "../sub-components";
 
 describe("Search overlay a11y sections", () => {
   it("exposes recents section as heading landmark", () => {
@@ -22,5 +22,12 @@ describe("Search overlay a11y sections", () => {
 
     const status = screen.getByRole("status");
     expect(status.textContent).toContain("12 résultats pour « from:acme »");
+  });
+
+  it("announces empty results guidance", () => {
+    render(<EmptyResult query="foo" />);
+
+    const status = screen.getByRole("status");
+    expect(status.textContent).toContain("0 résultat pour « foo »");
   });
 });
