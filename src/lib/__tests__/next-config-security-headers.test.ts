@@ -22,4 +22,14 @@ describe("next config security headers", () => {
 
     expect(coop?.value).toBe("same-origin");
   });
+
+  it("defines Cross-Origin-Opener-Policy explicitly on home route", async () => {
+    const headerRules = await nextConfig.headers?.();
+    const homeRule = headerRules?.find((rule) => rule.source === "/");
+    const coop = homeRule?.headers.find(
+      (header) => header.key.toLowerCase() === "cross-origin-opener-policy"
+    );
+
+    expect(coop?.value).toBe("same-origin");
+  });
 });

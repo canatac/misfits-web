@@ -310,7 +310,7 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         {hasQuery && results.length > 0 && (
           <ResultsFooter
             count={results.length}
-            elapsedMs={searchLatencyMs}
+            query={query}
             onSave={() => saveSearch(query, query)}
           />
         )}

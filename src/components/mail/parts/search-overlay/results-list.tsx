@@ -24,7 +24,14 @@ export function ResultsList({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div role="listbox" aria-label="Search results" className="p-1">
+    <section aria-labelledby="search-overlay-results-heading" className="p-1">
+      <h2
+        id="search-overlay-results-heading"
+        className="px-2 pb-1 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase"
+      >
+        Résultats
+      </h2>
+      <div role="listbox" aria-label="Search results">
       {results.slice(0, 50).map((result, index) => {
         const subjectHL = fieldHighlights(result.highlights, "subject");
         const fromHL = fieldHighlights(result.highlights, "from");
@@ -87,6 +94,7 @@ export function ResultsList({
           </div>
         );
       })}
-    </div>
+      </div>
+    </section>
   );
 }

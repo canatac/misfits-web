@@ -22,10 +22,16 @@ export function OperatorHints({
   onInsert: (op: OperatorMeta) => void;
 }) {
   return (
-    <div className="border-b border-[#242427] bg-[#121214]/80 p-2">
-      <div className="mb-1 px-1 text-xs font-semibold tracking-wide text-[#A1A1AA] uppercase">
+    <section
+      aria-labelledby="search-overlay-operators-heading"
+      className="border-b border-[#242427] bg-[#121214]/80 p-2"
+    >
+      <h2
+        id="search-overlay-operators-heading"
+        className="mb-1 px-1 text-xs font-semibold tracking-wide text-[#A1A1AA] uppercase"
+      >
         Opérateurs intelligents
-      </div>
+      </h2>
       <div className="flex flex-wrap gap-1">
         {operators.map((op) => (
           <button
@@ -45,7 +51,7 @@ export function OperatorHints({
           </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -57,10 +63,13 @@ export function RecentSearches({
   onPick: (q: string) => void;
 }) {
   return (
-    <div className="p-2">
-      <div className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
+    <section aria-labelledby="search-overlay-recents-heading" className="p-2">
+      <h2
+        id="search-overlay-recents-heading"
+        className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase"
+      >
         Récentes
-      </div>
+      </h2>
       {history.slice(0, 8).map((entry) => (
         <button
           key={entry.id}
@@ -71,7 +80,7 @@ export function RecentSearches({
           <span className="flex-1 truncate">{entry.query}</span>
         </button>
       ))}
-    </div>
+    </section>
   );
 }
 
@@ -85,10 +94,13 @@ export function SavedSearches({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="p-2">
-      <div className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase">
+    <section aria-labelledby="search-overlay-saved-heading" className="p-2">
+      <h2
+        id="search-overlay-saved-heading"
+        className="mb-1 px-2 text-xs font-semibold tracking-wide text-[var(--color-muted-fg)] uppercase"
+      >
         Sauvegardées
-      </div>
+      </h2>
       {saved.map((s) => (
         <div
           key={s.id}
@@ -118,7 +130,7 @@ export function SavedSearches({
           </Button>
         </div>
       ))}
-    </div>
+    </section>
   );
 }
 
@@ -127,12 +139,13 @@ export function EmptyResult({ query }: { query: string }) {
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <SearchIcon className="h-10 w-10 text-[var(--color-muted-fg)]" />
       <div>
-        <p className="text-sm font-medium text-[var(--color-fg)]">
-          Aucun résultat
-        </p>
+        <p className="text-sm font-medium text-[var(--color-fg)]">Aucun résultat</p>
         <p className="text-xs text-[var(--color-muted-fg)]">
           No emails match &ldquo;{query}&rdquo;. Try different keywords or
           operators.
+        </p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          0 résultat pour « {query} ». Essayez un autre opérateur.
         </p>
       </div>
     </div>
@@ -160,21 +173,21 @@ export function InitialState() {
 
 export function ResultsFooter({
   count,
-  elapsedMs,
+  query,
   onSave,
 }: {
   count: number;
-  elapsedMs?: number;
+  query: string;
   onSave: () => void;
 }) {
+  const resultLabel = `${count} ${count === 1 ? "résultat" : "résultats"}`;
+
   return (
     <div className="flex items-center justify-between border-t border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#A1A1AA]">
-      <span>
-        {count} {count === 1 ? "résultat" : "résultats"}
-        {typeof elapsedMs === "number" && elapsedMs >= 0
-          ? ` • ${elapsedMs} ms`
-          : ""}
-      </span>
+      <span>{resultLabel}</span>
+      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {resultLabel} pour « {query} »
+      </p>
       <div className="flex items-center gap-2">
         <Button
           size="sm"
