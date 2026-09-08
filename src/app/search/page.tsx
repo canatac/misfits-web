@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 
 interface SearchPageProps {
-  searchParams?: {
+  searchParams: Promise<{
     q?: string | string[];
     query?: string | string[];
-  };
+  }>;
 }
 
-function firstParam(value: string | string[] | undefined): string | null {
+async function firstParam(value: string | string[] | undefined): Promise<string | null> {
   if (typeof value === "string" && value.trim()) return value;
   if (Array.isArray(value)) {
     const candidate = value.find((entry) => entry.trim());
@@ -16,8 +16,9 @@ function firstParam(value: string | string[] | undefined): string | null {
   return null;
 }
 
-export default function SearchPage({ searchParams }: SearchPageProps) {
-  const query = firstParam(searchParams?.q) ?? firstParam(searchParams?.query);
+export default async function SearchPage({ searchParams }: SearchPageProps) {
+  const params = await searchParams;
+  const query = await firstParam(params?.q) ?? await firstParam(params?.query);
   const target = query
     ? `/mail?search=${encodeURIComponent(query)}`
     : "/mail";
