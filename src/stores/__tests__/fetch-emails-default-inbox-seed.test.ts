@@ -60,4 +60,173 @@ describe("performFetchEmails default inbox seed", () => {
     expect(state.folders[0]?.totalCount).toBe(1);
     expect(state.folders[0]?.unreadCount).toBe(1);
   });
+
+  it("maps inbox 404 to auth-guard regression message", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce(new Error("Failed to fetch emails: 404"));
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe(
+      "Inbox auth guard unexpected response (404). Please sign in again."
+    );
+    expect(state.emails).toHaveLength(0);
+  });
+
+  it("keeps non-404 backend errors unchanged", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce(new Error("Failed to fetch emails: 500"));
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe("Failed to fetch emails: 500");
+    expect(state.emails).toHaveLength(0);
+  });
+
+  it("uses generic message for non-Error failures", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce("network exploded");
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe("Failed to fetch emails");
+    expect(state.emails).toHaveLength(0);
+  });
+
+  it("maps 404 even when backend error text is verbose", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce(
+      new Error("Backend unexpected response while loading inbox (status 404 Not Found)")
+    );
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe(
+      "Inbox auth guard unexpected response (404). Please sign in again."
+    );
+  });
 });
