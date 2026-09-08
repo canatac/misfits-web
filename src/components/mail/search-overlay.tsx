@@ -243,7 +243,11 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
         </ScrollArea>
 
         {hasQuery && results.length > 0 && (
-          <ResultsFooter count={results.length} onSave={() => saveSearch(query, query)} />
+          <ResultsFooter
+            count={results.length}
+            query={query}
+            onSave={() => saveSearch(query, query)}
+          />
         )}
       </ModalContent>
     </Modal>
