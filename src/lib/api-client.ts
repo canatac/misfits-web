@@ -62,6 +62,7 @@ export async function refreshSession(): Promise<string | null> {
       const res = await fetch(`${BASE_URL}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ refreshToken }),
       });
       if (!res.ok) {
@@ -126,6 +127,7 @@ async function request<T>(
   const init: RequestInit = {
     method,
     headers: finalHeaders,
+    credentials: rest.credentials ?? "include",
     ...rest,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   };
