@@ -160,15 +160,20 @@ export function InitialState() {
 
 export function ResultsFooter({
   count,
+  elapsedMs,
   onSave,
 }: {
   count: number;
+  elapsedMs?: number;
   onSave: () => void;
 }) {
   return (
     <div className="flex items-center justify-between border-t border-[#242427] bg-[#121214] px-3 py-2 text-xs text-[#A1A1AA]">
       <span>
         {count} {count === 1 ? "résultat" : "résultats"}
+        {typeof elapsedMs === "number" && elapsedMs >= 0
+          ? ` • ${elapsedMs} ms`
+          : ""}
       </span>
       <div className="flex items-center gap-2">
         <Button
