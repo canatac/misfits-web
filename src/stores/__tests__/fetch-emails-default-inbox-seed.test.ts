@@ -60,4 +60,47 @@ describe("performFetchEmails default inbox seed", () => {
     expect(state.folders[0]?.totalCount).toBe(1);
     expect(state.folders[0]?.unreadCount).toBe(1);
   });
+
+  it("maps inbox 404 to auth-guard regression message", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce(new Error("Failed to fetch emails: 404"));
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe(
+      "Inbox auth guard unexpected response (404). Please sign in again."
+    );
+    expect(state.emails).toHaveLength(0);
+  });
 });

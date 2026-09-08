@@ -25,6 +25,14 @@ interface FetchDeps {
   set: (partial: Partial<StoreSlice>) => void;
 }
 
+function mapFetchEmailsError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : "Failed to fetch emails";
+  if (/\b404\b/.test(raw)) {
+    return "Inbox auth guard unexpected response (404). Please sign in again.";
+  }
+  return raw;
+}
+
 function createDefaultInboxTestEmail(): Email {
   const now = new Date().toISOString();
   const id = "inbox-seed-default-test-email";
@@ -122,7 +130,7 @@ export async function performFetchEmails(
     if (get()._fetchGen !== myGen) return;
     set({
       loading: false,
-      error: err instanceof Error ? err.message : "Failed to fetch emails",
+      error: mapFetchEmailsError(err),
       emails: [],
     });
   }
