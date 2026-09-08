@@ -313,4 +313,46 @@ describe("performFetchEmails default inbox seed", () => {
       "Inbox auth guard unexpected response (404). Please sign in again."
     );
   });
+
+  it("maps bracketed 404 token to auth-guard message", async () => {
+    const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
+    fetchEmailsMock.mockRejectedValueOnce(new Error("Upstream error [404] inbox unavailable"));
+
+    const folders: EmailFolder[] = [
+      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    ];
+
+    const state: {
+      currentFolder: "inbox";
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
+      currentFolder: "inbox" as const,
+      loading: false,
+      selectedEmailId: null,
+      selectedEmailIds: new Set<string>(),
+      folders,
+      emails: [],
+      error: null as string | null,
+      _fetchGen: 0,
+    };
+
+    await performFetchEmails(
+      {
+        get: () => state,
+        set: (partial) => Object.assign(state, partial),
+      },
+      "inbox",
+      undefined
+    );
+
+    expect(state.error).toBe(
+      "Inbox auth guard unexpected response (404). Please sign in again."
+    );
+  });
 });
