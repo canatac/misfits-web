@@ -22,7 +22,12 @@ const PROTECTED_PREFIXES = [
   "/monitoring",
   "/security",
 ];
-const PUBLIC_EXACT = new Set(["/", "/login", "/reset-password"]);
+const PUBLIC_EXACT = new Set([
+  "/",
+  "/login",
+  "/reset-password",
+  "/admin/login",
+]);
 // Public API routes: auth endpoints + OAuth callback.
 // All /api/admin/* are intentionally excluded so they reach
 // the Next.js proxy handlers, which forward auth to the backend.

@@ -1,0 +1,59 @@
+name: Backlog Item
+about: Standardize incoming backlog candidates for misfits-web
+labels: ["backlog"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - bug
+        - regression
+        - security
+        - feature
+        - chore
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+    validations:
+      required: true
+
+  - type: input
+    id: scope
+    attributes:
+      label: Scope
+      placeholder: "Ex: Inbox search route unavailable (404)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      placeholder: "What should happen?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / reproduction
+      placeholder: "Links, screenshots, curl/playwright outputs"
+    validations:
+      required: true
+
+  - type: input
+    id: owner
+    attributes:
+      label: Suggested owner
+      placeholder: "dev-web / dev-back / dev-int / testeur"
+    validations:
+      required: false
