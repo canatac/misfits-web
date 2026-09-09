@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api-client";
 import {
   apiLogin,
   apiLogout,
+  apiRestoreSession,
   apiRegister,
   apiResetPassword,
   apiRequestPasswordReset,
@@ -18,7 +19,8 @@ import {
 import {
   audit,
   clearSession,
-  consumePendingOAuthSession,
+  consumePendingOAuthProvider,
+  hasSessionCookie,
   loadSession,
   recordSessionId,
 } from "@/lib/session";
@@ -206,14 +208,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  hydrate: () => {
-    const oauth = consumePendingOAuthSession();
-    if (oauth) {
-      audit("login", `oauth:${oauth.provider}`);
-      applySession(set, oauth.session, true);
-      return { fromOAuth: true, provider: oauth.provider };
-    }
-
+  hydrate: async () => {
+    const oauthProvider = consumePendingOAuthProvider();
     const session = loadSession();
     if (session) {
       recordSessionId(session.id);
@@ -221,6 +217,34 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         session,
         user: session.user,
         isAuthenticated: true,
+      });
+      if (oauthProvider) {
+        audit("login", `oauth:${oauthProvider}`);
+        return { fromOAuth: true, provider: oauthProvider };
+      }
+      return;
+    }
+
+    if (!oauthProvider && !hasSessionCookie()) {
+      return;
+    }
+
+    try {
+      const restored = await apiRestoreSession();
+      applySession(set, restored, true);
+      if (oauthProvider) {
+        audit("login", `oauth:${oauthProvider}`);
+        return { fromOAuth: true, provider: oauthProvider };
+      }
+    } catch {
+      clearSession();
+      set({
+        session: null,
+        user: null,
+        isAuthenticated: false,
+        error: null,
+        pendingTwoFactorChallengeId: null,
+        isLoading: false,
       });
     }
   },

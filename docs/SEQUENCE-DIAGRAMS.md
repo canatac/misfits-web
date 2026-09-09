@@ -58,7 +58,7 @@ sequenceDiagram
     Backend->>U: 302 GitHub
     U->>Backend: Retour OAuth
     Backend->>CB: 302 /api/auth/callback?session=<b64>&provider=github
-    CB->>CB: normalizeSession + Set-Cookie mfa_session (httpOnly)<br/>+ Set-Cookie mfa_oauth_pending
+    CB->>CB: parseSession + Set-Cookie mfa_session (httpOnly)<br/>+ Set-Cookie mfa_oauth_provider
     CB->>U: 302 → redirectPath (défaut /dashboard)
     U->>Mid: GET /dashboard
     Mid->>Mid: cookie mfa_session présent → NextResponse.next()

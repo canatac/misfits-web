@@ -7,13 +7,24 @@
  * only depends on `api-client` and shared types.
  */
 
-import { apiClient, getApiBaseUrl } from "@/lib/api-client";
+import { ApiError, apiClient, getApiBaseUrl } from "@/lib/api-client";
+import { parseSession } from "@/lib/session-payload";
 import type {
   AuthApiResponse,
   LoginResponse,
   RefreshSessionResponse,
   Session,
 } from "@/types/auth";
+
+function requireSession(raw: unknown): Session {
+  const session = parseSession(raw);
+  if (!session) {
+    throw new ApiError(500, "Invalid session payload from auth endpoint.", {
+      code: "server",
+    });
+  }
+  return session;
+}
 
 export async function apiLogin(
   email: string,
@@ -105,10 +116,20 @@ export function initiateGithubLogin(redirectPath?: string): void {
 
 /** Used by the store's `refreshSession` action when a manual refresh is needed. */
 export async function apiRefresh(refreshToken: string): Promise<Session> {
+  void refreshToken;
   const res = await apiClient.post<RefreshSessionResponse>(
     "/auth/refresh",
-    { refreshToken },
+    undefined,
     { skipAuth: true }
   );
-  return res.session;
+  return requireSession(res.session as unknown);
+}
+
+export async function apiRestoreSession(): Promise<Session> {
+  const res = await apiClient.post<RefreshSessionResponse>(
+    "/auth/refresh",
+    undefined,
+    { skipAuth: true }
+  );
+  return requireSession(res.session as unknown);
 }
