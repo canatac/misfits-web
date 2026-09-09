@@ -33,7 +33,7 @@ export function ThemeToggle() {
                 : "text-[var(--color-muted-fg)] hover:text-[var(--color-fg)] hover:bg-[var(--color-muted)]",
             )}
             aria-label={opt.label}
-            aria-pressed={isActive}
+            aria-checked={isActive}
             role="radio"
           >
             <Icon className="h-4 w-4" />
