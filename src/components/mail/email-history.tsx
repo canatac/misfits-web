@@ -174,15 +174,20 @@ export function EmailHistory({ open, emailId, onClose, onRestore }: EmailHistory
   );
 }
 
-export function HistoryButton({ onClick }: { onClick: () => void }) {
+export function HistoryButton({ onClick, count }: { onClick: () => void; count?: number }) {
   return (
     <button
       onClick={onClick}
-      className="p-2 rounded-lg bg-[#1D1D20] border border-[#242427] text-[#71717A] hover:text-[#C49B66] hover:border-[#C49B66]/40 transition-colors"
+      className="relative p-2 rounded-lg bg-[#1D1D20] border border-[#242427] text-[#71717A] hover:text-[#C49B66] hover:border-[#C49B66]/40 transition-colors"
       aria-label="Historique de l'email"
       title="Historique"
     >
       <History className="h-4 w-4" />
+      {count !== undefined && count > 0 && (
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#C49B66] text-[10px] text-white flex items-center justify-center">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
     </button>
   );
 }

@@ -98,7 +98,7 @@ describe("HistoryButton", () => {
   it("does not show badge when count is undefined", () => {
     render(<HistoryButton onClick={() => {}} />);
     // Should not have any badge text
-    const button = screen.getByRole("button");
-    expect(button.textContent).toBe("");
+    expect(screen.queryByText("9+")).toBeNull();
+    expect(screen.queryByText(/^\d+$/)).toBeNull();
   });
 });
