@@ -23,7 +23,11 @@ export function useImmersiveReading() {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey && e.shiftKey && e.key.toLowerCase() === "r") {
         e.preventDefault();
-        toggleImmersive();
+        setIsActive((prev) => {
+          const next = !prev;
+          localStorage.setItem(STORAGE_KEY, String(next));
+          return next;
+        });
       }
     };
 
