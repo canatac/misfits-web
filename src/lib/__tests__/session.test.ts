@@ -40,8 +40,8 @@ describe("session persistence", () => {
     vi.resetModules();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    document.cookie = "mfa_session=; Max-Age=0; Path=/";
-    document.cookie = "mfa_oauth_provider=; Max-Age=0; Path=/";
+    document.cookie = "mfa_session=; Max-Age=0; Path=/; Secure";
+    document.cookie = "mfa_oauth_provider=; Max-Age=0; Path=/; Secure";
   });
 
   it("stores only the session handle in the cookie and rehydrates after refresh", async () => {

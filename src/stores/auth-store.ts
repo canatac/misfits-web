@@ -219,7 +219,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isAuthenticated: true,
       });
       if (oauthProvider) {
-        audit("login", `oauth:${oauthProvider}`);
+        audit("login", "OAuth sign-in completed.");
         return { fromOAuth: true, provider: oauthProvider };
       }
       return;
@@ -233,7 +233,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const restored = await apiRestoreSession();
       applySession(set, restored, true);
       if (oauthProvider) {
-        audit("login", `oauth:${oauthProvider}`);
+        audit("login", "OAuth sign-in completed.");
         return { fromOAuth: true, provider: oauthProvider };
       }
     } catch {
