@@ -82,8 +82,11 @@ describe("CalendarHolidaysSidebar persistence", () => {
       />,
     );
 
-    // Default should be FR
-    expect(screen.getByLabelText("Activer France")).toBeChecked();
+    // Default should be FR (Radix checkbox uses data-state="checked")
+    expect(screen.getByLabelText("Activer France")).toHaveAttribute(
+      "data-state",
+      "checked"
+    );
   });
 
   it("handles corrupted localStorage gracefully", () => {
