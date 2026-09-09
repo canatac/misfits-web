@@ -1,12 +1,14 @@
 "use client";
 
 import {
+  Check,
   Clock,
-  Save,
+  Loader2,
   Maximize2,
   Minimize2,
   PanelTop,
   PanelBottom,
+  Save,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
+import { relativeTime } from "@/stores/composer-store-helpers";
+import type { SaveStatus } from "@/stores/composer-store-helpers";
 
 interface ComposerToolbarProps {
   isDirty: boolean;
@@ -30,6 +34,8 @@ interface ComposerToolbarProps {
   showAIPanel: boolean;
   aiGenerating: boolean;
   sendLaterDate: string;
+  saveStatus: SaveStatus;
+  lastSavedAt: string | null;
   onToggleAI: () => void;
   onSetSendLaterDate: (v: string) => void;
   onSendLater: (iso: string) => void;
@@ -47,6 +53,8 @@ export function ComposerToolbar({
   showAIPanel,
   aiGenerating,
   sendLaterDate,
+  saveStatus,
+  lastSavedAt,
   onToggleAI,
   onSetSendLaterDate,
   onSendLater,
@@ -55,11 +63,35 @@ export function ComposerToolbar({
   onToggleFullScreen,
   onClose,
 }: ComposerToolbarProps) {
+  const saveIndicator = (() => {
+    switch (saveStatus) {
+      case "saving":
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#A1A1AA]">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Sauvegarde...
+          </span>
+        );
+      case "saved":
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#22C55E]">
+            <Check className="h-3 w-3" />
+            {lastSavedAt ? `Sauvegardé ${relativeTime(lastSavedAt)}` : "Sauvegardé"}
+          </span>
+        );
+      default:
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#A1A1AA]">
+            <Save className="h-3 w-3" />
+            {isDirty ? "Brouillon non sauvegardé" : "Brouillon sauvegardé"}
+          </span>
+        );
+    }
+  })();
+
   return (
     <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
-      <span className="text-sm font-medium text-[#A1A1AA]">
-        {isDirty ? "Brouillon non sauvegardé" : "Brouillon sauvegardé"}
-      </span>
+      {saveIndicator}
       <div className="ml-auto flex items-center gap-1">
         <AIToolbarButton
           active={showAIPanel}

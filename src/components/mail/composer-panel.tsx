@@ -25,6 +25,7 @@ import { AttachmentZone } from "@/components/mail/attachment-zone";
 import { useComposerStore } from "@/stores/composer-store";
 import { getActiveSignature } from "@/lib/signatures";
 import { useAuthStore } from "@/stores/auth-store";
+import { hasPersistedDraft } from "@/stores/composer-store-helpers";
 import type { Recipient, RecipientType } from "@/types/composer";
 import { AIComposerPanel } from "@/components/mail/ai-composer-panel";
 import { AISubjectSuggester } from "@/components/mail/ai-subject-suggester";
@@ -58,6 +59,8 @@ export function ComposerPanel({
     isFullScreen,
     isCompact,
     isDirty,
+    saveStatus,
+    lastSavedAt,
     setRecipients,
     addRecipient,
     removeRecipient,
@@ -93,12 +96,26 @@ export function ComposerPanel({
   } = useComposerSend({ variant, onClose });
 
   // Initialise signature + autosave on mount.
+  // If a persisted draft exists (from a previous accidental close), show a restore toast.
   useEffect(() => {
     if (!signature) {
       const user = useAuthStore.getState().user;
       const email = user?.email ?? "hermes@misfits.ai";
       const name = user?.displayName ?? email.split("@")[0];
       store.setSignature(getActiveSignature(name, email));
+    }
+    if (hasPersistedDraft()) {
+      const snap = store.loadPersistedDraft();
+      if (snap) {
+        toast("Brouillon restauré", {
+          description: "Votre brouillon précédent a été restauré.",
+          duration: 5000,
+          action: {
+            label: "Restaurer",
+            onClick: () => {},
+          },
+        });
+      }
     }
     startAutosave();
     return () => stopAutosave();
@@ -142,6 +159,8 @@ export function ComposerPanel({
         showAIPanel={showAIPanel}
         aiGenerating={aiGenerating}
         sendLaterDate={sendLaterDate}
+        saveStatus={saveStatus}
+        lastSavedAt={lastSavedAt}
         onToggleAI={() => setShowAIPanel((v) => !v)}
         onSetSendLaterDate={setSendLaterDate}
         onSendLater={(iso) => handleSend({ sendLater: iso })}

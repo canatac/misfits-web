@@ -13,6 +13,8 @@ import type {
 import {
   AUTOSAVE_INTERVAL,
   type ComposerPrefill,
+  type DraftSnapshot,
+  type SaveStatus,
   initialComposerState,
   nowISO,
   persistSnapshot,
@@ -29,12 +31,10 @@ import {
 
 export type { ComposerPrefill } from "./composer-store-helpers";
 
-function persistDraft(state: ComposerStore): void {
+function persistDraft(state: ComposerStore): DraftSnapshot | null {
   const snap = persistSnapshot(state);
-  if (!snap) return;
-  state.draftId = snap.id;
-  state.lastSavedAt = snap.updatedAt;
-  state.isDirty = false;
+  if (!snap) return null;
+  return snap;
 }
 
 export interface ComposerStore {
@@ -59,6 +59,7 @@ export interface ComposerStore {
   // Send state
   sending: boolean;
   sendError: string | null;
+  saveStatus: SaveStatus;
   // Autosave
   _autosaveTimer: ReturnType<typeof setInterval> | null;
   // Modal/panel open state (used by the mail page to toggle the composer)
@@ -141,7 +142,15 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   toggleCompact: () => set((s) => ({ isCompact: !s.isCompact })),
 
   saveDraft: () => {
-    persistDraft(get());
+    const snap = persistDraft(get());
+    if (snap) {
+      set({
+        draftId: snap.id,
+        lastSavedAt: snap.updatedAt,
+        isDirty: false,
+        saveStatus: "saved",
+      });
+    }
   },
 
   send: async (options) => {
@@ -211,7 +220,21 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
   startAutosave: () => {
     if (get()._autosaveTimer) return;
     const timer = setInterval(() => {
-      if (get().isDirty) persistDraft(get());
+      const state = get();
+      if (state.isDirty) {
+        set({ saveStatus: "saving" });
+        const snap = persistDraft(state);
+        if (snap) {
+          set({
+            draftId: snap.id,
+            lastSavedAt: snap.updatedAt,
+            isDirty: false,
+            saveStatus: "saved",
+          });
+        } else {
+          set({ saveStatus: "idle" });
+        }
+      }
     }, AUTOSAVE_INTERVAL);
     set({ _autosaveTimer: timer });
   },
