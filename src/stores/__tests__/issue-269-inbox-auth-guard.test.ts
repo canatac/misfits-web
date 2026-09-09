@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { Email, EmailFolder, Folder } from "@/types/email";
 import { performFetchEmails } from "@/stores/parts/email-store/fetch-emails";
 import { emailRepository } from "@/lib/repositories";
 
@@ -21,11 +22,20 @@ describe("performFetchEmails issue-269 inbox auth guard 404", () => {
     const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
     fetchEmailsMock.mockRejectedValueOnce(new Error("Failed to fetch emails: 404"));
 
-    const folders = [
-      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    const folders: EmailFolder[] = [
+      { id: "inbox" as Folder, name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
     ];
 
-    const state = {
+    const state: {
+      currentFolder: Folder;
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
       currentFolder: "inbox" as const,
       loading: false,
       selectedEmailId: null,
@@ -57,11 +67,20 @@ describe("performFetchEmails issue-269 inbox auth guard 404", () => {
       new Error("Backend unexpected response while loading inbox (status 404 Not Found)")
     );
 
-    const folders = [
-      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    const folders: EmailFolder[] = [
+      { id: "inbox" as Folder, name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
     ];
 
-    const state = {
+    const state: {
+      currentFolder: Folder;
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
       currentFolder: "inbox" as const,
       loading: false,
       selectedEmailId: null,
@@ -90,11 +109,20 @@ describe("performFetchEmails issue-269 inbox auth guard 404", () => {
     const fetchEmailsMock = vi.mocked(emailRepository.fetchEmails);
     fetchEmailsMock.mockRejectedValueOnce(new Error("Failed to fetch emails: 500"));
 
-    const folders = [
-      { id: "inbox", name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
+    const folders: EmailFolder[] = [
+      { id: "inbox" as Folder, name: "Inbox", icon: "Inbox", unreadCount: 0, totalCount: 0 },
     ];
 
-    const state = {
+    const state: {
+      currentFolder: Folder;
+      loading: boolean;
+      selectedEmailId: string | null;
+      selectedEmailIds: Set<string>;
+      folders: EmailFolder[];
+      emails: Email[];
+      error: string | null;
+      _fetchGen: number;
+    } = {
       currentFolder: "inbox" as const,
       loading: false,
       selectedEmailId: null,
