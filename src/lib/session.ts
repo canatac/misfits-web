@@ -7,10 +7,10 @@
  * on state transitions and lets the API client / middleware read tokens from
  * a single source of truth.
  *
- * Storage strategy: the backend should set an HttpOnly `mfa_session` cookie
- * for first-party requests (preferred, immune to JS exfiltration). On the
- * client we keep the full session in memory only (tab process scope) so
- * access/refresh tokens are never written to browser storage.
+ * Storage strategy: the full session stays in memory only. The browser cookie
+ * stores at most an opaque session handle so a hard refresh can rehydrate from
+ * the backend without ever persisting access/refresh tokens in JS-readable
+ * storage.
  */
 
 import type { Session } from "@/types/auth";
@@ -175,39 +175,19 @@ export const hasSessionCookie = (): boolean =>
   readCookie(SESSION_COOKIE) !== null;
 
 /* ------------------------------------------------------------------ *
- * OAuth session handoff
+ * OAuth handoff
  *
- * The server-side OAuth callback route handler cannot access sessionStorage,
- * so it writes the full session JSON into a short-lived client-readable
- * cookie (`mfa_oauth_pending`). This function reads that cookie once on the
- * first client render, persists the session normally, then clears the cookie.
+ * The server-side OAuth callback route handler writes a short-lived,
+ * non-sensitive provider marker cookie so the client knows to rehydrate once
+ * after the redirect. The full session is still fetched from the backend.
  * ------------------------------------------------------------------ */
 
-const OAUTH_PENDING_COOKIE = "mfa_oauth_pending";
+const OAUTH_PROVIDER_COOKIE = "mfa_oauth_provider";
 
-export interface PendingOAuthSession {
-  session: Session;
-  provider: string;
-}
-
-/**
- * Reads the `mfa_oauth_pending` cookie written by the OAuth callback route
- * handler, persists the session via `storeSession`, clears the handoff
- * cookie, and returns `{ session, provider }`. Returns `null` when no
- * pending handoff is present.
- */
-export function consumePendingOAuthSession(): PendingOAuthSession | null {
+export function consumePendingOAuthProvider(): string | null {
   if (!isBrowser()) return null;
-  const raw = readCookie(OAUTH_PENDING_COOKIE);
+  const raw = readCookie(OAUTH_PROVIDER_COOKIE);
   if (!raw) return null;
-  // Clear immediately so it cannot be read a second time.
-  clearCookie(OAUTH_PENDING_COOKIE);
-  try {
-    const data = JSON.parse(raw) as PendingOAuthSession;
-    if (!data?.session?.id) return null;
-    storeSession(data.session, /* remember */ true);
-    return data;
-  } catch {
-    return null;
-  }
+  clearCookie(OAUTH_PROVIDER_COOKIE);
+  return /^[a-z0-9_-]{1,32}$/i.test(raw) ? raw : null;
 }

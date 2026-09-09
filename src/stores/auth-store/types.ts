@@ -16,5 +16,5 @@ export interface AuthStore extends AuthState {
   resetPassword: (confirmation: PasswordResetConfirmation) => Promise<void>;
   refreshSession: () => Promise<void>;
   clearError: () => void;
-  hydrate: () => { fromOAuth: true; provider: string } | void;
+  hydrate: () => Promise<{ fromOAuth: true; provider: string } | void>;
 }

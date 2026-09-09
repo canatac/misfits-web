@@ -24,10 +24,14 @@ export function Providers({ children }: { children: ReactNode }) {
   // Rehydrate the auth session from localStorage/cookies once on the client.
   // If an OAuth session was just consumed, show a welcome toast.
   useEffect(() => {
-    const result = useAuthStore.getState().hydrate();
-    if (result?.fromOAuth) {
-      toast.success("Welcome! Signed in successfully.");
-    }
+    void useAuthStore
+      .getState()
+      .hydrate()
+      .then((result) => {
+        if (result?.fromOAuth) {
+          toast.success("Welcome! Signed in successfully.");
+        }
+      });
   }, []);
 
   return (
