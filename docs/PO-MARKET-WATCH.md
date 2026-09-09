@@ -126,6 +126,7 @@
 | MW-2026-004 | User crée template "Réponse standard" | Template sauvegardé, disponible dans le composer via menu templates | ❌ (feature à implémenter) |
 | MW-2026-005 | User accède /mail hors ligne (PWA) | Liste des emails récents affichés depuis le cache, indicateur "hors ligne" | ❌ (PWA à implémenter) |
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
+| MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 
 ---
 
@@ -134,7 +135,8 @@
 - **TutaCrypt** (post-quantum) est un signal fort: le marché exige maintenant du quantum-safe. À planifier.
 - **Fastmail** reste le référent UX pour le mail "classique" premium — benchmark à faire sur leur interface.
 - **Proton** pousse l'écosystème (VPN/Drive/Pass) — notre angle différent: IA + chat mail + self-hosted.
-- **Hey** (Basecamp) a abandonné le IMAP — notre stack native est un avantage pour les power users.
+- **Hey** (Basecamp) a abandonné le IMAP — notre stack native est un avantage pour power users. NOUVEAU 2026: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar.
+- **Skiff** shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
 
 ---
