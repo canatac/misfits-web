@@ -175,7 +175,7 @@ export function AutoArchiveSettings() {
           <div>
             <h3 className="text-sm font-medium text-[#E0E0E0]">Archiver maintenant</h3>
             <p className="text-xs text-[#71717A] mt-0.5">
-              Exécuter l'archivage manuellement selon les critères ci-dessus
+              Exécuter l&apos;archivage manuellement selon les critères ci-dessus
             </p>
           </div>
           <button
