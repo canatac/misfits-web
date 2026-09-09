@@ -5,7 +5,7 @@ Guide utilisateur ancré sur les routes Next.js réelles du repo. Chaque route p
 ## Authentification
 
 - **Login**: `/login` — `src/app/login/page.tsx`. Flux 2 étapes: email + mot de passe (avec indicateur de force via `PasswordStrengthIndicator`), puis code 2FA 6 chiffres si le backend répond `two_factor_required`. Bouton "Se connecter avec GitHub" via `initiateGithubLogin()` (`src/lib/api-client.ts`).
-- **Callback OAuth**: `/api/auth/callback` — `src/app/api/auth/callback/route.ts`. Reçoit `?session=<base64_json>&provider=...`, pose le cookie `mfa_session` (httpOnly) + un cookie `mfa_oauth_pending` court (lu par le store client), redirige vers `redirect` param, cookie `mfa_post_login_redirect`, ou `/dashboard`.
+- **Callback OAuth**: `/api/auth/callback` — `src/app/api/auth/callback/route.ts`. Reçoit `?session=<base64_json>&provider=...`, pose le cookie `mfa_session` (httpOnly) + un cookie `mfa_oauth_provider` court (non sensible, lu par le store client pour déclencher une réhydratation backend), redirige vers `redirect` param, cookie `mfa_post_login_redirect`, ou `/dashboard`.
 - **Reset password**: `/reset-password` — `src/app/reset-password/page.tsx`.
 - **Register**: `/register` — `src/app/register/page.tsx`.
 - **Middleware**: `src/middleware.ts` protège les préfixes `/mail`, `/compose`, `/settings`, `/dashboard`, `/admin`, `/monitoring`, `/security`. Sans cookie `mfa_session`, redirection vers `/login?redirect=<pathname>`. Routes publiques: `/`, `/login`, `/reset-password`, tous les `/api/*` (dont `/api/auth/callback`).

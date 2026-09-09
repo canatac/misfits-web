@@ -10,9 +10,9 @@
  *  1. Decodes and validates the session from the `session` query parameter.
  *  2. Sets the `mfa_session` cookie (httpOnly) so the Edge middleware grants
  *     access to protected routes.
- *  3. Sets a short-lived `mfa_oauth_pending` cookie (readable by JS) so the
- *     client-side auth store can persist the full session to localStorage on
- *     the next render.
+ *  3. Sets a short-lived non-sensitive provider marker cookie so the
+ *     client-side auth store can rehydrate the full session from the backend
+ *     on the next render.
  *  4. Redirects the user to `/dashboard`.
  *
  * If no `session` param is present but the backend already set the
@@ -22,33 +22,10 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import type { Session } from "@/types/auth";
+import { parseSession } from "@/lib/session-payload";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/* ------------------------------------------------------------------ *
- * snake_case → camelCase normalisation (mirrors auth-store.ts)
- * ------------------------------------------------------------------ */
-
-function toCamel(key: string): string {
-  return key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
-}
-
-function normalizeSession(raw: Record<string, unknown>): Session {
-  function deepMap(obj: unknown): unknown {
-    if (Array.isArray(obj)) return obj.map(deepMap);
-    if (obj !== null && typeof obj === "object") {
-      const out: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-        out[toCamel(k)] = deepMap(v);
-      }
-      return out;
-    }
-    return obj;
-  }
-  return deepMap(raw) as Session;
-}
 
 /* ------------------------------------------------------------------ *
  * GET /api/auth/callback
@@ -90,10 +67,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (sessionParam) {
     try {
       const decoded = Buffer.from(sessionParam, "base64").toString("utf-8");
-      const raw = JSON.parse(decoded) as Record<string, unknown>;
-      const session = normalizeSession(raw);
-
-      if (!session.id || !session.accessToken) {
+      const session = parseSession(JSON.parse(decoded) as unknown);
+      if (!session) {
         throw new Error("Invalid session: missing required fields.");
       }
 
@@ -102,8 +77,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           ? session.refreshExpiresAt
           : Date.now() + 86_400_000;
       const ttlSeconds = Math.max(60, Math.round((rfa - Date.now()) / 1000));
-
-      const pendingPayload = JSON.stringify({ session, provider });
 
       const res = NextResponse.redirect(new URL(redirectPath, req.url));
 
@@ -116,9 +89,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         secure: isSecure,
       });
 
-      // Short-lived client-readable cookie — consumed by the auth store's
-      // hydrate() to persist the full session to localStorage.
-      res.cookies.set("mfa_oauth_pending", pendingPayload, {
+      // Short-lived client-readable marker — tells the auth store to
+      // rehydrate the full session from the backend once after redirect.
+      res.cookies.set("mfa_oauth_provider", provider, {
         httpOnly: false,
         sameSite: "lax",
         path: "/",
@@ -146,6 +119,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   // ── Case 2: Backend already set the mfa_session cookie — just redirect ──
   if (req.cookies.get("mfa_session")) {
     const res = NextResponse.redirect(new URL(redirectPath, req.url));
+    res.cookies.set("mfa_oauth_provider", provider, {
+      httpOnly: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60,
+      secure: isSecure,
+    });
     res.cookies.set("mfa_post_login_redirect", "", {
       httpOnly: false,
       sameSite: "lax",

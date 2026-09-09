@@ -18,10 +18,10 @@ import type { RefreshSessionResponse } from "@/types/auth";
 import {
   clearSession,
   getAccessToken,
-  getRefreshToken,
   loadSession,
   storeSession,
 } from "@/lib/session";
+import { parseSession } from "@/lib/session-payload";
 import { ApiError, parseResponse } from "@/lib/api-client-errors";
 
 export { ApiError } from "@/lib/api-client-errors";
@@ -54,24 +54,25 @@ let refreshPromise: Promise<string | null> | null = null;
  */
 export async function refreshSession(): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
 
   refreshPromise = (async () => {
     try {
       const res = await fetch(`${BASE_URL}/auth/refresh`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ refreshToken }),
       });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) clearSession();
         return null;
       }
       const data = (await res.json()) as RefreshSessionResponse;
-      storeSession(data.session, /* remember */ true);
-      return data.session.accessToken;
+      const session = parseSession(data.session as unknown);
+      if (!session) {
+        clearSession();
+        return null;
+      }
+      storeSession(session, /* remember */ true);
+      return session.accessToken;
     } catch {
       return null;
     } finally {

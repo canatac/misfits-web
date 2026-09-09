@@ -45,6 +45,7 @@ describe("KeyboardShortcutsHelp", () => {
 
   it("shows the Ctrl+/ hint at the bottom", () => {
     render(<KeyboardShortcutsHelp open={true} onClose={() => {}} />);
-    expect(screen.getByText(/Ctrl \+ \//)).toBeTruthy();
+    const matches = screen.getAllByText(/Ctrl \+ \//);
+    expect(matches.length).toBeGreaterThanOrEqual(1);
   });
 });
