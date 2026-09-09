@@ -1,19 +1,29 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { EmailListItem } from "@/components/mail/email-list-item";
+import type { Email } from "@/types/email";
 
 const mockEmail = {
   id: "test-1",
-  from: { name: "Alice", email: "alice@example.com" },
+  threadId: "thread-1",
+  folder: "inbox",
+  from: { name: "Alice", address: "alice@example.com" },
+  to: [{ name: "Me", address: "me@example.com" }],
   subject: "Test subject",
   preview: "Test preview",
+  body: "<p>Test body</p>",
+  bodyType: "html",
   date: new Date().toISOString(),
+  receivedAt: new Date().toISOString(),
   isRead: false,
   isStarred: false,
+  isImportant: false,
   hasAttachments: false,
+  attachments: [],
   labels: [],
-  accountId: null,
-};
+  size: 1024,
+  messageId: "msg-1",
+} satisfies Email;
 
 vi.mock("@/stores/label-store", () => ({
   useLabelStore: () => [],
