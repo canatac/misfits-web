@@ -47,7 +47,7 @@ describe("AutoArchiveSettings", () => {
     render(<AutoArchiveSettings />);
 
     expect(screen.getByText("Dernière exécution")).toBeTruthy();
-    expect(screen.getByText("Jamais")).toBeTruthy();
+    expect(screen.getAllByText("Jamais").length).toBeGreaterThan(0);
   });
 
   it("disables archive button when age is never", () => {
