@@ -1,8 +1,7 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { BulkConfirmModal } from "@/components/mail/bulk-confirm-modal/bulk-confirm-modal";
 
-// Mock timers
 beforeEach(() => {
   vi.useFakeTimers();
 });
@@ -34,8 +33,9 @@ describe("BulkConfirmModal", () => {
 
   it("confirm button becomes enabled after countdown", () => {
     render(<BulkConfirmModal {...defaultProps} />);
-    // Advance timers past countdown
-    vi.advanceTimersByTime(3500);
+    act(() => {
+      vi.advanceTimersByTime(3500);
+    });
     const confirmButton = screen.getByText("Confirmer").closest("button");
     expect(confirmButton?.disabled).toBe(false);
   });
@@ -43,7 +43,9 @@ describe("BulkConfirmModal", () => {
   it("calls onConfirm when confirm button clicked", () => {
     const onConfirm = vi.fn();
     render(<BulkConfirmModal {...defaultProps} onConfirm={onConfirm} />);
-    vi.advanceTimersByTime(3500);
+    act(() => {
+      vi.advanceTimersByTime(3500);
+    });
     const confirmButton = screen.getByText("Confirmer").closest("button");
     fireEvent.click(confirmButton!);
     expect(onConfirm).toHaveBeenCalled();
@@ -66,7 +68,9 @@ describe("BulkConfirmModal", () => {
   it("handles skipForSession checkbox", () => {
     const onConfirm = vi.fn();
     render(<BulkConfirmModal {...defaultProps} onConfirm={onConfirm} />);
-    vi.advanceTimersByTime(3500);
+    act(() => {
+      vi.advanceTimersByTime(3500);
+    });
     fireEvent.click(screen.getByLabelText("Ne plus demander pour cette session"));
     const confirmButton = screen.getByText("Confirmer").closest("button");
     fireEvent.click(confirmButton!);
