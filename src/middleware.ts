@@ -15,6 +15,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
   "/mail",
+  "/inbox",
   "/compose",
   "/settings",
   "/dashboard",
