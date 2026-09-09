@@ -1,6 +1,6 @@
 "use client";
 
-import { Inbox as InboxIcon } from "lucide-react";
+import { Inbox as InboxIcon, Search, PenSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -32,9 +32,34 @@ export function EmailListEmpty() {
   return (
     <EmptyState
       icon={InboxIcon}
-      title="No emails here"
-      description="This folder is empty, or no emails match your current filters."
+      title="Aucun email ici"
+      description="Ce dossier est vide, ou aucun email ne correspond à vos filtres actuels."
       size="lg"
+      action={
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <p className="text-xs text-[var(--color-muted-fg)]">
+            Raccourcis clavier rapides :
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--color-card)] border border-[var(--color-border)] text-xs">
+              <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-muted)] font-mono text-[10px]">C</kbd>
+              <span className="text-[var(--color-fg)]">Composer</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--color-card)] border border-[var(--color-border)] text-xs">
+              <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-muted)] font-mono text-[10px]">/</kbd>
+              <span className="text-[var(--color-fg)]">Rechercher</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--color-card)] border border-[var(--color-border)] text-xs">
+              <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-muted)] font-mono text-[10px]">J/K</kbd>
+              <span className="text-[var(--color-fg)]">Naviguer</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--color-card)] border border-[var(--color-border)] text-xs">
+              <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-muted)] font-mono text-[10px]">Ctrl + /</kbd>
+              <span className="text-[var(--color-fg)]">Aide</span>
+            </span>
+          </div>
+        </div>
+      }
     />
   );
 }
