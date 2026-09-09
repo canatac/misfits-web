@@ -39,6 +39,7 @@ describe("ThemeToggle", () => {
 
   it("has correct aria-label for accessibility", () => {
     render(<ThemeToggle />);
-    expect(screen.getByRole("radiogroup")).toHaveAttribute("aria-label", "Thème");
+    const group = screen.getByRole("radiogroup");
+    expect(group.getAttribute("aria-label")).toBe("Thème");
   });
 });
