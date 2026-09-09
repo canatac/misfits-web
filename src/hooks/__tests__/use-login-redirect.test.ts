@@ -1,5 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
 const mockLogin = vi.hoisted(() => vi.fn());
 const mockReplace = vi.hoisted(() => vi.fn());
@@ -41,6 +43,15 @@ vi.mock("sonner", () => ({
 
 import { useLogin } from "@/hooks/use-auth";
 
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+}
+
 describe("useLogin redirect", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -56,7 +67,7 @@ describe("useLogin redirect", () => {
   it("redirects to the URL from ?redirect= parameter on successful login", async () => {
     mockLogin.mockResolvedValueOnce(undefined);
 
-    const { result } = renderHook(() => useLogin());
+    const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
 
     await act(async () => {
       result.current.mutate({ email: "admin@example.com", password: "password" });
@@ -77,7 +88,7 @@ describe("useLogin redirect", () => {
       writable: true,
     });
 
-    const { result } = renderHook(() => useLogin());
+    const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
 
     await act(async () => {
       result.current.mutate({ email: "admin@example.com", password: "password" });
@@ -93,7 +104,7 @@ describe("useLogin redirect", () => {
   it("handles login failure without redirecting", async () => {
     mockLogin.mockRejectedValueOnce(new Error("Invalid credentials"));
 
-    const { result } = renderHook(() => useLogin());
+    const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() });
 
     await act(async () => {
       result.current.mutate({ email: "admin@example.com", password: "wrong" });
