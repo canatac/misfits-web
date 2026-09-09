@@ -1,0 +1,11 @@
+{
+  "batch": "BATCH-3",
+  "suite": "uiux_api",
+  "passed": 5,
+  "failed": 2,
+  "total": 7,
+  "failed_scenarios": [
+    "Security dashboard secrets are not persisted to localStorage",
+    "Search flow does not depend on mockEmails"
+  ]
+}

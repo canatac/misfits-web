@@ -1,0 +1,7 @@
+HTTP/1.1 500 Internal Server Error
+Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+Date: Mon, 07 Sep 2026 15:56:01 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

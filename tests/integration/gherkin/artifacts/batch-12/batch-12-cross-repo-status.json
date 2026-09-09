@@ -1,0 +1,83 @@
+{
+  "batch": "BATCH-12",
+  "repos": {
+    "misfits-web": {
+      "batch": "BATCH-12",
+      "uiux_exit": 1,
+      "calendar_vitest_exit": 1,
+      "calendar_repro_exit": 1,
+      "calendar_http_probe_exit": 0,
+      "calendar_probe_exit": 0,
+      "uiux_counts": {
+        "failed": 4,
+        "passed": 5,
+        "total": 9
+      },
+      "calendar_counts": {
+        "failed": 2,
+        "passed": 1,
+        "total": 3
+      },
+      "calendar_probe": {
+        "ts": "2026-09-07T15:20:01.205Z",
+        "targetUrl": "http://localhost:3000/calendar",
+        "probes": {
+          "roleTextboxRechercherUnPaysCount": 0,
+          "roleTextboxRechercherUnPaysVisible": false,
+          "anyTextboxCount": 0,
+          "searchInputCount": 0,
+          "placeholderPaysCount": 0,
+          "asideLabelCount": 0,
+          "hasInternalServerErrorText": true
+        },
+        "selectors": {
+          "roleTextboxRechercherUnPays": "getByRole(textbox,{name:Rechercher un pays})",
+          "anyTextboxRole": "getByRole(textbox)",
+          "searchInput": "input[type=\"search\"]",
+          "placeholderPays": "input[placeholder*=\"pays\" i]",
+          "asideLabel": "aside label"
+        },
+        "consoleErrors": [
+          "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        ],
+        "finalUrl": "http://localhost:3000/calendar",
+        "title": "",
+        "h1": null,
+        "bodyTextHead": "Internal Server Error",
+        "screenshot": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-12/calendar-blockage-probe.png"
+      },
+      "calendar_repro_error_head": "file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57\n  throw new Error('Holiday search input not visible in /calendar');\n        ^\n\nError: Holiday search input not visible in /calendar\n    at file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57:9\n\nNode.js v22.23.1"
+    },
+    "reimagined-guide": {
+      "batch": "BATCH-12",
+      "python_exit": 1,
+      "cargo_exit": 101,
+      "python_summary": {
+        "batch": "BATCH-12",
+        "passed": 5,
+        "failed": 3,
+        "total": 8,
+        "failures": [
+          {
+            "scenario": "Runtime entrypoints avoid unwrap and expect in targeted paths",
+            "error": "panic-risk tokens present:\n- src/bin/imap_server.rs: 11:let cluster_url = env::var(\"MONGODB_CLUSTER_URL\").expect(\"MONGODB_CLUSTER_URL must be set\");; 12:let mongodb_username = env::var(\"MONGODB_USERNAME\").expect(\"MONGODB_USERNAME must be set\");; 13:let mongodb_password = env::var(\"MONGODB_PASSWORD\").expect(\"MONGODB_PASSWORD must be set\");; 36:let client = Arc::new(mongodb::Client::with_uri_str(&client_uri).await.unwrap());; 52:let imap_server_address = env::var(\"IMAP_SERVER\").expect(\"IMAP_SERVER must be set\");; 53:server.run(&imap_server_address).await.unwrap();"
+          },
+          {
+            "scenario": "IMAP bootstrap path avoids panic-risk env and startup calls",
+            "error": "IMAP bootstrap panic-risk calls present:\n11:let cluster_url = env::var(\"MONGODB_CLUSTER_URL\").expect(\"MONGODB_CLUSTER_URL must be set\");\n12:let mongodb_username = env::var(\"MONGODB_USERNAME\").expect(\"MONGODB_USERNAME must be set\");\n13:let mongodb_password = env::var(\"MONGODB_PASSWORD\").expect(\"MONGODB_PASSWORD must be set\");\n36:let client = Arc::new(mongodb::Client::with_uri_str(&client_uri).await.unwrap());\n52:let imap_server_address = env::var(\"IMAP_SERVER\").expect(\"IMAP_SERVER must be set\");\n53:server.run(&imap_server_address).await.unwrap();"
+          },
+          {
+            "scenario": "IMAP startup call does not unwrap server.run result",
+            "error": "IMAP server.run unwrap present:\n53:server.run(&imap_server_address).await.unwrap();"
+          }
+        ]
+      }
+    }
+  },
+  "open_regressions": {
+    "localStorage_secrets": "OPEN",
+    "mockEmails_runtime_coupling": "OPEN",
+    "noel_2026_12_25_month_day_integrity": "OPEN",
+    "imap_unwrap_expect_bootstrap": "OPEN"
+  }
+}

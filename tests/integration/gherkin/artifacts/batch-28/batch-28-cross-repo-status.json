@@ -1,0 +1,28 @@
+{
+  "batch": "BATCH-28",
+  "repos": {
+    "misfits-web": {
+      "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-28/misfits-batch28-summary.json",
+      "suite_exits": {
+        "misfits-uiux-vitest": 1,
+        "misfits-calendar-vitest": 1,
+        "misfits-calendar-repro": 1,
+        "calendar-http-probe": 0,
+        "calendar-blockage-probe": 0
+      },
+      "blockers": [
+        "calendar/http500"
+      ]
+    },
+    "reimagined-guide": {
+      "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-28/reimagined-batch28-summary.json",
+      "suite_exits": {
+        "reimagined-gherkin-python": 1,
+        "reimagined-gherkin-cargo": 101
+      },
+      "blockers": [
+        "imap unwrap/expect panic-risk"
+      ]
+    }
+  }
+}

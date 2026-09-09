@@ -1,0 +1,50 @@
+{
+  "batch": "BATCH-8",
+  "uiux_exit": 1,
+  "calendar_repro_exit": 1,
+  "calendar_vitest_exit": 1,
+  "calendar_blockage_probe_exit": 0,
+  "uiux": {
+    "failure_lines": [
+      "× gherkin uiux/api option-a campaign > Security dashboard secrets are not persisted to localStorage 33ms",
+      "× gherkin uiux/api option-a campaign > Security dashboard copy does not claim local secret persistence 4ms",
+      "× gherkin uiux/api option-a campaign > Search flow does not depend on mockEmails 4ms",
+      "× gherkin uiux/api option-a campaign > Search flow keeps mock data strictly out of runtime hook 3ms",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Security dashboard secrets are not persisted to localStorage",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Security dashboard copy does not claim local secret persistence",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Search flow does not depend on mockEmails",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Search flow keeps mock data strictly out of runtime hook"
+    ]
+  },
+  "calendar_vitest": {
+    "failure_lines": [
+      "× gherkin calendar-holidays repro > Imported holidays are rendered on 2026-12-25 in month and day view 20ms",
+      "× gherkin calendar-holidays repro > Month day click payload preserves local yyyy-mm-dd formatting 5ms",
+      "FAIL  tests/integration/gherkin/steps/calendar_holidays.steps.test.ts > gherkin calendar-holidays repro > Imported holidays are rendered on 2026-12-25 in month and day view",
+      "FAIL  tests/integration/gherkin/steps/calendar_holidays.steps.test.ts > gherkin calendar-holidays repro > Month day click payload preserves local yyyy-mm-dd formatting"
+    ]
+  },
+  "calendar_probe": {
+    "ts": "2026-09-07T15:04:44.048Z",
+    "title": "",
+    "finalUrl": "http://localhost:3000/calendar",
+    "h1": null,
+    "bodyTextHead": "Internal Server Error",
+    "selectors": {
+      "roleTextboxRechercherUnPaysCount": 0,
+      "roleTextboxRechercherUnPaysVisible": false,
+      "anyTextboxCount": 0,
+      "searchInputCount": 0,
+      "placeholderPaysCount": 0,
+      "asideLabelCount": 0
+    },
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "screenshot": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-8/calendar-blockage-probe.png"
+  },
+  "precheck": {
+    "calendar_http": 500,
+    "events_http": 500
+  }
+}

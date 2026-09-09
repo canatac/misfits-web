@@ -1,0 +1,11 @@
+{
+  "batch": "BATCH-21",
+  "open_regressions": {
+    "localStorage_secrets": "OPEN",
+    "mockEmails_runtime": "OPEN",
+    "noel_2026_12_25_month_day": "OPEN",
+    "imap_unwrap_expect": "OPEN"
+  },
+  "misfits_web_summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-21/misfits-batch21-summary.json",
+  "reimagined_guide_summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-21/reimagined-batch21-summary.json"
+}

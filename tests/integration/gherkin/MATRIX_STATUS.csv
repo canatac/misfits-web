@@ -1,0 +1,4 @@
+row_id,need,gherkin_file,ts_file,owner,status,evidence
+MX-001,Connexion admin + ouverture mailbox stable,tests/integration/gherkin/admin_login_mailbox.feature,tests/integration/admin_login_mailbox.spec.ts,testeur,READY,"run_cmd+capture+issue_url"
+MX-002,Recherche mails sans faux positifs ni mock runtime,tests/integration/gherkin/search_real_data.feature,tests/integration/search_real_data.spec.ts,testeur,READY,"query+result_count+issue_url"
+MX-003,Composition + envoi + vérification de réception/threading,tests/integration/gherkin/compose_send_threading.feature,tests/integration/compose_send_threading.spec.ts,testeur,READY,"smtp_proof+inbox_proof+issue_url"

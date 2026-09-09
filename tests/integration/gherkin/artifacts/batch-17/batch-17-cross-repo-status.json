@@ -1,0 +1,28 @@
+{
+  "batch": "BATCH-17",
+  "generated_at_utc": "2026-09-07T15:39:51.321931+00:00",
+  "misfits_web": {
+    "summary_path": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-17/misfits-batch17-summary.json",
+    "uiux_exit": 1,
+    "calendar_vitest_exit": 1,
+    "calendar_repro_exit": 1,
+    "calendar_http": {
+      "calendar_status": "500",
+      "events_status": "500"
+    },
+    "holidays_selector_visible": false,
+    "internal_server_error_text": true
+  },
+  "reimagined_guide": {
+    "summary_path": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-17/reimagined-batch17-summary.json",
+    "python_exit": 1,
+    "cargo_exit": 101,
+    "imap_unwrap_expect_regression_open": true
+  },
+  "open_regressions": {
+    "localStorage_secrets": true,
+    "mockEmails_runtime": true,
+    "noel_2026_12_25_month_day": true,
+    "imap_unwrap_expect": true
+  }
+}

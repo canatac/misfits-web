@@ -1,0 +1,17 @@
+{
+  "batch": "BATCH-34",
+  "generated_at_utc": "2026-09-07T16:40:58Z",
+  "repos": {
+    "misfits-web": {
+      "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-34/misfits-batch34-summary.json",
+      "critical_blocker": "/calendar HTTP 500 + /api/calendar/events HTTP 500; holidays input absent (downstream symptom).",
+      "deployed_events_status": "HTTP/2 500",
+      "issue": "https://github.com/canatac/misfits-web/issues/262",
+      "issue_comment": "https://github.com/canatac/misfits-web/issues/262#issuecomment-5573533679"
+    },
+    "reimagined-guide": {
+      "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-34/reimagined-batch34-summary.json",
+      "critical_blocker": "unwrap/expect panic-risk in src/bin/imap_server.rs"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "batch": "BATCH-12",
+  "uiux_exit": 1,
+  "calendar_vitest_exit": 1,
+  "calendar_repro_exit": 1,
+  "calendar_http_probe_exit": 0,
+  "calendar_probe_exit": 0,
+  "uiux_counts": {
+    "failed": 4,
+    "passed": 5,
+    "total": 9
+  },
+  "calendar_counts": {
+    "failed": 2,
+    "passed": 1,
+    "total": 3
+  },
+  "calendar_probe": {
+    "ts": "2026-09-07T15:20:01.205Z",
+    "targetUrl": "http://localhost:3000/calendar",
+    "probes": {
+      "roleTextboxRechercherUnPaysCount": 0,
+      "roleTextboxRechercherUnPaysVisible": false,
+      "anyTextboxCount": 0,
+      "searchInputCount": 0,
+      "placeholderPaysCount": 0,
+      "asideLabelCount": 0,
+      "hasInternalServerErrorText": true
+    },
+    "selectors": {
+      "roleTextboxRechercherUnPays": "getByRole(textbox,{name:Rechercher un pays})",
+      "anyTextboxRole": "getByRole(textbox)",
+      "searchInput": "input[type=\"search\"]",
+      "placeholderPays": "input[placeholder*=\"pays\" i]",
+      "asideLabel": "aside label"
+    },
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "finalUrl": "http://localhost:3000/calendar",
+    "title": "",
+    "h1": null,
+    "bodyTextHead": "Internal Server Error",
+    "screenshot": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-12/calendar-blockage-probe.png"
+  },
+  "calendar_repro_error_head": "file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57\n  throw new Error('Holiday search input not visible in /calendar');\n        ^\n\nError: Holiday search input not visible in /calendar\n    at file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57:9\n\nNode.js v22.23.1"
+}

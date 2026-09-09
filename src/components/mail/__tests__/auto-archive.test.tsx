@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AutoArchiveSettings, ArchiveRestoreButton, useAutoArchive } from "@/components/mail/auto-archive";
 
@@ -88,14 +88,15 @@ describe("useAutoArchive", () => {
   });
 
   it("returns default config when no stored data", () => {
-    // Hook test would require renderHook
-    expect(true).toBe(true);
+    const { result } = renderHook(() => useAutoArchive());
+    expect(result.current.config.autoArchiveAge).toBe("never");
+    expect(result.current.config.totalArchived).toBe(0);
   });
 
   it("provides AGE_OPTIONS constant", () => {
-    const { AGE_OPTIONS } = useAutoArchive();
-    expect(AGE_OPTIONS).toHaveLength(5);
-    expect(AGE_OPTIONS[0].value).toBe("never");
-    expect(AGE_OPTIONS[4].value).toBe("1y");
+    const { result } = renderHook(() => useAutoArchive());
+    expect(result.current.AGE_OPTIONS).toHaveLength(5);
+    expect(result.current.AGE_OPTIONS[0].value).toBe("never");
+    expect(result.current.AGE_OPTIONS[4].value).toBe("1y");
   });
 });

@@ -1,0 +1,35 @@
+{
+  "batch": "BATCH-9",
+  "uiux_exit": 1,
+  "calendar_repro_exit": 1,
+  "calendar_vitest_exit": 1,
+  "calendar_probe_exit": 0,
+  "calendar_probe": {
+    "ts": "2026-09-07T15:09:57.320Z",
+    "targetUrl": "http://localhost:3000/calendar",
+    "probes": {
+      "roleTextboxRechercherUnPaysCount": 0,
+      "roleTextboxRechercherUnPaysVisible": false,
+      "anyTextboxCount": 0,
+      "searchInputCount": 0,
+      "placeholderPaysCount": 0,
+      "asideLabelCount": 0,
+      "hasInternalServerErrorText": true
+    },
+    "selectors": {
+      "roleTextboxRechercherUnPays": "getByRole(textbox,{name:Rechercher un pays})",
+      "anyTextboxRole": "getByRole(textbox)",
+      "searchInput": "input[type=\"search\"]",
+      "placeholderPays": "input[placeholder*=\"pays\" i]",
+      "asideLabel": "aside label"
+    },
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "finalUrl": "http://localhost:3000/calendar",
+    "title": "",
+    "h1": null,
+    "bodyTextHead": "Internal Server Error",
+    "screenshot": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-9/calendar-blockage-probe.png"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "batch": "BATCH-36",
+  "generated_at_utc": "2026-09-07T16:48:27Z",
+  "repos": {
+    "misfits-web": {
+      "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-36/misfits-batch36-summary.json"
+    },
+    "reimagined-guide": {
+      "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-36/reimagined-batch36-summary.json"
+    }
+  }
+}

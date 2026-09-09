@@ -1,0 +1,27 @@
+{
+  "batch": "BATCH-7",
+  "playwright_install_exit": 0,
+  "uiux_exit": 1,
+  "calendar_repro_exit": 1,
+  "calendar_vitest_exit": 1,
+  "uiux": {
+    "failure_lines": [
+      "× gherkin uiux/api option-a campaign > Security dashboard secrets are not persisted to localStorage 30ms",
+      "× gherkin uiux/api option-a campaign > Security dashboard copy does not claim local secret persistence 4ms",
+      "× gherkin uiux/api option-a campaign > Search flow does not depend on mockEmails 4ms",
+      "× gherkin uiux/api option-a campaign > Search flow keeps mock data strictly out of runtime hook 4ms",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Security dashboard secrets are not persisted to localStorage",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Security dashboard copy does not claim local secret persistence",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Search flow does not depend on mockEmails",
+      "FAIL  tests/integration/gherkin/steps/uiux_api.steps.test.ts > gherkin uiux/api option-a campaign > Search flow keeps mock data strictly out of runtime hook"
+    ]
+  },
+  "calendar_vitest": {
+    "failure_lines": [
+      "× gherkin calendar-holidays repro > Imported holidays are rendered on 2026-12-25 in month and day view 19ms",
+      "× gherkin calendar-holidays repro > Month day click payload preserves local yyyy-mm-dd formatting 3ms",
+      "FAIL  tests/integration/gherkin/steps/calendar_holidays.steps.test.ts > gherkin calendar-holidays repro > Imported holidays are rendered on 2026-12-25 in month and day view",
+      "FAIL  tests/integration/gherkin/steps/calendar_holidays.steps.test.ts > gherkin calendar-holidays repro > Month day click payload preserves local yyyy-mm-dd formatting"
+    ]
+  }
+}
