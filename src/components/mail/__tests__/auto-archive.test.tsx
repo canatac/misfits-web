@@ -2,7 +2,6 @@ import { render, screen, fireEvent, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AutoArchiveSettings, ArchiveRestoreButton, useAutoArchive } from "@/components/mail/auto-archive";
 
-// Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
@@ -22,8 +21,7 @@ describe("AutoArchiveSettings", () => {
 
   it("renders all age options", () => {
     render(<AutoArchiveSettings />);
-
-    expect(screen.getByText("Jamais")).toBeTruthy();
+    expect(screen.getAllByText("Jamais").length).toBeGreaterThan(0);
     expect(screen.getByText("1 mois")).toBeTruthy();
     expect(screen.getByText("3 mois")).toBeTruthy();
     expect(screen.getByText("6 mois")).toBeTruthy();
@@ -32,27 +30,23 @@ describe("AutoArchiveSettings", () => {
 
   it("shows the archive now button", () => {
     render(<AutoArchiveSettings />);
-
     expect(screen.getByText("Archiver")).toBeTruthy();
   });
 
   it("displays total archived count", () => {
     render(<AutoArchiveSettings />);
-
     expect(screen.getByText("Total archivés")).toBeTruthy();
     expect(screen.getByText("0")).toBeTruthy();
   });
 
   it("shows last archive run date", () => {
     render(<AutoArchiveSettings />);
-
     expect(screen.getByText("Dernière exécution")).toBeTruthy();
     expect(screen.getAllByText("Jamais").length).toBeGreaterThan(0);
   });
 
   it("disables archive button when age is never", () => {
     render(<AutoArchiveSettings />);
-
     const archiveButton = screen.getByText("Archiver").closest("button");
     expect(archiveButton).toBeTruthy();
     expect(archiveButton?.getAttribute("disabled")).toBeDefined();
@@ -60,7 +54,6 @@ describe("AutoArchiveSettings", () => {
 
   it("shows descriptions for each option", () => {
     render(<AutoArchiveSettings />);
-
     expect(screen.getByText("Désarchivage automatique désactivé")).toBeTruthy();
     expect(screen.getByText("Archiver les emails de plus de 1 mois")).toBeTruthy();
     expect(screen.getByText("Archiver les emails de plus de 1 an")).toBeTruthy();
