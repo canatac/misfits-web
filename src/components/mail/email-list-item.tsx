@@ -98,10 +98,11 @@ function EmailListItemComponent({
       }}
       className={cn(
         "group relative flex cursor-pointer items-start gap-3 border-b border-[var(--color-border)] px-3 py-3 transition-colors",
-        isActive && "bg-[var(--color-accent)]",
+        isActive && "border-2 border-[#00D400] bg-[#1E1A15]",
         !isActive && email.isRead && "bg-[var(--color-bg)]",
         !isActive && !email.isRead && "bg-[var(--color-card)]",
-        !isActive && "hover:bg-[var(--color-muted)]"
+        !isActive && "hover:bg-[var(--color-muted)]",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00D400]"
       )}
       data-testid={`email-item-${email.id}`}
     >
