@@ -26,6 +26,8 @@ import { MailPageOverlays } from "./parts/MailPageOverlays";
 import { useMailLayoutSelectors } from "./parts/useMailLayoutSelectors";
 import { useMailPageHandlers } from "./parts/useMailPageHandlers";
 
+import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
+
 type MobileView = "list" | "view";
 
 export default function MailPage() {
@@ -35,6 +37,7 @@ export default function MailPage() {
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [activeVibe, setActiveVibe] = useState("Formal");
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const hasSelectedEmailInList = useEmailStore((s) =>
@@ -167,6 +170,7 @@ export default function MailPage() {
     onToggleSidebar: handleToggleSidebarShortcut,
     onToggleChat: handleToggleChatShortcut,
     onCloseOverlay: closeActiveOverlay,
+    onToggleShortcutsHelp: () => setShortcutsHelpOpen((prev) => !prev),
   });
 
   const handleToggleRightPanel = () => {
@@ -259,6 +263,11 @@ export default function MailPage() {
         setChatOpen={setChatOpen}
         desktopConsoleOpen={desktopConsoleOpen}
         setDesktopConsoleOpen={setDesktopConsoleOpen}
+      />
+
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onClose={() => setShortcutsHelpOpen(false)}
       />
     </div>
   );

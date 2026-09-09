@@ -18,6 +18,7 @@ export interface MailShortcutHandlers {
   onCloseOverlay?: () => boolean;
   onToggleStar?: () => void;
   onMarkUnread?: () => void;
+  onToggleShortcutsHelp?: () => void;
 }
 
 const INPUT_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
@@ -41,7 +42,7 @@ export function useMailShortcuts(handlers: MailShortcutHandlers): void {
       if (e.metaKey || e.ctrlKey) {
         if (e.key === "/") {
           e.preventDefault();
-          handlers.onSearchFocus();
+          handlers.onToggleShortcutsHelp?.();
           return;
         }
         if (e.key.toLowerCase() === "k") {
