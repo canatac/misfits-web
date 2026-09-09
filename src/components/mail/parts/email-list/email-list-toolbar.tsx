@@ -9,6 +9,7 @@ import {
   MailOpen,
   X,
   RefreshCw,
+  FolderOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -23,8 +24,52 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import type { FilterType, SortBy } from "@/types/email";
+import { useAccountStore } from "@/stores/account-store";
 
 type BulkAction = "archive" | "delete" | "markRead" | "markUnread" | "star" | "unstar";
+
+const STORAGE_KEY = "misfits_account_filter";
+
+function AccountFilterDropdown() {
+  const accounts = useAccountStore((s) => s.accounts);
+  const isUnifiedInbox = useAccountStore((s) => s.isUnifiedInbox);
+  const activeAccountId = useAccountStore((s) => s.activeAccountId);
+  const setActiveAccount = useAccountStore((s) => s.setActiveAccount);
+  const toggleUnifiedInbox = useAccountStore((s) => s.toggleUnifiedInbox);
+
+  // Don't show filter if unified inbox is active or only one account
+  if (isUnifiedInbox || accounts.length <= 1) return null;
+
+  const selectedValue = activeAccountId ?? "all";
+
+  const handleValueChange = (value: string) => {
+    if (value === "all") {
+      toggleUnifiedInbox();
+    } else {
+      setActiveAccount(value);
+    }
+  };
+
+  return (
+    <Select value={selectedValue} onValueChange={handleValueChange}>
+      <SelectTrigger
+        className="w-[140px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]"
+        aria-label="Filter by account"
+      >
+        <FolderOpen className="mr-1 h-3.5 w-3.5" />
+        <SelectValue placeholder="Compte" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">Tous les comptes</SelectItem>
+        {accounts.map((account) => (
+          <SelectItem key={account.id} value={account.id}>
+            {account.name || account.email}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 export const FILTER_TABS: { value: FilterType; label: string }[] = [
   { value: "all", label: "Focus" },
@@ -103,6 +148,7 @@ export function EmailListToolbar({
             aria-label="Search emails"
           />
         </div>
+        <AccountFilterDropdown />
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
           <SelectTrigger
             className="w-[160px] border-[#242427] bg-[#0A0A0B] text-[#D4D4D8]"
