@@ -7,6 +7,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast, Toaster } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
 import { I18nProvider } from "@/i18n/provider";
+import { CommandPalette } from "@/components/command-palette";
+import { useCommandPaletteKeyboard } from "@/hooks/use-command-palette";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -34,6 +36,8 @@ export function Providers({ children }: { children: ReactNode }) {
       });
   }, []);
 
+  useCommandPaletteKeyboard();
+
   return (
     <ThemeProvider
       attribute="class"
@@ -49,6 +53,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <Toaster position="bottom-right" richColors />
         </I18nProvider>
       </QueryClientProvider>
+      <CommandPalette />
     </ThemeProvider>
   );
 }
