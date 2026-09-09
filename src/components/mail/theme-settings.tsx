@@ -80,7 +80,7 @@ export function ThemeSettingsPanel() {
       <div>
         <h2 className="text-lg font-bold text-white mb-2">Apparence</h2>
         <p className="text-sm text-[#71717A]">
-          Personnalisez l'apparence de l'application selon vos préférences.
+          Personnalisez l&apos;apparence de l&apos;application selon vos préférences.
         </p>
       </div>
 
