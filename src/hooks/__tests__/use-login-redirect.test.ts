@@ -5,16 +5,31 @@ const mockLogin = vi.hoisted(() => vi.fn());
 const mockReplace = vi.hoisted(() => vi.fn());
 const mockToastSuccess = vi.hoisted(() => vi.fn());
 
-vi.mock("@/stores/auth-store", () => ({
-  useAuthStore: {
-    getState: vi.fn(() => ({
-      isAuthenticated: true,
-      pendingTwoFactorChallengeId: null,
-      login: mockLogin,
-    })),
-    subscribe: vi.fn(),
-  },
-}));
+const mockState = {
+  isAuthenticated: true,
+  pendingTwoFactorChallengeId: null,
+  login: mockLogin,
+  error: null,
+  user: null,
+  session: null,
+  isLoading: false,
+  logout: vi.fn(),
+  register: vi.fn(),
+  verify2FA: vi.fn(),
+  requestPasswordReset: vi.fn(),
+  resetPassword: vi.fn(),
+  refreshSession: vi.fn(),
+  clearError: vi.fn(),
+  hydrate: vi.fn(),
+};
+
+vi.mock("@/stores/auth-store", () => {
+  const useAuthStore = (selector: (state: typeof mockState) => unknown) => selector(mockState);
+  useAuthStore.getState = () => mockState;
+  useAuthStore.setState = vi.fn();
+  useAuthStore.subscribe = vi.fn();
+  return { useAuthStore };
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mockReplace, push: vi.fn() }),
