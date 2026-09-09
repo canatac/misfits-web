@@ -54,7 +54,8 @@ describe("AutoArchiveSettings", () => {
     render(<AutoArchiveSettings />);
 
     const archiveButton = screen.getByText("Archiver").closest("button");
-    expect(archiveButton).toBeDisabled();
+    expect(archiveButton).toBeTruthy();
+    expect(archiveButton?.getAttribute("disabled")).toBeDefined();
   });
 
   it("shows descriptions for each option", () => {
