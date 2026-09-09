@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useAuthStore } from "@/stores/auth-store";
 import { VscodeLayoutControls } from "@/components/mail/vscode-layout-controls";
+import { ThemeToggle } from "@/components/mail/theme-toggle";
 
 interface NovamailShellHeaderProps {
   onOpenSearch: () => void;
@@ -127,6 +128,8 @@ export function NovamailShellHeader({
             </div>
           )}
         </div>
+
+        <ThemeToggle />
 
         <button
           type="button"
