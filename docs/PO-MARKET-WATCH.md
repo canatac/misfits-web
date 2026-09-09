@@ -113,10 +113,11 @@
    - Rationale: aligné avec le marché (Proton/Tuta/Fastmail)
 
 ### Roadmap vision (prochaines itérations)
-1. **Sprint UX**: scheduled send, undo send, templates
+1. **Sprint UX**: scheduled send, undo send, templates, conversation view
 2. **Sprint Security**: post-quantum roadmap, anonymous signup optionnel
-3. **Sprint Ecosystem**: PWA offline, intégration calendrier avancée
+3. **Sprint Ecosystem**: PWA offline, intégration calendrier avancée (create event from email)
 4. **Sprint AI**: résumés automatiques, triage intelligent, réponses suggérées
+5. **Sprint Monétisation**: arbitrage modèle freemium (gratuit avec pub ? freemium classique ? donation ?)
 
 ---
 
