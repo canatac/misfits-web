@@ -1,7 +1,7 @@
 /**
  * Next.js Edge middleware — route protection for misfits.ai Mail.
  *
- * Protected routes (/inbox, /compose, /settings and nested paths) require a
+ * Protected routes (/inbox, /mail, /compose, /settings and nested paths) require a
  * valid session cookie (`mfa_session`). Public routes (/, /login, /reset-password
  * and /api/*) are always allowed. The middleware runs on the Edge runtime so it
  * cannot read localStorage — it relies on the httpOnly cookie set by the backend
@@ -14,6 +14,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
+  "/inbox",
   "/mail",
   "/compose",
   "/settings",
