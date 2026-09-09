@@ -23,7 +23,27 @@ export function usePresentationMode() {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey && e.shiftKey && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        togglePresentationMode();
+        setIsActive((prev) => {
+          if (!prev) {
+            // Start countdown
+            setCountdown(5);
+            const interval = setInterval(() => {
+              setCountdown((c) => {
+                if (c <= 1) {
+                  clearInterval(interval);
+                  setIsActive(true);
+                  localStorage.setItem(STORAGE_KEY, "true");
+                  return 0;
+                }
+                return c - 1;
+              });
+            }, 1000);
+            return false;
+          } else {
+            localStorage.setItem(STORAGE_KEY, "false");
+            return false;
+          }
+        });
       }
     };
 
