@@ -21,7 +21,7 @@ interface DailyActivity {
   received: number;
 }
 
-export function EmailStatistics() {
+function EmailStatistics() {
   const [period, setPeriod] = useState<PeriodFilter>("30d");
   const inboxQuery = useEmailList({ folder: "inbox", page: 1, pageSize: 100, sortBy: "date" });
   const sentQuery = useEmailList({ folder: "sent", page: 1, pageSize: 100, sortBy: "date" });

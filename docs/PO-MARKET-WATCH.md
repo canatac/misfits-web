@@ -51,10 +51,14 @@
 | **IMAP/SMTP natif** | **Oui (stack native)** | Bridge (payant) | Non (encryption bloque) | **Oui** | Non |
 | **Custom domain** | Oui | Payant | Payant | Oui | Non |
 | **Scheduled send** | À implémenter | Payant | Non | **Oui** | Non |
-| **Undo send** | À impleter | **Oui** | Non | **Oui** | Non |
-| **Templates** | À implémenter | Non | **Oui** | **Oui** | Non |
-| **Énergie** | À définir | Standard | **100% renouvelable** | Standard | Standard |
-| **Prix entrée** | Freemium (à définir) | €3/mo (15GB) | €3/mo (20GB) | $3/mo | $99/an |
+|| **Undo send** | À implémenter | **Oui** | Non | **Oui** | Non |
+|| **Templates** | À implémenter | Non | **Oui** | **Oui** | Non |
+|| **Offline search** | À implémenter | **Oui (Rust engine 2026)** | Non | Non | Non |
+|| **Gmail integration** | À implémenter | **Oui (send/receive)** | Non | Non | Non |
+|| **Conversation view** | À implémenter | Non | **Oui (2026)** | **Oui** | **Oui** |
+|| **Mobile Rust engine** | N/A | **Oui (2026)** | Non | Non | Non |
+|| **Énergie** | À définir | Standard | **100% renouvelable** | Standard | Standard |
+|| **Prix entrée** | Freemium (à définir) | €3/mo (15GB) | €3/mo (20GB) | $3/mo | $99/an |
 
 ### Points différenciants misfits.ai vs concurrence
 
@@ -109,10 +113,11 @@
    - Rationale: aligné avec le marché (Proton/Tuta/Fastmail)
 
 ### Roadmap vision (prochaines itérations)
-1. **Sprint UX**: scheduled send, undo send, templates
+1. **Sprint UX**: scheduled send, undo send, templates, conversation view
 2. **Sprint Security**: post-quantum roadmap, anonymous signup optionnel
-3. **Sprint Ecosystem**: PWA offline, intégration calendrier avancée
+3. **Sprint Ecosystem**: PWA offline, intégration calendrier avancée (create event from email)
 4. **Sprint AI**: résumés automatiques, triage intelligent, réponses suggérées
+5. **Sprint Monétisation**: arbitrage modèle freemium (gratuit avec pub ? freemium classique ? donation ?)
 
 ---
 
@@ -126,17 +131,18 @@
 | MW-2026-004 | User crée template "Réponse standard" | Template sauvegardé, disponible dans le composer via menu templates | ❌ (feature à implémenter) |
 | MW-2026-005 | User accède /mail hors ligne (PWA) | Liste des emails récents affichés depuis le cache, indicateur "hors ligne" | ❌ (PWA à implémenter) |
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
+| MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
 
-- **TutaCrypt** (post-quantum) est un signal fort: le marché exige maintenant du quantum-safe. À planifier.
-- **Fastmail** reste le référent UX pour le mail "classique" premium — benchmark à faire sur leur interface.
-- **Proton** pousse l'écosystème (VPN/Drive/Pass) — notre angle différent: IA + chat mail + self-hosted.
-- **Hey** (Basecamp) a abandonné le IMAP — notre stack native est un avantage pour les power users.
+- **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
+- **Tuta 2026**: Fast Sync (10x faster), conversation view, email import/export single-click, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché.
+- **Hey** (Basecamp) a abandonné le IMAP — notre stack native est un avantage pour power users. NOUVEAU 2026: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar.
+- **Skiff** shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
 
 ---
 
-*Fichier maintenu par le PO. Cycle suivant: explorer les offres Hey/Skiff en détail, arbitrer sur le modèle freemium.*
+*Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
