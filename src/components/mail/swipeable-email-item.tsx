@@ -182,22 +182,22 @@ export function SwipeableEmailItem({
 
       {/* Right actions (revealed on swipe left) */}
       <div className="absolute inset-y-0 right-0 flex items-stretch">
-        {rightActions.map((index) => (
+        {rightActions.map((action, idx) => (
           <button
-            key={rightActions[index].id}
-            onClick={rightActions[index].action}
+            key={action.id}
+            onClick={action.action}
             className={cn(
               "flex flex-col items-center justify-center transition-all",
-              rightActions[index].bgColor,
-              rightActions[index].color,
+              action.bgColor,
+              action.color,
             )}
             style={{
               width: ACTION_WIDTH,
-              transform: swipeX < -index * ACTION_WIDTH ? "translateX(0)" : "translateX(100%)",
+              transform: swipeX < -idx * ACTION_WIDTH ? "translateX(0)" : "translateX(100%)",
             }}
           >
-            {rightActions[index].icon}
-            <span className="text-[10px] mt-1">{rightActions[index].label}</span>
+            {action.icon}
+            <span className="text-[10px] mt-1">{action.label}</span>
           </button>
         ))}
       </div>
