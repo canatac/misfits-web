@@ -185,6 +185,7 @@
 - `#548` — Newsletter one-click unsubscribe backend (List-Unsubscribe header) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
 - `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
+- `#550` — PWA mobile offline (service worker, cache, sync) (misfits-web)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 - `#54` — Masked email alias management API (studious-octo-rotary-phone)
