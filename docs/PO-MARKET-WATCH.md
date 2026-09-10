@@ -223,6 +223,13 @@
 
 **One inbox 2026** : tendance confirmée (Proton, Mailbird, Superhuman, Missive). Notion Mail disparaît. Notre avantage = stack native IMAP/SMTP vs Proton bridge payant. Arbitrage : multi-comptes natif.
 
+**Email client performance 2026** :
+- **Rust vs Go** : Rust Axum ~307k req/s vs Go ~180k req/s (benchmark 2026)
+- **Rust WASM vs JS** : 15x faster for email rendering (1.1ms vs 18ms) — confirme notre choix Rust/Next.js pour la performance
+- **WebAssembly** : proche du natif (1.59x native avec WAMR)
+- **Proton mobile Rust** : confirme que Rust est le choix performance pour l'email
+- **Notre stack** : Rust (backend) + Next.js (frontend) = positionné pour la vitesse
+
 **Shortwave 2026 (détail)** : client AI-native pour Gmail uniquement. $18/mo (Pro), $30/mo (Business), $45/mo (Premier), $120/mo (Max). AI search sémantique (décrire plutôt que mots-clés), bundling, thread summarization. Avantage = AI native + vitesse. Inconvénient = Gmail uniquement, cloud AI, pas de free plan permanent. Leçon: la recherche sémantique est un différenciateur — notre recherche instantanée (MW-011) doit viser la même expérience.
 
 **Spike 2026 (détail)** : email en style chat (bulles de message). $5/mo (Pro), $35/mo (AI agents). Unified inbox, team collaboration, video calls, AI writing. Avantage = UX moderne, chat naturel. Inconvénient = gimmicky UI (pour certains), pas d'IA autonome, prix élevé pour équipes. Leçon : l'email conversationnel est une tendance UX — notre "chat mail" (misfits.ai) est pionnière sur ce positionnement.
