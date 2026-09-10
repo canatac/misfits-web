@@ -136,6 +136,7 @@
 | T-INFRA-04 | BK | Connexion IMAP SSL | Handshake OK | [ ] | |
 | T-INFRA-05 | DK | Health check /health | 200 OK + version | [ ] | |
 | T-INFRA-06 | DK | Métriques Prometheus | /metrics exposé (récursivité fleet) | [ ] | |
+| T-INFRA-07 | BK | Vérification politique MTA-STS destinataire | Lookup DNS + cache, enforce mode respecté | [ ] | #494 |
 
 ---
 
