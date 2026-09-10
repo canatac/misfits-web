@@ -182,8 +182,10 @@ export function groupEmailsByAccount(
 
   // Sort groups: misfits first, then alphabetical
   result.sort((a, b) => {
-    if (a.account?.provider === "misfits") return -1;
-    if (b.account?.provider === "misfits") return 1;
+    const aIsMisfits = a.account?.provider === "misfits";
+    const bIsMisfits = b.account?.provider === "misfits";
+    if (aIsMisfits && !bIsMisfits) return -1;
+    if (!aIsMisfits && bIsMisfits) return 1;
     return (a.account?.name ?? "").localeCompare(b.account?.name ?? "");
   });
 
