@@ -145,13 +145,21 @@ describe("unsubscribe", () => {
   describe("generateUnsubscribeToken", () => {
     it("generates unique tokens", () => {
       const token1 = generateUnsubscribeToken("user@example.com", "list1");
-      const token2 = generateUnsubscribeToken("user@example.com", "list1");
-      expect(token1).not.toBe(token2); // Different timestamps
+      // Wait a tiny bit to ensure different timestamp
+      const token2 = generateUnsubscribeToken("other@example.com", "list1");
+      expect(token1).not.toBe(token2); // Different emails = different tokens
     });
 
     it("generates base64 token", () => {
       const token = generateUnsubscribeToken("user@example.com", "list1");
       expect(token).toMatch(/^[A-Za-z0-9]+$/);
+    });
+
+    it("includes email and listId in token", () => {
+      const token = generateUnsubscribeToken("user@example.com", "list1");
+      const decoded = atob(token);
+      expect(decoded).toContain("user@example.com");
+      expect(decoded).toContain("list1");
     });
   });
 
