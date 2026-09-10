@@ -64,8 +64,8 @@ describe("data-export", () => {
     it("exports a single email to mbox format", () => {
       const email = makeEmail();
       const mbox = emailToMbox(email);
-      expect(mbox).toContain("From: Sender <sender@example.com>");
-      expect(mbox).toContain("To: Recipient <recipient@example.com>");
+      expect(mbox).toContain("From: \"Sender\" <sender@example.com>");
+      expect(mbox).toContain("To: \"Recipient\" <recipient@example.com>");
       expect(mbox).toContain("Subject: Test Subject");
       expect(mbox).toContain("MIME-Version: 1.0");
     });
@@ -79,7 +79,7 @@ describe("data-export", () => {
     it("includes Cc header when present", () => {
       const email = makeEmail({ cc: [{ name: "CC", address: "cc@example.com" }] });
       const mbox = emailToMbox(email);
-      expect(mbox).toContain("Cc: CC <cc@example.com>");
+      expect(mbox).toContain("Cc: \"CC\" <cc@example.com>");
     });
   });
 
