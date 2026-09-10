@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 10)
+> Dernière mise à jour: 2026-09-10 (tick 11)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -263,6 +263,18 @@
 | T-CAL-05 | FT | Création événement depuis email | Pré-remplissage auto | [ ] | #503 |
 | T-CAL-06 | FT | Notifications unifiées | Emails + events ensemble | [ ] | #503 |
 | T-CAL-07 | BK | Sync incrémentale | Sync token CalDAV respecté | [ ] | #503 |
+
+---
+
+## 19. First-Time Sender Screening
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-SCREEN-01 | FT/BK | Activation screening par compte | Mode actif/inactif fonctionnel | [ ] | #504 |
+| T-SCREEN-02 | FT | Nouveau expéditeur → file attente | Mail mis en attente, badge compteur | [ ] | #504 |
+| T-SCREEN-03 | FT | Autorisation expéditeur | Prochains mails dans inbox | [ ] | #504 |
+| T-SCREEN-04 | FT | Blocage expéditeur | Mails rejetés silencieusement | [ ] | #504 |
+| T-SCREEN-05 | FT | Import carnet adresses | Contacts auto-autorisés | [ ] | #504 |
 
 ---
 
