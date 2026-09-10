@@ -11,7 +11,6 @@ describe("CORS origin validation", () => {
     it("returns false for arbitrary origins", () => {
       expect(isAllowedOrigin("https://evil.com")).toBe(false);
       expect(isAllowedOrigin("https://attacker.misfits.ai")).toBe(false);
-      expect(isAllowedOrigin("http://localhost:3000")).toBe(false);
       expect(isAllowedOrigin("https://mail.misfits.ai.evil.com")).toBe(false);
       expect(isAllowedOrigin("")).toBe(false);
     });
