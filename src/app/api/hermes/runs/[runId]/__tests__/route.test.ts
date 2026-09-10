@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../route";
+import { NextRequest } from "next/server";
 
 describe("/api/hermes/runs/[runId] route", () => {
   const originalEnv = { ...process.env };
@@ -25,11 +26,11 @@ describe("/api/hermes/runs/[runId] route", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const req = new Request("http://localhost/api/hermes/runs/run_1", {
+    const req = new NextRequest("http://localhost/api/hermes/runs/run_1", {
       headers: { Cookie: "mfa_session=test-session-token" },
     });
 
-    const res = await GET(req as any, {
+    const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
     });
 
@@ -44,11 +45,11 @@ describe("/api/hermes/runs/[runId] route", () => {
     delete process.env.BACKEND_URL;
     delete process.env.HERMES_GATEWAY_BASE_URL;
 
-    const req = new Request("http://localhost/api/hermes/runs/run_1", {
+    const req = new NextRequest("http://localhost/api/hermes/runs/run_1", {
       headers: { Cookie: "mfa_session=test-session-token" },
     });
 
-    const res = await GET(req as any, {
+    const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
     });
 
@@ -64,9 +65,9 @@ describe("/api/hermes/runs/[runId] route", () => {
     process.env.HERMES_PROXY_MODE = "backend";
     process.env.BACKEND_URL = "http://email-api:8000";
 
-    const req = new Request("http://localhost/api/hermes/runs/run_1");
+    const req = new NextRequest("http://localhost/api/hermes/runs/run_1");
 
-    const res = await GET(req as any, {
+    const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
     });
 

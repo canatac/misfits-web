@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "../route";
+import { NextRequest } from "next/server";
 
 describe("/api/hermes/runs route", () => {
   const originalEnv = { ...process.env };
@@ -17,11 +18,11 @@ describe("/api/hermes/runs route", () => {
     process.env.HERMES_PROXY_MODE = "direct";
     process.env.HERMES_API_KEY = "test-key";
 
-    const req = new Request("http://localhost/api/hermes/runs", {
+    const req = new NextRequest("http://localhost/api/hermes/runs", {
       method: "GET",
     });
 
-    const res = await GET(req as any);
+    const res = await GET(req);
     expect(res.status).toBe(401);
   });
 
@@ -37,7 +38,7 @@ describe("/api/hermes/runs route", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const req = new Request("http://localhost/api/hermes/runs", {
+    const req = new NextRequest("http://localhost/api/hermes/runs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -53,7 +54,7 @@ describe("/api/hermes/runs route", () => {
       }),
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     expect(res.status).toBe(200);
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -73,7 +74,7 @@ describe("/api/hermes/runs route", () => {
     delete process.env.BACKEND_URL;
     delete process.env.HERMES_GATEWAY_BASE_URL;
 
-    const req = new Request("http://localhost/api/hermes/runs", {
+    const req = new NextRequest("http://localhost/api/hermes/runs", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,7 +85,7 @@ describe("/api/hermes/runs route", () => {
       }),
     });
 
-    const res = await POST(req as any);
+    const res = await POST(req);
     expect(res.status).toBe(503);
     await expect(res.json()).resolves.toMatchObject({
       error: {
