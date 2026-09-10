@@ -171,6 +171,14 @@
 
 ### Cycle 2026-09-10
 
+**Issues créées ce cycle :**
+- `#513` — NIS2/DORA compliance audit & reporting framework
+- `#514` — Personal data export (RGPD/NIS2 compliance)
+- `#515` — Conversation view (thread grouping, standard marché 2026)
+- `#516` — Masked email aliases (anti-spam, vs Fastmail ~1000 aliases)
+- `#517` — Scheduled send (envoi programmé, must-have 2026)
+- `#518` — Undo send (5-second recall window, must-have 2026)
+
 **Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose avec core Rust). Offline search, indexation locale, Category View auto-grouping, intégration Gmail native (envoi/réception depuis un seul inbox). L'acquisition SimpleLogin est totalement intégrée — alias gérés nativement. Leur "Engineering Transformation" est un projet de 12+ mois. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform stratégique. Notre stack backend Rust (Actif-web) est un atout, mais on n'a pas de mobile natif. Considération: PWA vs natif mobile en 2026.
 
 **Tuta 2026 (détail)** : Fast Sync (10x faster) déployé — tous les clients sont 10x plus rapides grâce à l'optimisation du protocole. Nested labels, compteurs sur les labels, boîtes partagées rétractables. Search amélioré (résultats plus rapides, recherche pendant l'indexation). Tuta Drive en bêta ouverte. Inbox rules: bouton "réappliquer". Schedule send et undo send déployés. Le Fast Sync est l'avantage technique le plus impressionnant — notre stack DKIM native n'a pas ce problème de performance car on n'a pas de chiffrement E2EE lourd côté serveur. Leçon: la UX vitesse > E2EE pour le marché mainstream.
