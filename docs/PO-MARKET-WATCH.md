@@ -152,6 +152,7 @@
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-009 | User consulte la conversation view | Affichage groupé par thread, tri chronologique, indicateur "X messages" | ❌ (standard marché 2026, implémentation prioritaire) |
 | MW-2026-010 | User génère un masked email alias | Alias créé (format: xxxxx@misfits.ai), emails forwardés vers inbox principale, possibilité de désactiver | ❌ (feature à implémenter — différence avec Fastmail qui a ~1000 aliases) |
+| MW-2026-011 | User recherche dans sa boîte | Résultats instantanés (<200ms), recherche possible pendant l'indexation, labels imbriqués | ❌ (feature à implémenter — Tuta/Proton le font déjà) |
 
 ---
 
@@ -161,7 +162,7 @@
 
 **Proton 2026**: réécriture mobile Rust complète (offline search, indexation locale), intégration Gmail native (envoi/réception depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all". L'acquisition SimpleLogin est désormais totalement intégrée — les alias sont gérés nativement dans le dashboard.
 
-**Tuta 2026**: Fast Sync (10x faster), conversation view déployée, email import/export en un clic, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché — notre implémentation doit suivre.
+**Tuta 2026 (détail)** : Fast Sync (10x faster) déployé — tous les clients sont 10x plus rapides grâce à l'optimisation du protocole. Nested labels, compteurs sur les labels, boîtes partagées rétractables. Search amélioré (résultats plus rapides, recherche pendant l'indexation). Tuta Drive en bêta ouverte. Inbox rules: bouton "réappliquer". Schedule send et undo send déployés. Le Fast Sync est l'avantage technique le plus impressionnant — notre stack DKIM native n'a pas ce problème de performance car on n'a pas de chiffrement E2EE lourd côté serveur. Leçon: la UX vitesse > E2EE pour le marché mainstream.
 
 **Hey/Basecamp 2026**: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar. Notre route /calendar a 6 mois d'avance sur ce calendrier.
 
