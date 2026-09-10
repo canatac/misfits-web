@@ -98,9 +98,10 @@ describe("use-composer send flow: cross-repo auth contract", () => {
 
     const call = fetchMock.mock.calls[0];
     const init = call[1] as RequestInit;
-    const headers = init.headers as Record<string, string>;
-    expect(headers["Authorization"]).toBe("Bearer composer-token-xyz");
-    expect(headers["x-user-id"]).toBe("composer");
+    // fetch normalizes headers to lowercase Headers object
+    const headers = new Headers(init.headers);
+    expect(headers.get("authorization")).toBe("Bearer composer-token-xyz");
+    expect(headers.get("x-user-id")).toBe("composer");
   });
 
   it("composer undo-send hits /api/send/undo with POST method", async () => {
