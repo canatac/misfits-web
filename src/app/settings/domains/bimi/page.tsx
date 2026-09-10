@@ -21,14 +21,13 @@ const BIMI_REQUIREMENTS = [
 ];
 
 export default function BimiSettingsPage() {
-  const accounts = useAccountStore((s) => s.accounts);
   const [domain, setDomain] = useState("");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [logoValid, setLogoValid] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const activeAccount = accounts.find((a) => a.isActive);
+  const activeAccount = useAccountStore((s) => s.getActiveAccount());
   const accountDomain = activeAccount?.email?.split("@")[1] || "";
 
   const effectiveDomain = domain || accountDomain;
