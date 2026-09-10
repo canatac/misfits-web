@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 9)
+> Dernière mise à jour: 2026-09-10 (tick 10)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -249,6 +249,20 @@
 | T-JMAP-05 | BK | Mailbox/get | Liste des dossiers | [ ] | #501 |
 | T-JMAP-06 | BK | WebSocket push | Notifications en temps réel | [ ] | #501 |
 | T-JMAP-07 | BK | Coexistence IMAP | Mêmes données via les deux protocoles | [ ] | #501 |
+
+---
+
+## 18. Calendar Integration Hub
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-CAL-01 | BK | Connexion CalDAV multi-comptes | Comptes ajoutés, sync OK | [ ] | #503 |
+| T-CAL-02 | BK | Lecture événements CalDAV | Événements affichés | [ ] | #503 |
+| T-CAL-03 | BK | Création/modification événements | Write OK, sync bidirectionnelle | [ ] | #503 |
+| T-CAL-04 | FT | Vue calendrier mensuelle/hebdo/jour | Navigation fonctionnelle | [ ] | #503 |
+| T-CAL-05 | FT | Création événement depuis email | Pré-remplissage auto | [ ] | #503 |
+| T-CAL-06 | FT | Notifications unifiées | Emails + events ensemble | [ ] | #503 |
+| T-CAL-07 | BK | Sync incrémentale | Sync token CalDAV respecté | [ ] | #503 |
 
 ---
 
