@@ -647,10 +647,19 @@ select:focus-visible,
     color: #333 !important;
   }
 
-  [data-testid="security-banner"],
-  [data-testid="image-blocking-notice"],
   [data-testid="email-attachments"] {
     display: none !important;
+  }
+
+  [data-testid="security-banner"],
+  [data-testid="image-blocking-notice"] {
+    display: block !important;
+    visibility: visible !important;
+    color: #000 !important;
+    background: #fff !important;
+    border: 1px solid #000 !important;
+    padding: 8px !important;
+    margin: 8px 0 !important;
   }
 
   .quoted-collapsed {
