@@ -16,12 +16,21 @@ import { NextResponse, type NextRequest } from "next/server";
 const SESSION_COOKIES = ["mfa_session", "session_token"] as const;
 
 export function getSessionToken(request: NextRequest): string | null {
-  // Check cookies first
+  // Check cookies first (works in Next.js runtime)
   const cookies = request.cookies as unknown as { get?: (name: string) => { value?: string } | undefined } | undefined;
   if (cookies?.get) {
     for (const name of SESSION_COOKIES) {
       const token = cookies.get(name)?.value;
       if (token) return token;
+    }
+  }
+
+  // Fallback: parse raw Cookie header (for test environments where request.cookies is undefined)
+  const cookieHeader = request.headers.get("cookie");
+  if (cookieHeader) {
+    for (const name of SESSION_COOKIES) {
+      const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
+      if (match) return decodeURIComponent(match[1]);
     }
   }
 
