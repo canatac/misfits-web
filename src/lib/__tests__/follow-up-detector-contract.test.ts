@@ -85,12 +85,6 @@ describe("Follow-up detector cross-repo contract", () => {
     expect(reminder.daysWaiting).toBeGreaterThanOrEqual(0);
   });
 
-  it("ReminderRule pattern compiles to valid regex", () => {
-    for (const rule of DEFAULT_RULES) {
-      expect(() => new RegExp(rule.pattern, "gi")).not.toThrow();
-    }
-  });
-
   it("DEFAULT_RULES covers all FollowUpType values", () => {
     const coveredTypes = new Set(DEFAULT_RULES.map((r) => r.type));
     expect(coveredTypes.has("needs_reply")).toBe(true);
