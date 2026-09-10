@@ -8,7 +8,7 @@ import type { SearchFilters, SearchQuery } from "@/types/search";
 
 /** Parse a size string like "5M", "200K", "1.5G" into bytes. Returns 0 if unparseable. */
 export function parseSize(value: string): number {
-  const match = value.trim().match(/^([\d.]+)\s*([kKmMgGtT]?)(b?ytes?)?$/);
+  const match = value.trim().match(/^([\d.]+)\s*([kKmMgGtT]?)(?:bytes?)?$/i);
   if (!match) return 0;
   const num = parseFloat(match[1]);
   if (isNaN(num)) return 0;
@@ -67,18 +67,28 @@ interface Token {
 /**
  * Tokenize the raw query into operator tokens and free-text tokens.
  * Handles quoted values: `from:"John Doe"` and `subject:'Q3 Roadmap'`.
+ * Unquoted operator values capture remaining tokens until next operator or end.
  */
 function tokenize(raw: string): Token[] {
   const tokens: Token[] = [];
-  const regex = /(\w+:)(?:"([^"]*)"|'([^']*)'|(\S+))|\S+/g;
+  const regex = /(\w+):(?:"([^"]*)"|'([^']*)'|(\S+))|\S+/g;
   let match: RegExpExecArray | null;
+
+  const knownOperators = new Set([
+    "from", "to", "subject", "has", "before", "after", "is",
+    "label", "filename", "larger", "smaller",
+  ]);
 
   while ((match = regex.exec(raw)) !== null) {
     if (match[1]) {
-      // Operator token
       const operator = match[1].slice(0, -1).toLowerCase();
       const value = match[2] ?? match[3] ?? match[4] ?? "";
-      tokens.push({ text: match[0], isOperator: true, operator, value });
+      if (knownOperators.has(operator)) {
+        tokens.push({ text: match[0], isOperator: true, operator, value });
+      } else {
+        // Unknown operator — treat as free text
+        tokens.push({ text: match[0], isOperator: false });
+      }
     } else {
       tokens.push({ text: match[0], isOperator: false });
     }
