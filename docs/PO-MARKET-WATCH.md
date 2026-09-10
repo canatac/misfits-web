@@ -244,6 +244,8 @@
 
 **Front 2026** : support inbox + AI automations. $29/seat/mo. Alternative orientée support client.
 
+**Mailbird 2026** : client email multi-comptes, unified inbox, cross-account search. Free (1 compte), Premium $4/mo (annuel) ou $99.75 one-time. Windows + Mac (depuis oct 2024). Avantage = multi-comptes illimités, rapide, local storage. Inconvénient = pas de mobile, pas d'IA avancée. Leçon : le multi-compte natif est un besoin marché — notre arbitrage "one inbox" (multi-comptes natif) est validé.
+
 ---
 
 ### Cycle 2026-09-09
