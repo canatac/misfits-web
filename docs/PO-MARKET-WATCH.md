@@ -174,6 +174,7 @@
 - `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
 - `#541` — Multi-account email aggregation backend (IMAP/SMTP external) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
+- `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 - `#54` — Masked email alias management API (studious-octo-rotary-phone)
