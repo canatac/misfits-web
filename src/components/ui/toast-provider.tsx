@@ -128,6 +128,7 @@ function ToastItem({
       </button>
       <button
         onClick={handleDismiss}
+        aria-label="Close toast"
         className="p-1 rounded-lg text-[#71717A] hover:text-white hover:bg-[#1D1D20] transition-colors"
       >
         <X className="h-3 w-3" />
