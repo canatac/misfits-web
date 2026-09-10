@@ -150,20 +150,22 @@ export function SnoozePicker({
           <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">
+                <label htmlFor="snooze-custom-date" className="text-xs text-[var(--color-muted-fg)]">
                   Date
                 </label>
                 <Input
+                  id="snooze-custom-date"
                   type="date"
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
                 />
               </div>
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">
+                <label htmlFor="snooze-custom-time" className="text-xs text-[var(--color-muted-fg)]">
                   Time
                 </label>
                 <Input
+                  id="snooze-custom-time"
                   type="time"
                   value={customTime}
                   onChange={(e) => setCustomTime(e.target.value)}
@@ -185,6 +187,7 @@ export function SnoozePicker({
             </div>
             <Button
               size="sm"
+              data-testid="snooze-custom-confirm"
               className="mt-2 w-full"
               onClick={handleCustomSnooze}
               disabled={!customDate}
