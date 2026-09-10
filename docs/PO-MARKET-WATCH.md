@@ -170,7 +170,9 @@
 - `#534` — Email templates with variables (dynamic content)
 - `#537` — SMTP security hardening (STARTTLS, DANE, MTA-STS) (reimagined-guide)
 - `#538` — Post-quantum cryptography Kyber+Dilithium (reimagined-guide)
+- `#539` — Instant search backend (full-text, <200ms) (reimagined-guide)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
+- `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 
 **CRA 2026 (Cyber Resilience Act)** : les obligations de reporting entrent en vigueur le 11 septembre 2026. Les fabricants de produits numériques doivent :
 - Rapporter les vulnérabilités activement exploitées : early warning sous 24h, notification détaillée sous 72h
