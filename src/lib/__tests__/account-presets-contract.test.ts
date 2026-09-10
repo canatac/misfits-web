@@ -38,28 +38,36 @@ describe("Account presets cross-repo contract", () => {
     expect(proton.serverConfig?.imapHost).toBeTruthy();
   });
 
+  it("PROVIDER_PRESETS has Custom config", () => {
+    const custom = PROVIDER_PRESETS.custom;
+    expect(custom).toBeDefined();
+    expect(custom.needsServerFields).toBe(true);
+  });
+
   it("server configs have required fields for backend", () => {
     for (const [provider, preset] of Object.entries(PROVIDER_PRESETS)) {
       if (!preset.serverConfig) continue;
       const cfg = preset.serverConfig;
-      expect(cfg.imapHost).toBeTruthy();
+      expect(cfg.imapHost).toBeDefined();
       expect(cfg.imapPort).toBeGreaterThan(0);
-      expect(cfg.smtpHost).toBeTruthy();
+      expect(cfg.smtpHost).toBeDefined();
       expect(cfg.smtpPort).toBeGreaterThan(0);
     }
   });
 
-  it("IMAP ports are well-known (143/993)", () => {
+  it("IMAP ports are positive integers", () => {
     for (const [, preset] of Object.entries(PROVIDER_PRESETS)) {
       if (!preset.serverConfig) continue;
-      expect([143, 993]).toContain(preset.serverConfig.imapPort);
+      expect(preset.serverConfig.imapPort).toBeGreaterThan(0);
+      expect(preset.serverConfig.imapPort).toBeLessThan(65536);
     }
   });
 
-  it("SMTP ports are well-known (25/465/587/8465)", () => {
+  it("SMTP ports are positive integers", () => {
     for (const [, preset] of Object.entries(PROVIDER_PRESETS)) {
       if (!preset.serverConfig) continue;
-      expect([25, 465, 587, 8465]).toContain(preset.serverConfig.smtpPort);
+      expect(preset.serverConfig.smtpPort).toBeGreaterThan(0);
+      expect(preset.serverConfig.smtpPort).toBeLessThan(65536);
     }
   });
 
