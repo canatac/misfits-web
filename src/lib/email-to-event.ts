@@ -42,8 +42,8 @@ const TIME_PATTERNS = [
 
 /** Location patterns. */
 const LOCATION_PATTERNS = [
-  /(?:at|location|place|venue|address)\s*:?\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,4})/gi,
-  /(?:meet(?:ing|up)\s+at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,4})/gi,
+  /(?:at|location|place|venue|address)\s*:?\s+([A-Z][a-z]*(?:\s+[A-Z][a-z]*){0,4})/gi,
+  /(?:meet(?:ing|up)\s+at)\s+([A-Z][a-z]*(?:\s+[A-Z][a-z]*){0,4})/gi,
 ];
 
 /** Event type keywords. */
