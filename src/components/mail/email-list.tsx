@@ -20,6 +20,7 @@ import { EmailListItem } from "@/components/mail/email-list-item";
 import { ThreadListItem } from "@/components/mail/thread-list-item";
 import { ThreadHeader } from "@/components/mail/thread-header";
 import { EmailListToolbar } from "@/components/mail/parts/email-list/email-list-toolbar";
+import { BulkActionBar } from "@/components/mail/parts/email-list/bulk-action-bar";
 import {
   EmailListSkeleton,
   EmailListEmpty,
@@ -160,6 +161,17 @@ export function EmailList({ className }: EmailListProps) {
         onSelectAll={handleSelectAll}
         visibleCount={filteredEmails.length}
       />
+
+      {hasSelection && (
+        <BulkActionBar
+          selectedCount={selectedEmailIds.size}
+          totalCount={filteredEmails.length}
+          allSelected={allSelected}
+          onSelectAll={handleSelectAll}
+          onBulkAction={bulkAction}
+          onClearSelection={clearSelection}
+        />
+      )}
 
       {threadingEnabled && threads.length > 0 && !loading && (
         <ThreadHeader
