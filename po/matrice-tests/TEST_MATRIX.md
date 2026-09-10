@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10
+> Dernière mise à jour: 2026-09-10 (tick 2)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -25,6 +25,7 @@
 | T-AUTH-04 | FT | Session expirée → refresh automatique | Nouveau token, pas de déconnexion visible | [ ] | |
 | T-AUTH-05 | FT/BK | POST /api/auth/logout | 204, token invalidé côté serveur | [ ] | |
 | T-AUTH-06 | BK | Rate limiting login > 5 tentatives/min | 429 + Retry-After | [ ] | |
+| T-AUTH-07 | FT/BK | 2FA TOTP requis si activé | Étape 2FA affichée (FT) + validée (BK) | [ ] | |
 
 ---
 
@@ -36,6 +37,8 @@
 | T-ACC-02 | FT/BK | Supprimer un compte | Compte retiré, mails archivés conservés | [ ] | |
 | T-ACC-03 | FT | Basculer entre comptes (switcher) | From: change, signature change | [ ] | |
 | T-ACC-04 | FT | Signature personnalisée par compte | Signature persistée et appliquée | [ ] | #423 |
+| T-ACC-05 | FT/BK | Création d'alias (SimpleLogin-style) | Alias créé, mail forwarding actif | [ ] | |
+| T-ACC-06 | FT | Désactivation rapide d'alias compromis | Alias disable → mail rejeté avec 550 | [ ] | |
 
 ---
 
@@ -49,6 +52,7 @@
 | T-SEND-04 | FT | Sauvegarde brouillon auto | Brouillon persisté en DB, récupérable | [ ] | #391 |
 | T-SEND-05 | FT | Planification envoi (send later) | Mail envoyé à l'heure planifiée | [ ] | #391 |
 | T-SEND-06 | FT | Annulation envoi planifié avant échéance | Mail non envoyé, déplacé en brouillons | [ ] | |
+| T-SEND-07 | BK | Rebond SMTP 4xx → file d'attente + retry | Statut "queued" visible (FT) + retry BK | [ ] | |
 
 ---
 
@@ -60,6 +64,7 @@
 | T-RECV-02 | FT | Marquage lu/non-lu | État persisté, sync bidirectionnelle | [ ] | |
 | T-RECV-03 | FT | Déplacement dans dossier/label | Organisation conservée | [ ] | |
 | T-RECV-04 | FT/BK | Réception mail avec headers DKIM/DMARC | Badge validité affiché | [ ] | |
+| T-RECV-05 | FT | Vue feed newsletters (Hey-style) | Mails groupés, trackers bloqués | [ ] | |
 
 ---
 
@@ -72,6 +77,7 @@
 | T-DKIM-03 | DK | Timeout vérification > 5s | Retour timely, pas de blocage | [ ] | #301 |
 | T-DKIM-04 | DK | Publication clé DNS | TXT record correct généré | [ ] | |
 | T-DKIM-05 | DK | Rotation clé DKIM | Ancienne clé dépréciée, nouvelle active | [ ] | |
+| T-DKIM-06 | DK | Rapport DMARC agrégé hebdo | JSON/XML téléchargeable (ForwardEmail-style) | [ ] | |
 
 ---
 
@@ -84,6 +90,7 @@
 | T-SEC-03 | FT | CORS — origine non autorisée | Requête bloquée | [ ] | |
 | T-SEC-04 | FT/BK | Injection XSS dans body mail | Content-Security-Policy, échappement | [ ] | |
 | T-SEC-05 | FT/BK | CSRF — formulaire sans token | 403 | [ ] | |
+| T-SEC-06 | FT/BK | Strict-Transport-Security header | max-age ≥ 31536000, preload | [ ] | |
 
 ---
 
@@ -95,6 +102,7 @@
 | T-PERF-02 | FT | Scroll infini inbox | Smooth, pas de freeze > 16ms | [ ] | |
 | T-PERF-03 | FT | Upload pièce jointe 10Mo | Progress visible, non-bloquant | [ ] | |
 | T-PERF-04 | FT | Recherche full-text | Résultats < 500ms | [ ] | |
+| T-PERF-05 | FT | PWA offline mode | Cache hit, UI shell affichée | [ ] | |
 
 ---
 
@@ -127,6 +135,7 @@
 | T-INFRA-03 | BK | Retry sur échec SMTP temporaire | 3 retries avec backoff | [ ] | |
 | T-INFRA-04 | BK | Connexion IMAP SSL | Handshake OK | [ ] | |
 | T-INFRA-05 | DK | Health check /health | 200 OK + version | [ ] | |
+| T-INFRA-06 | DK | Métriques Prometheus | /metrics exposé (récursivité fleet) | [ ] | |
 
 ---
 
@@ -134,3 +143,8 @@
 - Domain ≥ 90%
 - Ligne de code ≤ 200 LOC, CCN ≤ 8
 - Chaque issue GitOps a ≥ 1 test dans cette matrice
+
+## Prochains ajouts prévus
+- [ ] T-E2E-01..N: E2E PGP seamless (issue à créer)
+- [ ] T-DMARC-07: reporting dashboard rendering
+- [ ] T-SKILL-01: import mbox/Thunderbird (issue #xxx)
