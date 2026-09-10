@@ -61,7 +61,7 @@ export const DEFAULT_RULES: ReminderRule[] = [
     name: "Promise to send",
     type: "promise",
     pattern:
-      "\\b(I('ll| will| will send|'ll send|'ll share)\\s+.+\\s+(by|on|before)\\s+",
+      "\\bI(?:\\x27ll| will| will send|\\x27ll send|\\x27ll share)\\s+[\\s\\S]+\\s+(?:by|on|before)\\s+",
     enabled: true,
     defaultDelayHours: 0,
     weight: 75,
