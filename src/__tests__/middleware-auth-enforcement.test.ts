@@ -148,3 +148,30 @@ describe("Issue #411: Non-sensitive APIs remain accessible", () => {
     expect(res.status).not.toBe(401);
   });
 });
+
+describe("Issue #421: Email attachment auth enforcement", () => {
+  it("blocks attachment download without session", () => {
+    const req = createRequest(
+      "/api/emails/07547fb5-cec4-af4a-277d-3b22cdf83d73@misfits.ai/attachments/att-0"
+    );
+    const res = middleware(req);
+    expect(res.status === 307 || res.status === 302 || res.status === 401).toBe(true);
+  });
+
+  it("blocks attachment download with UUID path without session", () => {
+    const req = createRequest(
+      "/api/emails/550e8400-e29b-41d4-a716-446655440000/attachments/att-1"
+    );
+    const res = middleware(req);
+    expect(res.status === 307 || res.status === 302 || res.status === 401).toBe(true);
+  });
+
+  it("allows attachment download WITH valid session", () => {
+    const req = createRequest(
+      "/api/emails/550e8400-e29b-41d4-a716-446655440000/attachments/att-1",
+      { cookies: { mfa_session: "valid-session-token" } }
+    );
+    const res = middleware(req);
+    expect(res.status === 307 || res.status === 302 || res.status === 401).toBe(false);
+  });
+});

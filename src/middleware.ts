@@ -69,6 +69,8 @@ function isProtected(pathname: string): boolean {
   if (pathname.startsWith("/api/hermes")) return true;
   // External accounts API requires session.
   if (pathname.startsWith("/api/external-accounts")) return true;
+  // Email attachment downloads require session (issue #421).
+  if (pathname.match(/\/api\/emails\/[^/]+\/attachments\//)) return true;
   // Non-sensitive API routes (mail, monitoring) are server-to-server,
   // protected by the backend's own auth layer.
   if (pathname.startsWith("/api")) return false;
