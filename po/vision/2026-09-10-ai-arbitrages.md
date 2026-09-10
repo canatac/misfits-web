@@ -46,7 +46,7 @@ En 2026, l'email client ne suffit plus — l'utilisateur attend de l'IA embarqu�
 | P1 | Newsletter unsubscribe one-click | #492 créée |
 | P1 | PWA offline mode | #493 créée |
 | P1 | MTA-STS transport security | #494 créée |
-| P2 | Chat avec ses mails | à créer Q1 2027 |
+| P2 | Chat avec ses mails | #507 créée |
 
 ## Différenciation misfits.ai
 "Le Zero auto-hébergeable avec Hermes AI intégré"
