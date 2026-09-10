@@ -120,6 +120,7 @@ export function EmailView({ className }: EmailViewProps) {
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
+        onCreateEvent={() => {}}
       />
 
       <ScrollArea className="flex-1">
