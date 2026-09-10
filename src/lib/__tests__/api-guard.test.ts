@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSessionToken } from "@/lib/api-auth";
+import { getSessionToken } from "@/lib/api-guard";
 import { NextRequest } from "next/server";
 
 function createRequest(cookies: Record<string, string> = {}, headers: Record<string, string> = {}): NextRequest {
