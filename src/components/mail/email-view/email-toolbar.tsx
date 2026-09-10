@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   MailOpen,
   Sparkles,
+  CalendarPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ interface EmailToolbarProps {
   onHermesReplyDraft: () => void;
   onHermesTranslate: () => void;
   onHermesTodos: () => void;
+  onCreateEvent: () => void;
 }
 
 export function EmailToolbar({
@@ -51,6 +53,7 @@ export function EmailToolbar({
   onHermesReplyDraft,
   onHermesTranslate,
   onHermesTodos,
+  onCreateEvent,
 }: EmailToolbarProps) {
   return (
     <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
@@ -107,6 +110,15 @@ export function EmailToolbar({
           <DropdownMenuItem onClick={onHermesTodos}>Extraire TODO</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onCreateEvent}
+        aria-label="Create event from email"
+        data-testid="create-event-button"
+      >
+        <CalendarPlus className="h-4 w-4" />
+      </Button>
       <Button
         variant="ghost"
         size="icon"
