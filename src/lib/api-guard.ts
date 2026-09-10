@@ -25,12 +25,14 @@ export function getSessionToken(request: NextRequest): string | null {
     }
   }
 
-  // Fallback: parse raw Cookie header (for test environments where request.cookies is undefined)
+  // Fallback: parse raw Cookie header (for test environments)
   const cookieHeader = request.headers.get("cookie");
   if (cookieHeader) {
     for (const name of SESSION_COOKIES) {
-      const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`));
-      if (match) return decodeURIComponent(match[1]);
+      const match = cookieHeader.match(
+        new RegExp(`(?:^|[\\s;])${name}=([^;]+)`)
+      );
+      if (match) return decodeURIComponent(match[1].trim());
     }
   }
 
