@@ -68,6 +68,7 @@ function readCookie(name: string): string | null {
 /** Persist the session in memory and (optionally) a cookie. */
 export function storeSession(session: Session, remember: boolean): void {
   if (!isBrowser()) return;
+  void remember;
   inMemorySession = session;
   const rfa =
     (session as unknown as Record<string, unknown>).refreshExpiresAt ??
@@ -80,41 +81,26 @@ export function storeSession(session: Session, remember: boolean): void {
     )
   );
 
-  // Store full session in cookie so it survives page refresh.
   // The cookie is httpOnly-preferred when set by the backend; this client-side
   // copy is a fallback for environments where the backend cannot set cookies.
+  // Always set the cookie so the Edge middleware can read it regardless of
+  // whether "Remember me" was checked.
   if (ttlSeconds > 0) {
-    setCookie(SESSION_COOKIE, JSON.stringify(session), ttlSeconds);
+    setCookie(SESSION_COOKIE, session.id, ttlSeconds);
   }
 }
 
 /** Read the in-memory session. */
 export function loadSession(): Session | null {
   const session = inMemorySession;
-  if (session) {
-    if (session.refreshExpiresAt <= Date.now()) {
-      clearSession();
-      return null;
-    }
-    return session;
+  if (!session) {
+    return null;
   }
-
-  // Try to restore from cookie when in-memory session is lost (page refresh)
-  const raw = readCookie(SESSION_COOKIE);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw) as Session;
-      if (parsed?.id && parsed.refreshExpiresAt > Date.now()) {
-        inMemorySession = parsed;
-        return parsed;
-      }
-    } catch {
-      // Invalid cookie, clear it
-      clearCookie(SESSION_COOKIE);
-    }
+  if (session.refreshExpiresAt <= Date.now()) {
+    clearSession();
+    return null;
   }
-
-  return null;
+  return session;
 }
 
 /** Remove the session from memory and cookie. */
