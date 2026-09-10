@@ -33,9 +33,12 @@ export interface ScreeningAction {
 /**
  * Create a sender record.
  */
+let senderCounter = 0;
+
 export function createSenderRecord(email: string, name?: string): SenderRecord {
+  senderCounter++;
   return {
-    id: `sender-${Date.now()}`,
+    id: `sender-${Date.now()}-${senderCounter}`,
     email: email.toLowerCase(),
     name,
     status: "pending",
