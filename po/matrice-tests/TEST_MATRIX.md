@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 4)
+> Dernière mise à jour: 2026-09-10 (tick 5)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -178,7 +178,19 @@
 | T-AI-07 | FT | Désactivation split inbox | Inbox unique affichée | [ ] | #496 |
 | T-AI-08 | FT | Brouillon généré dans la voix user | Style cohérent avec historique | [ ] | #497 |
 | T-AI-09 | FT | Indicateur confiance brouillon | Score affiché, seuil configurable | [ ] | #497 |
-| T-AI-10 | FT | Feedback implicite après envoi | Modèle mis à jour | [ ] | #497 |
+| T-AI-10 | FT | Feedback implicif après envoi | Modèle mis à jour | [ ] | #497 |
+
+---
+
+## 14. BIMI (Brand Indicators)
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-BIMI-01 | FT | Réception mail avec BIMI valide | Logo expéditeur affiché | [ ] | #498 |
+| T-BIMI-02 | FT | Réception mail sans BIMI | Fallback avatar générique | [ ] | #498 |
+| T-BIMI-03 | FT | BIMI invalide (VMC expiré) | Pas de logo, pas de crash | [ ] | #498 |
+| T-BIMI-04 | FT | Configuration BIMI domaine | DNS record généré, logo uploadé | [ ] | #498 |
+| T-BIMI-05 | FT | Indicateur confiance BIMI | Badge « Expéditeur vérifié » | [ ] | #498 |
 
 ---
 
