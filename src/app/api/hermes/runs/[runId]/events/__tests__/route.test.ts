@@ -27,9 +27,11 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const req = new NextRequest(
-      "http://localhost/api/hermes/runs/run_1/events?stream=true"
+      "http://localhost/api/hermes/runs/run_1/events?stream=true",
+      {
+        headers: { Cookie: "mfa_session=test-session-token" },
+      }
     );
-    req.headers.set("Cookie", "mfa_session=test-session-token");
 
     const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
@@ -49,9 +51,11 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     delete process.env.HERMES_GATEWAY_BASE_URL;
 
     const req = new NextRequest(
-      "http://localhost/api/hermes/runs/run_1/events"
+      "http://localhost/api/hermes/runs/run_1/events",
+      {
+        headers: { Cookie: "mfa_session=test-session-token" },
+      }
     );
-    req.headers.set("Cookie", "mfa_session=test-session-token");
 
     const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
