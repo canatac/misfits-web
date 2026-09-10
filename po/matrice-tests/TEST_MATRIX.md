@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 6)
+> Dernière mise à jour: 2026-09-10 (tick 7)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -208,6 +208,22 @@
 | T-DEL-08 | FT | Export PDF du rapport | Fichier téléchargeable | [ ] | #499 |
 | T-DEL-09 | FT | Historique des checks | Liste avec dates et scores | [ ] | #499 |
 | T-DEL-10 | BK | Alerte score sous seuil | Notification envoyée | [ ] | #499 |
+
+---
+
+## 16. Data Portability
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-PORT-01 | FT/BK | Export mbox complet | Fichier mbox téléchargeable | [ ] | #500 |
+| T-PORT-02 | FT/BK | Export EML individuel | Fichier .eml téléchargeable | [ ] | #500 |
+| T-PORT-03 | FT/BK | Export vCard contacts | Fichier .vcf téléchargeable | [ ] | #500 |
+| T-PORT-04 | FT | Import mbox avec déduplication | Mails ajoutés, doublons ignorés | [ ] | #500 |
+| T-PORT-05 | FT | Import EML avec preview | Prévisualisation avant import | [ ] | #500 |
+| T-PORT-06 | FT | Migration wizard Gmail/Proton | Sync incrémentale, progression | [ ] | #500 |
+| T-PORT-07 | BK | Export chiffré PGP | Fichier chiffré avec clé user | [ ] | #500 |
+| T-PORT-08 | BK | API REST export | Endpoint fonctionnel | [ ] | #500 |
+| T-PORT-09 | FT | Job asynchrone progression | Notification fin + lien 24h | [ ] | #500 |
 
 ---
 
