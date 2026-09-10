@@ -9,8 +9,8 @@
  * the Hermes AI analysis pipeline (see issue #505).
  */
 
+import type { Email } from "@/types/email";
 import type {
-  Email,
   PhishingResult,
   SecurityIndicator,
   ThreatLevel,
@@ -399,3 +399,6 @@ export function getRecommendedAction(threatLevel: ThreatLevel): string {
     case "safe": return "No action needed.";
   }
 }
+
+/** Backwards-compatible alias for scanEmail. */
+export const detectPhishing = scanEmail;
