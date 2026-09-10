@@ -28,7 +28,7 @@ interface EmailListItemProps {
   onToggleStar: (id: string) => void;
 }
 
-function formatDate(dateStr: string): string {
+export function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
