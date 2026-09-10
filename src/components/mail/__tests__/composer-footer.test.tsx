@@ -35,7 +35,7 @@ describe("ComposerFooter", () => {
     );
 
     expect(screen.getByText(/2 pièces jointes/i)).toBeTruthy();
-    expect(screen.getByText(/prête\(s\) à l’envoi/i)).toBeTruthy();
+    expect(screen.getByText(/prête\(s\) à l'envoi/i)).toBeTruthy();
   });
 
   it("lets user jump to attachment zone", () => {
