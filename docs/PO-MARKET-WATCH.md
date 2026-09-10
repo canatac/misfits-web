@@ -174,6 +174,7 @@
 - `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
+- `#54` — Masked email alias management API (studious-octo-rotary-phone)
 
 **CRA 2026 (Cyber Resilience Act)** : les obligations de reporting entrent en vigueur le 11 septembre 2026. Les fabricants de produits numériques doivent :
 - Rapporter les vulnérabilités activement exploitées : early warning sous 24h, notification détaillée sous 72h
