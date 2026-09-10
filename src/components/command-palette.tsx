@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/command";
 import { useCommandPaletteStore } from "@/hooks/use-command-palette";
 import { useComposerStore } from "@/stores/composer-store";
+import { useEmailStore } from "@/stores/email-store";
+import { searchEmails } from "@/lib/search-engine";
 import {
   Inbox,
   Search,
@@ -26,6 +28,7 @@ import {
   Moon,
   Bell,
   Keyboard,
+  Mail,
 } from "lucide-react";
 
 interface CommandItem {
@@ -42,6 +45,8 @@ export function CommandPalette() {
   const open = useCommandPaletteStore((s) => s.open);
   const closePalette = useCommandPaletteStore((s) => s.closePalette);
   const openComposer = useComposerStore((s) => s.openComposer);
+  const emails = useEmailStore((s) => s.emails);
+  const [query, setQuery] = useState("");
 
   const navigate = useCallback(
     (path: string) => {
@@ -162,11 +167,41 @@ export function CommandPalette() {
     {} as Record<string, CommandItem[]>,
   );
 
+  const emailResults = query.trim().length >= 2
+    ? searchEmails(query, emails, "relevance").results.slice(0, 8)
+    : [];
+
   return (
     <CommandDialog open={open} onOpenChange={(o: boolean) => !o && closePalette()}>
-      <CommandInput placeholder="Taper une commande..." />
+      <CommandInput
+        placeholder="Taper une commande ou rechercher un email..."
+        value={query}
+        onValueChange={setQuery}
+      />
       <CommandList>
-        <CommandEmpty>Aucune commande trouvée.</CommandEmpty>
+        <CommandEmpty>Aucun email trouvé pour cette recherche.</CommandEmpty>
+        {emailResults.length > 0 && (
+          <CommandGroup heading="Emails">
+            {emailResults.map((result) => (
+              <CommandItem
+                key={result.email.id}
+                onSelect={() => {
+                  router.push(`/mail/${result.email.id}`);
+                  closePalette();
+                }}
+                className="flex items-center gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                <div className="flex flex-col">
+                  <span className="font-medium">{result.email.subject}</span>
+                  <span className="text-xs text-[var(--color-muted-fg)]">
+                    {result.email.from.name} — {result.email.preview}
+                  </span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
         {Object.entries(groups).map(([groupName, items]) => (
           <CommandGroup key={groupName} heading={groupName}>
             {items.map((cmd) => (
