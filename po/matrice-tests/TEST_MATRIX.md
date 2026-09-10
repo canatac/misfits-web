@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 2)
+> Dernière mise à jour: 2026-09-10 (tick 3)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -48,7 +48,7 @@
 |----|-------|-------|-----------------|--------|----------|
 | T-SEND-01 | FT/BK | Envoi mail texte simple | 202 + message dans Sent | [ ] | |
 | T-SEND-02 | FT/BK | Envoi avec pièce jointe > 25Mo | 413 (limite dépassée) | [ ] | |
-| T-SEND-03 | FT | Envoi avec PGP activé (destinataire connu) | Corps chiffré, contenu illisible sur serveur | [ ] | |
+| T-SEND-03 | FT | Envoi avec PGP activé (destinataire connu) | Corps chiffré, contenu illisible sur serveur | [ ] | #490 |
 | T-SEND-04 | FT | Sauvegarde brouillon auto | Brouillon persisté en DB, récupérable | [ ] | #391 |
 | T-SEND-05 | FT | Planification envoi (send later) | Mail envoyé à l'heure planifiée | [ ] | #391 |
 | T-SEND-06 | FT | Annulation envoi planifié avant échéance | Mail non envoyé, déplacé en brouillons | [ ] | |
@@ -77,7 +77,7 @@
 | T-DKIM-03 | DK | Timeout vérification > 5s | Retour timely, pas de blocage | [ ] | #301 |
 | T-DKIM-04 | DK | Publication clé DNS | TXT record correct généré | [ ] | |
 | T-DKIM-05 | DK | Rotation clé DKIM | Ancienne clé dépréciée, nouvelle active | [ ] | |
-| T-DKIM-06 | DK | Rapport DMARC agrégé hebdo | JSON/XML téléchargeable (ForwardEmail-style) | [ ] | |
+| T-DKIM-06 | DK | Rapport DMARC agrégé hebdo | JSON/XML téléchargeable | [ ] | #491 |
 
 ---
 
@@ -102,7 +102,7 @@
 | T-PERF-02 | FT | Scroll infini inbox | Smooth, pas de freeze > 16ms | [ ] | |
 | T-PERF-03 | FT | Upload pièce jointe 10Mo | Progress visible, non-bloquant | [ ] | |
 | T-PERF-04 | FT | Recherche full-text | Résultats < 500ms | [ ] | |
-| T-PERF-05 | FT | PWA offline mode | Cache hit, UI shell affichée | [ ] | |
+| T-PERF-05 | FT | PWA offline mode | Cache hit, UI shell affichée | [ ] | #493 |
 
 ---
 
@@ -122,7 +122,7 @@
 |----|-------|-------|-----------------|--------|----------|
 | T-NL-01 | FT/BK | Inscription newsletter via formulaire | Confirmation double opt-in envoyée | [ ] | |
 | T-NL-02 | FT | CTA newsletter mobile | Visible, cliquable, non chevauché | [ ] | #300 |
-| T-NL-03 | FT/BK | Désinscription | Prise en compte < 24h | [ ] | |
+| T-NL-03 | FT/BK | Désinscription | Prise en compte < 24h | [ ] | #492 |
 
 ---
 
@@ -139,12 +139,32 @@
 
 ---
 
+## 11. E2E Encryption (PGP)
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-E2E-01 | FT | Génération clés à onboarding | Paire Ed25519+Curve25519 générée | [ ] | #490 |
+| T-E2E-02 | FT | Import clé .asc existante | Clé importée, utilisable pour chiffrer | [ ] | #490 |
+| T-E2E-03 | FT/BK | Envoi à destinataire avec clé WKD | Mail chiffré, corps illisible serveur | [ ] | #490 |
+| T-E2E-04 | FT | Réception mail chiffré | Déchiffrement transparent | [ ] | #490 |
+| T-E2E-05 | FT | Indicateur cadenas dans composer | Vert si chiffré, gris sinon | [ ] | #490 |
+| T-E2E-06 | FT | Envoi à destinataire sans clé | Avertissement + fallback non chiffré | [ ] | #490 |
+
+---
+
+## 12. PWA Offline
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-PWA-01 | FT | Installation PWA | Service worker actif, offline capable | [ ] | #493 |
+| T-PWA-02 | FT | Consultation offline mails cache | Mails récents affichés sans réseau | [ ] | #493 |
+| T-PWA-03 | FT | Creation brouillon offline | Sauvegarde locale + sync au retour | [ ] | #493 |
+| T-PWA-04 | FT | Marquage lu offline | File d'attente + sync | [ ] | #493 |
+| T-PWA-05 | FT | Indicateur offline dans toolbar | Bannière "Mode offline" visible | [ ] | #493 |
+
+---
+
 ## Couverture cible
 - Domain ≥ 90%
 - Ligne de code ≤ 200 LOC, CCN ≤ 8
 - Chaque issue GitOps a ≥ 1 test dans cette matrice
-
-## Prochains ajouts prévus
-- [ ] T-E2E-01..N: E2E PGP seamless (issue à créer)
-- [ ] T-DMARC-07: reporting dashboard rendering
-- [ ] T-SKILL-01: import mbox/Thunderbird (issue #xxx)
