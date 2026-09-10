@@ -13,6 +13,7 @@ import { useComposerStore, uid } from "@/stores/composer-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { toPlainText } from "@/lib/mail-utils";
+import { addToast } from "@/lib/ui/toast";
 
 function toRecipient(
   address: string,
@@ -40,10 +41,14 @@ export function useEmailActions(email: Email | null | undefined) {
   const markUnread = useEmailStore((s) => s.markUnread);
   const archive = useEmailStore((s) => s.archive);
   const deleteEmail = useEmailStore((s) => s.deleteEmail);
+  const undoArchive = useEmailStore((s) => s.undoArchive);
+  const undoDelete = useEmailStore((s) => s.undoDelete);
   const openComposer = useComposerStore((s) => s.openComposer);
   const sendChatMessage = useChatStore((s) => s.sendMessage);
   const openChatPanel = useChatStore((s) => s.setOpen);
   const userId = useAuthStore((s) => s.user?.id ?? null);
+  // addToast is imported from @/lib/ui/toast (event bus), not from
+  // toast-provider, to keep hooks decoupled from components (arch rule).
 
   const handleReply = useCallback(() => {
     if (!email) return;
@@ -88,12 +93,25 @@ export function useEmailActions(email: Email | null | undefined) {
   }, [email, toggleStar]);
 
   const handleArchive = useCallback(() => {
-    if (email) archive(email.id);
-  }, [email, archive]);
+    if (!email) return;
+    const originalFolder = email.folder;
+    archive(email.id);
+    addToast({
+      type: "archive",
+      message: "Email archivé",
+      undo: () => undoArchive(email.id, originalFolder),
+    });
+  }, [email, archive, undoArchive]);
 
   const handleDelete = useCallback(() => {
-    if (email) deleteEmail(email.id);
-  }, [email, deleteEmail]);
+    if (!email) return;
+    deleteEmail(email.id);
+    addToast({
+      type: "delete",
+      message: "Email supprimé",
+      undo: () => undoDelete(email),
+    });
+  }, [email, deleteEmail, undoDelete]);
 
   const handleMarkUnread = useCallback(() => {
     if (email) markUnread(email.id);
