@@ -184,6 +184,25 @@
 - Notre stack (3 repos, Next.js, Rust, infra as code) est concerné
 - Notre avantage : transparence (repos publics) facilite la conformité (SBOM, documentation technique, gestion des CVEs)
 
+**BIMI 2026 (adoption stats)** :
+- **25%** des marques commerciales ont un enregistrement BIMI publié (2026)
+- **12%** ont un certificat VMC (blue checkmark dans Gmail)
+- **5-10%** d'open rate lift après déploiement BIMI
+- **340%** d'augmentation YoY des nouveaux enregistrements BIMI (2024 → 2026)
+- **35%** des Fortune 500 ont un DMARC p=reject
+- **30%** des senders sont encore partiellement non-conformes (Gmail/Yahoo)
+- Non-conformité = spam folder de 5-10% (baseline) à 22-34%
+- **Notre avantage** : stack DKIM native + BIMI validation (issue #53) = conformité intégrée
+
+**Email Deliverability 2026** :
+- SPF valide : 94% des senders commerciaux
+- DKIM valide : 91% des senders commerciaux
+- DMARC publié : 75%+ des Fortune 500
+- DMARC p=reject : 35% des Fortune 500
+- Taux de spam < 0.3% requis (Google)
+- One-click unsubscribe requis (List-Unsubscribe header)
+- Notre stack native répond déjà à ces exigences
+
 **Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose + core Rust). Offline search, Category View auto-grouping, Gmail native, SimpleLogin intégrée. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform.
 
 **Tuta 2026 (détail)** : Fast Sync 10x, nested labels, search amélioré, Tuta Drive open beta, inbox rules, schedule send et undo send déployés. Leçon: la UX vitesse > E2EE pour le marché mainstream.
