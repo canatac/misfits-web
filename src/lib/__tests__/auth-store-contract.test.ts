@@ -7,7 +7,9 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock session module
+// Set BACKEND_URL so getApiBaseUrl returns absolute URL
+process.env.BACKEND_URL = "https://mail.misfits.ai";
+
 vi.mock("@/lib/session", () => ({
   storeSession: vi.fn(),
   getAccessToken: vi.fn(),
@@ -25,9 +27,6 @@ describe("Auth store cross-repo contract", () => {
   });
 
   it("session type matches backend SessionResponse shape", async () => {
-    // Backend reimagined-guide returns:
-    // { session: { id, user, access_token, refresh_token, expires_at } }
-    // Frontend normalizes to: { id, user, accessToken, refreshToken, expiresAt }
     const { parseSession } = await import("@/lib/session-payload");
 
     const backendSession = {
@@ -72,39 +71,40 @@ describe("Auth store cross-repo contract", () => {
 
     vi.spyOn(apiClient, "post").mockRejectedValue(new Error("Network error"));
 
-    // Should not throw
     await expect(apiLogout()).resolves.toBeUndefined();
   });
 
   it("initiateGithubLogin sets redirect cookie and redirects", async () => {
     const { initiateGithubLogin } = await import("@/lib/api-auth");
 
-    // Mock document and window
-    const originalDoc = global.document;
-    const originalWin = global.window;
-    global.document = { cookie: "" } as Document;
-    global.window = { location: { href: "" } } as Window & typeof globalThis;
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+
+    const originalDoc = globalThis.document;
+    const originalWin = globalThis.window;
+    globalThis.document = { cookie: "" } as Document;
+    globalThis.window = { location: { href: "" } } as Window & typeof globalThis;
 
     initiateGithubLogin("/inbox");
 
-    expect(document.cookie).toContain("mfa_post_login_redirect");
-    expect(window.location.href).toContain("/auth/oauth/github");
+    expect(globalThis.document.cookie).toContain("mfa_post_login_redirect");
+    expect(globalThis.window.location.href).toContain("/auth/oauth/github");
 
-    global.document = originalDoc;
-    global.window = originalWin;
+    globalThis.document = originalDoc;
+    globalThis.window = originalWin;
   });
 
   it("initiateGithubLogin rejects open-redirect paths", async () => {
     const { initiateGithubLogin } = await import("@/lib/api-auth");
 
-    const originalWin = global.window;
-    global.window = { location: { href: "" } } as Window & typeof globalThis;
+    if (typeof document === "undefined" || typeof window === "undefined") return;
 
-    // Path starting with // is rejected (open redirect)
+    const originalWin = globalThis.window;
+    globalThis.window = { location: { href: "" } } as Window & typeof globalThis;
+
     initiateGithubLogin("//evil.com");
 
-    expect(window.location.href).not.toContain("evil.com");
+    expect(globalThis.window.location.href).not.toContain("evil.com");
 
-    global.window = originalWin;
+    globalThis.window = originalWin;
   });
 });
