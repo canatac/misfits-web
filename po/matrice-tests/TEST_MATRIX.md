@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 5)
+> Dernière mise à jour: 2026-09-10 (tick 6)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -191,6 +191,23 @@
 | T-BIMI-03 | FT | BIMI invalide (VMC expiré) | Pas de logo, pas de crash | [ ] | #498 |
 | T-BIMI-04 | FT | Configuration BIMI domaine | DNS record généré, logo uploadé | [ ] | #498 |
 | T-BIMI-05 | FT | Indicateur confiance BIMI | Badge « Expéditeur vérifié » | [ ] | #498 |
+
+---
+
+## 15. Deliverability
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-DEL-01 | BK | Lookup DNS SPF valide | Record trouvé, version correcte | [ ] | #499 |
+| T-DEL-02 | BK | Lookup DNS DKIM valide | Clé publiée, format correct | [ ] | #499 |
+| T-DEL-03 | BK | Lookup DNS DMARC valide | p=reject ou p=quarantine | [ ] | #499 |
+| T-DEL-04 | BK | Lookup PTR valide | IP → domaine résout | [ ] | #499 |
+| T-DEL-05 | BK | Test TLS STARTTLS | Handshake OK, certificat valide | [ ] | #499 |
+| T-DEL-06 | BK | Score de conformité | Score 0-100 calculé | [ ] | #499 |
+| T-DEL-07 | FT | Recommandations affichées | Action par problème | [ ] | #499 |
+| T-DEL-08 | FT | Export PDF du rapport | Fichier téléchargeable | [ ] | #499 |
+| T-DEL-09 | FT | Historique des checks | Liste avec dates et scores | [ ] | #499 |
+| T-DEL-10 | BK | Alerte score sous seuil | Notification envoyée | [ ] | #499 |
 
 ---
 
