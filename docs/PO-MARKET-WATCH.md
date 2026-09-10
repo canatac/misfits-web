@@ -173,6 +173,7 @@
 - `#539` — Instant search backend (full-text, <200ms) (reimagined-guide)
 - `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
 - `#541` — Multi-account email aggregation backend (IMAP/SMTP external) (reimagined-guide)
+- `#542` — Undo send backend (5-second recall window) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
 - `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
