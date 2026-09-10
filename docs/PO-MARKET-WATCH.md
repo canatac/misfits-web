@@ -176,6 +176,7 @@
 - `#542` — Undo send backend (5-second recall window) (reimagined-guide)
 - `#543` — Scheduled send backend (envoi programmé) (reimagined-guide)
 - `#544` — Conversation view backend (thread grouping) (reimagined-guide)
+- `#545` — Search filters backend (date, sender, attachments) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
 - `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
