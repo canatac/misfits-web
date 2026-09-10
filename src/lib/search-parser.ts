@@ -71,7 +71,7 @@ interface Token {
  */
 function tokenize(raw: string): Token[] {
   const tokens: Token[] = [];
-  const regex = /(\w+):(?:"([^"]*)"|'([^']*)'|(\S+))|\S+/g;
+  const regex = /(\w+:)(?:"([^"]*)"|'([^']*)'|(\S+))|\S+/g;
   let match: RegExpExecArray | null;
 
   const knownOperators = new Set([
