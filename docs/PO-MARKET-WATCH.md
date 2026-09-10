@@ -60,14 +60,14 @@
 | **IMAP/SMTP natif** | **Oui (stack native)** | Bridge (payant) | Non (encryption bloque) | **Oui** | Non |
 | **Custom domain** | Oui | Payant | Payant | Oui | Non |
 | **Scheduled send** | À implémenter | Payant | Non | **Oui** | Non |
-|| **Undo send** | À implémenter | **Oui** | Non | **Oui** | Non |
-|| **Templates** | À implémenter | Non | **Oui** | **Oui** | Non |
-|| **Offline search** | À implémenter | **Oui (Rust engine 2026)** | Non | Non | Non |
-|| **Gmail integration** | À implémenter | **Oui (send/receive)** | Non | Non | Non |
-|| **Conversation view** | À implémenter | Non | **Oui (2026)** | **Oui** | **Oui** |
-|| **Mobile Rust engine** | N/A | **Oui (2026)** | Non | Non | Non |
-|| **Énergie** | À définir | Standard | **100% renouvelable** | Standard | Standard |
-|| **Prix entrée** | Freemium (à définir) | €3/mo (15GB) | €3/mo (20GB) | $3/mo | $99/an |
+| **Undo send** | À implémenter | **Oui** | Non | **Oui** | Non |
+| **Templates** | À implémenter | Non | **Oui** | **Oui** | Non |
+| **Offline search** | À implémenter | **Oui (Rust engine 2026)** | Non | Non | Non |
+| **Gmail integration** | À implémenter | **Oui (send/receive)** | Non | Non | Non |
+| **Conversation view** | À implémenter | Non | **Oui (2026)** | **Oui** | **Oui** |
+| **Mobile Rust engine** | N/A | **Oui (2026)** | Non | Non | Non |
+| **Énergie** | À définir | Standard | **100% renouvelable** | Standard | Standard |
+| **Prix entrée** | Freemium (à définir) | €3/mo (15GB) | €3/mo (20GB) | $3/mo | $99/an |
 
 ### Points différenciants misfits.ai vs concurrence
 
@@ -178,12 +178,14 @@
 - `#516` — Masked email aliases (anti-spam, vs Fastmail ~1000 aliases)
 - `#517` — Scheduled send (envoi programmé, must-have 2026)
 - `#518` — Undo send (5-second recall window, must-have 2026)
+- `#519` — Email templates (save and reuse, must-have 2026)
+- `#520` — PWA offline mode with service worker (must-have 2026)
 
 **Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose avec core Rust). Offline search, indexation locale, Category View auto-grouping, intégration Gmail native (envoi/réception depuis un seul inbox). L'acquisition SimpleLogin est totalement intégrée — alias gérés nativement. Leur "Engineering Transformation" est un projet de 12+ mois. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform stratégique. Notre stack backend Rust (Actif-web) est un atout, mais on n'a pas de mobile natif. Considération: PWA vs natif mobile en 2026.
 
 **Tuta 2026 (détail)** : Fast Sync (10x faster) déployé — tous les clients sont 10x plus rapides grâce à l'optimisation du protocole. Nested labels, compteurs sur les labels, boîtes partagées rétractables. Search amélioré (résultats plus rapides, recherche pendant l'indexation). Tuta Drive en bêta ouverte. Inbox rules: bouton "réappliquer". Schedule send et undo send déployés. Le Fast Sync est l'avantage technique le plus impressionnant — notre stack DKIM native n'a pas ce problème de performance car on n'a pas de chiffrement E2EE lourd côté serveur. Leçon: la UX vitesse > E2EE pour le marché mainstream.
 
-**Hey/Basecamp 2026**: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar. Notre route /calendar a 6 mois d'avance sur ce calendrier.
+**Basecamp 2026 (détail)** : Basecamp 5 (2026) — calendrier full-screen global + par projet, abonnement calendrier externe, événements répétitifs, to-dos sur calendrier. Menu unifié avec recherche rapide (SHIFT+J). Intégration email : chaque projet a une adresse email unique, forwarding = création de message. Leçon : l'intégration email-projet confirme la tendance "email as task source" — notre route /calendar suit cette direction.
 
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB sans custom domain, Standard $5/mo 60GB avec custom domain, Pro $9/mo 150GB). ~1000 masked email aliases sur tous les plans payants, JMAP natif, Squire 2.0 editor, offline mode, calendar sync Google/iCloud. Point clé: le masked email est leur killer feature anti-spam — notre implération doit atteindre au minimum 100 aliases gratuits pour être compétitifs. Enseignement: la privacy E2EE n'est PAS requise pour être competitive en 2026, mais la privacy-by-design + aliasing + UX le sont.
 
