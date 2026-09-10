@@ -71,7 +71,7 @@ export const DEFAULT_RULES: ReminderRule[] = [
     name: "Promise to get back",
     type: "promise",
     pattern:
-      "\\b(I('ll| will)\\s+(get back to you|follow up|circle back|reach out)\\b",
+      "\\bI(?:\\x27ll| will)\\s+(?:get back to you|follow up|circle back|reach out)\\b",
     enabled: true,
     defaultDelayHours: 48,
     weight: 65,

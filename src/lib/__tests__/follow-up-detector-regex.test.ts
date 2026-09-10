@@ -18,8 +18,11 @@ describe("follow-up-detector regex validity", () => {
     expect(rule).toBeDefined();
     const re = new RegExp(rule!.pattern, "gi");
     expect(re.test("I'll send the report by Friday")).toBe(true);
+    re.lastIndex = 0;
     expect(re.test("I will send the data by Monday")).toBe(true);
+    re.lastIndex = 0;
     expect(re.test("I'll share the notes before the meeting")).toBe(true);
+    re.lastIndex = 0;
     expect(re.test("I'll get back to you soon")).toBe(false);
   });
 
