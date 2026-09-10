@@ -96,6 +96,9 @@ describe("ToastProvider", () => {
     fireEvent.click(screen.getByText("Add Toast"));
     expect(screen.getByTestId("toast-archive")).toBeTruthy();
     fireEvent.click(screen.getByLabelText("Close toast"));
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
     expect(screen.queryByTestId("toast-archive")).toBeNull();
   });
 });
