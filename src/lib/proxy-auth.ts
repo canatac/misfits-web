@@ -33,7 +33,10 @@ export function buildForwardHeaders(
   extra?: HeadersInit
 ): Headers {
   const headers = new Headers(extra ?? {});
-  headers.set("Accept", "application/json");
+  // Only set default Accept if not already provided in extra headers
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/json");
+  }
   const { authorization, cookie } = extractIncomingAuth(request);
   if (authorization) headers.set("Authorization", authorization);
   if (cookie) headers.set("Cookie", cookie);
