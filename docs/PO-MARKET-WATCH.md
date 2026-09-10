@@ -190,6 +190,7 @@
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 - `#54` — Masked email alias management API (studious-octo-rotary-phone)
+- `#55` — DMARC aggregate report analysis (RUA/RUF) (studious-octo-rotary-phone)
 
 **CRA 2026 (Cyber Resilience Act)** : les obligations de reporting entrent en vigueur le 11 septembre 2026. Les fabricants de produits numériques doivent :
 - Rapporter les vulnérabilités activement exploitées : early warning sous 24h, notification détaillée sous 72h
@@ -243,6 +244,10 @@
 - **WebAssembly** : proche du natif (1.59x native avec WAMR)
 - **Proton mobile Rust** : confirme que Rust est le choix performance pour l'email
 - **Notre stack** : Rust (backend) + Next.js (frontend) = positionné pour la vitesse
+
+**HEY 2026 (mise à jour)** : le service de Basecamp reste à $99/an (personal) et $12/user/mo (custom domain). Le screener (filtrage des nouveaux expéditeurs) et le blocage des tracking pixels sont toujours leurs différenciateurs. Basecamp 5 (2026) confirme l'intégration calendrier-email. Leçon : l'email "opinionated" est un marché de niche — notre approche est moins radicale (compatible IMAP/SMTP).
+
+**Email migration tools 2026** : Google Data Migration Service permet l'import depuis IMAP, Gmail, Outlook. Besoin d'un wizard d'import pour les utilisateurs qui migrent vers misfits.ai (issue #549).
 
 **Shortwave 2026 (détail)** : client AI-native pour Gmail uniquement. $18/mo (Pro), $30/mo (Business), $45/mo (Premier), $120/mo (Max). AI search sémantique (décrire plutôt que mots-clés), bundling, thread summarization. Avantage = AI native + vitesse. Inconvénient = Gmail uniquement, cloud AI, pas de free plan permanent. Leçon: la recherche sémantique est un différenciateur — notre recherche instantanée (MW-011) doit viser la même expérience.
 
