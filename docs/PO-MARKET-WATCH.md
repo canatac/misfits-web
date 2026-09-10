@@ -171,6 +171,7 @@
 - `#537` — SMTP security hardening (STARTTLS, DANE, MTA-STS) (reimagined-guide)
 - `#538` — Post-quantum cryptography Kyber+Dilithium (reimagined-guide)
 - `#539` — Instant search backend (full-text, <200ms) (reimagined-guide)
+- `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 
