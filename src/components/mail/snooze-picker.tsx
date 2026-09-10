@@ -96,6 +96,7 @@ export function SnoozePicker({
         <Button
           variant="ghost"
           size="sm"
+          data-testid="snooze-trigger"
           className={cn("gap-1.5", className)}
           aria-label="Snooze"
         >
@@ -103,7 +104,7 @@ export function SnoozePicker({
           {triggerLabel}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align={align} className="w-80">
+      <PopoverContent align={align} className="w-80" data-testid="snooze-popover">
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-[var(--color-muted-fg)]" />
           <span className="text-sm font-medium">Snooze until</span>
@@ -117,6 +118,7 @@ export function SnoozePicker({
             <button
               key={preset.id}
               type="button"
+              data-testid={`snooze-preset-${preset.id}`}
               onClick={() => handlePreset(preset.getUntil)}
               disabled={!emailId}
               className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-fg)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
@@ -131,6 +133,7 @@ export function SnoozePicker({
 
           <button
             type="button"
+            data-testid="snooze-custom-toggle"
             onClick={() => setShowCustom((v) => !v)}
             disabled={!emailId}
             className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-brand-500)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
