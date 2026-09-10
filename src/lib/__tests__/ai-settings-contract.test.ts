@@ -49,7 +49,7 @@ describe("AI settings cross-repo contract", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/settings/ai",
-      expect.objectContaining({ method: "GET" })
+      expect.objectContaining({ cache: "no-store" })
     );
   });
 
