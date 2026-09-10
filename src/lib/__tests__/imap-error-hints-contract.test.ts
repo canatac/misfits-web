@@ -21,8 +21,8 @@ describe("IMAP error hints cross-repo contract", () => {
     expect(hint?.title).toContain("Google");
   });
 
-  it("returns hint for auth failed", () => {
-    const hint = detectImapErrorHint("AUTHENTICATIONFAILED");
+  it("returns hint for Microsoft auth failed", () => {
+    const hint = detectImapErrorHint("LOGIN failed: AUTHENTICATIONFAILED for user@outlook.com");
     expect(hint).toBeDefined();
     expect(hint?.title).toBeTruthy();
   });
