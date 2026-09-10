@@ -26,6 +26,7 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const req = {
+      headers: { Cookie: "mfa_session=test-session-token" },
       nextUrl: new URL(
         "http://localhost/api/hermes/runs/run_1/events?stream=true"
       ),
@@ -49,6 +50,7 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     delete process.env.HERMES_GATEWAY_BASE_URL;
 
     const req = {
+      headers: { Cookie: "mfa_session=test-session-token" },
       nextUrl: new URL("http://localhost/api/hermes/runs/run_1/events"),
     };
 
@@ -62,5 +64,21 @@ describe("/api/hermes/runs/[runId]/events route", () => {
         message: expect.stringContaining("BACKEND_URL/HERMES_GATEWAY_BASE_URL"),
       },
     });
+  });
+
+  it("returns 401 when no auth cookie present", async () => {
+    process.env.HERMES_PROXY_MODE = "backend";
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const req = {
+      headers: {},
+      nextUrl: new URL("http://localhost/api/hermes/runs/run_1/events"),
+    };
+
+    const res = await GET(req as any, {
+      params: Promise.resolve({ runId: "run_1" }),
+    });
+
+    expect(res.status).toBe(401);
   });
 });

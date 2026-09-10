@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "../route";
+import { GET, POST } from "../route";
 
 describe("/api/hermes/runs route", () => {
   const originalEnv = { ...process.env };
@@ -11,6 +11,18 @@ describe("/api/hermes/runs route", () => {
 
   afterEach(() => {
     process.env = { ...originalEnv };
+  });
+
+  it("returns 401 when no auth cookie present", async () => {
+    process.env.HERMES_PROXY_MODE = "direct";
+    process.env.HERMES_API_KEY = "test-key";
+
+    const req = new Request("http://localhost/api/hermes/runs", {
+      method: "GET",
+    });
+
+    const res = await GET(req as any);
+    expect(res.status).toBe(401);
   });
 
   it("uses backend gateway mode when explicitly enabled", async () => {
@@ -27,7 +39,10 @@ describe("/api/hermes/runs route", () => {
 
     const req = new Request("http://localhost/api/hermes/runs", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "mfa_session=test-session-token",
+      },
       body: JSON.stringify({
         input: [{ role: "user", content: "hello" }],
         model: "hermes-agent",
@@ -60,7 +75,10 @@ describe("/api/hermes/runs route", () => {
 
     const req = new Request("http://localhost/api/hermes/runs", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: "mfa_session=test-session-token",
+      },
       body: JSON.stringify({
         input: [{ role: "user", content: "hello" }],
       }),
