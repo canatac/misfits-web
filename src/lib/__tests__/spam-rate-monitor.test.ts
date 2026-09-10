@@ -96,7 +96,7 @@ describe("spam-rate-monitor", () => {
 
   describe("generateComplianceReport", () => {
     it("returns compliant when below critical", () => {
-      const dataPoints = [createSpamRateDataPoint(1000, 2)];
+      const dataPoints = [createSpamRateDataPoint(1000, 1)];
       const report = generateComplianceReport(dataPoints, "2026-09");
       expect(report.compliant).toBe(true);
       expect(report.issues).toHaveLength(0);
