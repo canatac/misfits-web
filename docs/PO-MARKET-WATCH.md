@@ -172,13 +172,13 @@
 | MW-2026-004 | User crée template "Réponse standard" | Template sauvegardé, disponible dans le composer via menu templates | ❌ (feature à implémenter) |
 | MW-2026-005 | User accède /mail hors ligne (PWA) | Liste des emails récents affichés depuis le cache, indicateur "hors ligne" | ❌ (PWA à implémenter) |
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
-| MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-009 | User consulte la conversation view | Affichage groupé par thread, tri chronologique, indicateur "X messages" | ❌ (standard marché 2026, implémentation prioritaire) |
 | MW-2026-010 | User génère un masked email alias | Alias créé (format: xxxxx@misfits.ai), emails forwardés vers inbox principale, possibilité de désactiver | ❌ (feature à implémenter — différence avec Fastmail qui a ~1000 aliases) |
 | MW-2026-011 | User recherche dans sa boîte | Résultats instantanés (<200ms), recherche possible pendant l'indexation, labels imbriqués | ❌ (feature à implémenter — Tuta/Proton le font déjà) |
 | MW-2026-012 | User ouvre la PWA mobile hors-ligne | Emails récents disponibles, indicateur hors-ligne, actions en attente synchronisées au retour | ❌ (PWA à implémenter — Proton le fait en natif, nous en PWA) |
 | MW-2026-013 | User demande l'accès à ses données personnelles | Export complet (emails, contacts, calendrier) en format standard (mbox, vCard, iCal) sous 72h | ❌ (conformité RGPD/NIS2, à implémenter) |
+| MW-2026-014 | User crée un événement depuis un email | Événement créé avec pré-remplissage depuis le contenu de l'email, lien bidirectionnel, sync CalDAV | ❌ (intégration calendrier avancée, issue #526) |
 
 ---
 
