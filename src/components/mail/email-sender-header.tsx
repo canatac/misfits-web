@@ -5,8 +5,9 @@
 // - Contient l'affichage du sender + destinataires + date
 
 import React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials, formatFullDate } from "./email-view-utils";
+import { formatFullDate } from "./email-view-utils";
+import { BimiLogo } from "./bimi-logo";
+import { parseBimiHeaders } from "@/lib/bimi";
 
 type MailRecipient = { name: string; address?: string };
 type MailSender = { name: string; address: string };
@@ -16,15 +17,17 @@ interface EmailSenderHeaderProps {
     to: MailRecipient[];
     cc?: MailRecipient[];
     date: string;
+    headers?: Record<string, string>;
   };
 }
 
 export function EmailSenderHeader({ email }: EmailSenderHeaderProps) {
   return (
     <div className="mb-4 flex items-start gap-3">
-      <Avatar className="h-10 w-10">
-        <AvatarFallback>{getInitials(email.from.name)}</AvatarFallback>
-      </Avatar>
+      <BimiLogo
+        senderName={email.from.name}
+        bimi={parseBimiHeaders(email.headers || {})}
+      />
       <div className="flex-1">
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="font-medium text-[var(--color-fg)]">
