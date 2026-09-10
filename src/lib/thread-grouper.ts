@@ -12,9 +12,14 @@ import type { Thread, ThreadGroup } from "@/types/thread";
  * Normalize a subject line by stripping Re:/Fwd: prefixes.
  */
 export function normalizeSubject(subject: string): string {
-  return subject
-    .replace(/^(Re|Fwd|Fw|Aw|Antwort|Tr|I)\s*:\s*/gi, "")
-    .trim();
+  let result = subject;
+  let prev = "";
+  // Iteratively strip prefixes until none remain
+  while (result !== prev) {
+    prev = result;
+    result = result.replace(/^(Re|Fwd|Fw|Aw|Antwort|Tr|I)\s*:\s*/gi, "").trim();
+  }
+  return result;
 }
 
 /**
