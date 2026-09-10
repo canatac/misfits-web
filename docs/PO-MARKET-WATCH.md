@@ -172,6 +172,7 @@
 - `#538` — Post-quantum cryptography Kyber+Dilithium (reimagined-guide)
 - `#539` — Instant search backend (full-text, <200ms) (reimagined-guide)
 - `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
+- `#541` — Multi-account email aggregation backend (IMAP/SMTP external) (reimagined-guide)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
 - `#53` — BIMI record validation and VMC certificate verification (studious-octo-rotary-phone)
 - `#54` — Masked email alias management API (studious-octo-rotary-phone)
