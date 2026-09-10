@@ -13,7 +13,7 @@ import { useComposerStore, uid } from "@/stores/composer-store";
 import { useChatStore } from "@/stores/chat-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { toPlainText } from "@/lib/mail-utils";
-import { useToast } from "@/components/ui/toast-provider";
+import { addToast } from "@/lib/ui/toast";
 
 function toRecipient(
   address: string,
@@ -47,7 +47,8 @@ export function useEmailActions(email: Email | null | undefined) {
   const sendChatMessage = useChatStore((s) => s.sendMessage);
   const openChatPanel = useChatStore((s) => s.setOpen);
   const userId = useAuthStore((s) => s.user?.id ?? null);
-  const { addToast } = useToast();
+  // addToast is imported from @/lib/ui/toast (event bus), not from
+  // toast-provider, to keep hooks decoupled from components (arch rule).
 
   const handleReply = useCallback(() => {
     if (!email) return;
