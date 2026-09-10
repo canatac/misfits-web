@@ -17,9 +17,12 @@ const SESSION_COOKIES = ["mfa_session", "session_token"] as const;
 
 export function getSessionToken(request: NextRequest): string | null {
   // Check cookies first
-  for (const name of SESSION_COOKIES) {
-    const token = request.cookies.get(name)?.value;
-    if (token) return token;
+  const cookies = request.cookies as unknown as { get?: (name: string) => { value?: string } | undefined } | undefined;
+  if (cookies?.get) {
+    for (const name of SESSION_COOKIES) {
+      const token = cookies.get(name)?.value;
+      if (token) return token;
+    }
   }
 
   // Fall back to Authorization header
