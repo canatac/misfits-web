@@ -70,6 +70,7 @@ describe("email-to-event", () => {
       const email = makeEmail({
         subject: "Meeting",
         preview: "Meeting on 2026-09-15 at Conference Room A",
+        body: "<p>Meeting on 2026-09-15 at Conference Room A</p>",
       });
       const event = extractEventFromEmail(email);
       expect(event?.location).toBe("Conference Room A");
@@ -78,7 +79,8 @@ describe("email-to-event", () => {
     it("detects meeting type", () => {
       const email = makeEmail({
         subject: "Team meeting on 2026-09-15",
-        preview: "Team meeting on 2026-09-15",
+        preview: "Team meeting on 2026-09-15 to discuss the project",
+        body: "<p>Team meeting on 2026-09-15</p>",
       });
       const event = extractEventFromEmail(email);
       expect(event?.eventType).toBe("meeting");
@@ -86,8 +88,9 @@ describe("email-to-event", () => {
 
     it("detects deadline type", () => {
       const email = makeEmail({
-        subject: "Deadline 2026-09-15",
+        subject: "Submission due 2026-09-15",
         preview: "The deadline is 2026-09-15 for submission",
+        body: "<p>The deadline is 2026-09-15 for submission</p>",
       });
       const event = extractEventFromEmail(email);
       expect(event?.eventType).toBe("deadline");
@@ -117,18 +120,18 @@ describe("email-to-event", () => {
 
   describe("extractedEventToInput", () => {
     it("converts extracted event to input format", () => {
-      const email = makeEmail();
-      const extracted = extractEventFromEmail(email)!;
-
-      // Ensure date is parsed
+      const email = makeEmail({
+        preview: "Meeting on 2026-09-15 at 2pm",
+        body: "<p>Meeting on 2026-09-15 at 2pm</p>",
+      });
+      const extracted = extractEventFromEmail(email);
       expect(extracted).toBeDefined();
-
-      const input = extractedEventToInput(extracted);
-      expect(input.title).toBe(extracted.title);
-      expect(input.start).toBe(extracted.startDate);
-      expect(input.end).toBe(extracted.endDate);
-      expect(input.eventType).toBe(extracted.eventType);
-      expect(input.location).toBe(extracted.location || undefined);
+      const input = extractedEventToInput(extracted!);
+      expect(input.title).toBe(extracted!.title);
+      expect(input.start).toBe(extracted!.startDate);
+      expect(input.end).toBe(extracted!.endDate);
+      expect(input.eventType).toBe(extracted!.eventType);
+      expect(input.location).toBe(extracted!.location || undefined);
     });
   });
 

@@ -42,8 +42,8 @@ const TIME_PATTERNS = [
 
 /** Location patterns. */
 const LOCATION_PATTERNS = [
-  /(?:at|location|place|venue|address)\s*:?\s*([^\n,]+)/gi,
-  /(?:meet(?:ing|up)\s+at)\s+([^\n,]+)/gi,
+  /(?:at|location|place|venue|address)\s*:?\s*([^\n,]{2,50})/gi,
+  /(?:meet(?:ing|up)\s+at)\s+([^\n,]{2,50})/gi,
 ];
 
 /** Event type keywords. */
@@ -126,8 +126,11 @@ function parseTime(text: string): { hours: number; minutes: number } | null {
  * Extract location from email content.
  */
 function extractLocation(text: string): string {
+  // Strip HTML tags for location extraction
+  const plainText = text.replace(/<[^>]*>/g, "");
   for (const pattern of LOCATION_PATTERNS) {
-    const match = pattern.exec(text);
+    pattern.lastIndex = 0;
+    const match = pattern.exec(plainText);
     if (match?.[1]) {
       return match[1].trim();
     }
@@ -139,12 +142,16 @@ function extractLocation(text: string): string {
  * Detect event type from email content.
  */
 function detectEventType(text: string): { type: EventType; confidence: number } {
-  const lower = text.toLowerCase();
+  // Strip HTML tags for type detection
+  const lower = text.replace(/<[^>]*>/g, "").toLowerCase();
 
-  for (const [type, keywords] of Object.entries(EVENT_TYPE_KEYWORDS)) {
-    for (const keyword of keywords) {
+  // Check in priority order (more specific types first)
+  const typeOrder: EventType[] = ["deadline", "meeting", "travel", "social", "reminder"];
+
+  for (const type of typeOrder) {
+    for (const keyword of EVENT_TYPE_KEYWORDS[type]) {
       if (lower.includes(keyword)) {
-        return { type: type as EventType, confidence: 0.7 };
+        return { type, confidence: 0.7 };
       }
     }
   }
