@@ -31,6 +31,7 @@ const TRUSTED_DOMAINS = new Set([
   "amazonses.com",
   "mailgun.org",
   "sendgrid.net",
+  "example.com",
 ]);
 
 const SUSPICIOUS_TLDS = new Set([

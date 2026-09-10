@@ -26,6 +26,7 @@ function makeEmail(overrides: Partial<Email> = {}): Email {
     labels: [],
     size: 1024,
     messageId: "<test@example.com>",
+    headers: { dkim: "pass" },
     ...overrides,
   };
 }
