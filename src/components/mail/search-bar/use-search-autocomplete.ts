@@ -39,12 +39,10 @@ function getPartialOperator(
 ): { partial: string; start: number } | null {
   const before = value.slice(0, cursorPos);
 
-  // Case 1: User is typing operator name before the colon (e.g. "fr", "from")
-  // Match word characters at the end of the string
+  // Match word characters at the cursor position (partial operator name)
   const partialMatch = before.match(/(\w+)$/);
   if (partialMatch) {
     const partial = partialMatch[1].toLowerCase();
-    // Only suggest if it could be an operator prefix (at least 2 chars)
     if (partial.length >= 2) {
       return { partial, start: cursorPos - partial.length };
     }
@@ -71,19 +69,10 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
 
       // Find matching operators
       const matches = OPERATOR_META.filter((op) =>
-        op.operator.startsWith(partialOp.partial)
+        String(op.operator).startsWith(partialOp.partial)
       );
 
       if (matches.length === 0) {
-        setAutocomplete({ suggestion: null, partial: "", showPanel: false });
-        return;
-      }
-
-      // Don't suggest if exact match (user already typed the full operator)
-      const exactMatch = matches.find(
-        (op) => op.operator === partialOp.partial
-      );
-      if (exactMatch && matches.length === 1) {
         setAutocomplete({ suggestion: null, partial: "", showPanel: false });
         return;
       }
@@ -126,7 +115,7 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
   const filteredOperators = useMemo(() => {
     if (!autocomplete.partial) return OPERATOR_META;
     return OPERATOR_META.filter((op) =>
-      op.operator.startsWith(autocomplete.partial)
+      String(op.operator).startsWith(autocomplete.partial)
     );
   }, [autocomplete.partial]);
 

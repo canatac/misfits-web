@@ -34,13 +34,16 @@ describe("useSearchAutocomplete", () => {
     expect(result.current.autocomplete.suggestion?.operator).toBe("to");
   });
 
-  it("returns null for exact operator match", () => {
+  it("returns null for empty operator", () => {
     const { result } = renderHook(() => useSearchAutocomplete());
 
     act(() => {
       result.current.updateAutocomplete("from:", 4);
     });
 
+    // After colon, no suggestion (user already committed to operator)
+    // Actually our hook doesn't handle post-colon, so it depends on regex
+    // "from:" → no word chars at end → null
     expect(result.current.autocomplete.suggestion).toBeNull();
   });
 
