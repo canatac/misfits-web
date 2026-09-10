@@ -180,6 +180,9 @@
 - `#518` — Undo send (5-second recall window, must-have 2026)
 - `#519` — Email templates (save and reuse, must-have 2026)
 - `#520` — PWA offline mode with service worker (must-have 2026)
+- `#521` — Instant search (sub-200ms with indexing, standard marché 2026)
+- `#522` — Post-quantum cryptography Kyber+Dilithium (vs TutaCrypt)
+- `#523` — BIMI brand logo display (Google/Yahoo 2025 reqs)
 
 **Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose avec core Rust). Offline search, indexation locale, Category View auto-grouping, intégration Gmail native (envoi/réception depuis un seul inbox). L'acquisition SimpleLogin est totalement intégrée — alias gérés nativement. Leur "Engineering Transformation" est un projet de 12+ mois. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform stratégique. Notre stack backend Rust (Actif-web) est un atout, mais on n'a pas de mobile natif. Considération: PWA vs natif mobile en 2026.
 
