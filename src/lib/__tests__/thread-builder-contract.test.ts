@@ -12,7 +12,7 @@ import type { ThreadingMode } from "@/types/thread";
 describe("Thread builder cross-repo contract", () => {
   const mockEmail = (id: string, from: string, subject: string, date: string): Email => ({
     id,
-    from: { name: from.split("@")[0] ?? "unknown", address: from },
+    from: { name: from.split("@")[0] || "unknown", address: from },
     to: [{ name: "Me", address: "me@misfits.ai" }],
     subject,
     preview: `Preview for ${id}`,
