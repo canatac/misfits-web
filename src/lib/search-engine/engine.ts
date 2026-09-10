@@ -182,10 +182,7 @@ export function searchEmails(
   emails: Email[],
   sort: SearchSort = "relevance"
 ): { results: SearchResult[]; facets: SearchFacets } {
-  if (globalIndex) {
-    return globalIndex.search(query, sort);
-  }
-  const index = initSearchIndex(emails);
+  const index = new SearchIndex(emails);
   return index.search(query, sort);
 }
 
