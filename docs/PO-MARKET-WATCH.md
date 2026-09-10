@@ -164,6 +164,9 @@
 - `#523` — BIMI brand logo display
 - `#526` — Create event from email (calendar integration)
 - `#527` — Multi-account email aggregation (one inbox)
+- `#530` — Email authentication monitoring (DKIM/SPF/DMARC)
+- `#537` — SMTP security hardening (STARTTLS, DANE, MTA-STS)
+- `#52` — Automated DKIM key rotation (NIS2/CRA compliance)
 
 **CRA 2026 (Cyber Resilience Act)** : les obligations de reporting entrent en vigueur le 11 septembre 2026. Les fabricants de produits numériques doivent :
 - Rapporter les vulnérabilités activement exploitées : early warning sous 24h, notification détaillée sous 72h
