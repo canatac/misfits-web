@@ -101,7 +101,7 @@ export function useEmailActions(email: Email | null | undefined) {
       message: "Email archivé",
       undo: () => undoArchive(email.id, originalFolder),
     });
-  }, [email, archive, undoArchive, addToast]);
+  }, [email, archive, undoArchive]);
 
   const handleDelete = useCallback(() => {
     if (!email) return;
@@ -111,7 +111,7 @@ export function useEmailActions(email: Email | null | undefined) {
       message: "Email supprimé",
       undo: () => undoDelete(email),
     });
-  }, [email, deleteEmail, undoDelete, addToast]);
+  }, [email, deleteEmail, undoDelete]);
 
   const handleMarkUnread = useCallback(() => {
     if (email) markUnread(email.id);
