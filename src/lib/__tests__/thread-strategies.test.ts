@@ -302,8 +302,8 @@ describe("threadSmart", () => {
 
   it("keeps separate subjects in separate threads", () => {
     const emails = [
-      makeEmail({ id: "e1", subject: "Topic A" }),
-      makeEmail({ id: "e2", subject: "Topic B" }),
+      makeEmail({ id: "e1", subject: "Topic A", messageId: undefined }),
+      makeEmail({ id: "e2", subject: "Topic B", messageId: undefined }),
     ];
     const threads = threadSmart(emails, buildThread);
     expect(threads).toHaveLength(2);
