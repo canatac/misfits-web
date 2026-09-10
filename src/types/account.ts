@@ -42,6 +42,8 @@ export interface EmailAccount {
   serverConfig?: AccountServerConfig;
   /** ISO timestamp the account was connected. */
   connectedAt: string;
+  /** Per-account custom signature HTML (Issue #423). */
+  signature?: string;
 }
 
 /** Configuration for the unified inbox view. */

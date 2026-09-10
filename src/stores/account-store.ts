@@ -1,9 +1,5 @@
 /**
  * Zustand store for multi-account management (Issue #154).
- *
- * Holds the list of connected EmailAccounts, the currently-active account, and
- * the unified-inbox toggle. Persisted to localStorage so accounts survive
- * reloads. Mirrors the label-store persistence pattern.
  */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -13,7 +9,6 @@ import type {
   AccountServerConfig,
 } from "@/types/account";
 
-/** Default seed accounts so the UI is populated on first load. */
 const DEFAULT_ACCOUNTS: EmailAccount[] = [
   {
     id: "acc-1",
@@ -28,12 +23,10 @@ const DEFAULT_ACCOUNTS: EmailAccount[] = [
   },
 ];
 
-/** Generate a unique account id. */
 function genId(): string {
   return `acc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/** Input shape for adding a new account. */
 export interface AddAccountInput {
   email: string;
   name?: string;
@@ -44,7 +37,6 @@ export interface AddAccountInput {
   serverConfig?: AccountServerConfig;
 }
 
-/** Input shape for updating an account. */
 export interface UpdateAccountInput {
   email?: string;
   name?: string;
@@ -53,19 +45,17 @@ export interface UpdateAccountInput {
   aliases?: string[];
   serverConfig?: AccountServerConfig;
   isDefault?: boolean;
+  signature?: string;
 }
 
 interface AccountState {
   accounts: EmailAccount[];
   activeAccountId: string | null;
   isUnifiedInbox: boolean;
-
-  // Queries
   getAccountById: (id: string) => EmailAccount | undefined;
   getActiveAccount: () => EmailAccount | undefined;
   getDefaultAccount: () => EmailAccount | undefined;
-
-  // Mutations
+  getAccountIndex: (id: string) => number;
   addAccount: (input: AddAccountInput) => EmailAccount;
   removeAccount: (id: string) => void;
   setActiveAccount: (id: string) => void;
@@ -74,6 +64,9 @@ interface AccountState {
   setUnifiedInbox: (enabled: boolean) => void;
   updateAccount: (id: string, input: UpdateAccountInput) => void;
   addAlias: (id: string, alias: string) => void;
+  setAccountSignature: (id: string, signature: string | undefined) => void;
+  cycleActiveAccount: (direction: "next" | "prev") => void;
+  setActiveAccountByIndex: (index: number) => void;
 }
 
 export const useAccountStore = create<AccountState>()(
@@ -84,14 +77,13 @@ export const useAccountStore = create<AccountState>()(
       isUnifiedInbox: false,
 
       getAccountById: (id) => get().accounts.find((a) => a.id === id),
-
       getActiveAccount: () => {
         const { accounts, activeAccountId } = get();
         return accounts.find((a) => a.id === activeAccountId) ?? accounts[0];
       },
-
       getDefaultAccount: () =>
         get().accounts.find((a) => a.isDefault) ?? get().accounts[0],
+      getAccountIndex: (id) => get().accounts.findIndex((a) => a.id === id),
 
       addAccount: (input) => {
         const account: EmailAccount = {
@@ -108,7 +100,6 @@ export const useAccountStore = create<AccountState>()(
         };
         set((state) => ({
           accounts: [...state.accounts, account],
-          // First added account auto-becomes the active one if none active.
           activeAccountId: state.activeAccountId ?? account.id,
         }));
         return account;
@@ -117,18 +108,13 @@ export const useAccountStore = create<AccountState>()(
       removeAccount: (id) => {
         set((state) => {
           const accounts = state.accounts.filter((a) => a.id !== id);
-          // If we removed the active account, fall back to the default or the first.
           let activeAccountId = state.activeAccountId;
           let isUnifiedInbox = state.isUnifiedInbox;
           if (activeAccountId === id) {
             activeAccountId =
               accounts.find((a) => a.isDefault)?.id ?? accounts[0]?.id ?? null;
           }
-          // If no accounts remain, force unified inbox off (nothing to unify).
-          if (accounts.length <= 1) {
-            isUnifiedInbox = false;
-          }
-          // Reassign default if the removed account was the default.
+          if (accounts.length <= 1) isUnifiedInbox = false;
           let nextAccounts = accounts;
           const removedWasDefault = !accounts.some((a) => a.isDefault);
           if (removedWasDefault && accounts.length > 0) {
@@ -144,7 +130,6 @@ export const useAccountStore = create<AccountState>()(
       setActiveAccount: (id) => {
         set((state) => {
           if (!state.accounts.some((a) => a.id === id)) return state;
-          // Selecting a specific account implicitly leaves unified inbox mode.
           return { activeAccountId: id, isUnifiedInbox: false };
         });
       },
@@ -163,7 +148,6 @@ export const useAccountStore = create<AccountState>()(
 
       toggleUnifiedInbox: () => {
         set((state) => {
-          // Only allow unified inbox when more than one account is connected.
           if (state.accounts.length <= 1) return state;
           return { isUnifiedInbox: !state.isUnifiedInbox };
         });
@@ -183,21 +167,16 @@ export const useAccountStore = create<AccountState>()(
               ? {
                   ...a,
                   ...input,
-                  email:
-                    input.email !== undefined ? input.email.trim() : a.email,
-                  name:
-                    input.name !== undefined
-                      ? input.name.trim() || a.email.split("@")[0]
-                      : a.name,
+                  email: input.email !== undefined ? input.email.trim() : a.email,
+                  name: input.name !== undefined
+                    ? input.name.trim() || a.email.split("@")[0]
+                    : a.name,
                   aliases: input.aliases ?? a.aliases,
                 }
               : a
           ),
         }));
-        // If isDefault was set true on this account, clear the flag on others.
-        if (input.isDefault) {
-          get().setDefaultAccount(id);
-        }
+        if (input.isDefault) get().setDefaultAccount(id);
       },
 
       addAlias: (id, alias) => {
@@ -208,6 +187,45 @@ export const useAccountStore = create<AccountState>()(
             if (!trimmed || a.aliases.includes(trimmed)) return a;
             return { ...a, aliases: [...a.aliases, trimmed] };
           }),
+        }));
+      },
+
+      // --- Per-account signature (Issue #423) ---
+      setAccountSignature: (id, signature) => {
+        set((state) => ({
+          accounts: state.accounts.map((a) =>
+            a.id === id ? { ...a, signature } : a
+          ),
+        }));
+      },
+
+      // --- Quick switching (Issue #445) ---
+      cycleActiveAccount: (direction) => {
+        const { accounts, activeAccountId } = get();
+        if (accounts.length <= 1) return;
+        const currentIdx = accounts.findIndex((a) => a.id === activeAccountId);
+        if (currentIdx === -1) {
+          const nextIdx = direction === "next" ? 0 : accounts.length - 1;
+          set((state) => ({
+            activeAccountId: accounts[nextIdx].id,
+            isUnifiedInbox: false,
+          }));
+          return;
+        }
+        const delta = direction === "next" ? 1 : -1;
+        const nextIdx = (currentIdx + delta + accounts.length) % accounts.length;
+        set((state) => ({
+          activeAccountId: accounts[nextIdx].id,
+          isUnifiedInbox: false,
+        }));
+      },
+
+      setActiveAccountByIndex: (index) => {
+        const { accounts } = get();
+        if (index < 0 || index >= accounts.length) return;
+        set((state) => ({
+          activeAccountId: accounts[index].id,
+          isUnifiedInbox: false,
         }));
       },
     }),
