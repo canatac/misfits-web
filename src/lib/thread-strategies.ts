@@ -76,9 +76,12 @@ export function threadByReferences(
   }
 
   let threadIdx = 0;
-  return [...groups.values()].map((msgs) =>
-    buildThread(msgs[0].threadId ?? `thread-refs-${threadIdx++}`, msgs)
-  );
+  return [...groups.values()].map((msgs) => {
+    const threadId = msgs[0].messageId
+      ? msgs[0].threadId ?? `thread-refs-${threadIdx++}`
+      : `singleton-${threadIdx++}`;
+    return buildThread(threadId, msgs);
+  });
 }
 
 /** Thread by normalised subject (strip Re:/Fwd: prefixes). */

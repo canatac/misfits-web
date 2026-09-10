@@ -74,6 +74,8 @@ interface EmailState {
   markUnread: (id: string) => void;
   archive: (id: string) => void;
   deleteEmail: (id: string) => void;
+  undoArchive: (id: string, originalFolder: Folder) => void;
+  undoDelete: (email: Email) => void;
   bulkAction: (action: BulkActionType) => void;
   setFolder: (folder: Folder) => void;
   setSortBy: (sortBy: SortBy) => void;
@@ -188,6 +190,20 @@ export const useEmailStore = create<EmailState>((set, get) => ({
         selectedEmailIds: next,
       };
     }),
+
+  undoArchive: (id, originalFolder) =>
+    set((state) => ({
+      emails: state.emails.map((e) =>
+        e.id === id ? { ...e, folder: originalFolder } : e
+      ),
+    })),
+
+  undoDelete: (email) =>
+    set((state) => ({
+      emails: [...state.emails, email].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    })),
 
   bulkAction: (action) => {
     const ids = get().selectedEmailIds;
