@@ -183,6 +183,7 @@
 - `#545` — Search filters backend (date, sender, attachments) (reimagined-guide)
 - `#547` — Email templates API (save, reuse, variables) (reimagined-guide)
 - `#548` — Newsletter one-click unsubscribe backend (List-Unsubscribe header) (reimagined-guide)
+- `#549` — Email import wizard backend (Gmail/Outlook/Yahoo/IMAP) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
 - `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
 - `#550` — PWA mobile offline (service worker, cache, sync) (misfits-web)
