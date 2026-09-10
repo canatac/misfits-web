@@ -23,7 +23,7 @@ vi.mock("@/lib/session-payload", () => ({
 describe("Monitoring API cross-repo contract", () => {
   beforeEach(() => {
     fetchMock.mockReset();
-    fetchMock.mockResolvedValue(
+    fetchMock.mockImplementation(() =>
       new Response(JSON.stringify({ data: [] }), {
         status: 200,
         headers: { "content-type": "application/json" },
