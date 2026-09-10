@@ -44,7 +44,7 @@ describe("useSearchAutocomplete", () => {
     const { result } = renderHook(() => useSearchAutocomplete());
 
     act(() => {
-      result.current.updateAutocomplete("hello f", 7);
+      result.current.updateAutocomplete("hello fr", 8);
     });
 
     expect(result.current.autocomplete.suggestion?.operator).toBe("from");
