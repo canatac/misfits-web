@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../route";
+import { NextRequest } from "next/server";
 
 describe("/api/hermes/runs/[runId]/events route", () => {
   const originalEnv = { ...process.env };
@@ -25,13 +26,14 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const req = {
-      nextUrl: new URL(
-        "http://localhost/api/hermes/runs/run_1/events?stream=true"
-      ),
-    };
+    const req = new NextRequest(
+      "http://localhost/api/hermes/runs/run_1/events?stream=true",
+      {
+        headers: { Cookie: "mfa_session=test-session-token" },
+      }
+    );
 
-    const res = await GET(req as any, {
+    const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
     });
 
@@ -48,11 +50,14 @@ describe("/api/hermes/runs/[runId]/events route", () => {
     delete process.env.BACKEND_URL;
     delete process.env.HERMES_GATEWAY_BASE_URL;
 
-    const req = {
-      nextUrl: new URL("http://localhost/api/hermes/runs/run_1/events"),
-    };
+    const req = new NextRequest(
+      "http://localhost/api/hermes/runs/run_1/events",
+      {
+        headers: { Cookie: "mfa_session=test-session-token" },
+      }
+    );
 
-    const res = await GET(req as any, {
+    const res = await GET(req, {
       params: Promise.resolve({ runId: "run_1" }),
     });
 
@@ -62,5 +67,20 @@ describe("/api/hermes/runs/[runId]/events route", () => {
         message: expect.stringContaining("BACKEND_URL/HERMES_GATEWAY_BASE_URL"),
       },
     });
+  });
+
+  it("returns 401 when no auth cookie present", async () => {
+    process.env.HERMES_PROXY_MODE = "backend";
+    process.env.BACKEND_URL = "http://email-api:8000";
+
+    const req = new NextRequest(
+      "http://localhost/api/hermes/runs/run_1/events"
+    );
+
+    const res = await GET(req, {
+      params: Promise.resolve({ runId: "run_1" }),
+    });
+
+    expect(res.status).toBe(401);
   });
 });

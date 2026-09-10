@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ runId: string }> }
 ) {
+  const auth = requireAuth(req);
+  if ("response" in auth) return auth.response;
+
   const { runId } = await params;
   if (!runId?.trim()) {
     return jsonError("Missing runId.", 400);
