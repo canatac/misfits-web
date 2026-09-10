@@ -252,6 +252,18 @@
 
 **Mailbird 2026** : client email multi-comptes, unified inbox, cross-account search. Free (1 compte), Premium $4/mo (annuel) ou $99.75 one-time. Windows + Mac (depuis oct 2024). Avantage = multi-comptes illimités, rapide, local storage. Inconvénient = pas de mobile, pas d'IA avancée. Leçon : le multi-compte natif est un besoin marché — notre arbitrage "one inbox" (multi-comptes natif) est validé.
 
+**Superhuman 2026 (deep-dive)** :
+- Suite (Mail + Grammarly + Coda + Go) : Free, Pro $30/mo, Business $40/mo, Enterprise custom
+- Mail uniquement : Starter $30/mo ($25 annuel), Business $40/mo ($33 annuel)
+- 100+ keyboard shortcuts, Split Inbox, AI drafting, Auto Summarize, Instant Reply
+- Avantage = vitesse, productivité (4h économisées/semaine selon vendor)
+- Inconvénient = cloud IA (données envoyées), Gmail/Outlook uniquement, prix élevé
+- Leçon : la vitesse et le keyboard-first sont des différenciateurs — notre stack Rust/Next.js doit viser la même réactivité
+
+**Mimestream 2026** : Gmail natif macOS, $4.99/mo. Alternative rapide à Superhuman.
+
+**Fyxer AI 2026** : drafts automatiques, meeting notes, scheduling. Agent IA autonome pour l'email.
+
 ---
 
 ### Cycle 2026-09-09
