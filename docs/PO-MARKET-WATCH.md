@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+|Dernière mise à jour: 2026-09-10|
 
 ---
 
@@ -133,19 +133,32 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-009 | User consulte la conversation view | Affichage groupé par thread, tri chronologique, indicateur "X messages" | ❌ (standard marché 2026, implémentation prioritaire) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
 
-- **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
-- **Tuta 2026**: Fast Sync (10x faster), conversation view, email import/export single-click, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché.
-- **Hey** (Basecamp) a abandonné le IMAP — notre stack native est un avantage pour power users. NOUVEAU 2026: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar.
-- **Skiff** shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
-- **Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted.
-- **Privacy 2026**: GDPR enforcement ↑ (€5.88B cumul depuis 2018), CAN-SPAM fines $51.7K/email, tracking pixels sous consentement explicite (Italie), Vietnam PDP law 2026, 8+ US state laws. Notre conformité native DKIM/SPF/DMARC + privacy-by-design est un avantage.
-- **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
+### Cycle 2026-09-10
+
+**Proton 2026**: réécriture mobile Rust complète (offline search, indexation locale), intégration Gmail native (envoi/réception depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all". L'acquisition SimpleLogin est désormais totalement intégrée — les alias sont gérés nativement dans le dashboard.
+
+**Tuta 2026**: Fast Sync (10x faster), conversation view déployée, email import/export en un clic, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché — notre implémentation doit suivre.
+
+**Hey/Basecamp 2026**: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar. Notre route /calendar a 6 mois d'avance sur ce calendrier.
+
+**Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP natif, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted. Le JMAP est pertinent pour notre issue #501 (JMAP server support).
+
+**Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
+
+**Privacy 2026**: GDPR enforcement ↑ (€5.88B cumul depuis 2018), CAN-SPAM fines $51.7K/email, tracking pixels sous consentement explicite (Italie), Vietnam PDP law 2026, 8+ US state laws. Notre conformité native DKIM/SPF/DMARC + privacy-by-design est un avantage compétitif vérifié.
+
+**8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage différenciant.
 
 ---
+
+### Cycle 2026-09-09
+
+- **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
