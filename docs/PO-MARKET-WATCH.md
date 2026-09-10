@@ -175,7 +175,8 @@
 - `#537` — SMTP security hardening (STARTTLS, DANE, MTA-STS) (reimagined-guide)
 - `#538` — Post-quantum cryptography Kyber+Dilithium (reimagined-guide)
 - `#539` — Instant search backend (full-text, <200ms) (reimagined-guide)
-- `#540` — Event creation from email (CalDAV integration) (reimagined-guide)
+- `#540` — Event creation from email (CalDAV integration) (reimagined-guide) → remplacé par #550
+- `#550` — Event creation backend (CalDAV integration) (reimagined-guide) — version finale
 - `#541` — Multi-account email aggregation backend (IMAP/SMTP external) (reimagined-guide)
 - `#542` — Undo send backend (5-second recall window) (reimagined-guide)
 - `#543` — Scheduled send backend (envoi programmé) (reimagined-guide)
