@@ -6,6 +6,7 @@
  * and backend expectations.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { AiSettings } from "@/types/ai-settings";
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock;
@@ -65,12 +66,14 @@ describe("AI settings cross-repo contract", () => {
     );
   });
 
-  it("AiSettings has defaultModel and features fields", async () => {
-    const { AiSettings } = await import("@/types/ai-settings");
-    // Verify type exists
-    type _Check = AiSettings["defaultModel"]; // must be string
-    type _Check2 = AiSettings["features"]; // must be Record<string,string>
-    expect(true).toBe(true);
+  it("AiSettings has defaultModel and features fields", () => {
+    const settings: AiSettings = {
+      defaultModel: "qwen/qwen3.7-flash",
+      features: { compose: "qwen/qwen3.7-flash" },
+      updatedAt: null,
+    };
+    expect(settings.defaultModel).toBeTruthy();
+    expect(settings.features).toBeDefined();
   });
 
   it("AI_FEATURE_KEYS covers all feature types", async () => {
