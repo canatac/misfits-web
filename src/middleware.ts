@@ -9,8 +9,11 @@
  *
  * /api/auth/callback is intentionally public — it is the OAuth redirect target
  * that sets the session before the user reaches any protected route.
+ *
+ * CORS defense-in-depth (issue #401): validates Origin header for cross-origin
+ * API requests to prevent arbitrary origins from making authenticated requests.
+ * This is a belt-and-suspenders measure alongside the proxy-level CORS fix.
  */
-
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
@@ -39,6 +42,17 @@ const PUBLIC_API_PREFIXES = [
 ];
 const SESSION_COOKIE = "mfa_session";
 
+/**
+ * Allowed origins for cross-origin API requests.
+ * Only same-origin requests are permitted by default. This prevents arbitrary
+ * origins from making authenticated API calls (issue #401).
+ */
+const ALLOWED_ORIGINS = new Set([
+  "https://mail.misfits.ai",
+  "http://localhost:3000",
+  "http://localhost:3001",
+]);
+
 function isProtected(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return false;
   // Admin API routes are NOT blanket-public: they go through proxy-auth.ts
@@ -53,8 +67,28 @@ function isProtected(pathname: string): boolean {
   );
 }
 
+/**
+ * Cross-origin API protection: blocks requests from non-allowed origins.
+ * Only enforced for API routes with state-changing methods or auth cookies.
+ */
+function isCrossOriginAllowed(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+  // Only check API routes
+  if (!pathname.startsWith("/api")) return true;
+  // Same-origin requests are always allowed (no Origin header)
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  // Validate against allowlist
+  return ALLOWED_ORIGINS.has(origin);
+}
+
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
+
+  // CORS defense-in-depth: block cross-origin API requests from non-allowed origins
+  if (!isCrossOriginAllowed(request)) {
+    return new NextResponse("Forbidden: invalid origin", { status: 403 });
+  }
 
   if (!isProtected(pathname)) {
     return NextResponse.next();
