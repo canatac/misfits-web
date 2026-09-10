@@ -195,6 +195,12 @@
 
 **One inbox 2026** : tendance confirmée (Proton, Mailbird, Superhuman, Missive). Notion Mail disparaît. Notre avantage = stack native IMAP/SMTP vs Proton bridge payant. Arbitrage : multi-comptes natif.
 
+**Shortwave 2026 (détail)** : client AI-native pour Gmail uniquement. $18/mo (Pro), $30/mo (Business), $45/mo (Premier), $120/mo (Max). AI search sémantique (décrire plutôt que mots-clés), bundling, thread summarization. Avantage = AI native + vitesse. Inconvénient = Gmail uniquement, cloud AI, pas de free plan permanent. Leçon: la recherche sémantique est un différenciateur — notre recherche instantanée (MW-011) doit viser la même expérience.
+
+**Spike 2026** : email reimaginé as chat, free pour usage personnel. Alternative légère.
+
+**Missive 2026** : team inbox + shared inboxes + internal chat + AI drafting. $14/seat/month. Alternative collaborative.
+
 ---
 
 ### Cycle 2026-09-09
