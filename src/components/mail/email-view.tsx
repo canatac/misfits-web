@@ -24,12 +24,10 @@ import { useLabelStore } from "@/stores/label-store";
 import { LabelManager } from "@/components/mail/label-manager";
 import { SecurityBanner } from "@/components/mail/security-banner";
 import { AttachmentCard } from "./attachment-card";
-import { AttachmentLightbox } from "./attachment-lightbox";
 import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
 import { EmailLabelsBar } from "./email-view/email-labels-bar";
-import type { EmailAttachment } from "@/types/email";
 
 interface EmailViewProps {
   className?: string;
@@ -44,10 +42,6 @@ export function EmailView({ className }: EmailViewProps) {
   const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
-  const [lightboxState, setLightboxState] = useState<{
-    attachments: EmailAttachment[];
-    index: number;
-  } | null>(null);
 
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
@@ -85,17 +79,6 @@ export function EmailView({ className }: EmailViewProps) {
     handleHermesTranslate,
     handleHermesTodos,
   } = useEmailActions(email);
-
-  const handlePreviewAttachment = (attachment: EmailAttachment) => {
-    if (!email) return;
-    const previewable = email.attachments.filter(
-      (a) => a.type === "image" || a.type === "pdf" || a.type === "video"
-    );
-    const index = previewable.findIndex((a) => a.id === attachment.id);
-    if (index !== -1) {
-      setLightboxState({ attachments: previewable, index });
-    }
-  };
 
   if (!email) {
     return (
@@ -240,11 +223,7 @@ export function EmailView({ className }: EmailViewProps) {
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {email.attachments.map((att) => (
-                  <AttachmentCard
-                    key={att.id}
-                    attachment={att}
-                    onPreview={handlePreviewAttachment}
-                  />
+                  <AttachmentCard key={att.id} attachment={att} />
                 ))}
               </div>
             </div>
@@ -256,14 +235,6 @@ export function EmailView({ className }: EmailViewProps) {
         open={labelManagerOpen}
         onOpenChange={setLabelManagerOpen}
       />
-
-      {lightboxState && (
-        <AttachmentLightbox
-          attachments={lightboxState.attachments}
-          initialIndex={lightboxState.index}
-          onClose={() => setLightboxState(null)}
-        />
-      )}
     </div>
   );
 }
