@@ -22,8 +22,11 @@ describe("ComposerFooter", () => {
         isSending={false}
         canSend
         attachments={[mkAttachment(), mkAttachment({ id: "att-2" })]}
+        isComposerEmpty={false}
         onJumpToAttachments={vi.fn()}
         onSend={vi.fn()}
+        onSendLater={vi.fn()}
+        onSaveDraft={vi.fn()}
         onDiscard={vi.fn()}
       />
     );
@@ -39,8 +42,11 @@ describe("ComposerFooter", () => {
         isSending={false}
         canSend
         attachments={[mkAttachment({ status: "uploading", progress: 40 })]}
+        isComposerEmpty={false}
         onJumpToAttachments={onJumpToAttachments}
         onSend={vi.fn()}
+        onSendLater={vi.fn()}
+        onSaveDraft={vi.fn()}
         onDiscard={vi.fn()}
       />
     );
