@@ -139,7 +139,7 @@ describe("parseSearchQuery — operators", () => {
   });
 
   it("parses subject: operator", () => {
-    const result = parseSearchQuery("subject:Hello World");
+    const result = parseSearchQuery('subject:"Hello World"');
     expect(result.filters.subject).toBe("Hello World");
   });
 
@@ -243,12 +243,12 @@ describe("getActiveOperator", () => {
   });
 
   it("detects operator at start of string", () => {
-    const result = getActiveOperator("subject:Test", 11);
+    const result = getActiveOperator("subject:Test", 12);
     expect(result).toEqual({ operator: "subject", partial: "Test" });
   });
 
   it("handles cursor in middle of operator value", () => {
-    const result = getActiveOperator("from:alice@example.com", 5);
+    const result = getActiveOperator("from:alice@example.com", 8);
     expect(result).toEqual({ operator: "from", partial: "ali" });
   });
 
