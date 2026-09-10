@@ -1,209 +1,405 @@
 /**
- * Phishing detection engine — rule-based analysis with AI enhancement.
+ * Phishing detector — heuristic-based risk scoring for incoming emails.
+ *
+ * Produces a PhishingResult (score 0-100, threat level, indicators) used by
+ * the security indicator in the list view, the email view header, and the
+ * security dashboard.
+ *
+ * This is a client-side heuristic layer. In production it would be backed by
+ * the Hermes AI analysis pipeline (see issue #505).
  */
+
 import type { Email } from "@/types/email";
 import type {
   PhishingResult,
   SecurityIndicator,
-  HeaderAnalysis,
-  SuspiciousLink,
   ThreatLevel,
+  SuspiciousLink,
+  HeaderAnalysis,
 } from "@/types/security";
-import { chatCompletionDirect } from "@/lib/ai-client";
-import type { ChatMessage } from "@/types/ai";
 
+/** Domain reputation — known-safe vs known-suspicious patterns. */
+const TRUSTED_DOMAINS = new Set([
+  "gmail.com",
+  "outlook.com",
+  "yahoo.com",
+  "protonmail.com",
+  "icloud.com",
+  "google.com",
+  "microsoft.com",
+  "apple.com",
+  "amazonses.com",
+  "mailgun.org",
+  "sendgrid.net",
+  "example.com",
+]);
+
+const SUSPICIOUS_TLDS = new Set([
+  ".xyz", ".top", ".club", ".online", ".site", ".icu", ".buzz", ".click",
+  ".work", ".rest", ".loan", ".men", ".win", ".stream", ".download",
+]);
+
+/** Keywords that signal urgency or social engineering. */
 const URGENCY_PATTERNS = [
-  /\burgent\b/i,
-  /\basap\b/i,
-  /\bimmediately\b/i,
-  /\bact now\b/i,
-  /\bverify your account\b/i,
-  /\bclick here\b/i,
-  /\bsuspend/i,
-  /\bdeadline\b/i,
-  /\byou must\b/i,
-  /\bfinal notice\b/i,
-  /\baccount will be\b/i,
+  /urgent/i, /immediate(ly)?/i, /action required/i, /verify your account/i,
+  /suspend/i, /locked/i, /unusual activity/i, /confirm your/i,
+  /update your payment/i, /invoice attached/i, /wire transfer/i,
+  /bank account/i, /social security/i, /ssn/i, /password/i,
+  /click here/i, /click below/i, /log in to/i, /sign in to/i,
 ];
 
-const PHISHING_DOMAINS = [
-  "paypa1.com",
-  "g00gle.com",
-  "arnazon.com",
-  "micros0ft.com",
-  "app1e.com",
-];
+/** Regex for extracting URLs from text. */
+const URL_REGEX = /https?:\/\/[^\s<>"']+/gi;
 
-export function analyzeLinks(html: string): SuspiciousLink[] {
+/** Regex for extracting email addresses from text. */
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
+
+function extractLinks(body: string): string[] {
+  return body.match(URL_REGEX) || [];
+}
+
+function extractEmails(text: string): string[] {
+  return text.match(EMAIL_REGEX) || [];
+}
+
+function getDomain(emailOrUrl: string): string {
+  try {
+    if (emailOrUrl.includes("@")) {
+      return emailOrUrl.split("@")[1].toLowerCase();
+    }
+    const url = new URL(emailOrUrl);
+    return url.hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function isTrustedDomain(domain: string): boolean {
+  const parts = domain.toLowerCase().split(".");
+  if (parts.length >= 2) {
+    const base = parts.slice(-2).join(".");
+    if (TRUSTED_DOMAINS.has(base)) return true;
+    if (TRUSTED_DOMAINS.has(domain)) return true;
+  }
+  return TRUSTED_DOMAINS.has(domain.toLowerCase());
+}
+
+function hasSuspiciousTld(domain: string): boolean {
+  const lower = domain.toLowerCase();
+  for (const tld of SUSPICIOUS_TLDS) {
+    if (lower.endsWith(tld)) return true;
+  }
+  return false;
+}
+
+/**
+ * Analyze links in the body for mismatched display text, URL obfuscation,
+ * and suspicious destinations.
+ */
+function analyzeLinks(body: string): {
+  links: SuspiciousLink[];
+  indicators: SecurityIndicator[];
+} {
   const links: SuspiciousLink[] = [];
-  const regex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
-  let match;
-  while ((match = regex.exec(html)) !== null) {
-    const url = match[1];
-    // Iteratively strip <script> blocks before extracting plain text, to prevent
-    // incomplete multi-character sanitization bypasses.
-    let rawDisplay = match[2];
-    let prev: string;
-    do {
-      prev = rawDisplay;
-      rawDisplay = rawDisplay.replace(/<script[^>]*>[\s\S]*?<\/script[^>]*>/gi, "");
-    } while (rawDisplay !== prev);
-    // Strip all remaining angle-bracket characters so no partial <script can survive.
-    const display = rawDisplay.replace(/[<>]/g, "");
+  const indicators: SecurityIndicator[] = [];
+  const urls = extractLinks(body);
+
+  for (const url of urls) {
+    const domain = getDomain(url);
     let riskScore = 0;
     const reasons: string[] = [];
-    if (/^\d+\.\d+\.\d+\.\d+/.test(url)) {
+
+    // Check for IP address instead of domain
+    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)) {
       riskScore += 30;
-      reasons.push("IP address URL");
+      reasons.push("URL uses IP address instead of domain name");
     }
-    if (url.includes("xn--")) {
-      riskScore += 40;
-      reasons.push("Punycode (homoglyph)");
-    }
-    if (display && !url.includes(display) && !display.startsWith("http")) {
+
+    // Check for URL shorteners
+    if (/bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly|is\.gd/i.test(url)) {
       riskScore += 20;
-      reasons.push("Display text doesn't match URL");
+      reasons.push("URL uses a link shortener");
     }
-    if (riskScore > 0)
+
+    // Check for suspicious TLD
+    if (domain && hasSuspiciousTld(domain)) {
+      riskScore += 25;
+      reasons.push(`Suspicious top-level domain: ${domain}`);
+    }
+
+    // Check for @ in URL (credential stuffing trick)
+    if (url.includes("@") && !url.startsWith("mailto:")) {
+      riskScore += 35;
+      reasons.push("URL contains @ symbol (credential obfuscation)");
+    }
+
+    // Check for excessive subdomains
+    if (domain && domain.split(".").length > 4) {
+      riskScore += 15;
+      reasons.push("Excessive subdomains");
+    }
+
+    // Check for non-standard port
+    if (/:\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
+      riskScore += 10;
+      reasons.push("Non-standard port in URL");
+    }
+
+    // Check for hex/encoded obfuscation
+    if (/%[0-9a-fA-F]{2}/.test(url)) {
+      riskScore += 10;
+      reasons.push("URL contains encoded characters");
+    }
+
+    if (riskScore > 0) {
       links.push({
         url,
-        displayText: display,
-        reason: reasons.join(", "),
-        riskScore,
+        reason: reasons.join("; ") || "Suspicious link",
+        riskScore: Math.min(riskScore, 100),
       });
+      indicators.push({
+        type: "link",
+        severity: riskScore >= 30 ? "high" : riskScore >= 15 ? "medium" : "low",
+        description: `Suspicious link: ${domain || "unknown"}`,
+        detail: reasons.join("; "),
+      });
+    }
   }
-  return links;
+
+  return { links, indicators };
 }
 
-export function analyzeHeaders(
-  headers?: Record<string, string>
-): HeaderAnalysis {
-  const details: string[] = [];
-  const get = (k: string) => headers?.[k] || headers?.[k.toLowerCase()];
-  const spfRaw = get("Received-SPF") || get("Authentication-Results") || "";
-  const dkimRaw = get("DKIM-Signature") || get("Authentication-Results") || "";
-  const dmarcRaw = get("Authentication-Results") || "";
-
-  const spf: "pass" | "fail" | "none" = spfRaw.includes("pass")
-    ? "pass"
-    : spfRaw.includes("fail")
-      ? "fail"
-      : "none";
-  const dkim: "pass" | "fail" | "none" = dkimRaw.includes("pass")
-    ? "pass"
-    : dkimRaw.includes("fail")
-      ? "fail"
-      : "none";
-  const dmarc: "pass" | "fail" | "none" =
-    dmarcRaw.includes("dmarc") && dmarcRaw.includes("pass") ? "pass" : "none";
-
-  if (spf === "fail") details.push("SPF failed — sender IP not authorized");
-  if (dkim === "fail") details.push("DKIM failed — signature invalid");
-  if (dmarc === "none") details.push("DMARC not found");
-
-  return { spf, dkim, dmarc, details };
-}
-
-export function detectTyposquatting(domain: string): boolean {
-  return PHISHING_DOMAINS.some((d) => domain.includes(d));
-}
-
-export function detectUrgencyScam(body: string): SecurityIndicator[] {
+/**
+ * Analyze email content for phishing signals.
+ */
+function analyzeContent(email: Email): SecurityIndicator[] {
   const indicators: SecurityIndicator[] = [];
+  const text = `${email.subject} ${email.preview} ${email.body}`;
+
+  // Check for urgency patterns
+  let urgencyCount = 0;
   for (const pattern of URGENCY_PATTERNS) {
-    if (pattern.test(body)) {
-      indicators.push({
-        type: "content",
-        severity: "medium",
-        description: "Urgency language detected",
-        detail: `Matched: ${pattern.source}`,
-      });
-      break;
-    }
+    if (pattern.test(text)) urgencyCount++;
   }
-  return indicators;
-}
-
-export function detectBEC(email: Email): SecurityIndicator[] {
-  const indicators: SecurityIndicator[] = [];
-  const body = `${email.subject} ${email.preview}`.toLowerCase();
-  if (
-    /\b(wire|transfer|payment|invoice|ceo|boss|urgent request)\b/i.test(body)
-  ) {
-    if (
-      !email.from.address.includes("@misfits.ai") ||
-      email.from.name !== email.from.address
-    ) {
-      indicators.push({
-        type: "bec",
-        severity: "high",
-        description: "Potential Business Email Compromise",
-        detail: "Financial keywords + possible display name spoofing",
-      });
-    }
-  }
-  return indicators;
-}
-
-export function detectPhishing(email: Email): PhishingResult {
-  const indicators: SecurityIndicator[] = [];
-  let score = 0;
-
-  const links = analyzeLinks(email.body);
-  links.forEach((l) => {
-    score += l.riskScore;
+  if (urgencyCount >= 3) {
     indicators.push({
-      type: "link",
-      severity: l.riskScore >= 40 ? "high" : "medium",
-      description: `Suspicious link: ${l.reason}`,
-      detail: l.url,
+      type: "content",
+      severity: "high",
+      description: "Multiple urgency/social engineering patterns detected",
+      detail: `${urgencyCount} urgency indicators found in subject and body`,
     });
-  });
+  } else if (urgencyCount >= 1) {
+    indicators.push({
+      type: "content",
+      severity: "medium",
+      description: "Urgency language detected",
+      detail: `${urgencyCount} urgency indicator(s) found`,
+    });
+  }
 
-  indicators.push(...detectUrgencyScam(email.body));
-  indicators.push(...detectBEC(email));
-  if (detectTyposquatting(email.from.address)) {
-    score += 30;
+  // Check for requests for sensitive info
+  if (/(password|credit card|ssn|social security|bank account)/i.test(text)) {
+    indicators.push({
+      type: "content",
+      severity: "high",
+      description: "Requests for sensitive information",
+      detail: "Email contains requests for passwords, financial, or personal data",
+    });
+  }
+
+  // Check for mismatched reply-to
+  if (email.replyTo && email.replyTo.address) {
+    const fromDomain = getDomain(email.from.address);
+    const replyDomain = getDomain(email.replyTo.address);
+    if (fromDomain && replyDomain && fromDomain !== replyDomain) {
+      indicators.push({
+        type: "sender",
+        severity: "high",
+        description: "Reply-To domain mismatch",
+        detail: `From domain (${fromDomain}) differs from Reply-To domain (${replyDomain})`,
+      });
+    }
+  }
+
+  // Check for display name spoofing
+  if (email.from.name && email.from.address) {
+    const nameLower = email.from.name.toLowerCase();
+    const addrLower = email.from.address.toLowerCase();
+    // Display name looks like an email address different from actual sender
+    if (email.from.name.includes("@") && !addrLower.includes(nameLower.split("@")[0])) {
+      indicators.push({
+        type: "sender",
+        severity: "critical",
+        description: "Display name spoofing detected",
+        detail: `Display name "${email.from.name}" does not match sender address "${email.from.address}"`,
+      });
+    }
+  }
+
+  return indicators;
+}
+
+/**
+ * Analyze sender reputation.
+ */
+function analyzeSender(email: Email): SecurityIndicator[] {
+  const indicators: SecurityIndicator[] = [];
+  const domain = getDomain(email.from.address);
+
+  if (!domain) {
+    indicators.push({
+      type: "sender",
+      severity: "medium",
+      description: "Cannot determine sender domain",
+    });
+    return indicators;
+  }
+
+  if (hasSuspiciousTld(domain)) {
     indicators.push({
       type: "domain",
-      severity: "critical",
-      description: "Typosquatting domain detected",
+      severity: "high",
+      description: `Suspicious sender domain TLD: ${domain}`,
     });
   }
 
-  const headerAnalysis = analyzeHeaders(email.headers);
-  if (headerAnalysis.spf === "fail") {
-    score += 20;
+  if (!isTrustedDomain(domain)) {
+    // Not necessarily phishing, but flag as unknown
     indicators.push({
-      type: "header",
-      severity: "high",
-      description: "SPF failed",
-    });
-  }
-  if (headerAnalysis.dkim === "fail") {
-    score += 20;
-    indicators.push({
-      type: "header",
-      severity: "high",
-      description: "DKIM failed",
+      type: "domain",
+      severity: "low",
+      description: `Unrecognized sender domain: ${domain}`,
     });
   }
 
-  score = Math.min(100, score);
-  let threatLevel: ThreatLevel = "safe";
-  if (score >= 70) threatLevel = "critical";
-  else if (score >= 50) threatLevel = "dangerous";
-  else if (score >= 25) threatLevel = "suspicious";
+  return indicators;
+}
+
+/**
+ * Analyze authentication headers (SPF/DKIM/DMARC).
+ */
+function analyzeHeaders(email: Email): {
+  analysis: HeaderAnalysis;
+  indicators: SecurityIndicator[];
+} {
+  const indicators: SecurityIndicator[] = [];
+  const headers = email.headers || {};
+
+  const spf = (headers["spf"] || headers["Received-SPF"] || "none").toLowerCase();
+  const dkim = (headers["dkim"] || headers["DKIM-Signature"] ? "pass" : "none").toLowerCase();
+  const dmarc = (headers["dmarc"] || headers["Authentication-Results"] || "none").toLowerCase();
+
+  const analysis: HeaderAnalysis = {
+    spf: spf.includes("pass") ? "pass" : spf.includes("fail") ? "fail" : "none",
+    dkim: dkim.includes("pass") || headers["DKIM-Signature"] ? "pass" : "none",
+    dmarc: dmarc.includes("pass") ? "pass" : dmarc.includes("fail") ? "fail" : "none",
+    details: [],
+  };
+
+  if (analysis.spf === "fail") {
+    indicators.push({
+      type: "header",
+      severity: "high",
+      description: "SPF check failed",
+      detail: "Sender not authorized to send from this domain",
+    });
+  }
+  if (analysis.dkim === "none") {
+    indicators.push({
+      type: "header",
+      severity: "low",
+      description: "No DKIM signature",
+    });
+  }
+  if (analysis.dmarc === "fail") {
+    indicators.push({
+      type: "header",
+      severity: "high",
+      description: "DMARC check failed",
+    });
+  }
+
+  return { analysis, indicators };
+}
+
+/**
+ * Compute overall threat level from score.
+ */
+function scoreToThreat(score: number): ThreatLevel {
+  if (score >= 70) return "critical";
+  if (score >= 50) return "dangerous";
+  if (score >= 25) return "suspicious";
+  return "safe";
+}
+
+/**
+ * Main entry point: scan an email and produce a PhishingResult.
+ */
+export function scanEmail(email: Email): PhishingResult {
+  const allIndicators: SecurityIndicator[] = [];
+
+  // Run all analyzers
+  const contentIndicators = analyzeContent(email);
+  const senderIndicators = analyzeSender(email);
+  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeaders(email);
+  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinks(email.body);
+
+  allIndicators.push(...contentIndicators, ...senderIndicators, ...headerIndicators, ...linkIndicators);
+
+  // Calculate score
+  let score = 0;
+  for (const indicator of allIndicators) {
+    switch (indicator.severity) {
+      case "critical": score += 40; break;
+      case "high": score += 25; break;
+      case "medium": score += 15; break;
+      case "low": score += 5; break;
+      case "info": score += 1; break;
+    }
+  }
+
+  // Cap at 100
+  score = Math.min(score, 100);
+
+  const threatLevel = scoreToThreat(score);
+
+  // Build reasons
+  const reasons: string[] = [];
+  if (suspiciousLinks.length > 0) {
+    reasons.push(`${suspiciousLinks.length} suspicious link(s) detected`);
+  }
+  const highSeverity = allIndicators.filter((i) => i.severity === "high" || i.severity === "critical");
+  if (highSeverity.length > 0) {
+    reasons.push(`${highSeverity.length} high-severity indicator(s)`);
+  }
+  if (score < 25) {
+    reasons.push("No significant threats detected");
+  }
 
   return {
     emailId: email.id,
     threatLevel,
     score,
-    reasons: indicators.map((i) => i.description),
-    indicators,
-    suspiciousLinks: links,
+    reasons,
+    indicators: allIndicators,
+    suspiciousLinks,
     headers: headerAnalysis,
     scannedAt: new Date().toISOString(),
     aiAssisted: false,
   };
 }
+
+/**
+ * Get recommended action for a threat level.
+ */
+export function getRecommendedAction(threatLevel: ThreatLevel): string {
+  switch (threatLevel) {
+    case "critical": return "Do not interact. Report as phishing immediately.";
+    case "dangerous": return "Avoid clicking links. Verify sender through another channel.";
+    case "suspicious": return "Exercise caution. Do not share personal information.";
+    case "safe": return "No action needed.";
+  }
+}
+
+/** Backwards-compatible alias for scanEmail. */
+export const detectPhishing = scanEmail;
