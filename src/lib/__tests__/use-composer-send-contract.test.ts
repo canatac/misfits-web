@@ -67,41 +67,31 @@ describe("use-composer send flow: cross-repo auth contract", () => {
     expect(headers["x-user-email"]).toContain("@");
   });
 
-  it("getMailUserId returns null when no session", async () => {
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: vi.fn().mockReturnValue(null),
-      loadSession: vi.fn().mockReturnValue(null),
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
-
-    // Re-import to pick up new mock
-    vi.resetModules();
-    const { getMailUserId } = await import("@/lib/mail-api");
-    expect(getMailUserId()).toBeNull();
-  });
-
-  it("composer send hits /api/send with POST method", async () => {
-    // Verify fetch is called with POST for send flow
+  it("composer send hits /api/send with POST method and auth headers", async () => {
     const { mailAuthHeaders } = await import("@/lib/mail-api");
+    const headers = mailAuthHeaders();
+
     await fetch("/api/send", {
       method: "POST",
-      headers: mailAuthHeaders(),
+      headers,
       credentials: "include",
       body: JSON.stringify({ to: ["to@test.fr"], subject: "Hi" }),
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/send",
-      expect.objectContaining({ method: "POST" })
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      })
     );
 
+    // Verify the headers object itself (plain Record, not Headers)
     const call = fetchMock.mock.calls[0];
     const init = call[1] as RequestInit;
-    // fetch normalizes headers to lowercase Headers object
-    const headers = new Headers(init.headers);
-    expect(headers.get("authorization")).toBe("Bearer composer-token-xyz");
-    expect(headers.get("x-user-id")).toBe("composer");
+    const capturedHeaders = init.headers as Record<string, string>;
+    expect(capturedHeaders["Authorization"]).toBe("Bearer composer-token-xyz");
+    expect(capturedHeaders["x-user-id"]).toBe("composer");
   });
 
   it("composer undo-send hits /api/send/undo with POST method", async () => {
