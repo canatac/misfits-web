@@ -175,6 +175,7 @@
 - `#541` — Multi-account email aggregation backend (IMAP/SMTP external) (reimagined-guide)
 - `#542` — Undo send backend (5-second recall window) (reimagined-guide)
 - `#543` — Scheduled send backend (envoi programmé) (reimagined-guide)
+- `#544` — Conversation view backend (thread grouping) (reimagined-guide)
 - `#540` — Spam rate monitoring (Gmail/Yahoo compliance <0.3%) (misfits-web)
 - `#541` — One-click unsubscribe (List-Unsubscribe header) (misfits-web)
 - `#52` — Automated DKIM key rotation (NIS2/CRA compliance) (studious-octo-rotary-phone)
@@ -239,6 +240,10 @@
 **Spike 2026 (détail)** : email en style chat (bulles de message). $5/mo (Pro), $35/mo (AI agents). Unified inbox, team collaboration, video calls, AI writing. Avantage = UX moderne, chat naturel. Inconvénient = gimmicky UI (pour certains), pas d'IA autonome, prix élevé pour équipes. Leçon : l'email conversationnel est une tendance UX — notre "chat mail" (misfits.ai) est pionnière sur ce positionnement.
 
 **Missive 2026 (détail)** : team inbox + shared inboxes + internal chat + AI drafting. $14/mo (Starter), $24/mo (Productive, AI features), $36/mo (Business). AI via Missive credits (BYOK support). Free plan for teams up to 3. Avantage = collaboration + AI intégrés. Inconvénient = AI credits en sus, reporting limité. Leçon : l'email team avec AI intégrée est un positionnement fort — notre "chat mail" + IA locale peut viser le même marché mais avec la privacy en plus.
+
+**Drag 2026** : alternative à Missive. $12/$18 (AI inclus)/$24. Shared inbox avec Kanban board. AI included (pas de crédits en sus). Positionnement similaire à Missive mais moins cher.
+
+**SaneBox 2026** : inbox filtering sans changer de client email. Alternative légère.
 
 **Spark 2026** : email client moderne, AI drafting, natural language search. $8.25/mo (Plus), $16.58/mo (Pro). Alternative légère à Missive.
 
