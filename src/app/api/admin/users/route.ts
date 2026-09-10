@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { requireAuth } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,11 +11,14 @@ function resolveBackendBaseUrl(): string {
 }
 
 async function proxy(
-  request: Request,
+  request: NextRequest,
   path: string,
   method: "GET" | "POST" | "PATCH" | "DELETE",
   body?: unknown
 ) {
+  const auth = requireAuth(request);
+  if ("response" in auth) return auth.response;
+
   const headers = buildForwardHeaders(request);
   if (body !== undefined) headers.set("Content-Type", "application/json");
 
@@ -37,7 +41,7 @@ async function proxy(
   });
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id")?.trim();
   if (id) {
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
   return proxy(request, "/api/admin/users", "GET");
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const payload = await request.json().catch(() => null);
   if (!payload || typeof payload !== "object") {
     return NextResponse.json(
@@ -61,7 +65,7 @@ export async function POST(request: Request) {
   return proxy(request, "/api/admin/users", "POST", payload);
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   const payload = await request.json().catch(() => null);
   if (!payload || typeof payload !== "object") {
     return NextResponse.json(
@@ -91,7 +95,7 @@ export async function PATCH(request: Request) {
   );
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id")?.trim();
   if (!id) {

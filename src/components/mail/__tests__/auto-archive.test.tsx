@@ -1,0 +1,95 @@
+import { render, screen, fireEvent, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { AutoArchiveSettings, ArchiveRestoreButton, useAutoArchive } from "@/components/mail/auto-archive";
+
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
+
+describe("AutoArchiveSettings", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
+  });
+
+  it("renders all age options", () => {
+    render(<AutoArchiveSettings />);
+    expect(screen.getAllByText("Jamais").length).toBeGreaterThan(0);
+    expect(screen.getByText("1 mois")).toBeTruthy();
+    expect(screen.getByText("3 mois")).toBeTruthy();
+    expect(screen.getByText("6 mois")).toBeTruthy();
+    expect(screen.getByText("1 an")).toBeTruthy();
+  });
+
+  it("shows the archive now button", () => {
+    render(<AutoArchiveSettings />);
+    expect(screen.getByText("Archiver")).toBeTruthy();
+  });
+
+  it("displays total archived count", () => {
+    render(<AutoArchiveSettings />);
+    expect(screen.getByText("Total archivés")).toBeTruthy();
+    expect(screen.getByText("0")).toBeTruthy();
+  });
+
+  it("shows last archive run date", () => {
+    render(<AutoArchiveSettings />);
+    expect(screen.getByText("Dernière exécution")).toBeTruthy();
+    expect(screen.getAllByText("Jamais").length).toBeGreaterThan(0);
+  });
+
+  it("disables archive button when age is never", () => {
+    render(<AutoArchiveSettings />);
+    const archiveButton = screen.getByText("Archiver").closest("button");
+    expect(archiveButton).toBeTruthy();
+    expect(archiveButton?.getAttribute("disabled")).toBeDefined();
+  });
+
+  it("shows descriptions for each option", () => {
+    render(<AutoArchiveSettings />);
+    expect(screen.getByText("Désarchivage automatique désactivé")).toBeTruthy();
+    expect(screen.getByText("Archiver les emails de plus de 1 mois")).toBeTruthy();
+    expect(screen.getByText("Archiver les emails de plus de 1 an")).toBeTruthy();
+  });
+});
+
+describe("ArchiveRestoreButton", () => {
+  it("renders without crashing", () => {
+    render(<ArchiveRestoreButton emailId="email-1" onRestore={() => {}} />);
+    expect(screen.getByText("Restaurer")).toBeTruthy();
+  });
+
+  it("calls onRestore when clicked", () => {
+    const onRestore = vi.fn();
+    render(<ArchiveRestoreButton emailId="email-1" onRestore={onRestore} />);
+    fireEvent.click(screen.getByText("Restaurer"));
+    expect(onRestore).toHaveBeenCalled();
+  });
+});
+
+describe("useAutoArchive", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorageMock.getItem.mockReturnValue(null);
+  });
+
+  it("returns default config when no stored data", () => {
+    const { result } = renderHook(() => useAutoArchive());
+    expect(result.current.config.autoArchiveAge).toBe("never");
+    expect(result.current.config.totalArchived).toBe(0);
+  });
+
+  it("provides AGE_OPTIONS constant", () => {
+    const { result } = renderHook(() => useAutoArchive());
+    expect(result.current.AGE_OPTIONS).toHaveLength(5);
+    expect(result.current.AGE_OPTIONS[0].value).toBe("never");
+    expect(result.current.AGE_OPTIONS[4].value).toBe("1y");
+  });
+});

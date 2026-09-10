@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { requireAuth } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +16,10 @@ function toNumber(value: string | null, fallback: number): number {
   return n;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const auth = requireAuth(request);
+  if ("response" in auth) return auth.response;
+
   const url = new URL(request.url);
   const limit = Math.min(500, Math.max(10, toNumber(url.searchParams.get("limit"), 100)));
 

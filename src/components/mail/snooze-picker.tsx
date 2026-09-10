@@ -96,6 +96,7 @@ export function SnoozePicker({
         <Button
           variant="ghost"
           size="sm"
+          data-testid="snooze-trigger"
           className={cn("gap-1.5", className)}
           aria-label="Snooze"
           data-testid="snooze-trigger"
@@ -118,6 +119,7 @@ export function SnoozePicker({
             <button
               key={preset.id}
               type="button"
+              data-testid={`snooze-preset-${preset.id}`}
               onClick={() => handlePreset(preset.getUntil)}
               disabled={!emailId}
               role="menuitem"
@@ -134,6 +136,7 @@ export function SnoozePicker({
 
           <button
             type="button"
+            data-testid="snooze-custom-toggle"
             onClick={() => setShowCustom((v) => !v)}
             disabled={!emailId}
             aria-expanded={showCustom}
@@ -152,7 +155,7 @@ export function SnoozePicker({
           <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]" htmlFor="snooze-custom-date">
+                <label htmlFor="snooze-custom-date" className="text-xs text-[var(--color-muted-fg)]">
                   Date
                 </label>
                 <Input
@@ -163,7 +166,7 @@ export function SnoozePicker({
                 />
               </div>
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]" htmlFor="snooze-custom-time">
+                <label htmlFor="snooze-custom-time" className="text-xs text-[var(--color-muted-fg)]">
                   Time
                 </label>
                 <Input
@@ -190,6 +193,7 @@ export function SnoozePicker({
             </div>
             <Button
               size="sm"
+              data-testid="snooze-custom-confirm"
               className="mt-2 w-full"
               onClick={handleCustomSnooze}
               disabled={!customDate}

@@ -268,7 +268,7 @@ export function ComposerPanel({
         isSending={isSending}
         canSend={canSend}
         attachments={attachments}
-        isComposerEmpty={isComposerEmpty}
+        isComposerEmpty={subject.trim() === "" && body.trim() === ""}
         onJumpToAttachments={jumpToAttachments}
         onSend={() => handleSend()}
         onSendLater={(iso) => handleSend({ sendLater: iso })}

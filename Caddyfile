@@ -1,0 +1,59 @@
+# Caddyfile — misfits.ai Mail reverse proxy
+# Deploy on HermesWeb VM (Scaleway DEV1-S)
+# Usage: caddy run --config Caddyfile
+
+{
+    email jan.atac@misfits.fr
+    admin off
+}
+
+mail.misfits.ai, www.mail.misfits.ai {
+    # CORS — strict whitelist, NO arbitrary origin reflection
+    @cors origin https://mail.misfits.ai
+    @cors origin https://www.mail.misfits.ai
+
+    # API proxy routes
+    handle /api/* {
+        reverse_proxy http://email-api:8000 {
+            # Forward real client IP
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+
+            # CORS — only allow whitelisted origins with credentials
+            @corsPreflight {
+                method OPTIONS
+            }
+            header @corsPreflight Access-Control-Allow-Origin "https://mail.misfits.ai"
+            header @corsPreflight Access-Control-Allow-Credentials "true"
+            header @corsPreflight Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            header @corsPreflight Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
+            header @corsPreflight Access-Control-Max-Age "3600"
+        }
+    }
+
+    # Static frontend
+    handle {
+        reverse_proxy http://misfits-web:3000
+    }
+
+    # Security headers (defense-in-depth with Next.js)
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://mail.misfits.ai wss://mail.misfits.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        -Server
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/misfits-web.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+        format json
+    }
+}

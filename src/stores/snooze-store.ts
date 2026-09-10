@@ -55,8 +55,15 @@ function nextWeek(): string {
   return d.toISOString();
 }
 
+function laterToday(): string {
+  const d = new Date();
+  d.setHours(d.getHours() + 4, 0, 0, 0);
+  return d.toISOString();
+}
+
 /** Preset snooze options shown in the snooze picker. */
 export const SNOOZE_PRESETS: SnoozePreset[] = [
+  { id: "later-today", label: "Later today (+4h)", getUntil: laterToday },
   {
     id: "later-today",
     label: "Later today (+3 hours)",

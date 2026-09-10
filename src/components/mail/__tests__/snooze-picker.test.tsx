@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach } from "vitest";
 import { SnoozePicker } from "@/components/mail/snooze-picker";
 import { useSnoozeStore, SNOOZE_PRESETS } from "@/stores/snooze-store";
 import { useEmailStore } from "@/stores/email-store";
@@ -36,13 +36,13 @@ describe("SnoozePicker", () => {
 
   it("renders the snooze trigger button", () => {
     render(<SnoozePicker emailId="test-1" />);
-    expect(screen.getByTestId("snooze-trigger")).toBeInTheDocument();
+    expect(screen.getByTestId("snooze-trigger")).toBeTruthy();
   });
 
   it("opens the popover when clicked", () => {
     render(<SnoozePicker emailId="test-1" />);
     fireEvent.click(screen.getByTestId("snooze-trigger"));
-    expect(screen.getByTestId("snooze-popover")).toBeInTheDocument();
+    expect(screen.getByTestId("snooze-popover")).toBeTruthy();
   });
 
   it("shows all preset options", () => {
@@ -50,7 +50,7 @@ describe("SnoozePicker", () => {
     fireEvent.click(screen.getByTestId("snooze-trigger"));
 
     SNOOZE_PRESETS.forEach((preset) => {
-      expect(screen.getByTestId(`snooze-preset-${preset.id}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`snooze-preset-${preset.id}`)).toBeTruthy();
     });
   });
 
@@ -71,8 +71,8 @@ describe("SnoozePicker", () => {
     fireEvent.click(screen.getByTestId("snooze-trigger"));
 
     fireEvent.click(screen.getByTestId("snooze-custom-toggle"));
-    expect(screen.getByLabelText("Date")).toBeInTheDocument();
-    expect(screen.getByLabelText("Time")).toBeInTheDocument();
+    expect(screen.getByLabelText("Date")).toBeTruthy();
+    expect(screen.getByLabelText("Time")).toBeTruthy();
   });
 
   it("snoozes with custom date when confirmed", () => {
@@ -95,13 +95,12 @@ describe("SnoozePicker", () => {
   });
 
   it("shows snoozed list in manager mode (no emailId)", () => {
-    // Pre-populate a snooze
     useSnoozeStore.getState().snoozeEmail("test-1", "2026-09-15T09:00:00.000Z");
 
     render(<SnoozePicker />);
     fireEvent.click(screen.getByTestId("snooze-trigger"));
 
-    expect(screen.getByText("Test subject")).toBeInTheDocument();
+    expect(screen.getByText("Test subject")).toBeTruthy();
   });
 
   it("un-snoozes when X button is clicked in manager mode", () => {
