@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 12)
+> Dernière mise à jour: 2026-09-10 (tick 9)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -249,44 +249,6 @@
 | T-JMAP-05 | BK | Mailbox/get | Liste des dossiers | [ ] | #501 |
 | T-JMAP-06 | BK | WebSocket push | Notifications en temps réel | [ ] | #501 |
 | T-JMAP-07 | BK | Coexistence IMAP | Mêmes données via les deux protocoles | [ ] | #501 |
-
----
-
-## 18. Calendar Integration Hub
-
-| ID | Scope | Input | Expected Result | Status | Issue/PR |
-|----|-------|-------|-----------------|--------|----------|
-| T-CAL-01 | BK | Connexion CalDAV multi-comptes | Comptes ajoutés, sync OK | [ ] | #503 |
-| T-CAL-02 | BK | Lecture événements CalDAV | Événements affichés | [ ] | #503 |
-| T-CAL-03 | BK | Création/modification événements | Write OK, sync bidirectionnelle | [ ] | #503 |
-| T-CAL-04 | FT | Vue calendrier mensuelle/hebdo/jour | Navigation fonctionnelle | [ ] | #503 |
-| T-CAL-05 | FT | Création événement depuis email | Pré-remplissage auto | [ ] | #503 |
-| T-CAL-06 | FT | Notifications unifiées | Emails + events ensemble | [ ] | #503 |
-| T-CAL-07 | BK | Sync incrémentale | Sync token CalDAV respecté | [ ] | #503 |
-
----
-
-## 19. First-Time Sender Screening
-
-| ID | Scope | Input | Expected Result | Status | Issue/PR |
-|----|-------|-------|-----------------|--------|----------|
-| T-SCREEN-01 | FT/BK | Activation screening par compte | Mode actif/inactif fonctionnel | [ ] | #504 |
-| T-SCREEN-02 | FT | Nouveau expéditeur → file attente | Mail mis en attente, badge compteur | [ ] | #504 |
-| T-SCREEN-03 | FT | Autorisation expéditeur | Prochains mails dans inbox | [ ] | #504 |
-| T-SCREEN-04 | FT | Blocage expéditeur | Mails rejetés silencieusement | [ ] | #504 |
-| T-SCREEN-05 | FT | Import carnet adresses | Contacts auto-autorisés | [ ] | #504 |
-
----
-
-## 20. Anti-Phishing AI
-
-| ID | Scope | Input | Expected Result | Status | Issue/PR |
-|----|-------|-------|-----------------|--------|----------|
-| T-PHISH-01 | FT/BK | Analyse mail entrant avec Hermes AI | Score de risque calculé (0-100) | [ ] | #505 |
-| T-PHISH-02 | FT | Indicateur vert (mail sûr) | Icône verte affichée | [ ] | #505 |
-| T-PHISH-03 | FT | Indicateur rouge (mail suspect) | Icône rouge affichée | [ ] | #505 |
-| T-PHISH-04 | FT | Explication détaillée du score | Raison affichée (URLs, urgence, etc.) | [ ] | #505 |
-| T-PHISH-05 | FT | Signalement faux positif/négatif | Feedback enregistré, IA apprend | [ ] | #505 |
 
 ---
 
