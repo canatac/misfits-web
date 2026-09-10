@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 3)
+> Dernière mise à jour: 2026-09-10 (tick 4)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -162,6 +162,23 @@
 | T-PWA-03 | FT | Creation brouillon offline | Sauvegarde locale + sync au retour | [ ] | #493 |
 | T-PWA-04 | FT | Marquage lu offline | File d'attente + sync | [ ] | #493 |
 | T-PWA-05 | FT | Indicateur offline dans toolbar | Bannière "Mode offline" visible | [ ] | #493 |
+
+---
+
+## 13. AI / Smart Features
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-AI-01 | FT/BK | Règle NL créée (label + déplacement) | Règle parsée, stockée, activable | [ ] | #495 |
+| T-AI-02 | FT/BK | Mail entrant matchant une règle | Action exécutée automatiquement | [ ] | #495 |
+| T-AI-03 | FT/BK | Dashboard actions avec undo | Annulation possible, action réversible | [ ] | #495 |
+| T-AI-04 | FT | Suggestions basées historique | Propositions pertinentes | [ ] | #495 |
+| T-AI-05 | FT | Split Inbox classification correcte | Mails dans bonne section (Important/Autres) | [ ] | #496 |
+| T-AI-06 | FT | Déplacement manuel entre sections | Mail reclassé, IA apprend | [ ] | #496 |
+| T-AI-07 | FT | Désactivation split inbox | Inbox unique affichée | [ ] | #496 |
+| T-AI-08 | FT | Brouillon généré dans la voix user | Style cohérent avec historique | [ ] | #497 |
+| T-AI-09 | FT | Indicateur confiance brouillon | Score affiché, seuil configurable | [ ] | #497 |
+| T-AI-10 | FT | Feedback implicite après envoi | Modèle mis à jour | [ ] | #497 |
 
 ---
 
