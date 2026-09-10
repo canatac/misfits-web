@@ -237,7 +237,11 @@
 
 **Spike 2026 (détail)** : email en style chat (bulles de message). $5/mo (Pro), $35/mo (AI agents). Unified inbox, team collaboration, video calls, AI writing. Avantage = UX moderne, chat naturel. Inconvénient = gimmicky UI (pour certains), pas d'IA autonome, prix élevé pour équipes. Leçon : l'email conversationnel est une tendance UX — notre "chat mail" (misfits.ai) est pionnière sur ce positionnement.
 
-**Missive 2026** : team inbox + shared inboxes + internal chat + AI drafting. $14/seat/month. Alternative collaborative.
+**Missive 2026 (détail)** : team inbox + shared inboxes + internal chat + AI drafting. $14/mo (Starter), $24/mo (Productive, AI features), $36/mo (Business). AI via Missive credits (BYOK support). Free plan for teams up to 3. Avantage = collaboration + AI intégrés. Inconvénient = AI credits en sus, reporting limité. Leçon : l'email team avec AI intégrée est un positionnement fort — notre "chat mail" + IA locale peut viser le même marché mais avec la privacy en plus.
+
+**Spark 2026** : email client moderne, AI drafting, natural language search. $8.25/mo (Plus), $16.58/mo (Pro). Alternative légère à Missive.
+
+**Front 2026** : support inbox + AI automations. $29/seat/mo. Alternative orientée support client.
 
 ---
 
