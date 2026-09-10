@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { CalendarHolidaysSidebar } from "@/components/calendar/calendar-holidays-sidebar";
 
@@ -84,10 +83,7 @@ describe("CalendarHolidaysSidebar persistence", () => {
     );
 
     // Default should be FR (Radix checkbox uses data-state="checked")
-    expect(screen.getByLabelText("Activer France")).toHaveAttribute(
-      "data-state",
-      "checked"
-    );
+    expect(screen.getByLabelText("Activer France").getAttribute("data-state")).toBe("checked");
   });
 
   it("handles corrupted localStorage gracefully", () => {
