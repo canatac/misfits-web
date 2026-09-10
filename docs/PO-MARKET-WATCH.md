@@ -122,7 +122,11 @@
 2. **Sprint Security**: post-quantum roadmap, anonymous signup
 3. **Sprint Ecosystem**: PWA offline, intégration calendrier avancée
 4. **Sprint AI**: résumés automatiques, triage intelligent, réponses suggérées
-5. **Sprint Monétisation**: arbitrage modèle freemium (fait — freemium classique)
+5. **Sprint Monétisation**: arbitrage modèle freemium (fait — freemium classique, pas de pub par défaut, Free/Pro/Business)
+6. **Sprint Croissance**: arbitrage stratégie d'acquisition (fait — "La boîte mail qui vous appartient vraiment" + différenciation DKIM native + IA locale)
+7. **Partenariats / intégrations**: arbitrage sur les intégrations prioritaires (CalDAV, CRM, Slack) — oui mais pas de plateforme de communication propriétaire (rappel: "Nous n'utiliserons pas les plateformes de communication")
+   - Rationale: les utilisateurs veulent des intégrations, mais pas de lock-in. Les APIs ouvertes > les plateformes fermées. Notre force = IMAP/SMTP natif, pas de bridge.
+   - Intégrations prioritaires: CalDAV (fait, #540), Google Calendar (en cours), Zapier (webhook), pas de Slack/Matrix/Teams (politique user)
 
 ---
 
