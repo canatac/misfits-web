@@ -12,6 +12,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { isAllowedOrigin } from "@/lib/cors";
 
 const PROTECTED_PREFIXES = [
   "/inbox",
@@ -55,6 +56,23 @@ function isProtected(pathname: string): boolean {
 
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
+  const origin = request.headers.get("origin");
+
+  // CORS defense-in-depth: block cross-origin requests to API routes
+  // when the Origin header is not in the allowed list.
+  // The primary gate is Caddy; this is a safety net.
+  if (origin && !isAllowedOrigin(origin)) {
+    if (pathname.startsWith("/api/")) {
+      return new NextResponse("Forbidden: origin not allowed", {
+        status: 403,
+        headers: {
+          "Content-Type": "text/plain",
+          // Explicitly do NOT echo back the origin or allow credentials
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+  }
 
   if (!isProtected(pathname)) {
     return NextResponse.next();
