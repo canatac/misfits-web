@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useSearchAutocomplete } from "@/components/mail/search-bar/use-search-autocomplete";
+import { OPERATOR_META } from "@/types/search";
 
 describe("useSearchAutocomplete", () => {
+  it("OPERATOR_META is populated", () => {
+    expect(OPERATOR_META.length).toBeGreaterThan(0);
+    expect(OPERATOR_META[0].operator).toBe("from");
+  });
+
   it("returns null suggestion for empty input", () => {
     const { result } = renderHook(() => useSearchAutocomplete());
 
@@ -34,16 +40,13 @@ describe("useSearchAutocomplete", () => {
     expect(result.current.autocomplete.suggestion?.operator).toBe("to");
   });
 
-  it("returns null for empty operator", () => {
+  it("returns null for empty operator after colon", () => {
     const { result } = renderHook(() => useSearchAutocomplete());
 
     act(() => {
       result.current.updateAutocomplete("from:", 4);
     });
 
-    // After colon, no suggestion (user already committed to operator)
-    // Actually our hook doesn't handle post-colon, so it depends on regex
-    // "from:" → no word chars at end → null
     expect(result.current.autocomplete.suggestion).toBeNull();
   });
 
@@ -76,8 +79,6 @@ describe("useSearchAutocomplete", () => {
       result.current.updateAutocomplete("s", 1);
     });
 
-    // "s" matches: subject, has (no), before (no), is (no), label (no), filename (no), larger (no), smaller (no)
-    // Actually "s" should match: subject, has (no - "has".startsWith("s")? no), subject (yes), smaller (yes), subject (yes)
     expect(result.current.filteredOperators.length).toBeGreaterThan(0);
     const operators = result.current.filteredOperators.map((o) => o.operator);
     expect(operators).toContain("subject");
@@ -91,7 +92,7 @@ describe("useSearchAutocomplete", () => {
       result.current.updateAutocomplete("fr", 2);
     });
 
-    expect(result.current.autocomplete.showPanel).toBe(false); // single match
+    expect(result.current.autocomplete.showPanel).toBe(false);
 
     act(() => {
       result.current.dismiss();
