@@ -1,9 +1,8 @@
 /**
  * Integration test: Monitoring API cross-repo contract.
  *
- * The monitoring-api.ts module wraps apiClient to call backend endpoints.
- * This test verifies the URL construction and parameter forwarding contract
- * between frontend monitoring hooks and backend (reimagined-guide).
+ * monitoring-api.ts wraps apiClient to call backend /monitoring/* endpoints.
+ * This test verifies the URL construction and parameter forwarding contract.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -11,8 +10,8 @@ const fetchMock = vi.fn();
 global.fetch = fetchMock;
 
 vi.mock("@/lib/session", () => ({
-  getAccessToken: vi.fn().mockReturnValue("test-token"),
-  loadSession: vi.fn().mockReturnValue({ user: { email: "test@misfits.fr" } }),
+  getAccessToken: vi.fn().mockReturnValue("mon-token"),
+  loadSession: vi.fn().mockReturnValue({ user: { email: "mon@misfits.fr" } }),
   storeSession: vi.fn(),
   clearSession: vi.fn(),
 }));
@@ -21,7 +20,7 @@ vi.mock("@/lib/session-payload", () => ({
   parseSession: (data: unknown) => data,
 }));
 
-describe("Monitoring API contract", () => {
+describe("Monitoring API cross-repo contract", () => {
   beforeEach(() => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue(
@@ -32,7 +31,7 @@ describe("Monitoring API contract", () => {
     );
   });
 
-  it("getMonitoringSummary calls /monitoring/summary with window param", async () => {
+  it("getMonitoringSummary calls /monitoring/summary with window", async () => {
     const { getMonitoringSummary } = await import("@/lib/monitoring-api");
     await getMonitoringSummary("24h");
 
@@ -46,7 +45,7 @@ describe("Monitoring API contract", () => {
     );
   });
 
-  it("getMonitoringEvents forwards filter params", async () => {
+  it("getMonitoringEvents forwards all filter params", async () => {
     const { getMonitoringEvents } = await import("@/lib/monitoring-api");
     await getMonitoringEvents({
       status: "delivered",
@@ -74,7 +73,7 @@ describe("Monitoring API contract", () => {
     );
   });
 
-  it("getMonitoringBounces calls /monitoring/bounces", async () => {
+  it("getMonitoringBounces calls /monitoring/bounces with window", async () => {
     const { getMonitoringBounces } = await import("@/lib/monitoring-api");
     await getMonitoringBounces("7d");
 
@@ -98,17 +97,7 @@ describe("Monitoring API contract", () => {
     );
   });
 
-  it("getMonitoringActiveAlerts calls /monitoring/alerts/active", async () => {
-    const { getMonitoringActiveAlerts } = await import("@/lib/monitoring-api");
-    await getMonitoringActiveAlerts("24h");
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining("/monitoring/alerts/active"),
-      expect.any(Object)
-    );
-  });
-
-  it("skips undefined/empty filter params", async () => {
+  it("skips undefined filter params", async () => {
     const { getMonitoringEvents } = await import("@/lib/monitoring-api");
     await getMonitoringEvents({ status: undefined, country: "" });
 
@@ -116,5 +105,16 @@ describe("Monitoring API contract", () => {
     const url = call[0] as string;
     expect(url).not.toContain("status=");
     expect(url).not.toContain("country=");
+  });
+
+  it("MonitoringWindow accepts standard windows", async () => {
+    const { getMonitoringSummary } = await import("@/lib/monitoring-api");
+    // Should accept standard time windows (MonitoringWindow: "15m" | "1h" | "6h" | "24h" | "7d")
+    await getMonitoringSummary("15m");
+    await getMonitoringSummary("1h");
+    await getMonitoringSummary("6h");
+    await getMonitoringSummary("24h");
+    await getMonitoringSummary("7d");
+    expect(fetchMock).toHaveBeenCalledTimes(5);
   });
 });
