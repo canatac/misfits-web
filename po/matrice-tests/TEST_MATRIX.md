@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 7)
+> Dernière mise à jour: 2026-09-10 (tick 8)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -224,6 +224,20 @@
 | T-PORT-07 | BK | Export chiffré PGP | Fichier chiffré avec clé user | [ ] | #500 |
 | T-PORT-08 | BK | API REST export | Endpoint fonctionnel | [ ] | #500 |
 | T-PORT-09 | FT | Job asynchrone progression | Notification fin + lien 24h | [ ] | #500 |
+
+---
+
+## 17. JMAP Protocol
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-JMAP-01 | BK | POST /jmap session | Session créée, capabilities exposées | [ ] | #501 |
+| T-JMAP-02 | BK | Email/query | Résultat JSON structuré | [ ] | #501 |
+| T-JMAP-03 | BK | Email/get | Email récupéré en JSON | [ ] | #501 |
+| T-JMAP-04 | BK | Email/set (create/update/delete) | Opérations CRUD fonctionnelles | [ ] | #501 |
+| T-JMAP-05 | BK | Mailbox/get | Liste des dossiers | [ ] | #501 |
+| T-JMAP-06 | BK | WebSocket push | Notifications en temps réel | [ ] | #501 |
+| T-JMAP-07 | BK | Coexistence IMAP | Mêmes données via les deux protocoles | [ ] | #501 |
 
 ---
 
