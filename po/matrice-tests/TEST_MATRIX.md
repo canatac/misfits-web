@@ -1,6 +1,6 @@
 # Matrice de Tests — misfits.ai Mail (PO-maintenue)
 
-> Dernière mise à jour: 2026-09-10 (tick 8)
+> Dernière mise à jour: 2026-09-10 (tick 9)
 > Maintien: product-owner (PO)
 > Méthode: issue-first, CI-only, preuve obligatoire
 
@@ -153,7 +153,18 @@
 
 ---
 
-## 12. PWA Offline
+## 12. Post-Quantum Cryptography
+
+| ID | Scope | Input | Expected Result | Status | Issue/PR |
+|----|-------|-------|-----------------|--------|----------|
+| T-PQ-01 | FT | Génération clés Kyber-768 + Dilithium-3 | Paire PQ générée, fonctionnelle | [ ] | #502 |
+| T-PQ-02 | FT | Chiffrement mail avec clé PQ | Mail chiffré, résistant quantique | [ ] | #502 |
+| T-PQ-03 | FT | Coexistence ECC + PQ dans même compte | Les deux formats supportés | [ ] | #502 |
+| T-PQ-04 | FT | Performance impact vs ECC | Mesure, acceptable (< 2x) | [ ] | #502 |
+
+---
+
+## 13. PWA Offline
 
 | ID | Scope | Input | Expected Result | Status | Issue/PR |
 |----|-------|-------|-----------------|--------|----------|
