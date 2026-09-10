@@ -579,6 +579,109 @@ select:focus-visible,
   margin: var(--spacing-4) 0;
 }
 
+/* ─────────────────────────────────────────────
+ * Print / PDF export styles
+ * ───────────────────────────────────────────── */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  nav,
+  aside,
+  [data-testid="email-toolbar"],
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  [data-testid="email-view"] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  [data-testid="email-view"] > div:first-child {
+    display: none !important;
+  }
+
+  [data-testid="email-view"] > div:nth-child(2) {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  [data-testid="email-view"] > div:nth-child(2) > div {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .prose-mail,
+  .prose-mail h1,
+  .prose-mail h2,
+  .prose-mail h3,
+  .prose-mail h4,
+  .prose-mail h5,
+  .prose-mail h6,
+  .prose-mail p,
+  .prose-mail span,
+  .prose-mail div {
+    color: #000000 !important;
+  }
+
+  .prose-mail a {
+    color: #0000ee !important;
+    text-decoration: underline;
+  }
+
+  .prose-mail pre,
+  .prose-mail code {
+    background: #f5f5f5 !important;
+    border: 1px solid #ddd !important;
+  }
+
+  .prose-mail blockquote {
+    border-left: 3px solid #999 !important;
+    color: #333 !important;
+  }
+
+  [data-testid="security-banner"],
+  [data-testid="image-blocking-notice"],
+  [data-testid="email-attachments"] {
+    display: none !important;
+  }
+
+  .quoted-collapsed {
+    display: block !important;
+  }
+
+  button,
+  [role="button"] {
+    display: none !important;
+  }
+
+  hr {
+    border-color: #ccc !important;
+  }
+
+  .prose-mail {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
+}
+
+/* Utility: hide element only when printing (screen remains visible) */
+.print\\:hidden {
+  /* no-op on screen; handled in @media print above */
+}
+
 /* Data state animations for Radix */
 [data-state="open"].fade-in,
 [data-state="closed"].fade-out {

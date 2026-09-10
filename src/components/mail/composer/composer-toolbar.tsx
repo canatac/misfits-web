@@ -3,6 +3,7 @@
 import {
   Check,
   Clock,
+  FileText,
   Loader2,
   Maximize2,
   Minimize2,
@@ -36,10 +37,12 @@ interface ComposerToolbarProps {
   sendLaterDate: string;
   saveStatus: SaveStatus;
   lastSavedAt: string | null;
+  isComposerEmpty: boolean;
   onToggleAI: () => void;
   onSetSendLaterDate: (v: string) => void;
   onSendLater: (iso: string) => void;
   onSaveDraft: () => void;
+  onSaveAsTemplate: () => void;
   onToggleCompact: () => void;
   onToggleFullScreen: () => void;
   onClose?: () => void;
@@ -55,10 +58,12 @@ export function ComposerToolbar({
   sendLaterDate,
   saveStatus,
   lastSavedAt,
+  isComposerEmpty,
   onToggleAI,
   onSetSendLaterDate,
   onSendLater,
   onSaveDraft,
+  onSaveAsTemplate,
   onToggleCompact,
   onToggleFullScreen,
   onClose,
@@ -145,6 +150,24 @@ export function ComposerToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Save draft</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSaveAsTemplate}
+              disabled={isComposerEmpty}
+              aria-label="Save as template"
+              className="gap-1.5 text-[var(--color-muted-fg)] hover:text-[var(--color-fg)] disabled:opacity-50"
+              data-testid="save-as-template-button"
+            >
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Template</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Save as template</TooltipContent>
         </Tooltip>
 
         <Tooltip>

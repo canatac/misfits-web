@@ -53,6 +53,7 @@ export interface UpdateAccountInput {
   aliases?: string[];
   serverConfig?: AccountServerConfig;
   isDefault?: boolean;
+  signature?: string;
 }
 
 interface AccountState {
@@ -64,6 +65,7 @@ interface AccountState {
   getAccountById: (id: string) => EmailAccount | undefined;
   getActiveAccount: () => EmailAccount | undefined;
   getDefaultAccount: () => EmailAccount | undefined;
+  getAccountIndex: (id: string) => number;
 
   // Mutations
   addAccount: (input: AddAccountInput) => EmailAccount;
@@ -74,6 +76,11 @@ interface AccountState {
   setUnifiedInbox: (enabled: boolean) => void;
   updateAccount: (id: string, input: UpdateAccountInput) => void;
   addAlias: (id: string, alias: string) => void;
+  setAccountSignature: (id: string, signature: string | undefined) => void;
+
+  // Quick switching (Issue #445)
+  cycleActiveAccount: (direction: "next" | "prev") => void;
+  setActiveAccountByIndex: (index: number) => void;
 }
 
 export const useAccountStore = create<AccountState>()(
@@ -92,6 +99,8 @@ export const useAccountStore = create<AccountState>()(
 
       getDefaultAccount: () =>
         get().accounts.find((a) => a.isDefault) ?? get().accounts[0],
+
+      getAccountIndex: (id) => get().accounts.findIndex((a) => a.id === id),
 
       addAccount: (input) => {
         const account: EmailAccount = {
@@ -208,6 +217,54 @@ export const useAccountStore = create<AccountState>()(
             if (!trimmed || a.aliases.includes(trimmed)) return a;
             return { ...a, aliases: [...a.aliases, trimmed] };
           }),
+        }));
+      },
+
+      // --- Per-account signature (Issue #423) ---
+
+      setAccountSignature: (id, signature) => {
+        set((state) => ({
+          accounts: state.accounts.map((a) =>
+            a.id === id ? { ...a, signature } : a
+          ),
+        }));
+      },
+
+      // --- Quick switching (Issue #445) ---
+
+      cycleActiveAccount: (direction) => {
+        const { accounts, activeAccountId } = get();
+        if (accounts.length <= 1) return;
+
+        const currentIdx = accounts.findIndex(
+          (a) => a.id === activeAccountId
+        );
+        // If active account is not found or unified, start from first/last
+        if (currentIdx === -1) {
+          const nextIdx = direction === "next" ? 0 : accounts.length - 1;
+          set((state) => ({
+            activeAccountId: accounts[nextIdx].id,
+            isUnifiedInbox: false,
+          }));
+          return;
+        }
+
+        const delta = direction === "next" ? 1 : -1;
+        // Wrap-around modulo
+        const nextIdx =
+          (currentIdx + delta + accounts.length) % accounts.length;
+        set((state) => ({
+          activeAccountId: accounts[nextIdx].id,
+          isUnifiedInbox: false,
+        }));
+      },
+
+      setActiveAccountByIndex: (index) => {
+        const { accounts } = get();
+        if (index < 0 || index >= accounts.length) return;
+        set((state) => ({
+          activeAccountId: accounts[index].id,
+          isUnifiedInbox: false,
         }));
       },
     }),

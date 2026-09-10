@@ -154,4 +154,5 @@ export interface ComposerPrefill {
   body?: string;
   inReplyTo?: string;
   references?: string[];
+  attachments?: Attachment[];
 }

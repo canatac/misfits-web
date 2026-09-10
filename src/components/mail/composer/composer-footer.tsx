@@ -8,8 +8,11 @@ interface ComposerFooterProps {
   isSending: boolean;
   canSend: boolean;
   attachments: Attachment[];
+  isComposerEmpty: boolean;
   onJumpToAttachments: () => void;
   onSend: () => void;
+  onSendLater: (iso: string) => void;
+  onSaveDraft: () => void;
   onDiscard: () => void;
 }
 
@@ -17,8 +20,11 @@ export function ComposerFooter({
   isSending,
   canSend,
   attachments,
+  isComposerEmpty,
   onJumpToAttachments,
   onSend,
+  onSendLater,
+  onSaveDraft,
   onDiscard,
 }: ComposerFooterProps) {
   const uploadInProgress = attachments.some(
@@ -33,7 +39,7 @@ export function ComposerFooter({
           <span className="text-sm text-[var(--color-fg)]">
             {attachments.length} pièce{attachments.length > 1 ? "s" : ""} jointe
             {attachments.length > 1 ? "s" : ""}
-            {uploadInProgress ? " · upload en cours" : " · prête(s) à l’envoi"}
+            {uploadInProgress ? " · upload en cours" : " · prête(s) à l'envoi"}
           </span>
           <Button
             type="button"

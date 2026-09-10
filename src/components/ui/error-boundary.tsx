@@ -1,14 +1,24 @@
 "use client";
 
+/**
+ * ErrorBoundary — class component implementing React's error boundary hooks.
+ *
+ * Uses getDerivedStateFromError to flip hasError state when a child throws,
+ * and componentDidCatch for side effects (logging / reporting).
+ *
+ * The fallback UI offers a graceful degradation path and a "Try again"
+ * button that resets the boundary state, letting the user recover
+ * without a full page reload.
+ */
 import * as React from "react";
-import type { LucideIcon } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ErrorBoundaryProps extends React.PropsWithChildren {
   fallback?: React.ComponentType<ErrorBoundaryFallbackProps>;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   resetKeys?: React.DependencyList;
+  label?: string;
 }
 
 interface ErrorBoundaryState {
@@ -28,6 +38,7 @@ const DefaultFallback: React.FC<ErrorBoundaryFallbackProps> = ({
   <div
     role="alert"
     className="flex flex-col items-center justify-center gap-4 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-card)] p-8 text-center"
+    data-testid="error-boundary-fallback"
   >
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-danger-50)] text-[var(--color-danger-500)]">
       <AlertTriangle className="h-6 w-6" aria-hidden="true" />
@@ -41,6 +52,7 @@ const DefaultFallback: React.FC<ErrorBoundaryFallbackProps> = ({
       </p>
     </div>
     <Button variant="outline" size="default" onClick={resetErrorBoundary}>
+      <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
       Try again
     </Button>
   </div>
@@ -60,11 +72,15 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    const { onError, label } = this.props;
+    if (onError) {
+      onError(error, errorInfo);
     }
-    // eslint-disable-next-line no-console
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    console.error(
+      `ErrorBoundary${label ? ` [${label}]` : ""} caught an error:`,
+      error,
+      errorInfo
+    );
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps): void {
@@ -98,4 +114,4 @@ class ErrorBoundary extends React.Component<
 }
 
 export { ErrorBoundary };
-export type { ErrorBoundaryProps };
+export type { ErrorBoundaryProps, ErrorBoundaryState };

@@ -10,9 +10,12 @@ import {
   MoreHorizontal,
   MailOpen,
   Sparkles,
+  Printer,
+  Paperclip,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -36,6 +39,10 @@ interface EmailToolbarProps {
   onHermesReplyDraft: () => void;
   onHermesTranslate: () => void;
   onHermesTodos: () => void;
+  onPrint: () => void;
+  onForwardAsAttachment: () => void;
+  /** Total recipients (sender + cc) that will receive a Reply All. */
+  replyAllRecipientCount?: number;
 }
 
 export function EmailToolbar({
@@ -51,7 +58,12 @@ export function EmailToolbar({
   onHermesReplyDraft,
   onHermesTranslate,
   onHermesTodos,
+  onPrint,
+  onForwardAsAttachment,
+  replyAllRecipientCount = 1,
 }: EmailToolbarProps) {
+  const showReplyAllBadge = replyAllRecipientCount > 1;
+
   return (
     <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
       <div className="mr-2 rounded-lg border border-[#242427] bg-[#0A0A0B] px-2 py-1 font-mono text-[10px] text-[#C49B66]">
@@ -79,6 +91,15 @@ export function EmailToolbar({
       <Button variant="ghost" size="sm" onClick={onReplyAll} className="gap-1.5">
         <ReplyAll className="h-4 w-4" />
         Reply All
+        {showReplyAllBadge && (
+          <Badge
+            variant="secondary"
+            className="ml-1 h-4 min-w-4 px-1 text-[10px] leading-none"
+            data-testid="reply-all-count"
+          >
+            {replyAllRecipientCount}
+          </Badge>
+        )}
       </Button>
       <Button variant="ghost" size="sm" onClick={onForward} className="gap-1.5">
         <Forward className="h-4 w-4" />
@@ -122,6 +143,16 @@ export function EmailToolbar({
           )}
         />
       </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onPrint}
+        aria-label="Print / Export PDF"
+        title="Print / Export PDF (Ctrl+P)"
+        data-testid="print-email-btn"
+      >
+        <Printer className="h-4 w-4" />
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="More actions">
@@ -136,6 +167,10 @@ export function EmailToolbar({
           <DropdownMenuItem onClick={onArchive}>
             <Archive className="mr-2 h-4 w-4" />
             Archive
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onForwardAsAttachment}>
+            <Paperclip className="mr-2 h-4 w-4" />
+            Forward as Attachment
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

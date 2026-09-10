@@ -3,15 +3,17 @@
 /**
  * Email View — displays a single email with sanitized HTML body,
  * blocked external images (toggle to load), attachment list, action buttons,
- * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
+ * collapsible quoted replies, and estimated reading time.
+ * Plaintext fallback for multipart/alternative.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useEmailBodyHydration } from "./hooks/useEmailBodyHydration";
 import {
   Paperclip,
   ImageOff,
   ChevronDown,
   MailOpen,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailSenderHeader } from "./email-sender-header";
@@ -28,6 +30,7 @@ import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
 import { EmailLabelsBar } from "./email-view/email-labels-bar";
+import { estimateReadingTime, formatReadingTime } from "./email-view-utils";
 
 interface EmailViewProps {
   className?: string;
@@ -69,7 +72,9 @@ export function EmailView({ className }: EmailViewProps) {
   const {
     handleReply,
     handleReplyAll,
+    replyAllRecipientCount,
     handleForward,
+    handleForwardAsAttachment,
     handleToggleStar,
     handleArchive,
     handleDelete,
@@ -79,6 +84,28 @@ export function EmailView({ className }: EmailViewProps) {
     handleHermesTranslate,
     handleHermesTodos,
   } = useEmailActions(email);
+
+  const readingTime = useMemo(
+    () => estimateReadingTime(email?.body ?? ""),
+    [email?.body]
+  );
+
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        if (email) {
+          e.preventDefault();
+          handlePrint();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [email, handlePrint]);
 
   if (!email) {
     return (
@@ -114,12 +141,15 @@ export function EmailView({ className }: EmailViewProps) {
         onMarkUnread={handleMarkUnread}
         onReply={handleReply}
         onReplyAll={handleReplyAll}
+        replyAllRecipientCount={replyAllRecipientCount}
         onForward={handleForward}
+        onForwardAsAttachment={handleForwardAsAttachment}
         onToggleStar={handleToggleStar}
         onHermesSummarize={handleHermesSummarize}
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
+        onPrint={handlePrint}
       />
 
       <ScrollArea className="flex-1">
@@ -137,6 +167,16 @@ export function EmailView({ className }: EmailViewProps) {
           <EmailSenderHeader email={email} />
 
           <Separator className="mb-4" />
+
+          {readingTime && (
+            <div
+              className="mb-4 flex items-center gap-2 text-sm text-[var(--color-muted-fg)]"
+              data-testid="email-reading-time"
+            >
+              <Clock className="h-4 w-4" />
+              <span>{formatReadingTime(readingTime)}</span>
+            </div>
+          )}
 
           <SecurityBanner
             result={{
@@ -159,7 +199,7 @@ export function EmailView({ className }: EmailViewProps) {
           />
 
           {!loadImages && email.bodyType === "html" && (
-            <div className="mb-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2">
+            <div className="mb-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2" data-testid="image-blocking-notice">
               <ImageOff className="h-4 w-4 text-[var(--color-muted-fg)]" />
               <span className="text-sm text-[var(--color-muted-fg)]">
                 Images are blocked for privacy

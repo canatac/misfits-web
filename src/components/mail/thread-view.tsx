@@ -3,8 +3,8 @@
 /**
  * Thread view — chronological display of all messages in a conversation.
  */
-import { useMemo } from "react";
-import { Reply, Forward, PanelTop } from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
+import { Reply, Forward, PanelTop, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,6 +23,8 @@ interface ThreadViewProps {
 
 export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
   const { forwardThread, replyToThread } = useThreadActions();
+  // null = mixed state, true = all collapsed, false = all expanded
+  const [forceCollapse, setForceCollapse] = useState<boolean | null>(null);
 
   const latestUnread = useMemo(() => {
     if (!thread) return null;
@@ -31,6 +33,17 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
     }
     return null;
   }, [thread]);
+
+  const handleToggleAll = useCallback(() => {
+    setForceCollapse((prev) => {
+      if (prev === false) return true;
+      return false;
+    });
+  }, []);
+
+  const handleMixedState = useCallback(() => {
+    setForceCollapse(null);
+  }, []);
 
   if (!thread) {
     return (
@@ -51,6 +64,8 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
     );
   }
 
+  const isAllExpanded = forceCollapse === false;
+
   return (
     <div
       className={cn("flex h-full flex-col bg-[var(--color-bg)]", className)}
@@ -65,6 +80,28 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
           <Forward className="h-4 w-4" />
           Forward thread
         </Button>
+        <div className="ml-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleAll}
+            className="gap-1.5"
+            aria-label={isAllExpanded ? "Collapse all messages" : "Expand all messages"}
+            data-testid="thread-toggle-all"
+          >
+            {isAllExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Collapse all
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Expand all
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1">
@@ -80,6 +117,8 @@ export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
                   defaultCollapsed={
                     idx < thread.messages.length - 1 && email.isRead
                   }
+                  forceCollapsed={forceCollapse}
+                  onMixedState={handleMixedState}
                 />
               </div>
             ))}

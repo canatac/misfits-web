@@ -12,6 +12,8 @@ interface MessageProps {
   isHighlighted: boolean;
   viewMode: "list" | "timeline";
   defaultCollapsed: boolean;
+  forceCollapsed?: boolean | null;
+  onMixedState?: () => void;
 }
 
 export function ThreadMessageItem({
@@ -19,6 +21,8 @@ export function ThreadMessageItem({
   isHighlighted,
   viewMode,
   defaultCollapsed,
+  forceCollapsed = null,
+  onMixedState,
 }: MessageProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [loadImages, setLoadImages] = useState(false);
@@ -29,6 +33,20 @@ export function ThreadMessageItem({
     setCollapsed(defaultCollapsed);
     setLoadImages(false);
   }, [email.id, defaultCollapsed]);
+
+  useEffect(() => {
+    if (forceCollapsed !== null) {
+      setCollapsed(forceCollapsed);
+    }
+  }, [forceCollapsed]);
+
+  const handleToggle = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    if (forceCollapsed !== null) {
+      onMixedState?.();
+    }
+  };
 
   const isTimeline = viewMode === "timeline";
 
@@ -87,7 +105,7 @@ export function ThreadMessageItem({
           </div>
 
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={handleToggle}
             className="rounded p-1 transition-colors hover:bg-[var(--color-muted)]"
             aria-label={collapsed ? "Expand message" : "Collapse message"}
           >

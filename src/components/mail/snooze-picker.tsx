@@ -98,12 +98,13 @@ export function SnoozePicker({
           size="sm"
           className={cn("gap-1.5", className)}
           aria-label="Snooze"
+          data-testid="snooze-trigger"
         >
           <Clock className="h-4 w-4" />
           {triggerLabel}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align={align} className="w-80">
+      <PopoverContent align={align} className="w-80" data-testid="snooze-popover">
         <div className="flex items-center gap-2">
           <Bell className="h-4 w-4 text-[var(--color-muted-fg)]" />
           <span className="text-sm font-medium">Snooze until</span>
@@ -112,14 +113,16 @@ export function SnoozePicker({
         <Separator className="my-3" />
 
         {/* Presets */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1" role="menu" aria-label="Snooze presets">
           {SNOOZE_PRESETS.map((preset) => (
             <button
               key={preset.id}
               type="button"
               onClick={() => handlePreset(preset.getUntil)}
               disabled={!emailId}
+              role="menuitem"
               className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-fg)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
+              data-testid={`snooze-preset-${preset.id}`}
             >
               <CalendarClock className="h-4 w-4 text-[var(--color-muted-fg)]" />
               <span className="flex-1">{preset.label}</span>
@@ -133,11 +136,13 @@ export function SnoozePicker({
             type="button"
             onClick={() => setShowCustom((v) => !v)}
             disabled={!emailId}
+            aria-expanded={showCustom}
             className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-brand-500)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
+            data-testid="snooze-custom-toggle"
           >
             <CalendarClock className="h-4 w-4" />
             <span className="flex-1">
-              {showCustom ? "Hide custom date" : "Pick a date & time…"}
+              {showCustom ? "Hide custom date" : "Custom date & time…"}
             </span>
           </button>
         </div>
@@ -147,20 +152,22 @@ export function SnoozePicker({
           <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">
+                <label className="text-xs text-[var(--color-muted-fg)]" htmlFor="snooze-custom-date">
                   Date
                 </label>
                 <Input
+                  id="snooze-custom-date"
                   type="date"
                   value={customDate}
                   onChange={(e) => setCustomDate(e.target.value)}
                 />
               </div>
               <div className="grid gap-1">
-                <label className="text-xs text-[var(--color-muted-fg)]">
+                <label className="text-xs text-[var(--color-muted-fg)]" htmlFor="snooze-custom-time">
                   Time
                 </label>
                 <Input
+                  id="snooze-custom-time"
                   type="time"
                   value={customTime}
                   onChange={(e) => setCustomTime(e.target.value)}
@@ -172,6 +179,7 @@ export function SnoozePicker({
                 checked={enableReminder}
                 onCheckedChange={setEnableReminder}
                 aria-label="Enable reminder"
+                id="snooze-reminder-switch"
               />
               <Input
                 value={reminder}
@@ -185,6 +193,7 @@ export function SnoozePicker({
               className="mt-2 w-full"
               onClick={handleCustomSnooze}
               disabled={!customDate}
+              data-testid="snooze-custom-confirm"
             >
               Snooze
             </Button>

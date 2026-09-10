@@ -16,6 +16,12 @@ function startOfDay(d: Date): Date {
   return x;
 }
 
+function laterToday(): string {
+  const d = new Date();
+  d.setHours(d.getHours() + 3, 0, 0, 0);
+  return d.toISOString();
+}
+
 function tomorrowMorning(): string {
   const d = startOfDay(new Date());
   d.setDate(d.getDate() + 1);
@@ -52,11 +58,20 @@ function nextWeek(): string {
 /** Preset snooze options shown in the snooze picker. */
 export const SNOOZE_PRESETS: SnoozePreset[] = [
   {
+    id: "later-today",
+    label: "Later today (+3 hours)",
+    getUntil: laterToday,
+  },
+  {
     id: "tomorrow-morning",
     label: "Tomorrow morning (8:00 AM)",
     getUntil: tomorrowMorning,
   },
-  { id: "tonight", label: "Tonight (6:00 PM)", getUntil: tonight },
+  {
+    id: "tonight",
+    label: "Tonight (6:00 PM)",
+    getUntil: tonight,
+  },
   {
     id: "this-weekend",
     label: "This weekend (Sat 9:00 AM)",
