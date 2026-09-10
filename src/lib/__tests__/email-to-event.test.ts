@@ -69,8 +69,8 @@ describe("email-to-event", () => {
     it("extracts location", () => {
       const email = makeEmail({
         subject: "Meeting",
-        preview: "Meeting on 2026-09-15 at Office",
-        body: "<p>Meeting on 2026-09-15 at Office</p>",
+        preview: "Meeting at Office on 2026-09-15",
+        body: "<p>Meeting at Office on 2026-09-15</p>",
       });
       const event = extractEventFromEmail(email);
       expect(event?.location).toBe("Office");
