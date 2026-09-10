@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,6 +75,9 @@ function buildSessionHeaders(body: HermesRunBody): Record<string, string> {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = requireAuth(req);
+  if ("response" in auth) return auth.response;
+
   const limit = parseLimit(req.nextUrl.searchParams.get("limit"));
 
   if (shouldUseBackendGateway()) {
