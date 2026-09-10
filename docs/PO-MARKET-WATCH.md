@@ -112,6 +112,23 @@
    - Choix: **Freemium avec custom domain en payant**
    - Rationale: aligné avec le marché (Proton/Tuta/Fastmail)
 
+5. **Modèle freemium**
+   - Choix: **Freemium classique (storage limité + features payants), pub UNIQUEMENT comme option opt-in "supporter" (jamais par défaut)**
+   - Rationale: la marque misfits = anti-pub intrusive. Un modèle donation-only ne scale pas pour un mail provider (coûts infra). Le freemium classique respecte la vision (pas de tracking, pas de data mining) tout en finançant l'infra.
+   - Détail proposé:
+     - Free: 5GB storage, aliases limités (10), pas de custom domain
+     - Pro ($5/mo): 50GB storage, custom domain, aliases illimités, scheduled send, templates, BIMI
+     - Business ($10/mo): tout Pro + shared calendars, SSO, audit logs, SLA
+   - Risque: le free tier peut attirer des spam. Mitigation: KYC light (phone verify) + rate limiting.
+
+6. **Open source — nouveau arbitrage**
+   - Choix: **3 repos publics (frontend, backend DKIM, infra as code), documentation ouverte, mais pas de self-hosted "gratuit"**
+   - Rationale: la transparence est un avantage compétitif (vs Hey/Basecamp qui sont 100% closed), mais l'auto-hébergement gratuit ne génère pas de revenu. Le modèle "open core" (code visible, hosted payant) est le bon équilibre.
+
+7. **Énergie / green**
+   - Choix: **Hébergement 100% renouvelable (Scaleway avec compensation carbone), badge "green email" dans l'UI**
+   - Rationale: Tuta le fait (100% renouvelable), c'est un différenciateur pour la Gen Z / entreprises ESG.
+
 ### Roadmap vision (prochaines itérations)
 1. **Sprint UX**: scheduled send, undo send, templates, conversation view
 2. **Sprint Security**: post-quantum roadmap, anonymous signup optionnel
@@ -134,6 +151,7 @@
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-009 | User consulte la conversation view | Affichage groupé par thread, tri chronologique, indicateur "X messages" | ❌ (standard marché 2026, implémentation prioritaire) |
+| MW-2026-010 | User génère un masked email alias | Alias créé (format: xxxxx@misfits.ai), emails forwardés vers inbox principale, possibilité de désactiver | ❌ (feature à implémenter — différence avec Fastmail qui a ~1000 aliases) |
 
 ---
 
@@ -147,7 +165,7 @@
 
 **Hey/Basecamp 2026**: Basecamp 5 lance "Calendar Cover Art", "Create events from email", "Previously Seen emails" — confirme la tendance intégration mail+calendar. Notre route /calendar a 6 mois d'avance sur ce calendrier.
 
-**Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP natif, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted. Le JMAP est pertinent pour notre issue #501 (JMAP server support).
+**Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB sans custom domain, Standard $5/mo 60GB avec custom domain, Pro $9/mo 150GB). ~1000 masked email aliases sur tous les plans payants, JMAP natif, Squire 2.0 editor, offline mode, calendar sync Google/iCloud. Point clé: le masked email est leur killer feature anti-spam — notre implération doit atteindre au minimum 100 aliases gratuits pour être compétitifs. Enseignement: la privacy E2EE n'est PAS requise pour être competitive en 2026, mais la privacy-by-design + aliasing + UX le sont.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
 
