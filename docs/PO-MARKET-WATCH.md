@@ -250,6 +250,15 @@
 
 **Email migration tools 2026** : Google Data Migration Service permet l'import depuis IMAP, Gmail, Outlook. Besoin d'un wizard d'import pour les utilisateurs qui migrent vers misfits.ai (issue #549).
 
+**IA email 2026 (tendance agentic)** :
+- Le marché passe du "chatbot IA" à l'"agent autonome" qui agit sans intervention humaine
+- **OpenClaw** : agent open-source qui agit via WhatsApp/Slack, gère emails et commandes système. Workflows entièrement autonomes.
+- **SaneBox** ($7/mois) : filtrage IA sans changer de client. SaneBlackHole, digest summaries.
+- **Shortwave** (free, puis $7/mois) : recherche IA native, summaries, grouped inbox. Gmail uniquement.
+- **Superhuman** ($30/mois) : triage IA, auto-drafting, instant replies.
+- Tendance clé : **Agentic AI > Chatbot UI**, **Proactif > Réactif**
+- **Pour misfits.ai** : notre approche (IA locale Hermes AI + intégration email/calendar/contacts/newsletters) est alignée sur cette tendance. L'avantage privacy (IA on-device) est un différenciateur fort face aux solutions cloud.
+
 **Shortwave 2026 (détail)** : client AI-native pour Gmail uniquement. $18/mo (Pro), $30/mo (Business), $45/mo (Premier), $120/mo (Max). AI search sémantique (décrire plutôt que mots-clés), bundling, thread summarization. Avantage = AI native + vitesse. Inconvénient = Gmail uniquement, cloud AI, pas de free plan permanent. Leçon: la recherche sémantique est un différenciateur — notre recherche instantanée (MW-011) doit viser la même expérience.
 
 **Spike 2026 (détail)** : email en style chat (bulles de message). $5/mo (Pro), $35/mo (AI agents). Unified inbox, team collaboration, video calls, AI writing. Avantage = UX moderne, chat naturel. Inconvénient = gimmicky UI (pour certains), pas d'IA autonome, prix élevé pour équipes. Leçon : l'email conversationnel est une tendance UX — notre "chat mail" (misfits.ai) est pionnière sur ce positionnement.
