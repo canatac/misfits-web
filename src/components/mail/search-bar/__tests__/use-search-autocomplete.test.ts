@@ -40,14 +40,14 @@ describe("useSearchAutocomplete", () => {
     expect(result.current.autocomplete.suggestion?.operator).toBe("to");
   });
 
-  it("returns null for empty operator after colon", () => {
+  it("shows suggestion for partial operator after space", () => {
     const { result } = renderHook(() => useSearchAutocomplete());
 
     act(() => {
-      result.current.updateAutocomplete("from:", 4);
+      result.current.updateAutocomplete("hello f", 7);
     });
 
-    expect(result.current.autocomplete.suggestion).toBeNull();
+    expect(result.current.autocomplete.suggestion?.operator).toBe("from");
   });
 
   it("accepts suggestion and returns full operator", () => {
