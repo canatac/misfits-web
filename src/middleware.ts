@@ -9,8 +9,11 @@
  *
  * /api/auth/callback is intentionally public — it is the OAuth redirect target
  * that sets the session before the user reaches any protected route.
+ *
+ * CORS defense-in-depth (issue #401): validates Origin header for cross-origin
+ * API requests to prevent arbitrary origins from making authenticated requests.
+ * This is a belt-and-suspenders measure alongside the proxy-level CORS fix.
  */
-
 import { NextResponse, type NextRequest } from "next/server";
 import { isAllowedOrigin } from "@/lib/cors";
 
@@ -40,18 +43,56 @@ const PUBLIC_API_PREFIXES = [
 ];
 const SESSION_COOKIE = "mfa_session";
 
+/**
+ * Allowed origins for cross-origin API requests.
+ * Only same-origin requests are permitted by default. This prevents arbitrary
+ * origins from making authenticated API calls (issue #401).
+ */
+const ALLOWED_ORIGINS = new Set([
+  "https://mail.misfits.ai",
+  "http://localhost:3000",
+  "http://localhost:3001",
+]);
+
 function isProtected(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return false;
-  // Admin API routes are NOT blanket-public: they go through proxy-auth.ts
-  // which forwards the session token to the backend RBAC guard.
+  // Public API routes (auth, health) are always allowed.
   if (PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p))) return false;
-  // Non-admin API routes (mail, monitoring, etc.) are server-to-server,
+  // Admin API routes require session authentication (issue #411).
+  // /api/admin/login and /api/admin/whoami are public for OAuth flow.
+  if (pathname.startsWith("/api/admin")) {
+    const publicAdminRoutes = ["/api/admin/login", "/api/admin/whoami"];
+    if (publicAdminRoutes.some((p) => pathname === p || pathname.startsWith(`${p}`)))
+      return false;
+    return true;
+  }
+  // Hermes API routes require session (sensitive LLM usage data, issue #411).
+  if (pathname.startsWith("/api/hermes")) return true;
+  // External accounts API requires session.
+  if (pathname.startsWith("/api/external-accounts")) return true;
+  // Email attachment downloads require session (issue #421).
+  if (pathname.match(/\/api\/emails\/[^/]+\/attachments\//)) return true;
+  // Non-sensitive API routes (mail, monitoring) are server-to-server,
   // protected by the backend's own auth layer.
-  if (pathname.startsWith("/api") && !pathname.startsWith("/api/admin"))
-    return false;
+  if (pathname.startsWith("/api")) return false;
   return PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
+}
+
+/**
+ * Cross-origin API protection: blocks requests from non-allowed origins.
+ * Only enforced for API routes with state-changing methods or auth cookies.
+ */
+function isCrossOriginAllowed(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+  // Only check API routes
+  if (!pathname.startsWith("/api")) return true;
+  // Same-origin requests are always allowed (no Origin header)
+  const origin = request.headers.get("origin");
+  if (!origin) return true;
+  // Validate against allowlist
+  return ALLOWED_ORIGINS.has(origin);
 }
 
 export function middleware(request: NextRequest): NextResponse {
@@ -72,6 +113,11 @@ export function middleware(request: NextRequest): NextResponse {
         },
       });
     }
+  }
+
+  // CORS defense-in-depth: block cross-origin API requests from non-allowed origins
+  if (!isCrossOriginAllowed(request)) {
+    return new NextResponse("Forbidden: invalid origin", { status: 403 });
   }
 
   if (!isProtected(pathname)) {
