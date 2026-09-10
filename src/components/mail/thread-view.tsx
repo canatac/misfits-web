@@ -184,13 +184,30 @@ function ThreadListItem({
   );
 }
 
-export function ThreadView() {
+interface ThreadViewProps {
+  /** Optional: display a specific thread instead of grouping all emails */
+  thread?: Thread;
+  /** Display mode for the thread */
+  viewMode?: "list" | "timeline";
+}
+
+export function ThreadView({ thread: providedThread, viewMode = "list" }: ThreadViewProps) {
   const emails = useEmailStore((s) => s.emails);
   const selectedEmailId = useEmailStore((s) => s.selectedEmailId);
   const selectEmail = useEmailStore((s) => s.selectEmail);
   const toggleStar = useEmailStore((s) => s.toggleStar);
 
-  const threadGroup = useMemo(() => groupEmailsIntoThreads(emails), [emails]);
+  // Use provided thread or group all emails
+  const threadGroup = useMemo(() => {
+    if (providedThread) {
+      return {
+        threads: [providedThread],
+        totalCount: 1,
+        unreadCount: providedThread.unreadCount,
+      };
+    }
+    return groupEmailsIntoThreads(emails);
+  }, [providedThread, emails]);
 
   const handleSelectThread = (threadId: string) => {
     const thread = threadGroup.threads.find((t) => t.id === threadId);
