@@ -116,8 +116,8 @@ export function useCommandPalette() {
         setOpen((prev) => !prev);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    window.addEventListener("keydown", down);
+    return () => window.removeEventListener("keydown", down);
   }, []);
 
   return { open, setOpen };
