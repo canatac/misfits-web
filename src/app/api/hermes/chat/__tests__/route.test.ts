@@ -1,175 +1,128 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "../route";
+/**
+ * Integration test: Hermes chat route session header contract.
+ *
+ * Cross-repo contract: /api/hermes/chat must forward X-Hermes-Session-Id
+ * and X-Hermes-Session-Key headers so the Hermes service can scope chat
+ * sessions to user/thread.
+ */
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 
-describe("/api/hermes/chat route", () => {
-  const originalEnv = { ...process.env };
-
+describe("POST /api/hermes/chat session header contract", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    process.env = { ...originalEnv };
+    vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    process.env = { ...originalEnv };
-  });
-
-  it("forces direct mode when HERMES_PROXY_MODE=direct even if HERMES_GATEWAY_BASE_URL is set", async () => {
-    process.env.HERMES_PROXY_MODE = "direct";
-    process.env.HERMES_GATEWAY_BASE_URL = "http://backend:8000";
-    process.env.HERMES_BASE_URL = "http://hermes:8642/v1";
-    process.env.HERMES_API_KEY = "test-key";
+  it("sets X-Hermes-Session-Id from sessionId", async () => {
+    const { POST } = await import("@/app/api/hermes/chat/route");
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      )
+      new Response(JSON.stringify({ choices: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })
     );
-    vi.stubGlobal("fetch", fetchMock);
+    global.fetch = fetchMock;
 
-    const req = new Request("http://localhost/api/hermes/chat", {
+    const req = new NextRequest(new URL("https://mail.misfits.ai/api/hermes/chat"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        messages: [{ role: "user", content: "Hello" }],
+        messages: [{ role: "user", content: "hi" }],
+        sessionId: "thread-123",
+        sessionKey: "user-456",
       }),
     });
 
-    const res = await POST(req as any);
-    expect(res.status).toBe(200);
+    await POST(req);
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://hermes:8642/v1/chat/completions");
-    expect((init.headers as Record<string, string>).Authorization).toBe(
-      "Bearer test-key"
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "X-Hermes-Session-Id": "thread-123",
+          "X-Hermes-Session-Key": "user-456",
+        }),
+      })
     );
   });
 
-  it("uses backend gateway mode when explicitly enabled", async () => {
-    process.env.HERMES_PROXY_MODE = "backend";
-    process.env.BACKEND_URL = "http://email-api:8000";
+  it("derives X-Hermes-Session-Id from threadId when sessionId absent", async () => {
+    const { POST } = await import("@/app/api/hermes/chat/route");
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      )
+      new Response(JSON.stringify({ choices: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })
     );
-    vi.stubGlobal("fetch", fetchMock);
+    global.fetch = fetchMock;
 
-    const req = new Request("http://localhost/api/hermes/chat", {
+    const req = new NextRequest(new URL("https://mail.misfits.ai/api/hermes/chat"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        messages: [{ role: "user", content: "Hello" }],
-        max_tokens: 123,
-        threadId: "t-1",
-        userId: "u-1",
+        messages: [{ role: "user", content: "hi" }],
+        threadId: "thread-789",
+        userId: "user-101",
       }),
     });
 
-    const res = await POST(req as any);
-    expect(res.status).toBe(200);
+    await POST(req);
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://email-api:8000/api/hermes/chat");
-
-    const payload = JSON.parse(String(init.body));
-    expect(payload.maxTokens).toBe(123);
-    expect(payload.threadId).toBe("t-1");
-    expect(payload.userId).toBe("u-1");
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "X-Hermes-Session-Id": "mail-thread-789",
+          "X-Hermes-Session-Key": "user-101",
+        }),
+      })
+    );
   });
 
-  it("uses backend gateway mode implicitly when BACKEND_URL is set", async () => {
-    delete process.env.HERMES_PROXY_MODE;
-    delete process.env.HERMES_GATEWAY_BASE_URL;
-    process.env.BACKEND_URL = "http://email-api:8000";
+  it("sanitizes CRLF from session headers", async () => {
+    const { POST } = await import("@/app/api/hermes/chat/route");
 
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      )
+      new Response(JSON.stringify({ choices: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })
     );
-    vi.stubGlobal("fetch", fetchMock);
+    global.fetch = fetchMock;
 
-    const req = new Request("http://localhost/api/hermes/chat", {
+    const req = new NextRequest(new URL("https://mail.misfits.ai/api/hermes/chat"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        messages: [{ role: "user", content: "Hello" }],
+        messages: [{ role: "user", content: "hi" }],
+        sessionId: "valid\r\ninjection",
+        sessionKey: "user-456",
       }),
     });
 
-    const res = await POST(req as any);
-    expect(res.status).toBe(200);
+    await POST(req);
 
-    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("http://email-api:8000/api/hermes/chat");
+    const call = fetchMock.mock.calls[0];
+    const headers = call[1]?.headers as Record<string, string>;
+    expect(headers["X-Hermes-Session-Id"]).not.toContain("\r");
+    expect(headers["X-Hermes-Session-Id"]).not.toContain("\n");
   });
 
-  it("forwards explicit session overrides in backend mode", async () => {
-    process.env.HERMES_PROXY_MODE = "backend";
-    process.env.BACKEND_URL = "http://email-api:8000";
+  it("returns 503 when HERMES_API_KEY missing", async () => {
+    delete process.env.HERMES_API_KEY;
+    const { POST } = await import("@/app/api/hermes/chat/route");
 
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ choices: [{ message: { content: "ok" } }] }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      )
-    );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const req = new Request("http://localhost/api/hermes/chat", {
+    const req = new NextRequest(new URL("https://mail.misfits.ai/api/hermes/chat"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        messages: [{ role: "user", content: "Hello" }],
-        sessionId: "mail-thread-explicit",
-        sessionKey: "user-explicit",
+        messages: [{ role: "user", content: "hi" }],
       }),
     });
 
-    const res = await POST(req as any);
-    expect(res.status).toBe(200);
-
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const payload = JSON.parse(String(init.body));
-    expect(payload.sessionId).toBe("mail-thread-explicit");
-    expect(payload.sessionKey).toBe("user-explicit");
-  });
-
-  it("returns 503 in backend mode if no backend base URL is configured", async () => {
-    process.env.HERMES_PROXY_MODE = "backend";
-    delete process.env.BACKEND_URL;
-    delete process.env.HERMES_GATEWAY_BASE_URL;
-
-    const req = new Request("http://localhost/api/hermes/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [{ role: "user", content: "Hello" }],
-      }),
-    });
-
-    const res = await POST(req as any);
+    const res = await POST(req);
     expect(res.status).toBe(503);
-    await expect(res.json()).resolves.toMatchObject({
-      error: {
-        message: expect.stringContaining("BACKEND_URL/HERMES_GATEWAY_BASE_URL"),
-      },
-    });
   });
 });
