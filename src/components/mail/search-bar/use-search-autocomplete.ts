@@ -11,7 +11,6 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { OPERATOR_META, type OperatorMeta } from "@/types/search";
-import { getActiveOperator } from "@/lib/search-parser";
 
 interface AutocompleteState {
   /** The operator being suggested, or null if none */
@@ -34,6 +33,26 @@ interface UseSearchAutocompleteReturn {
   filteredOperators: OperatorMeta[];
 }
 
+function getPartialOperator(
+  value: string,
+  cursorPos: number
+): { partial: string; start: number } | null {
+  const before = value.slice(0, cursorPos);
+
+  // Case 1: User is typing operator name before the colon (e.g. "fr", "from")
+  // Match word characters at the end of the string
+  const partialMatch = before.match(/(\w+)$/);
+  if (partialMatch) {
+    const partial = partialMatch[1].toLowerCase();
+    // Only suggest if it could be an operator prefix (at least 2 chars)
+    if (partial.length >= 2) {
+      return { partial, start: cursorPos - partial.length };
+    }
+  }
+
+  return null;
+}
+
 export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
   const [autocomplete, setAutocomplete] = useState<AutocompleteState>({
     suggestion: null,
@@ -43,16 +62,16 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
 
   const updateAutocomplete = useCallback(
     (value: string, cursorPos: number) => {
-      const activeOp = getActiveOperator(value, cursorPos);
+      const partialOp = getPartialOperator(value, cursorPos);
 
-      if (!activeOp || activeOp.partial.length === 0) {
+      if (!partialOp || partialOp.partial.length < 2) {
         setAutocomplete({ suggestion: null, partial: "", showPanel: false });
         return;
       }
 
       // Find matching operators
       const matches = OPERATOR_META.filter((op) =>
-        op.operator.startsWith(activeOp.partial)
+        op.operator.startsWith(partialOp.partial)
       );
 
       if (matches.length === 0) {
@@ -60,12 +79,11 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
         return;
       }
 
-      // Only suggest if we have a partial match (not exact)
+      // Don't suggest if exact match (user already typed the full operator)
       const exactMatch = matches.find(
-        (op) => op.operator === activeOp.partial
+        (op) => op.operator === partialOp.partial
       );
-
-      if (exactMatch) {
+      if (exactMatch && matches.length === 1) {
         setAutocomplete({ suggestion: null, partial: "", showPanel: false });
         return;
       }
@@ -74,7 +92,7 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
       const bestMatch = matches[0];
       setAutocomplete({
         suggestion: bestMatch,
-        partial: activeOp.partial,
+        partial: partialOp.partial,
         showPanel: matches.length > 1,
       });
     },
@@ -88,11 +106,12 @@ export function useSearchAutocomplete(): UseSearchAutocompleteReturn {
       const before = value.slice(0, cursorPos);
       const after = value.slice(cursorPos);
 
-      // Replace partial with full operator
-      const newBefore =
-        before.slice(0, before.length - autocomplete.partial.length) +
-        autocomplete.suggestion.operator +
-        ":";
+      // Find the start of the partial operator
+      const partialMatch = before.match(/(\w+)$/);
+      if (!partialMatch) return value;
+
+      const partialStart = cursorPos - partialMatch[1].length;
+      const newBefore = value.slice(0, partialStart) + autocomplete.suggestion.operator + ":";
 
       const needsSpace = after.length > 0 && !after.startsWith(" ");
       return newBefore + (needsSpace ? " " + after : after);
