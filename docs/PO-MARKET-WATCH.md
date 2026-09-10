@@ -21,6 +21,15 @@
 | CASL (Canada) | Canada | Consentement exprès, pénalités sévères |
 | LGPD (Brésil) | Brésil | Similaire GDPR |
 | EAA (European Accessibility Act) | UE | Accessibilité obligatoire depuis juin 2025 |
+| **NIS2** (UE 2024, appliqué 2026) | UE | Incident reporting 24h, supply chain risk audit, management body responsable |
+| **DORA** (UE, applicable 2025) | Secteur financier EU | Résilience ICT, TLPT triennal, pénalités jusqu'à 2% CA mondial |
+| **CRA** (Cyber Resilience Act, 2026) | Produits numériques EU | Reporting vulnérabilités, 24h escalation |
+
+### Focus NIS2 / DORA 2026 (nouveau)
+- **NIS2** est maintenant pleinement appliqué (oct 2024 → oct 2026 pour la conformité). Les entreprises d'infrastructure digitale (dont les providers email) sont concernées. Obligations: incident reporting sous 24h, audits supply chain, responsabilité du management.
+- **DORA** (financial services): les pénalités vont jusqu'à 2% du CA annuel mondial. Même si misfits.ai n'est pas une entité financière, nos clients B2B (banques, fintech) peuvent exiger la conformité DORA comme critère de choix.
+- **CRA** (Cyber Resilience Act, sep 2026): nouveau reporting de vulnérabilités, coordination avec NIS2. Impacte directement le dev (gestion des CVEs, patch management).
+- **Notre avantage**: Scaleway (hébergement) est déjà conforme NIS2/DORA. Notre stack DKIM native + privacy-by-design est un différenciateur.
 
 ### SMTP/Deliverability
 - **SPF + DKIM + DMARC** = minimum vital en 2026 (66.2% des senders les utilisent)
@@ -29,7 +38,7 @@
 - Tendance: les inbox providers (Google, Yahoo) durcissent les règles d'authentification
 
 ### Implication misfits.ai
-> Notre stack native DKIM/SPF/DMARC est un **avantage compétitif majeur** face aux solutions SaaS qui dépendent de relais tiers. La conformité privacy-by-design (pas de data mining, pas de tracking pixels) répond aux exigences 2026.
+> Notre stack native DKIM/SPF/DMARC est un **avantage compétitif majeur** face aux solutions SaaS qui dépendent de relais tiers. La conformité privacy-by-design (pas de data mining, pas de tracking pixels) répond aux exigences 2026. L'hébergement Scaleway (conforme NIS2/DORA) renforce notre posture B2B.
 
 ---
 
@@ -154,6 +163,7 @@
 | MW-2026-010 | User génère un masked email alias | Alias créé (format: xxxxx@misfits.ai), emails forwardés vers inbox principale, possibilité de désactiver | ❌ (feature à implémenter — différence avec Fastmail qui a ~1000 aliases) |
 | MW-2026-011 | User recherche dans sa boîte | Résultats instantanés (<200ms), recherche possible pendant l'indexation, labels imbriqués | ❌ (feature à implémenter — Tuta/Proton le font déjà) |
 | MW-2026-012 | User ouvre la PWA mobile hors-ligne | Emails récents disponibles, indicateur hors-ligne, actions en attente synchronisées au retour | ❌ (PWA à implémenter — Proton le fait en natif, nous en PWA) |
+| MW-2026-013 | User demande l'accès à ses données personnelles | Export complet (emails, contacts, calendrier) en format standard (mbox, vCard, iCal) sous 72h | ❌ (conformité RGPD/NIS2, à implémenter) |
 
 ---
 
