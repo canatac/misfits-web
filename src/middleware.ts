@@ -55,13 +55,23 @@ const ALLOWED_ORIGINS = new Set([
 
 function isProtected(pathname: string): boolean {
   if (PUBLIC_EXACT.has(pathname)) return false;
-  // Admin API routes are NOT blanket-public: they go through proxy-auth.ts
-  // which forwards the session token to the backend RBAC guard.
+  // Public API routes (auth, health) are always allowed.
   if (PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p))) return false;
-  // Non-admin API routes (mail, monitoring, etc.) are server-to-server,
+  // Admin API routes require session authentication (issue #411).
+  // /api/admin/login and /api/admin/whoami are public for OAuth flow.
+  if (pathname.startsWith("/api/admin")) {
+    const publicAdminRoutes = ["/api/admin/login", "/api/admin/whoami"];
+    if (publicAdminRoutes.some((p) => pathname === p || pathname.startsWith(`${p}`)))
+      return false;
+    return true;
+  }
+  // Hermes API routes require session (sensitive LLM usage data, issue #411).
+  if (pathname.startsWith("/api/hermes")) return true;
+  // External accounts API requires session.
+  if (pathname.startsWith("/api/external-accounts")) return true;
+  // Non-sensitive API routes (mail, monitoring) are server-to-server,
   // protected by the backend's own auth layer.
-  if (pathname.startsWith("/api") && !pathname.startsWith("/api/admin"))
-    return false;
+  if (pathname.startsWith("/api")) return false;
   return PROTECTED_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
