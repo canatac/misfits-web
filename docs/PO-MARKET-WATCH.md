@@ -186,7 +186,11 @@
 
 **IA email 2026** : Proton Scribe (Mistral 7B, local) confirme la tendance IA privacy-first. Superhuman (Grammarly) = IA cloud. Notion Mail = IA cloud. Tuta = pas d'IA. Notre positionnement : IA locale exclusivement (Hermes AI), triage, résumé, chat, drafting — "The AI that reads your inbox, but never leaks it".
 
-**One inbox 2026** : tendance confirmée (Proton, Mailbird, Superhuman, Notion Mail, Missive). Notre avantage = stack native IMAP/SMTP vs Proton bridge payant. Arbitrage : multi-comptes natif.
+**Notion Mail shutdown** : fermeture le 22 septembre 2026. Gmail-only, workspace intégré. Leçon : un mail client intégré à un workspace n'est pas un mail provider souverain. Notre approche (provider souverain + intégrations) est validée.
+
+**Superhuman 2026** : $30/mo (Starter), $40/mo (Business). IA cloud (données envoyées), keyboard shortcuts extrêmes, Auto Drafts, Auto Labels, CRM integrations. Avantage = vitesse (latence quasi-nulle). Inconvénient = IA cloud (privacy), Gmail/Outlook uniquement, prix élevé. Leçon : la vitesse d'interface est un vrai différenciateur — notre stack Rust/Next.js doit viser la même réactivité.
+
+**One inbox 2026** : tendance confirmée (Proton, Mailbird, Superhuman, Missive). Notion Mail disparaît. Notre avantage = stack native IMAP/SMTP vs Proton bridge payant. Arbitrage : multi-comptes natif.
 
 ---
 
