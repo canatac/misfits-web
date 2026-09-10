@@ -44,7 +44,12 @@
 
 ## 2. Analyse Compétiteurs (2026)
 
-### Positionnement comparatif
+### Évolution du marché 2026
+- **Proton Scribe** (IA locale, Mistral 7B) = confirmation que l'IA privacy-first est un différenciateur
+- **Superhuman** (racheté par Grammarly, juin 2025) = IA cloud pour le triage, mais données envoyées au cloud
+- **Notion Mail** = IA cloud (intégration Notion), uniquement Gmail, pas de privacy
+- **Tuta** = refuse l'IA cloud catégoriquement
+- **misfits.ai** = **IA locale exclusivement (Hermes AI)**, triage, résumé, chat, drafting — "The AI that reads your inbox, but never leaks it"
 
 | Critère | **misfits.ai** | **Proton Mail** | **Tuta** | **Fastmail** | **Hey** |
 |---------|---------------|-----------------|----------|--------------|---------|
@@ -138,14 +143,15 @@
    - Choix: **Hébergement 100% renouvelable (Scaleway avec compensation carbone), badge "green email" dans l'UI**
    - Rationale: Tuta le fait (100% renouvelable), c'est un différenciateur pour la Gen Z / entreprises ESG.
 
-9. **One inbox / multi-comptes**
-   - Choix: **Multi-comptes natif (agrégation IMAP/SMTP externe) + unified inbox, gratuit jusqu'à 3 comptes, payant au-delà**
-   - Rationale: la tendance "one inbox to rule them all" est confirmée en 2026 (Proton, Mailbird, Superhuman, Notion Mail). Les users ne veulent plus jongler entre 5 apps. Notre stack native IMAP/SMTP est un avantage compétitif vs Proton (bridge payant).
-   - Détail:
-     - Free: 1 compte misfits uniquement
-     - Pro: + 3 comptes externes (Gmail, Outlook, Yahoo)
-     - Business: comptes illimités + shared inboxes
-   - Attention: l'agrégation multi-comptes complexifie la recherche, le tri et la sécurité. Notre DKIM native ne s'applique qu'aux comptes misfits (les externes gardent leur propre authentification).
+10. **IA email locale**
+    - Choix: **IA locale exclusivement (Hermes AI on-device), pas de cloud AI pour les données email**
+    - Rationale: Proton Scribe (lancé 2024, basé sur Mistral 7B) fait le même choix — exécution locale, zero-knowledge. Tuta refuse catégoriquement l'AI cloud. La tendance 2026 est à l'IA privacy-first. Notre avantage: Hermes AI est déjà intégré (chat mail, triage, résumés). Pas de données qui quittent le device pour l'IA.
+    - Positionnement vs concurrence:
+      - Proton Scribe: IA locale, mais uniquement pour la composition (pas de triage/résumé)
+      - Superhuman: IA cloud (Gmail/Outlook data envoyée au cloud) — mauvais pour la privacy
+      - Notion Mail: IA cloud (Notion data) — mauvais pour la privacy
+      - Tuta: pas d'IA du tout — manque d'innovation
+    - Notre angle: **"The AI that reads your inbox, but never leaks it"** — IA locale, triage, résumé, chat, drafting, tout en restant sur le device de l'utilisateur.
 
 ### Roadmap vision (prochaines itérations)
 1. **Sprint UX**: scheduled send, undo send, templates, conversation view
@@ -208,6 +214,8 @@
 **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage différenciant.
 
 **One inbox 2026 (tendance)** : la tendance "one inbox to rule them all" est confirmée en 2026. Proton intègre Gmail nativement, Mailbird agrège Gmail/Outlook/Yahoo, Superhuman cible les executives avec AI-assisted drafting, Notion Mail superpose une UI moderne à Gmail, Missive ajoute du team chat. Notre stack native IMAP/SMTP est un avantage vs Proton (bridge payant). Arbitrage : multi-comptes natif (gratuit jusqu'à 3 comptes externes, payant au-delà).
+
+**IA email 2026** : Proton Scribe (Mistral 7B, local) confirme la tendance IA privacy-first. Superhuman (Grammarly) = IA cloud (données envoyées). Notion Mail = IA cloud (Notion). Tuta = pas d'IA. Notre positionnement : IA locale exclusivement (Hermes AI), triage, résumé, chat, drafting — "The AI that reads your inbox, but never leaks it".
 
 ---
 
