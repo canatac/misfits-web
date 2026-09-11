@@ -179,6 +179,7 @@
 | MW-2026-021 | User souscrit au plan Pro ($5/mo) | Paiement réussi, stockage 50GB activé, custom domain disponible | ❌ (billing à implémenter) |
 | MW-2026-022 | User connecte un compte externe (GIMAP/SMTP) | Emails synchronisés, envoi possible, dossiers préservés | ❌ (#541) |
 | MW-2026-023 | User change la langue de l'interface (i18n) | Interface traduite, dates/nombres formatés selon locale | ❌ (i18n à implémenter) |
+| MW-2026-024 | User assigne un email à un membre de l'équipe | Assigné, notifié, statut mis à jour, réponse collaborative | ❌ (team inbox à implémenter) |
 
 ---
 
@@ -446,6 +447,15 @@
 - **0.3%** spam complaint rate max (Google).
 - **2.1%** hard bounce rate moyen.
 - **Pour misfits.ai** : notre stack email native (SPF/DKIM/DMARC/BIMI) = avantage deliverability.
+
+**Team Collaboration Email 2026** :
+- **Missive** : $14-36/user/mois. Shared inbox, internal chat, live drafting, assignments, tasks. MCP support.
+- **Front** : $19-59/seat/mois. Email/chat/SMS/voice, 100+ integrations, AI capabilities.
+- **Canary Shared Inbox** : $10/user/mois. AI-first, suggested replies, analytics dashboard.
+- **Gmelius** : ~$15/user/mois. Shared inbox inside Gmail/Outlook, kanban boards.
+- **Hiver** : Free plan, then $25-95/user/mois. Shared inbox inside Gmail.
+- **Trend** : les outils de shared inbox dans Gmail/Outlook sont populaires (zero learning curve).
+- **Pour misfits.ai** : le team inbox sera nécessaire pour le plan Business. Prévoir assignations, commentaires internes, et chat.
 
 **FiloMail 2026** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous (AI summaries, to-do extraction, smart labels, AI drafts, natural language search). Gmail-only limitation. Leçon : les clients email + task management intégrés sont une tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
