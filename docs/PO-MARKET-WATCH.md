@@ -413,6 +413,16 @@
 - **Serif** : triage, draft generation, semantic search, sentiment analysis.
 - **Pour misfits.ai** : notre IA locale (Hermes) doit inclure drafting intelligent, triage, et apprentissage de la voix utilisateur.
 
+**Email Privacy Laws 2026 (synthèse réglementaire)** :
+- **GDPR** : opt-in explicite, base légale, droits accès/suppression/portabilité. Amendes jusqu'à 4% CA.
+- **ePrivacy** : consentement pour tracking (pixels, cookies). Italie = pixels = cookies.
+- **CAN-SPAM** : opt-out, adresse physique, header valide. Amendes $51,744/email.
+- **CCPA/CPRA** : opt-out, droit de suppression, transparence.
+- **CASL** (Canada) : consentement explicite, pénalités jusqu'à $10M.
+- **LGPD** (Brésil) : similaire GDPR.
+- **8 nouvelles lois US** (2025) : state privacy laws avec exigences email spécifiques.
+- **Pour misfits.ai** : notre approche privacy-first (pas de tracking, pas de pub) = conforme par design.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
