@@ -298,6 +298,14 @@
 - **Apple** : devrait formaliser les exigences 2026-2027
 - **Pour misfits.ai** : notre stack email (SPF/DKIM/DMARC natif) est déjà conforme. Issue #540 (spam rate monitoring) critique pour maintenir <0.3%.
 
+**Email Marketing Trends 2026** :
+- **Privacy-proofing** : shift from open rates to privacy-proof metrics (Apple MPP, AI pre-filtering).
+- **AI inboxes** : Gmail/Outlook AI categorization evaluates emails against privacy/trust signals. Failed checks = no human reach.
+- **Zero-party data** : transparent data collection, double-opt-in, EU server locations.
+- **New KPIs** : engagement > open rates. Click-through, reply time, conversion.
+- **Tracking pixels** = cookies under GDPR/ePrivacy. Require prior consent (CNIL €90K fine example).
+- **Pour misfits.ai** : notre approche (pas de tracking, pas de pub, privacy-first) est alignée. Newsletter features (#507) doivent inclure double-opt-in et consentement explicite.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
