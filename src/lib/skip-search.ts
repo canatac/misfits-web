@@ -34,9 +34,9 @@ export function createSkipSearchState(config: SkipSearchConfig = DEFAULT_CONFIG)
  */
 export function isInputFocused(event: KeyboardEvent): boolean {
   const target = event.target as HTMLElement;
-  if (!target) return false;
+  if (!target || !target.tagName) return false;
   const tagName = target.tagName.toLowerCase();
-  return (
+  return Boolean(
     tagName === "input" ||
     tagName === "textarea" ||
     tagName === "select" ||
