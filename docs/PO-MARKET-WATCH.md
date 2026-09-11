@@ -433,7 +433,19 @@
 - **Fyxer/Serif/Carly/Lindy** : autonomous triage, draft, route, meeting notes.
 - **Gmelius/DragApp/Missive/Front** : team inboxes with AI drafting.
 - **Superhuman/Shortwave/Spark/Mimestream** : faster client experience + AI.
+- **Carly AI** : full agent ($35/mo). Custom agents with own email addresses, 260+ integrations.
+- **FiloMail** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous.
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Self-hosted + privacy-first + autonomous agent.
+
+**Deliverability 2026 (stats)** :
+- **78%** des domaines ont un DMARC record (vs 51% en 2024).
+- **42%** ont une politique DMARC enforce (reject/quarantine).
+- **89%** inbox placement pour domaines authentifiés vs 44% pour non authentifiés.
+- **340%** YoY croissance BIMI.
+- **10%** open rate lift avec BIMI vérifié.
+- **0.3%** spam complaint rate max (Google).
+- **2.1%** hard bounce rate moyen.
+- **Pour misfits.ai** : notre stack email native (SPF/DKIM/DMARC/BIMI) = avantage deliverability.
 
 **FiloMail 2026** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous (AI summaries, to-do extraction, smart labels, AI drafts, natural language search). Gmail-only limitation. Leçon : les clients email + task management intégrés sont une tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
