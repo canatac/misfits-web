@@ -413,6 +413,15 @@
 
 **Kolab Now 2026** : email privacy-first, Suisse. CHF 4.41-9.90/mois. 2-5GB storage. Email/calendar/contacts/tasks/notes/files/video. Open source (Kolab Groupware). Swiss jurisdiction. Leçon : les providers suisses (comme Proton) dominent le segment privacy-first. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**Email Market Trends 2026 (synthèse)** :
+- **AI-driven marketing** : +13% click-through rates, +41% revenue vs non-AI campaigns.
+- **Privacy-first** : GDPR evolution, CCPA/CPRA maturation, new regional laws. Privacy software market: $5.37B (2026) → $45.13B (2032), 35.5% CAGR.
+- **Open rates unreliable** : Apple Mail Privacy Protection, image pre-loading. Shift to click-through, conversion, revenue metrics.
+- **Zero-party data** : 77% consumers share email for personalized experiences. 73% satisfaction from AI personalization.
+- **Omnichannel** : email + SMS + WhatsApp + push outperforms single-channel.
+- **Authentication** : stricter requirements (SPF/DKIM/DMARC/MTA-STS) critical for deliverability.
+- **Pour misfits.ai** : notre approche privacy-first + IA locale = aligné avec les tendances 2026.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
