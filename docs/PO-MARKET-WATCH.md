@@ -162,6 +162,8 @@
 | MW-2026-012 | User ouvre la PWA mobile hors-ligne | Emails récents, indicateur, sync au retour | ❌ (PWA à implémenter) |
 | MW-2026-013 | User demande l'accès à ses données | Export complet mbox/vCard/iCal sous 72h | ❌ (issue #514) |
 | MW-2026-014 | User crée un événement depuis un email | Événement créé, pré-remplissage, sync CalDAV | ❌ (issue #526) |
+| MW-2026-015 | User lance l'import wizard Gmail/Outlook | Import réussi, dossiers préservés, métadonnées intactes | ❌ (#549) |
+| MW-2026-016 | User génère un masked email via l'API | Alias créé (xxxxx@misfits.ai), forward activé, compteur d'activité | ❌ (#54) |
 
 ---
 
