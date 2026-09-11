@@ -411,6 +411,8 @@
 
 **Clean Email 2026** : bulk inbox cleanup. $9.99/mois. Unsubscriber, Auto Clean rules, bulk actions, categorization. Leçon : le nettoyage d'email en masse est un segment distinct. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**Kolab Now 2026** : email privacy-first, Suisse. CHF 4.41-9.90/mois. 2-5GB storage. Email/calendar/contacts/tasks/notes/files/video. Open source (Kolab Groupware). Swiss jurisdiction. Leçon : les providers suisses (comme Proton) dominent le segment privacy-first. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
