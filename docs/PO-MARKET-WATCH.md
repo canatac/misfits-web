@@ -42,6 +42,14 @@
 - US state laws : multiplication des lois state-level privacy (8+ states en 2025).
 - Trend : AI explicitly embedded in regulatory framework (GDPR Omnibus proposals nov 2025).
 - **Pour misfits.ai** : notre conformité native (DKIM/SPF/DMARC, privacy-by-design, data minimization) est un avantage compétitif face à ces exigences croissantes.
+
+**Email trends 2026** :
+- AI-driven personalization, hyper-segmentation, privacy-first data strategies
+- Stricter authentication requirements (SPF/DKIM/DMARC/BIMI)
+- Interactive email design, omnichannel integration (SMS, WhatsApp, push)
+- Post-Apple Mail Privacy Protection : open rates unreliable → focus on click-through, revenue attribution
+- Zero-party data (preferences explicitly shared) + transparent consent = better deliverability
+- **Pour misfits.ai** : notre approche privacy-first + DKIM native + multi-surface (mail/calendar/contacts/newsletters) est alignée sur ces tendances.
 - **DORA** (financial services) — pénalités jusqu'à 2% du CA annuel mondial. Même si misfits.ai n'est pas une entité financière, nos clients B2B peuvent exiger la conformité DORA.
 - **CRA** reporting obligatoire dès le **11 septembre 2026** : vulnérabilités exploitées (24h early warning, 72h notification détaillée). Full CRA (conformité technique, marquage CE, évaluation de conformité) → 11 décembre 2027. Notre stack (3 repos, Next.js, Rust, infra as code) est concerné. La transparence (repos publics) facilite la conformité (SBOM, documentation technique).
 
