@@ -79,19 +79,27 @@ describe("email-normalization contract", () => {
     const baseEmail: Email = {
       id: "email-1",
       threadId: "thread-1",
-      from: "sender@example.com",
-      to: ["recipient@misfits.fr"],
+      folder: "inbox",
+      from: { name: "Sender", address: "sender@example.com" },
+      to: [{ name: "Recipient", address: "recipient@misfits.fr" }],
       subject: "Test Subject",
+      preview: "Test preview",
       body: "<p>Hello</p>",
+      bodyType: "html",
       date: "2026-09-10T08:00:00Z",
+      receivedAt: "2026-09-10T08:00:01Z",
       isRead: false,
       isStarred: false,
+      isImportant: false,
       attachments: [],
       hasAttachments: false,
+      labels: [],
+      size: 1024,
+      messageId: "<msg-1@example.com>",
     };
 
     it("decodes MIME-encoded subject", () => {
-      const email = {
+      const email: Email = {
         ...baseEmail,
         subject: "=?UTF-8?Q?Bonjour_=C3=A9l=C3=A8ve?=",
       };
@@ -105,7 +113,7 @@ describe("email-normalization contract", () => {
     });
 
     it("sets hasAttachments true when attachments array is non-empty", () => {
-      const email = {
+      const email: Email = {
         ...baseEmail,
         attachments: [
           {
@@ -113,6 +121,7 @@ describe("email-normalization contract", () => {
             filename: "doc.pdf",
             contentType: "application/pdf",
             size: 1024,
+            type: "pdf",
           },
         ],
       };
@@ -126,7 +135,7 @@ describe("email-normalization contract", () => {
     });
 
     it("preserves existing hasAttachments when true and no attachments", () => {
-      const email = {
+      const email: Email = {
         ...baseEmail,
         hasAttachments: true,
         attachments: [],
@@ -135,20 +144,20 @@ describe("email-normalization contract", () => {
       expect(result.hasAttachments).toBe(true);
     });
 
-    it("handles null/undefined attachments array", () => {
-      const email = {
+    it("handles null attachments array", () => {
+      const email: Email = {
         ...baseEmail,
-        attachments: null as any,
+        attachments: null as unknown as Email["attachments"],
       };
       const result = normalizeEmailRecord(email);
       expect(result.attachments).toEqual([]);
       expect(result.hasAttachments).toBe(false);
     });
 
-    it("handles undefined subject", () => {
-      const email = {
+    it("handles empty subject", () => {
+      const email: Email = {
         ...baseEmail,
-        subject: undefined,
+        subject: "",
       };
       const result = normalizeEmailRecord(email);
       expect(result.subject).toBe("");
@@ -158,7 +167,8 @@ describe("email-normalization contract", () => {
       const result = normalizeEmailRecord(baseEmail);
       expect(result.id).toBe(baseEmail.id);
       expect(result.threadId).toBe(baseEmail.threadId);
-      expect(result.from).toBe(baseEmail.from);
+      expect(result.folder).toBe(baseEmail.folder);
+      expect(result.from).toEqual(baseEmail.from);
       expect(result.to).toEqual(baseEmail.to);
       expect(result.body).toBe(baseEmail.body);
       expect(result.date).toBe(baseEmail.date);
