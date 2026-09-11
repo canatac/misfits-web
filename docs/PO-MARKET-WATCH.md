@@ -423,6 +423,14 @@
 - **8 nouvelles lois US** (2025) : state privacy laws avec exigences email spécifiques.
 - **Pour misfits.ai** : notre approche privacy-first (pas de tracking, pas de pub) = conforme par design.
 
+**AI Email Agents 2026 (autonomous inbox)** :
+- **AgentMail** : inbox as primitive. API provisioning, auto-threading, WebSockets, multi-tenancy via Pods.
+- **OpenClaw** : self-hosted, privacy-first. Inbox zero via Telegram/WhatsApp/Slack. Natural language commands.
+- **Fyxer/Serif/Carly/Lindy** : autonomous triage, draft, route, meeting notes.
+- **Gmelius/DragApp/Missive/Front** : team inboxes with AI drafting.
+- **Superhuman/Shortwave/Spark/Mimestream** : faster client experience + AI.
+- **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Self-hosted + privacy-first + autonomous agent.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
