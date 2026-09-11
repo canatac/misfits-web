@@ -104,7 +104,7 @@ describe("phishing-detector contract", () => {
     it("accumulates multiple risk factors", () => {
       // IP + mismatched display = 30 + 20 = 50
       const links = analyzeLinks(
-        '<a href="http://10.0.0.1/evil">https://misfits.ai/login</a>'
+        '<a href="http://10.0.0.1/evil">Click here to login</a>'
       );
       expect(links).toHaveLength(1);
       expect(links[0].riskScore).toBe(50);
@@ -286,7 +286,7 @@ describe("phishing-detector contract", () => {
     it("returns critical for high score", () => {
       const dangerousEmail: Email = {
         ...safeEmail,
-        body: '<a href="http://10.0.0.1">https://misfits.ai</a>',
+        body: '<a href="http://10.0.0.1">Click here</a>',
         from: { name: "PayPal", address: "security@paypa1.com" },
         subject: "URGENT: Verify your account immediately",
       };
@@ -353,7 +353,7 @@ describe("phishing-detector contract", () => {
     it("includes all indicator types in reasons", () => {
       const result = detectPhishing({
         ...safeEmail,
-        body: '<a href="http://10.0.0.1">https://misfits.ai</a>',
+        body: '<a href="http://10.0.0.1">Click here</a>',
       });
       expect(result.reasons.length).toBeGreaterThan(0);
       expect(result.reasons[0]).toContain("Suspicious link");
