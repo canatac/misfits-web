@@ -180,6 +180,7 @@
 | MW-2026-022 | User connecte un compte externe (GIMAP/SMTP) | Emails synchronisés, envoi possible, dossiers préservés | ❌ (#541) |
 | MW-2026-023 | User change la langue de l'interface (i18n) | Interface traduite, dates/nombres formatés selon locale | ❌ (i18n à implémenter) |
 | MW-2026-024 | User assigne un email à un membre de l'équipe | Assigné, notifié, statut mis à jour, réponse collaborative | ❌ (team inbox à implémenter) |
+| MW-2026-025 | User demande une suggestion de réponse contextuelle | IA génère une suggestion basée sur l'historique de la conversation | ❌ (IA drafting à implémenter) |
 
 ---
 
@@ -456,6 +457,15 @@
 - **Hiver** : Free plan, then $25-95/user/mois. Shared inbox inside Gmail.
 - **Trend** : les outils de shared inbox dans Gmail/Outlook sont populaires (zero learning curve).
 - **Pour misfits.ai** : le team inbox sera nécessaire pour le plan Business. Prévoir assignations, commentaires internes, et chat.
+
+**AI Hyper-Personalization 2026** :
+- **AI-driven personalization** : +41% revenue, +13.44% CTR vs non-AI campaigns.
+- **Hyper-segmentation** : behavioral triggers, real-time individual analysis.
+- **Zero-party data** : données partagées volontairement (préférences, intentions).
+- **Send time optimization** : IA détermine le meilleur moment pour chaque destinataire.
+- **Predictive analytics** : conversion likelihood, churn prediction.
+- **Behavioral triggering** : emails déclenchés par actions spécifiques (visite produit, renouvellement).
+- **Pour misfits.ai** : notre IA locale (Hermes) doit inclure personalisation, send time optimization, et behavioral triggering.
 
 **FiloMail 2026** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous (AI summaries, to-do extraction, smart labels, AI drafts, natural language search). Gmail-only limitation. Leçon : les clients email + task management intégrés sont une tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
