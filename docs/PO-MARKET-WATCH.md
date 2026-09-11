@@ -350,6 +350,14 @@
 - **State machine model** : routing deterministic, handoffs observable, duplicate sends blocked, audits possible.
 - **Pour misfits.ai** : notre stack email souveraine + IA locale (Hermes) = position unique pour l'automation email privacy-first.
 
+**Open Source Email Clients 2026** :
+- **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
+- **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
+- **KMail** : KDE Plasma integrated.
+- **Claws Mail** : lightweight, fast on old hardware.
+- **Betterbird** : Thunderbird fork for power users.
+- **Leçon** : les clients open source restent pertinents pour les users privacy-conscious. Notre différence : web PWA + IA locale (Hermes) + stack email souveraine.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
