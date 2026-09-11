@@ -405,6 +405,14 @@
 
 **Reclaim.ai 2026** : AI scheduling + calendar. $10-22/seat/mois. Focus Time, Smart Meetings, scheduling links, habits, task integrations. Leçon : l'IA pour la productivité calendar/scheduling est un segment distinct. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**AI Email Writing Assistants 2026** :
+- **Agentys** : batch drafting automatique. Apprend votre voix par contact (90 jours d'historique). Rédaction automatique des réponses routine. $16.99/mois.
+- **Superhuman** : Write with AI, Instant Reply, Auto Summarize. $300/an. Keyboard-first, sub-100ms.
+- **Spark** : AI Assistant (emails, attachments, calendar, meeting notes). $99-199/an.
+- **MailMaestro** : AI drafting pour Outlook/entreprise. $12/seat/mois.
+- **Serif** : triage, draft generation, semantic search, sentiment analysis.
+- **Pour misfits.ai** : notre IA locale (Hermes) doit inclure drafting intelligent, triage, et apprentissage de la voix utilisateur.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
