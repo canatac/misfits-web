@@ -64,8 +64,8 @@ describe("follow-up-detector contract", () => {
 
     it("is case-insensitive for sender address", () => {
       const emails = [
-        { ...baseEmail, from: { name: "Alice", address: "ALICE@example.com" } },
-        { ...baseEmail, from: { name: "Alice", address: "alice@example.com" } },
+        { ...baseEmail, from: { name: "Alice", address: "ALICE@example.com" }, date: "2026-09-10T08:00:00Z" },
+        { ...baseEmail, from: { name: "Alice", address: "alice@example.com" }, date: "2026-09-11T08:00:00Z" },
       ];
       expect(estimateReplyDelay("alice@example.com", emails)).toBe(24);
     });
@@ -117,7 +117,8 @@ describe("follow-up-detector contract", () => {
         {
           ...baseEmail,
           folder: "sent",
-          preview: "I'll send the report by Friday",
+          preview: "Promise to send",
+          body: "<p>I'll send the report by Friday</p>",
         },
       ]);
       expect(result).toHaveLength(1);
