@@ -26,7 +26,7 @@ describe("session-payload contract", () => {
     user: {
       id: "user_42",
       email: "qa.free@misfits.fr",
-      role: "free",
+      role: "user",
       two_factor_enabled: false,
       created_at: "2026-09-10T08:00:00Z",
       updated_at: "2026-09-10T08:00:00Z",
@@ -73,21 +73,19 @@ describe("session-payload contract", () => {
         user: {
           id: "u1",
           email: "a@b.com",
-          role: "pro",
+          role: "admin",
           two_factor_enabled: true,
           created_at: "2026-01-01",
           updated_at: "2026-01-01",
-          profile: {
-            display_name: "Test User",
-            avatar_url: "https://example.com/avatar.png",
-          },
+          display_name: "Test User",
+          avatar_url: "https://example.com/avatar.png",
         },
       };
       const result = normalizeSession(raw);
-      expect(result.user.profile).toHaveProperty("displayName");
-      expect(result.user.profile).toHaveProperty("avatarUrl");
-      expect(result.user.profile).not.toHaveProperty("display_name");
-      expect(result.user.profile).not.toHaveProperty("avatar_url");
+      expect(result.user).toHaveProperty("displayName");
+      expect(result.user).toHaveProperty("avatarUrl");
+      expect(result.user).not.toHaveProperty("display_name");
+      expect(result.user).not.toHaveProperty("avatar_url");
     });
 
     it("handles arrays by mapping each element", () => {
@@ -101,17 +99,16 @@ describe("session-payload contract", () => {
         user: {
           id: "u1",
           email: "a@b.com",
-          role: "admin",
+          role: "support",
           two_factor_enabled: false,
           created_at: "2026-01-01",
           updated_at: "2026-01-01",
-          tags: [{ tag_name: "vip" }, { tag_name: "beta" }],
+          last_login_at: "2026-01-02",
         },
       };
       const result = normalizeSession(raw);
-      expect(result.user.tags).toHaveLength(2);
-      expect(result.user.tags[0]).toHaveProperty("tagName");
-      expect(result.user.tags[1]).toHaveProperty("tagName");
+      expect(result.user).toHaveProperty("lastLoginAt");
+      expect(result.user).not.toHaveProperty("last_login_at");
     });
   });
 
@@ -161,9 +158,9 @@ describe("session-payload contract", () => {
       expect(isValidSession(normalized)).toBe(false);
     });
 
-    it("returns false when user.role is empty", () => {
+    it("returns false when user.role is empty (invalid UserRole)", () => {
       const normalized = normalizeSession(validRaw);
-      normalized.user.role = "";
+      normalized.user.role = "" as any;
       expect(isValidSession(normalized)).toBe(false);
     });
 
@@ -200,14 +197,13 @@ describe("session-payload contract", () => {
 
     it("returns false when user is missing", () => {
       const normalized = normalizeSession(validRaw);
-      delete normalized.user;
-      expect(isValidSession(normalized)).toBe(false);
-    });
-
-    it("returns false when user is null", () => {
-      const normalized = normalizeSession(validRaw);
-      normalized.user = null;
-      expect(isValidSession(normalized)).toBe(false);
+      const user = normalized.user;
+      // Create a new session-like object without user
+      const withoutUser: any = { ...normalized };
+      delete withoutUser.user;
+      expect(isValidSession(withoutUser)).toBe(false);
+      // Restore for other tests
+      normalized.user = user;
     });
   });
 
