@@ -71,7 +71,7 @@ describe("email-normalization contract", () => {
 
     it("handles base64 with whitespace (strips per RFC)", () => {
       const encoded = "=?UTF-8?B?Qm9u am91?=";
-      expect(decodeMimeHeaderValue(encoded)).toBe("Bonou");
+      expect(decodeMimeHeaderValue(encoded)).toBe("Bonjou");
     });
   });
 
@@ -191,13 +191,13 @@ describe("email-normalization contract", () => {
     });
 
     it("decodes Japanese subject (Base64 UTF-8)", () => {
-      const encoded = "=?UTF-8?B?44Gq44G444Gv44KK?=";
+      const encoded = "=?UTF-8?B?44GT44KT44Gr44Gh44Gv?=";
       const decoded = decodeMimeHeaderValue(encoded);
       expect(decoded).toBe("こんにちは");
     });
 
     it("handles emoji in subject (Base64 UTF-8)", () => {
-      const encoded = "=?UTF-8?B?8J+ZjiBCb25qb3Vy?=";
+      const encoded = "=?UTF-8?B?8J+MnyBCb25qb3Vy?=";
       const decoded = decodeMimeHeaderValue(encoded);
       expect(decoded).toBe("🌟 Bonjour");
     });
