@@ -221,7 +221,7 @@
 
 **Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose + core Rust). Offline search, Category View auto-grouping, Gmail native, SimpleLogin intégrée. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform.
 
-**Tuta 2026 (détail)** : Fast Sync 10x, nested labels, search amélioré, Tuta Drive open beta, inbox rules, schedule send et undo send déployés. Leçon: la UX vitesse > E2EE pour le marché mainstream.
+**Tuta 2026 (détail)** : Fast Sync 10x, nested labels, search amélioré, Tuta Drive open beta, inbox rules, schedule send et undo send déployés. **Nouveau 2026** : Tuta Mail et Calendar disponibles comme add-ons Thunderbird. Spam filters améliorés. Auto-save drafts. Badge counter iOS. Drag & drop nested folders. Leçon: la UX vitesse > E2EE pour le marché mainstream. L'expansion Thunderbird cible les users privacy-conscious.
 
 **Basecamp 2026 (détail)** : Basecamp 5 — calendrier full-screen global + par projet, événements répétitifs, to-dos sur calendrier, menu unifié (SHIFT+J). Intégration email : projet = adresse email unique. Leçon: "email as task source" — notre route /calendar suit cette direction.
 
