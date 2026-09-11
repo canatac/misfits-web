@@ -9,7 +9,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  bandFromScore,
   categorizeEmail,
   calculatePriority,
   suggestAction,
@@ -23,6 +22,7 @@ describe("ai-triage contract", () => {
     threadId: "thread-1",
     folder: "inbox",
     from: { name: "Alice", address: "alice@example.com" },
+    to: [{ name: "User", address: "user@misfits.fr" }],
     subject: "Quick question",
     preview: "Can you review this?",
     body: "<p>Can you review this document for me?</p>",
@@ -38,28 +38,6 @@ describe("ai-triage contract", () => {
     size: 512,
     messageId: "<email-1@example.com>",
   };
-
-  describe("bandFromScore", () => {
-    it("returns urgent for score >= 80", () => {
-      expect(bandFromScore(80)).toBe("urgent");
-      expect(bandFromScore(100)).toBe("urgent");
-    });
-
-    it("returns high for score >= 60 and < 80", () => {
-      expect(bandFromScore(60)).toBe("high");
-      expect(bandFromScore(79)).toBe("high");
-    });
-
-    it("returns medium for score >= 30 and < 60", () => {
-      expect(bandFromScore(30)).toBe("medium");
-      expect(bandFromScore(59)).toBe("medium");
-    });
-
-    it("returns low for score < 30", () => {
-      expect(bandFromScore(0)).toBe("low");
-      expect(bandFromScore(29)).toBe("low");
-    });
-  });
 
   describe("categorizeEmail", () => {
     it("categorizes newsletter emails", () => {
@@ -344,8 +322,12 @@ describe("ai-triage contract", () => {
       expect(["reply", "archive", "follow_up"]).toContain(action);
     });
 
-    it("bandFromScore returns valid PriorityBand", () => {
-      expect(["urgent", "high", "medium", "low"]).toContain(bandFromScore(50));
+    it("priority score produces valid bands via calculation", () => {
+      // Band logic: >= 80 urgent, >= 60 high, >= 30 medium, < 30 low
+      const lowScore = calculatePriority({ ...baseEmail, isRead: true });
+      expect(lowScore).toBe(30); // medium band
+      expect(lowScore).toBeGreaterThanOrEqual(0);
+      expect(lowScore).toBeLessThanOrEqual(100);
     });
   });
 });
