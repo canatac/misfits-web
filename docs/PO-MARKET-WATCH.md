@@ -176,6 +176,7 @@
 | MW-2026-018 | User envoie email vers Gmail/Yahoo (bulk) | SPF/DKIM/DMARC validés, spam rate <0.3%, unsubscribe header | ❌ (#540) |
 | MW-2026-019 | User envoie email E2EE à un destinataire PGP | Email chiffré, clé PGP vérifiée, déchiffrement côté destinataire | ❌ (#522) |
 | MW-2026-020 | IA locale (Hermes) traite un email sans cloud | Résumé/draft généré on-device, aucune donnée ne quitte l'appareil | ❌ (Hermes AI à implémenter) |
+| MW-2026-021 | User souscrit au plan Pro ($5/mo) | Paiement réussi, stockage 50GB activé, custom domain disponible | ❌ (billing à implémenter) |
 
 ---
 
@@ -449,6 +450,16 @@
 - **US Federal Government** : PQC obligatoire d'ici 2026 pour agences et contractants.
 - **DKIM post-quantique** : Dilithium ou Falcon pour signatures résistantes.
 - **Pour misfits.ai** : notre E2E encryption (#522) doit intégrer PQC d'ici 2030.
+
+**Email Business Models 2026** :
+- **Mailchimp** : ~$13/mois (500 contacts). Contact-based pricing. Essentials/Standard/Premium.
+- **Brevo** : ~$8.8/mois. Send-volume-based. Multi-channel marketing.
+- **Sender** : ~$7/mois (2,500 subs). Budget-conscious.
+- **Instantly** : ~$37.6/mois. Cold email outreach.
+- **Lemlist** : ~$63/mois. Cold email + newsletter.
+- **Pay-as-you-go** : $0.0005-0.01/email. Irregular sending patterns.
+- **Tendance** : 90.6% des reviews Systeme.io = solo + 2-10 employés. Les petits business dominent.
+- **Pour misfits.ai** : notre modèle freemium (Free: 5GB + 10 aliases, Pro: $5/mo 50GB + custom domain, Business: $10/mo) = positionné pour les petits business et freelances.
 
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
