@@ -382,6 +382,13 @@
 - **Tendances** : intégration messaging + email (Basecamp, Notion Mail). Les frontières email/messaging s'estompent.
 - **Pour misfits.ai** : opportunité d'intégration messaging sécurisé (Signal/WhatsApp) pour la communication client.
 
+**Calendar Integration 2026** :
+- **Calendly** : booking links, Outlook/Google sync, Teams/Zoom, round-robin, Salesforce/HubSpot.
+- **Microsoft Bookings** : inclus Microsoft 365. Booking pages, Teams, Outlook sync.
+- **Nylas Calendar API** : universal calendar (Google/Microsoft/Apple). AI Agent Accounts pour scheduling autonome.
+- **Trend** : email + calendar + scheduling = workflow unifié. Les frontières s'estompent.
+- **Pour misfits.ai** : notre route /calendar (issue #526) doit intégrer booking links, sync CalDAV, et scheduling autonome via Hermes AI.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
