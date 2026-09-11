@@ -1,0 +1,33 @@
+{
+  "batch": "BATCH-30",
+  "repos": {
+    "misfits-web": {
+      "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-30/misfits-batch30-summary.json",
+      "suite_exits": {
+        "misfits-uiux-vitest": 1,
+        "misfits-calendar-vitest": 1,
+        "misfits-calendar-repro": 1,
+        "calendar-http-probe": 0,
+        "calendar-blockage-probe": 0,
+        "deployed-calendar": 0,
+        "deployed-calendar-events": 0
+      },
+      "blockers": [
+        "calendar/http500",
+        "deployed/api-calendar-events-http500"
+      ],
+      "issue": "https://github.com/canatac/misfits-web/issues/262"
+    },
+    "reimagined-guide": {
+      "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-30/reimagined-batch30-summary.json",
+      "suite_exits": {
+        "reimagined-gherkin-python": 1,
+        "reimagined-gherkin-cargo": 101
+      },
+      "blockers": [
+        "imap unwrap/expect panic-risk"
+      ]
+    }
+  },
+  "generated_at_utc": "2026-09-07T16:26:09Z"
+}

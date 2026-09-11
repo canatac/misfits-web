@@ -1,0 +1,24 @@
+{
+  "batch": "BATCH-15",
+  "repos": {
+    "misfits-web": {
+      "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-15/misfits-batch15-summary.json",
+      "uiux_exit": 1,
+      "calendar_vitest_exit": 1,
+      "calendar_repro_exit": 1,
+      "calendar_http_500": true,
+      "holiday_input_visible": false
+    },
+    "reimagined-guide": {
+      "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-15/reimagined-batch15-summary.json",
+      "python_exit": 1,
+      "cargo_exit": 101
+    }
+  },
+  "regressions": {
+    "localStorage_secrets": "OPEN",
+    "mockEmails_runtime_coupling": "OPEN",
+    "noel_25_12_2026_month_day": "OPEN",
+    "imap_unwrap_expect": "OPEN"
+  }
+}

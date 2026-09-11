@@ -1,0 +1,338 @@
+{
+  "timestamp": "2026-09-07T13:16:11.370Z",
+  "url": "http://localhost:3000/calendar",
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "requestFailures": [
+    {
+      "url": "http://localhost:3000/calendar?_rsc=zuoP-cosh2KHwVC3",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3000/calendar?_rsc=zuoP-cosh2KHwVC3",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    }
+  ],
+  "apiTrace": [
+    {
+      "url": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "https://date.nager.at/api/v3/AvailableCountries",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "https://date.nager.at/api/v3/AvailableCountries",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-09-06T00%3A00%3A00.000Z&end=2026-09-12T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-09-01T00%3A00%3A00.000Z&end=2026-09-30T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-10-01T00%3A00%3A00.000Z&end=2026-10-31T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-11-01T00%3A00%3A00.000Z&end=2026-11-30T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-12-01T00%3A00%3A00.000Z&end=2026-12-31T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    },
+    {
+      "url": "https://date.nager.at/api/v3/PublicHolidays/2026/US",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "https://date.nager.at/api/v3/PublicHolidays/2026/FR",
+      "status": 200,
+      "ok": true,
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events",
+      "status": 500,
+      "ok": false,
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3000/api/calendar/events?start=2026-12-07T00%3A00%3A00.000Z&end=2026-12-07T23%3A59%3A59.000Z",
+      "status": 500,
+      "ok": false,
+      "method": "GET"
+    }
+  ],
+  "search": {
+    "fr": {
+      "rowCount": 5,
+      "emptyVisible": false,
+      "sample": [
+        "Afrique du Sud ZA",
+        "France FR",
+        "Polynésie française PF",
+        "République centrafricaine CF",
+        "Terres australes et antarctiques françaises TF · API jours fériés indisponible"
+      ],
+      "screenshotPath": "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-fr.png"
+    },
+    "France": {
+      "rowCount": 1,
+      "emptyVisible": false,
+      "sample": [
+        "France FR"
+      ],
+      "screenshotPath": "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-France.png"
+    },
+    "noel": {
+      "rowCount": 0,
+      "emptyVisible": true,
+      "sample": [],
+      "screenshotPath": "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-noel.png"
+    }
+  },
+  "importFlow": {
+    "selectedCountriesForImport": [
+      "FR",
+      "US"
+    ],
+    "searchInputVisible": true,
+    "usRowText": "États-Unis US",
+    "toasts": [
+      "26 créations en échec",
+      "0 jours fériés importés"
+    ],
+    "noelVisibleInMonthView": true,
+    "noelVisibleInDayView": true
+  },
+  "files": [
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/00-calendar-initial.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-France.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-fr.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/01-search-noel.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/02-fr-us-selected.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/02-month-dec-2026.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/03-after-import.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/03-month-dec-2026.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/04-after-import-month.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/04-day-view-check.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/05-day-view-check.png",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/api-calendar-events-dec2026.body",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/nager-fr-2026.json",
+    "/root/misfits-web/tests/integration/gherkin/artifacts/calendar-holidays/run-result.json"
+  ]
+}

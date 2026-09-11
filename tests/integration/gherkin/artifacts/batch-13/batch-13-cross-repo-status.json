@@ -1,0 +1,22 @@
+{
+  "batch": "BATCH-13",
+  "misfits_web": {
+    "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-13/misfits-batch13-summary.json",
+    "status": "failing",
+    "highlights": {
+      "calendar_http_500": true,
+      "holidays_input_visible": false,
+      "console_errors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    }
+  },
+  "reimagined_guide": {
+    "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-13/reimagined-batch13-summary.json",
+    "status": "failing",
+    "highlights": {
+      "imap_unwrap_expect_open": true,
+      "python_failed": 3
+    }
+  }
+}

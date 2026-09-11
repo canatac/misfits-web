@@ -1,0 +1,61 @@
+{
+  "batch": "BATCH-29",
+  "repo": "misfits-web",
+  "suite_exits": {
+    "misfits-uiux-vitest": 1,
+    "misfits-calendar-vitest": 1,
+    "misfits-calendar-repro": 1,
+    "calendar-http-probe": 0,
+    "calendar-blockage-probe": 0,
+    "deployed-calendar": 0,
+    "deployed-calendar-events": 0
+  },
+  "counts": {
+    "misfits-uiux-vitest": {
+      "passed": 5,
+      "failed": 4,
+      "total": 9
+    },
+    "misfits-calendar-vitest": {
+      "passed": 1,
+      "failed": 2,
+      "total": 3
+    }
+  },
+  "calendar_blockage": {
+    "calendar_status": "calendar: HTTP/1.1 500 Internal Server Error",
+    "calendar_events_status": "calendar-events: HTTP/1.1 500 Internal Server Error",
+    "body_head": "Internal Server Error",
+    "selector_textbox_rechercher_un_pays_count": 0,
+    "selector_textbox_rechercher_un_pays_visible": false,
+    "selector_search_input_count": 0,
+    "console_errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "screenshot": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-29/calendar-blockage-probe.png",
+    "visual_outcome": "Screenshot shows only \"Internal Server Error\" text; no holidays search input visible."
+  },
+  "deployed_probe": {
+    "calendar_url": "https://mail.misfits.ai/calendar",
+    "calendar_status": "HTTP/2 200 ",
+    "calendar_events_url": "https://mail.misfits.ai/api/calendar/events",
+    "calendar_events_status": "HTTP/2 500 "
+  },
+  "failing_scenarios": {
+    "uiux": [
+      "Security dashboard secrets are not persisted to localStorage",
+      "Security dashboard copy does not claim local secret persistence",
+      "Search flow does not depend on mockEmails",
+      "Search flow keeps mock data strictly out of runtime hook"
+    ],
+    "calendar": [
+      "Imported holidays are rendered on 2026-12-25 in month and day view",
+      "Month day click payload preserves local yyyy-mm-dd formatting"
+    ],
+    "repro": [
+      "Holiday search input not visible in /calendar"
+    ]
+  },
+  "issue_link": "https://github.com/canatac/misfits-web/issues/262",
+  "generated_at_utc": "2026-09-07T16:21:27Z"
+}

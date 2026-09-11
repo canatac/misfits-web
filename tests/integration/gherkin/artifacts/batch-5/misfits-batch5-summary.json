@@ -1,0 +1,23 @@
+{
+  "batch": "BATCH-5",
+  "calendar_repro": {
+    "log": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-5/misfits-calendar-repro.log",
+    "exit_code": 1
+  },
+  "calendar": {
+    "log": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-5/misfits-calendar-vitest.log",
+    "failed": 2,
+    "passed": 1,
+    "total": 3
+  },
+  "uiux": {
+    "log": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-5/misfits-uiux-vitest.log",
+    "failed": 4,
+    "passed": 5,
+    "total": 9
+  },
+  "exit_codes": {
+    "calendar": 1,
+    "uiux": 1
+  }
+}

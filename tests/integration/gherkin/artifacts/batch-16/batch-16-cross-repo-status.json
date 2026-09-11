@@ -1,0 +1,24 @@
+{
+  "batch": "BATCH-16",
+  "timestamp_utc": "2026-09-07T15:36:16.974226Z",
+  "misfits": {
+    "summary": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-16/misfits-batch16-summary.json",
+    "uiux_exit": 1,
+    "calendar_exit": 1,
+    "calendar_repro_exit": 1,
+    "calendar_500_confirmed": true,
+    "holidays_input_visible": false
+  },
+  "reimagined": {
+    "summary": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-16/reimagined-batch16-summary.json",
+    "python_exit": 1,
+    "cargo_exit": 101,
+    "panic_risk_imap_server_open": true
+  },
+  "open_regressions": {
+    "localStorage_secrets": "OPEN",
+    "mockEmails_runtime": "OPEN",
+    "noel_25_12_2026_month_day": "OPEN",
+    "unwrap_expect_imap_server": "OPEN"
+  }
+}

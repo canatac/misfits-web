@@ -1,0 +1,21 @@
+{
+  "batch": "BATCH-6",
+  "uiux_exit": 1,
+  "calendar_exit": 1,
+  "repro_exit": 1,
+  "playwright_install_exit": 0,
+  "uiux_tests": {
+    "failed": 4,
+    "passed": 5,
+    "total": 9
+  },
+  "calendar_tests": {
+    "failed": 2,
+    "passed": 1,
+    "total": 3
+  },
+  "playwright_install_ok": true,
+  "playwright_install_note": "browser cache binary present",
+  "repro_blocker": false,
+  "repro_error_excerpt": "file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57\n  throw new Error('Holiday search input not visible in /calendar');\n        ^\n\nError: Holiday search input not visible in /calendar\n    at file:///root/misfits-web/tests/integration/gherkin/calendar_holidays_repro.mjs:57:9\n\nNode.js v22.23.1"
+}

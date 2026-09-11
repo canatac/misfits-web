@@ -1,0 +1,51 @@
+{
+  "batch": "BATCH-19",
+  "misfits_web": {
+    "uiux_exit": 1,
+    "calendar_vitest_exit": 1,
+    "calendar_repro_exit": 1,
+    "calendar_http_probe_exit": 0,
+    "calendar_probe_exit": 0,
+    "uiux_counts": {
+      "failed": 4,
+      "passed": 5,
+      "total": 9
+    },
+    "calendar_counts": {
+      "failed": 2,
+      "passed": 1,
+      "total": 3
+    },
+    "calendar_http": [
+      "GET /calendar -> 500",
+      "GET /api/calendar/events -> 500"
+    ],
+    "calendar_selector_state": {
+      "roleTextboxRechercherUnPaysCount": 0,
+      "roleTextboxRechercherUnPaysVisible": false,
+      "hasInternalServerErrorText": true
+    },
+    "artifacts_dir": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-19"
+  },
+  "reimagined_guide": {
+    "python_exit": 1,
+    "cargo_exit": 101,
+    "python_counts": {
+      "passed": 5,
+      "failed": 3,
+      "total": 8
+    },
+    "cargo_counts": {
+      "status": "FAILED",
+      "passed": 0,
+      "failed": 1
+    },
+    "artifacts_dir": "/root/reimagined-guide/tests/integration/gherkin/artifacts/batch-19"
+  },
+  "open_regressions": {
+    "localStorage_secrets": "OPEN",
+    "mockEmails_runtime": "OPEN",
+    "noel_2026_12_25_month_day": "OPEN",
+    "imap_unwrap_expect": "OPEN"
+  }
+}

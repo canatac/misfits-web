@@ -1,0 +1,11 @@
+{
+  "row_id": "B34-R01",
+  "feature_page": "/dashboard/security",
+  "preconditions": "Repo /root/misfits-web deps installed; run vitest gherkin TS step file",
+  "gherkin_scenario": "Security dashboard secrets are not persisted to localStorage",
+  "ts_test_file": "tests/integration/gherkin/steps/uiux_api.steps.test.ts",
+  "target": "local",
+  "owner": "testeur-continuous-fallback",
+  "status": "failed",
+  "evidence": "artifacts/batch-34/matrix-row-001-vitest.log + artifacts/batch-34/matrix-row-001-vitest.exit=1"
+}

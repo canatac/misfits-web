@@ -1,0 +1,10 @@
+HTTP/2 500 
+access-control-allow-credentials: true
+access-control-expose-headers: content-type
+alt-svc: h3=":443"; ma=2592000
+content-type: application/json
+date: Mon, 07 Sep 2026 16:28:30 GMT
+vary: Origin, Access-Control-Request-Method, Access-Control-Request-Headers
+via: 1.1 Caddy
+content-length: 33
+

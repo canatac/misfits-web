@@ -1,0 +1,16 @@
+{
+  "state": "ON",
+  "paused_reason": "",
+  "priority_overrides": {},
+  "reassignments": {},
+  "cancelled": [],
+  "last_run": "2026-09-08T08:39:46Z",
+  "last_ticket_fingerprints": [
+    "MX-001:READY",
+    "MX-002:READY",
+    "MX-003:READY",
+    "GH-MW-262",
+    "GH-RG-171"
+  ],
+  "last_status": "tickets_dispatched"
+}

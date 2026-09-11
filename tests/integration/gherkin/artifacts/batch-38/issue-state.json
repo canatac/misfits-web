@@ -1,0 +1,1 @@
+{"number":262,"state":"OPEN","title":"BATCH-29: /api/calendar/events returns HTTP 500 (local + deployed), blocking holidays input on /calendar","url":"https://github.com/canatac/misfits-web/issues/262"}

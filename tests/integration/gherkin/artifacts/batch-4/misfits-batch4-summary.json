@@ -1,0 +1,21 @@
+{
+  "batch": "BATCH-4",
+  "uiux": {
+    "runner": "vitest",
+    "log": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-4/misfits-uiux-vitest.log",
+    "passed": 5,
+    "failed": 4,
+    "total": 9
+  },
+  "calendar": {
+    "runner": "vitest",
+    "log": "/root/misfits-web/tests/integration/gherkin/artifacts/batch-4/misfits-calendar-vitest.log",
+    "passed": 1,
+    "failed": 1,
+    "total": 2
+  },
+  "exit_codes": {
+    "uiux": 1,
+    "calendar": 1
+  }
+}
