@@ -173,6 +173,7 @@
 | MW-2026-015 | User lance l'import wizard Gmail/Outlook | Import réussi, dossiers préservés, métadonnées intactes | ❌ (#549) |
 | MW-2026-016 | User génère un masked email via l'API | Alias créé (xxxxx@misfits.ai), forward activé, compteur d'activité | ❌ (#54) |
 | MW-2026-017 | User reçoit un email phishing AI-generated | Détection SPF/DKIM/DMARC + avertissement phishing affiché | ❌ (#530) |
+| MW-2026-018 | User envoie email vers Gmail/Yahoo (bulk) | SPF/DKIM/DMARC validés, spam rate <0.3%, unsubscribe header | ❌ (#540) |
 
 ---
 
