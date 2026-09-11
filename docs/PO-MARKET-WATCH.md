@@ -219,7 +219,7 @@
 - One-click unsubscribe requis (List-Unsubscribe header)
 - Notre stack native répond déjà à ces exigences
 
-**Proton 2026 (détail)** : réécriture mobile Rust complète — iOS et Android partagent 80% du code (SwiftUI + Jetpack Compose + core Rust). Offline search, Category View auto-grouping, Gmail native, SimpleLogin intégrée. Enseignement: le Rust n'est pas seulement pour le backend — c'est un choix cross-platform.
+**Proton Scribe 2026 (mise à jour)** : l'assistant IA de Proton Mail est désormais inclus dans les plans Family et Duo (pas seulement Business). Disponible en 9 langues (anglais, français, allemand, espagnol, italien, portugais, russe, chinois, japonais). Fonctionne on-device ou sur les serveurs privés de Proton. Basé sur Mistral 7B, open source GPL-3.0. Fonctionnalités : Write for me, Proofread, Expand, Shorten. Coût : +$2.99/mois pour les business users. Notre différence : Hermes AI est intégré nativement (pas de supplément), fonctionne exclusivement on-device, et couvre plus de fonctionnalités (triage, résumés, chat, drafting).
 
 **Tuta 2026 (détail)** : Fast Sync 10x, nested labels, search amélioré, Tuta Drive open beta, inbox rules, schedule send et undo send déployés. **Nouveau 2026** : Tuta Mail et Calendar disponibles comme add-ons Thunderbird. Spam filters améliorés. Auto-save drafts. Badge counter iOS. Drag & drop nested folders. Leçon: la UX vitesse > E2EE pour le marché mainstream. L'expansion Thunderbird cible les users privacy-conscious.
 
