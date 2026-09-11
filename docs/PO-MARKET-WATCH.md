@@ -246,6 +246,14 @@
 
 **Proton Scribe 2026 (mise à jour)** : l'assistant IA de Proton Mail est désormais inclus dans les plans Family et Duo (pas seulement Business). Disponible en 9 langues (anglais, français, allemand, espagnol, italien, portugais, russe, chinois, japonais). Fonctionne on-device ou sur les serveurs privés de Proton. Basé sur Mistral 7B, open source GPL-3.0. Fonctionnalités : Write for me, Proofread, Expand, Shorten. Coût : +$2.99/mois pour les business users. Notre différence : Hermes AI est intégré nativement (pas de supplément), fonctionne exclusivement on-device, et couvre plus de fonctionnalités (triage, résumés, chat, drafting).
 
+**Proton 2026 (roadmap printemps/été)** :
+- **Mail** : Category overview (auto-grouping emails), send/receive from other providers (Gmail) directly, extensive mobile search
+- **Calendar** : Complete rewrite, offline mode, appointment booking pages, default calendar on Android
+- **VPN** : New WireGuard codebase (faster, more reliable, censorship-resistant), Stealth protocol on Linux, personalized connection preferences on Windows
+- **Pass** : autofill improvements (iFrame, URL matching), folder organization, SSH key support
+- **Drive** : 5GB free (up from 2GB)
+- **Lumo AI** : new AI assistant product
+
 **Tuta 2026 (détail)** : Fast Sync 10x, nested labels, search amélioré, Tuta Drive open beta, inbox rules, schedule send et undo send déployés. **Nouveau 2026** : Tuta Mail et Calendar disponibles comme add-ons Thunderbird. Spam filters améliorés. Auto-save drafts. Badge counter iOS. Drag & drop nested folders. Leçon: la UX vitesse > E2EE pour le marché mainstream. L'expansion Thunderbird cible les users privacy-conscious.
 
 **Basecamp 2026 (détail)** : Basecamp 5 — calendrier full-screen global + par projet, événements répétitifs, to-dos sur calendrier, menu unifié (SHIFT+J). Intégration email : projet = adresse email unique. Leçon: "email as task source" — notre route /calendar suit cette direction.
