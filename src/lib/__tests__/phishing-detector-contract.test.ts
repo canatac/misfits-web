@@ -365,11 +365,12 @@ describe("phishing-detector contract", () => {
     });
 
     it("sets scannedAt to ISO timestamp", () => {
-      const before = new Date().toISOString();
+      const before = Date.now();
       const result = detectPhishing(safeEmail);
-      const after = new Date().toISOString();
-      expect(result.scannedAt).toBeGreaterThanOrEqual(before);
-      expect(result.scannedAt).toBeLessThanOrEqual(after);
+      const after = Date.now();
+      const scanned = new Date(result.scannedAt).getTime();
+      expect(scanned).toBeGreaterThanOrEqual(before);
+      expect(scanned).toBeLessThanOrEqual(after);
     });
 
     it("flags typosquatting domain with +30 score", () => {
