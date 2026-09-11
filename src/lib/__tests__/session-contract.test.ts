@@ -23,7 +23,7 @@ describe("session contract", () => {
     user: {
       id: "user_42",
       email: "qa.free@misfits.fr",
-      role: "user",
+      role: "user" as const,
       twoFactorEnabled: false,
       createdAt: "2026-09-10T08:00:00Z",
       updatedAt: "2026-09-10T08:00:00Z",
