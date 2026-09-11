@@ -330,6 +330,8 @@
 
 **Posteo 2026** : email privacy-first, Allemagne. €1/mois flat rate. 2GB storage (extensible). PGP encryption, zero tracking, anonymous payment, green energy. GDPR compliant. Leçon : le modèle "flat rate €1" est disruptif. Notre différence : freemium + IA locale (Hermes) + stack email souveraine.
 
+**Mailbird 2026** : client desktop email (Windows, Mac). $4.03/user/mois. ChatGPT-based email authoring, unified inbox, multi-account, templates, pixel-tracker blocking. Leçon : les clients desktop intègrent l'IA (ChatGPT, etc.). Notre différence : IA locale (Hermes) + web PWA (pas desktop-only).
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
