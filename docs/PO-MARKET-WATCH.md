@@ -334,6 +334,15 @@
 
 **Fyxer 2026** : IA email pour Gmail/Outlook. $22.50-50/user/mois. Inbox triage, tone-matched drafts, meeting notes. Leçon : l'IA autonome pour l'email est la tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**Transactional Email APIs 2026** :
+- **Resend** : best developer experience. Free 3,000/mo, paid from $20/mo.
+- **Postmark** : best transactional deliverability. From $15/mo. Separate message streams.
+- **Amazon SES** : cheapest at volume. ~$0.10 per 1,000 emails.
+- **Mailgun** : established, high volume. Foundation from $35/mo for 50,000.
+- **Brevo** : marketing + transactional combined. Free 300/day.
+- **Deliverability ranking** : Postmark 83.3% inbox, Mailtrap 78.8%, Amazon SES 77.1%, Mailgun 71.4%, SendGrid 61.0%.
+- **Pour misfits.ai** : notre stack email souveraine (Rust/Actix-web) est l'alternative self-hosted à ces APIs cloud. Avantage = contrôle total des données.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
