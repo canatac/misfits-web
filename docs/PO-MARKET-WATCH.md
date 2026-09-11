@@ -314,6 +314,8 @@
 - **Interopérable** : fonctionne dans les 27 pays UE. Offline-capable pour certaines fonctions.
 - **Pour misfits.ai** : opportunité d'intégration pour l'authentification des utilisateurs européens. Pourrait remplir/compléter le login email traditionnel.
 
+**StartMail 2026** : email privacy-first, Pays-Bas. $2.50-4.99/mois. Unlimited aliases, PGP encryption, zero-access storage, no tracking, anonymous crypto payments. 20GB storage. 7-day free trial. Leçon : les providers privacy-first avec aliases illimités sont la norme 2026. Notre différence : freemium + IA locale (Hermes) + stack email souveraine.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
