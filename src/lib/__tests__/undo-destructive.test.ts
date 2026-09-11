@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { undoManager, createUndoableAction, UndoableAction } from './undo-destructive';
+import { undoManager, createUndoableAction, UndoableAction } from '../undo-destructive';
 
 vi.useFakeTimers();
 
@@ -91,7 +91,7 @@ describe('undo-destructive', () => {
       undoManager.register(b);
       const list = undoManager.list();
       expect(list).toHaveLength(2);
-      expect(list.map((item) => item.id)).toEqual(expect.arrayContaining([a.id, b.id]));
+      expect(list.map((item: UndoableAction) => item.id)).toEqual(expect.arrayContaining([a.id, b.id]));
     });
 
     it('returns empty array when no actions registered', () => {
