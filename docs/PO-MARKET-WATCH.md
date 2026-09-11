@@ -320,6 +320,14 @@
 
 **Shortwave 2026** : client Gmail-first avec IA native. $18-120/user/mois. AI search, bundles, Ghostwriter, semantic search, summarization. Gmail-only (pas Outlook). Leçon : l'IA native dans les clients email est la tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine (pas dépendance Gmail API).
 
+**MTA-STS/TLS-RPT 2026** :
+- **MTA-STS** (RFC 8461) : force le chiffrement TLS pour le transit email. Adoption significative en 2026.
+- **TLS-RPT** : rapports de livraison TLS. Permet d'identifier les échecs de chiffrement.
+- **US adoption** : 98.3% des domaines US exposés (pas de MTA-STS). Vulnérabilité aux downgrade attacks.
+- **CISA Binding Operational Directives** : DMARC mandatory pour US federal agencies. MTA-STS recommandé.
+- **Bonnes pratiques 2026** : SPF `~all` (pas `-all`) pour éviter les faux positifs. MTA-STS policy + TLS-RPT reporting.
+- **Pour misfits.ai** : notre stack email doit inclure MTA-STS et TLS-RPT pour la conformité et la sécurité.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
