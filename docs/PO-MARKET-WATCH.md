@@ -343,6 +343,13 @@
 - **Deliverability ranking** : Postmark 83.3% inbox, Mailtrap 78.8%, Amazon SES 77.1%, Mailgun 71.4%, SendGrid 61.0%.
 - **Pour misfits.ai** : notre stack email souveraine (Rust/Actix-web) est l'alternative self-hosted à ces APIs cloud. Avantage = contrôle total des données.
 
+**Email Workflow Automation 2026** :
+- **Agentic AI workflows** : AI agents plan, trigger, and complete workflow steps with minimal manual input.
+- **Hyperautomation** : AI + RPA + workflow automation + analytics combined.
+- **Email as programmable surface** : agents create identities, exchange messages, preserve context, trigger downstream work.
+- **State machine model** : routing deterministic, handoffs observable, duplicate sends blocked, audits possible.
+- **Pour misfits.ai** : notre stack email souveraine + IA locale (Hermes) = position unique pour l'automation email privacy-first.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
