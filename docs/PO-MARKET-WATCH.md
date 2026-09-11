@@ -431,6 +431,8 @@
 - **Superhuman/Shortwave/Spark/Mimestream** : faster client experience + AI.
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Self-hosted + privacy-first + autonomous agent.
 
+**FiloMail 2026** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous (AI summaries, to-do extraction, smart labels, AI drafts, natural language search). Gmail-only limitation. Leçon : les clients email + task management intégrés sont une tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
