@@ -392,6 +392,14 @@
 - **Sanctions** : €10M ou 2% CA (NIS2), 2% CA + €1M amendes personnelles (DORA).
 - **Pour misfits.ai** : issue #513 (NIS2/DORA compliance) critique. Notre stack email souveraine = avantage pour la conformité.
 
+**AI Agents for Email 2026** :
+- **AgentMail** : email API for AI agents. Inbox as identity, real-time webhooks, auto-threading, MCP support.
+- **Fyxer/Serif/Carly/Lindy** : autonomous email agents (triage, draft, route, meeting notes).
+- **Superhuman/Missive/Shortwave** : native AI in email clients (draft, summarize, search).
+- **SaneBox** : server-level filtering before inbox.
+- **Microsoft Copilot/Google Gemini** : AI baked into email provider.
+- **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Avantage = privacy (on-device) vs cloud AI.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
