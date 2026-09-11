@@ -396,6 +396,13 @@
 - **MCP + GDPR** : data minimization, zero-retention infrastructure, contrôle explicite des données vues par l'IA.
 - **Pour misfits.ai** : notre stack email souveraine (Scaleway FR) = avantage data residency EU natif. Issue #514 (export RGPD) critique.
 
+**BIMI/VMC 2026** :
+- **BIMI** : logo visible dans l'email. Nécessite SPF + DKIM + DMARC (p=quarantine/reject, pct=100) + certificat VMC/CMC.
+- **VMC** : certificat marque vérifiée. Requiert une marque déposée. Gmail blue checkmark + Apple Mail.
+- **CMC** : certificat marque commune. Pas de marque requise, mais 12 mois d'utilisation du logo. Gmail uniquement.
+- **Taux d'affichage BIMI** : 53.6% des BIMI publiés (2025). Red Sift Radar accélère la résolution des problèmes 10x.
+- **Pour misfits.ai** : issue #523 (BIMI brand logo) validée. Notre stack DKIM native = avantage pour BIMI.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
