@@ -403,6 +403,8 @@
 - **Taux d'affichage BIMI** : 53.6% des BIMI publiés (2025). Red Sift Radar accélère la résolution des problèmes 10x.
 - **Pour misfits.ai** : issue #523 (BIMI brand logo) validée. Notre stack DKIM native = avantage pour BIMI.
 
+**Reclaim.ai 2026** : AI scheduling + calendar. $10-22/seat/mois. Focus Time, Smart Meetings, scheduling links, habits, task integrations. Leçon : l'IA pour la productivité calendar/scheduling est un segment distinct. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
