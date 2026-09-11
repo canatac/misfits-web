@@ -34,6 +34,14 @@
 - 7 États membres renvoyés devant la CJUE pour non-transposition
 - Coordination CRA-NIS2 pour éviter les doublons de reporting
 - Opprobre sur les email providers : obligation de moyens renforcée
+
+**Privacy compliance 2026 (synthèse)** :
+- GDPR : +20% de hausses de amendes en 2024, email marketing violations = top 3 des causes d'amendes. Amendes jusqu'à 20M€ ou 4% CA.
+- CAN-SPAM : amendes jusqu'à $51,744/email. FTC + state attorneys general.
+- CPRA (Californie) : privacy risk assessments, cybersecurity audits, Delete Act (mécanisme centralisé de suppression).
+- US state laws : multiplication des lois state-level privacy (8+ states en 2025).
+- Trend : AI explicitly embedded in regulatory framework (GDPR Omnibus proposals nov 2025).
+- **Pour misfits.ai** : notre conformité native (DKIM/SPF/DMARC, privacy-by-design, data minimization) est un avantage compétitif face à ces exigences croissantes.
 - **DORA** (financial services) — pénalités jusqu'à 2% du CA annuel mondial. Même si misfits.ai n'est pas une entité financière, nos clients B2B peuvent exiger la conformité DORA.
 - **CRA** reporting obligatoire dès le **11 septembre 2026** : vulnérabilités exploitées (24h early warning, 72h notification détaillée). Full CRA (conformité technique, marquage CE, évaluation de conformité) → 11 décembre 2027. Notre stack (3 repos, Next.js, Rust, infra as code) est concerné. La transparence (repos publics) facilite la conformité (SBOM, documentation technique).
 
