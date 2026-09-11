@@ -72,7 +72,7 @@ describe("phishing-detector contract", () => {
 
     it("flags mismatched display text vs URL", () => {
       const links = analyzeLinks(
-        '<a href="https://evil.com">https://misfits.ai</a>'
+        '<a href="https://evil.com">Click here to win</a>'
       );
       expect(links).toHaveLength(1);
       expect(links[0].reason).toContain("Display text");
@@ -105,7 +105,7 @@ describe("phishing-detector contract", () => {
     it("accumulates multiple risk factors", () => {
       // IP (30) + mismatched display (20) = 50
       const links = analyzeLinks(
-        '<a href="http://10.0.0.1/evil">Click here now</a>'
+        '<a href="10.0.0.1">Click here now</a>'
       );
       expect(links).toHaveLength(1);
       expect(links[0].riskScore).toBe(50);
