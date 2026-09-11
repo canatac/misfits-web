@@ -270,6 +270,14 @@
 - **AI-generated campaigns** : 14x surge depuis décembre 2025. 56% des phishing détectés en décembre 2025 (vs 4% novembre).
 - **Défense** : phishing-resistant auth (FIDO2), continuous human risk management, multi-channel simulation training.
 
+**Post-Quantum Cryptography 2026** :
+- **NIST FIPS 203/204/205** (août 2024) : ML-KEM (key encapsulation), ML-DSA (signatures), SLH-DSA. Déployables maintenant.
+- **FN-DSA (Falcon)** : en cours de standardisation (signatures compactes).
+- **HQC** : sélectionné mars 2025 comme backup code-based de ML-KEM.
+- **CNSA 2.0** : migration commencé 2025. Classical algorithms interdits d'ici 2035.
+- **Menace** : "harvest now, decrypt later" — messages capturés aujourd'hui seront déchiffrés par ordinateur quantique (~15 ans).
+- **Pour misfits.ai** : issue #522 (Kyber+Dilithium) validée. Notre E2E encryption doit être quantum-resistant d'ici 2030.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
