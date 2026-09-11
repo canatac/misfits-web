@@ -328,6 +328,8 @@
 - **Bonnes pratiques 2026** : SPF `~all` (pas `-all`) pour éviter les faux positifs. MTA-STS policy + TLS-RPT reporting.
 - **Pour misfits.ai** : notre stack email doit inclure MTA-STS et TLS-RPT pour la conformité et la sécurité.
 
+**Posteo 2026** : email privacy-first, Allemagne. €1/mois flat rate. 2GB storage (extensible). PGP encryption, zero tracking, anonymous payment, green energy. GDPR compliant. Leçon : le modèle "flat rate €1" est disruptif. Notre différence : freemium + IA locale (Hermes) + stack email souveraine.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
