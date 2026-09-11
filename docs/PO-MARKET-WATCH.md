@@ -175,6 +175,7 @@
 | MW-2026-017 | User reçoit un email phishing AI-generated | Détection SPF/DKIM/DMARC + avertissement phishing affiché | ❌ (#530) |
 | MW-2026-018 | User envoie email vers Gmail/Yahoo (bulk) | SPF/DKIM/DMARC validés, spam rate <0.3%, unsubscribe header | ❌ (#540) |
 | MW-2026-019 | User envoie email E2EE à un destinataire PGP | Email chiffré, clé PGP vérifiée, déchiffrement côté destinataire | ❌ (#522) |
+| MW-2026-020 | IA locale (Hermes) traite un email sans cloud | Résumé/draft généré on-device, aucune donnée ne quitte l'appareil | ❌ (Hermes AI à implémenter) |
 
 ---
 
@@ -432,6 +433,14 @@
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Self-hosted + privacy-first + autonomous agent.
 
 **FiloMail 2026** : AI email + to-do. Gmail/Outlook/IMAP. Free tier generous (AI summaries, to-do extraction, smart labels, AI drafts, natural language search). Gmail-only limitation. Leçon : les clients email + task management intégrés sont une tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
+**On-Device AI 2026 (local LLM, privacy)** :
+- **Canary Mail** : AI on-device (résumé, priorisation). Données ne quittent pas l'appareil. PGP + HIPAA/GDPR.
+- **Proton Mail + Scribe** : zero-access E2EE, Swiss jurisdiction. Local AI optionnelle.
+- **Apple Intelligence** : traitement local pour requêtes simples, Private Cloud Compute pour complexes.
+- **alfred_** : AES-256, OAuth 2.0, ne entraîne pas sur vos données. Row-level security.
+- **Tendances** : local inference 18x moins cher que cloud. Privacy regulations (GDPR, LGPD, Law 25) = enforcement réel.
+- **Pour misfits.ai** : notre IA locale (Hermes) = position unique. "The AI that reads your inbox, but never leaks it."
 
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
