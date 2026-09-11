@@ -225,15 +225,15 @@
 - Notre stack (3 repos, Next.js, Rust, infra as code) est concerné
 - Notre avantage : transparence (repos publics) facilite la conformité (SBOM, documentation technique, gestion des CVEs)
 
-**BIMI 2026 (adoption stats)** :
-- **25%** des marques commerciales ont un enregistrement BIMI publié (2026)
-- **12%** ont un certificat VMC (blue checkmark dans Gmail)
-- **5-10%** d'open rate lift après déploiement BIMI
-- **340%** d'augmentation YoY des nouveaux enregistrements BIMI (2024 → 2026)
-- **35%** des Fortune 500 ont un DMARC p=reject
-- **30%** des senders sont encore partiellement non-conformes (Gmail/Yahoo)
-- Non-conformité = spam folder de 5-10% (baseline) à 22-34%
-- **Notre avantage** : stack DKIM native + BIMI validation (issue #53) = conformité intégrée
+**BIMI 2026 (adoption stats — DMARCguard Feb 2026)** :
+- **30.4%** DMARC adoption (1,670,975 domains out of 5.5M scanned)
+- **22.7%** DKIM adoption
+- **33,924** unique valid BIMI records observed through mid-2024, ~3,450 with VMC
+- **89.1%** inbox placement for fully authenticated domains (SPF+DKIM+DMARC) vs **44.2%** without
+- **45pp** deliverability gap between authenticated and unauthenticated senders
+- **83.1%** average inbox placement rate globally
+- **16.9%** emails never reach inbox (spam, bounced, blocked)
+- **Notre avantage** : stack DKIM native + BIMI validation (issue #53) = conformité intégrée + meilleure deliverabilité
 
 **Email Deliverability 2026** :
 - SPF valide : 94% des senders commerciaux
