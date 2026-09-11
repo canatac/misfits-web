@@ -461,6 +461,8 @@
 - **Tendance** : 90.6% des reviews Systeme.io = solo + 2-10 employés. Les petits business dominent.
 - **Pour misfits.ai** : notre modèle freemium (Free: 5GB + 10 aliases, Pro: $5/mo 50GB + custom domain, Business: $10/mo) = positionné pour les petits business et freelances.
 
+**Lindy 2026** : AI inbox assistant. $5/mois. Gmail/Outlook/iCloud. Autonomous multi-step email workflows. Sorting, drafting, follow-ups, CRM updates. Leçon : les AI inbox agents autonomes à prix accessible ($5/mois) démocratisent l'IA email. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
