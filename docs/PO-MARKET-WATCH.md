@@ -367,6 +367,14 @@
 - **DreamHost** : carbone neutre via offsets.
 - **Pour misfits.ai** : notre hébergement sur Scaleway (FR) = avantage carbone. Le "green badge" 100% renouvelable est un différenciateur marque fort.
 
+**AI Email Features 2026 (summarization, smart reply)** :
+- **Superhuman** : Write with AI, Instant Reply, Auto Summarize, Auto Drafts, Ask AI.
+- **Gemini in Gmail** : "Help me write", summary suggestions, smart reply, scheduling. Inclus dans Workspace.
+- **Shortwave** : Ghostwriter (drafts in your voice), Smart Bundles, AI search.
+- **Mailbutler** : Smart Assistant (GPT-4o). Summaries on demand, task extraction, tone adjustment.
+- **MCP integrations** : permettent à l'IA de tirer données du CRM, billing, project docs pour des réponses contextuelles.
+- **Pour misfits.ai** : notre IA locale (Hermes) doit inclure summarization, smart reply, et intégration MCP pour données contextuelles.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
