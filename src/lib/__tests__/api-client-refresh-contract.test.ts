@@ -9,12 +9,38 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
+// Mutable mock functions for session module
+const mockGetAccessToken = vi.fn();
+const mockLoadSession = vi.fn();
+const mockStoreSession = vi.fn();
+const mockClearSession = vi.fn();
+
+vi.mock("@/lib/session", () => ({
+  getAccessToken: () => mockGetAccessToken(),
+  loadSession: () => mockLoadSession(),
+  storeSession: (...args: unknown[]) => mockStoreSession(...args),
+  clearSession: () => mockClearSession(),
+}));
+
+// Mutable mock for session-payload parseSession
+const mockParseSession = vi.fn();
+vi.mock("@/lib/session-payload", () => ({
+  parseSession: (raw: unknown) => mockParseSession(raw),
+}));
+
+import type { Session } from "@/types/auth";
+
 describe("api-client refresh contract", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
+    mockGetAccessToken.mockReset();
+    mockLoadSession.mockReset();
+    mockStoreSession.mockReset();
+    mockClearSession.mockReset();
+    mockParseSession.mockReset();
   });
 
   afterEach(() => {
@@ -38,6 +64,25 @@ describe("api-client refresh contract", () => {
 
   it("refreshSession calls /auth/refresh with POST and credentials", async () => {
     const { refreshSession } = await import("@/lib/api-client");
+
+    const validSession: Session = {
+      id: "sess_new",
+      accessToken: "new_access_token",
+      refreshToken: "new_refresh_token",
+      expiresAt: 1726137600,
+      refreshExpiresAt: 1726742400,
+      issuedAt: 1726134000,
+      user: {
+        id: "u1",
+        email: "test@misfits.fr",
+        role: "user",
+        twoFactorEnabled: false,
+        createdAt: "2026-01-01",
+        updatedAt: "2026-01-01",
+      },
+    };
+
+    mockParseSession.mockReturnValue(validSession);
 
     fetchMock.mockResolvedValueOnce(
       new Response(
@@ -93,6 +138,8 @@ describe("api-client refresh contract", () => {
   it("refreshSession returns null on invalid session payload", async () => {
     const { refreshSession } = await import("@/lib/api-client");
 
+    mockParseSession.mockReturnValue(null);
+
     fetchMock.mockResolvedValueOnce(
       new Response(
         JSON.stringify({ session: { id: "incomplete" } }),
@@ -106,6 +153,25 @@ describe("api-client refresh contract", () => {
 
   it("single-flight: concurrent refreshSession calls share one fetch", async () => {
     const { refreshSession } = await import("@/lib/api-client");
+
+    const validSession: Session = {
+      id: "sess_single",
+      accessToken: "single_token",
+      refreshToken: "rt",
+      expiresAt: 1,
+      refreshExpiresAt: 2,
+      issuedAt: 3,
+      user: {
+        id: "u1",
+        email: "test@misfits.fr",
+        role: "user",
+        twoFactorEnabled: false,
+        createdAt: "2026-01-01",
+        updatedAt: "2026-01-01",
+      },
+    };
+
+    mockParseSession.mockReturnValue(validSession);
 
     fetchMock.mockResolvedValueOnce(
       new Response(
@@ -144,13 +210,8 @@ describe("api-client refresh contract", () => {
   });
 
   it("apiClient.get sends Authorization header when token present", async () => {
-    // Mock session module to return a token
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: () => "bearer_token_123",
-      loadSession: () => ({ user: { email: "test@misfits.fr" } }),
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
+    mockGetAccessToken.mockReturnValue("bearer_token_123");
+    mockLoadSession.mockReturnValue({ user: { email: "test@misfits.fr" } });
 
     const { apiClient } = await import("@/lib/api-client");
 
@@ -171,12 +232,8 @@ describe("api-client refresh contract", () => {
   });
 
   it("apiClient.post sets Content-Type and stringifies body", async () => {
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: () => null,
-      loadSession: () => null,
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
+    mockGetAccessToken.mockReturnValue(null);
+    mockLoadSession.mockReturnValue(null);
 
     const { apiClient } = await import("@/lib/api-client");
 
@@ -197,12 +254,8 @@ describe("api-client refresh contract", () => {
   });
 
   it("apiClient skips auth when skipAuth is true", async () => {
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: () => "should_not_be_sent",
-      loadSession: () => ({ user: { email: "test@misfits.fr" } }),
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
+    mockGetAccessToken.mockReturnValue("should_not_be_sent");
+    mockLoadSession.mockReturnValue({ user: { email: "test@misfits.fr" } });
 
     const { apiClient } = await import("@/lib/api-client");
 
@@ -221,12 +274,8 @@ describe("api-client refresh contract", () => {
   });
 
   it("apiClient throws ApiError on network failure", async () => {
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: () => null,
-      loadSession: () => null,
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
+    mockGetAccessToken.mockReturnValue(null);
+    mockLoadSession.mockReturnValue(null);
 
     const { apiClient, ApiError } = await import("@/lib/api-client");
 
@@ -236,12 +285,8 @@ describe("api-client refresh contract", () => {
   });
 
   it("x-user-id uses full email when no @ present", async () => {
-    vi.doMock("@/lib/session", () => ({
-      getAccessToken: () => null,
-      loadSession: () => ({ user: { email: "admin" } }),
-      storeSession: vi.fn(),
-      clearSession: vi.fn(),
-    }));
+    mockGetAccessToken.mockReturnValue(null);
+    mockLoadSession.mockReturnValue({ user: { email: "admin" } });
 
     const { apiClient } = await import("@/lib/api-client");
 
