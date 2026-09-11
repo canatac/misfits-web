@@ -1,5 +1,7 @@
 /**
  * Unit tests for focus visible.
+ *
+ * @vitest-environment jsdom
  */
 import { describe, it, expect } from "vitest";
 import {
