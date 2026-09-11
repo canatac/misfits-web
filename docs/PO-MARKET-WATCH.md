@@ -262,6 +262,14 @@
 
 **eM Client 2026** : client desktop sérieux (macOS, Windows, iOS, Android). Free tier + payant. Local storage, chiffrement, email/calendar/tasks unifié. HIPAA compliant. Leçon : les clients desktop locaux restent pertinents pour les users privacy-conscious qui ne veulent pas de cloud. Notre différence : web PWA + IA locale (Hermes) = moderne vs desktop traditionnel.
 
+**Email Security 2026 (synthèse)** :
+- **AI phishing** : 80% des attaques social engineering utilisent l'IA (ENISA 2025). Taux de clic 54% (AI) vs 12% (humain). Coût moyen $4.8M/incident (IBM).
+- **Deepfake** : +15% d'impersonations deepfake en 2026. Ciblent finance et HR.
+- **Multi-channel** : 40% des campagnes phishing dépassent l'email (Slack, Teams, SMS, QR codes).
+- **BEC** : FBI IC3 2025 — cyber-fraud = 85% des pertes ($17.7B, +29% YoY).
+- **AI-generated campaigns** : 14x surge depuis décembre 2025. 56% des phishing détectés en décembre 2025 (vs 4% novembre).
+- **Défense** : phishing-resistant auth (FIDO2), continuous human risk management, multi-channel simulation training.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
