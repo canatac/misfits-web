@@ -299,7 +299,7 @@
 
 **SaneBox 2026** : inbox filtering sans changer de client email. Alternative légère.
 
-**Spark 2026** : email client moderne, AI drafting, natural language search. $8.25/mo (Plus), $16.58/mo (Pro). Alternative légère à Missive.
+**Spark 2026 (mise à jour)** : client email moderne, AI drafting, Smart Inbox. Free plan disponible (1 compte, AI limitée). Plus $8.25/mois (annuel), Pro $16.58/mois (annuel). AI features : Compose, Rephrase, Translate, AI Assistant, meeting notes. Server-side processing (pas privacy-focused). Bon pour les équipes, moins puissant que Superhuman/Shortwave en IA. Positionnement "collaboration" plutôt que "IA power".
 
 **Front 2026** : support inbox + AI automations. $29/seat/mo. Alternative orientée support client.
 
