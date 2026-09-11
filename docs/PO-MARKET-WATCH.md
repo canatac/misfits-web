@@ -384,6 +384,14 @@
 - **Pour email** : vérification continue des identités, permissions limitées par défaut, détection anomalies de session.
 - **Pour misfits.ai** : notre stack email souveraine + IA locale (Hermes) = position unique pour implémenter ZTA.
 
+**NIS2/DORA 2026** :
+- **NIS2** (Directive UE 2022/2555) : cybersécurité horizontale, 18 secteurs. Transposition nationale terminée (sauf quelques États). Premiers audits juin 2026.
+- **DORA** (Règlement UE 2022/2554) : résilience opérationnelle numérique, secteur financier uniquement.
+- **Exigences email** : NIS2 Art.21 = chiffrement + authentification state-of-the-art. DORA RTS = spécifications techniques détaillées.
+- **Incident reporting** : 24h (alerte précoce), 72h (rapport détaillé), 30h (rapport final).
+- **Sanctions** : €10M ou 2% CA (NIS2), 2% CA + €1M amendes personnelles (DORA).
+- **Pour misfits.ai** : issue #513 (NIS2/DORA compliance) critique. Notre stack email souveraine = avantage pour la conformité.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
