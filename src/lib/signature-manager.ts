@@ -20,7 +20,7 @@ export interface SignatureManager {
   renderSignature(id: string, variables?: Record<string, string>): string | undefined;
 }
 
-class AccountSignatureManager implements SignatureManager {
+export class AccountSignatureManager implements SignatureManager {
   private signatures: Map<string, Signature[]> = new Map();
 
   getSignatures(accountId: string): Signature[] {

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { signatureManager, createSignatureFromTemplate, insertVariables, Signature } from '../signature-manager';
+import { AccountSignatureManager, createSignatureFromTemplate, insertVariables, Signature } from '../signature-manager';
 
 describe('signature-manager', () => {
+  let signatureManager: AccountSignatureManager;
+
   beforeEach(() => {
-    // Clear all signatures before each test
-    signatureManager.getSignatures('acc-1').forEach((s) => signatureManager.deleteSignature(s.id));
-    signatureManager.getSignatures('acc-2').forEach((s) => signatureManager.deleteSignature(s.id));
+    signatureManager = new AccountSignatureManager();
   });
 
   describe('createSignature', () => {
