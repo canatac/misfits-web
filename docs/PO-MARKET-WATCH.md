@@ -389,6 +389,13 @@
 - **Trend** : email + calendar + scheduling = workflow unifié. Les frontières s'estompent.
 - **Pour misfits.ai** : notre route /calendar (issue #526) doit intégrer booking links, sync CalDAV, et scheduling autonome via Hermes AI.
 
+**GDPR Data Residency 2026** :
+- **Données personnelles email** : adresses, noms, IP, cookies, device IDs, behavioral tracking, open/click data.
+- **Droits individuels** : accès, rectification, effacement (right to erasure), portabilité, restriction, objection. Délai 30 jours.
+- **Data residency EU** : Twilio SendGrid propose EU data residency. Données stockées/traitées dans l'UE.
+- **MCP + GDPR** : data minimization, zero-retention infrastructure, contrôle explicite des données vues par l'IA.
+- **Pour misfits.ai** : notre stack email souveraine (Scaleway FR) = avantage data residency EU natif. Issue #514 (export RGPD) critique.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
