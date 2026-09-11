@@ -176,7 +176,7 @@ describe("follow-up-detector contract", () => {
         },
       ];
       const result = detectFollowUps(
-        [{ ...baseEmail, preview: "This has a custom-marker in it" }],
+        [{ ...baseEmail, body: "<p>This has a custom-marker in it</p>" }],
         customRules
       );
       expect(result).toHaveLength(1);
