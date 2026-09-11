@@ -463,6 +463,17 @@
 
 **Lindy 2026** : AI inbox assistant. $5/mois. Gmail/Outlook/iCloud. Autonomous multi-step email workflows. Sorting, drafting, follow-ups, CRM updates. Leçon : les AI inbox agents autonomes à prix accessible ($5/mois) démocratisent l'IA email. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**Privacy-First Email Providers 2026 (synthèse)** :
+- **Proton Mail** : E2EE, zero-access, Swiss jurisdiction, anonymous signup. Free tier. Scribe AI ($2.99/mo).
+- **Tuta Mail** : E2EE post-quantique, zero-knowledge, Allemagne. Free tier. Quantum-safe encryption.
+- **Mailfence** : PGP + S/MIME, Belgique. Email/calendar/contacts/documents. €2.50/mois.
+- **StartMail** : PGP, Pays-Bas. Unlimited aliases. $2.50-4.99/mois.
+- **Posteo** : PGP, Allemagne. €1/mois. Green energy. Zero tracking.
+- **Hushmail** : PGP, Canada. HIPAA compliant. $4.99/mois.
+- **PreVeil** : E2EE, zero-knowledge. Free tier. Military-grade encryption.
+- **Virtru** : proprietary encryption. Seamless for Virtru users. Link-based for non-users.
+- **Pour misfits.ai** : notre stack email souveraine + IA locale = position unique. Avantage = contrôle total + privacy by design.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
