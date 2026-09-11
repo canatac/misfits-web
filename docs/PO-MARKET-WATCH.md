@@ -287,6 +287,8 @@
 - **Tendance** : enforcement ↑, average fine ~€2.4M. Email marketing violations = top 3 causes.
 - **Pour misfits.ai** : notre approche privacy-first (pas de tracking, pas de pub) = risque minimal. Issue #514 (export RGPD) critique.
 
+**Mimestream 2026** : client macOS natif Gmail. Alternatives : Spark Mail (cross-platform, free tier, smart inbox), Superhuman (premium, Outlook support), Shortwave (Gmail + AI search/summaries), Apple Mail (native, gratuit). Leçon : les clients Gmail natifs sont en déclin (Notion Mail shutdown, Google tue les clients tiers via API restrictions). Notre approche (web PWA souveraine) est à l'abri de ces changements d'API.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
