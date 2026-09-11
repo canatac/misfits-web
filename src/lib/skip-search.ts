@@ -48,7 +48,7 @@ export function isInputFocused(event: KeyboardEvent): boolean {
  * Check if modifier key is pressed.
  */
 export function hasModifierKey(event: KeyboardEvent): boolean {
-  return event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+  return Boolean(event.ctrlKey || event.metaKey || event.altKey || event.shiftKey);
 }
 
 /**
