@@ -375,6 +375,13 @@
 - **MCP integrations** : permettent à l'IA de tirer données du CRM, billing, project docs pour des réponses contextuelles.
 - **Pour misfits.ai** : notre IA locale (Hermes) doit inclure summarization, smart reply, et intégration MCP pour données contextuelles.
 
+**Secure Messaging Integration 2026** :
+- **Signal** : E2EE par défaut, métadonnées minimales, open source (client + server). Protocole Signal.
+- **WhatsApp** : E2EE par défaut (Protocole Signal), mais métadonnées étendues (Meta). Meta AI non E2EE.
+- **Telegram** : E2EE uniquement en "Secret Chats". Métadonnées étendues.
+- **Tendances** : intégration messaging + email (Basecamp, Notion Mail). Les frontières email/messaging s'estompent.
+- **Pour misfits.ai** : opportunité d'intégration messaging sécurisé (Signal/WhatsApp) pour la communication client.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
