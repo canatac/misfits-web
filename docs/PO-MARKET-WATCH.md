@@ -351,6 +351,14 @@
 - **State machine model** : routing deterministic, handoffs observable, duplicate sends blocked, audits possible.
 - **Pour misfits.ai** : notre stack email souveraine + IA locale (Hermes) = position unique pour l'automation email privacy-first.
 
+**Email Alias Services 2026** :
+- **SimpleLogin** : acquis par Proton. 10 aliases gratuites, $35/an premium. Intégration Proton Mail. Open source.
+- **Addy.io (AnonAddy)** : indépendant. Illimité gratuit, $12/an premium. Self-hostable. Open source.
+- **Firefox Relay** : 5 aliases gratuites, $0.99/mois premium. Intégration Firefox.
+- **DuckDuckGo Email** : illimité gratuit. Pas de domaine custom.
+- **Fonctionnement** : alias → forwarding → inbox réelle. Reverse aliases pour répondre sans exposer l'adresse réelle.
+- **Pour misfits.ai** : notre gestionnaire d'aliases (issue #516) doit inclure reverse aliases, custom domains, et intégration avec notre stack email souveraine.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
