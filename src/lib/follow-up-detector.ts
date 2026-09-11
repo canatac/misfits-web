@@ -61,7 +61,7 @@ export const DEFAULT_RULES: ReminderRule[] = [
     name: "Promise to send",
     type: "promise",
     pattern:
-      "\\b(I('ll| will| will send|'ll send|'ll share)\\s+.+\\s+(by|on|before)\\s+",
+      "\\b(I'll| will| will send|'ll send|'ll share)\\s+.+\\s+(by|on|before)\\s+",
     enabled: true,
     defaultDelayHours: 0,
     weight: 75,
@@ -71,7 +71,7 @@ export const DEFAULT_RULES: ReminderRule[] = [
     name: "Promise to get back",
     type: "promise",
     pattern:
-      "\\b(I('ll| will)\\s+(get back to you|follow up|circle back|reach out)\\b",
+      "\\b(I'll| will)\\s+(get back to you|follow up|circle back|reach out)\\b",
     enabled: true,
     defaultDelayHours: 48,
     weight: 65,
