@@ -174,6 +174,7 @@
 | MW-2026-016 | User génère un masked email via l'API | Alias créé (xxxxx@misfits.ai), forward activé, compteur d'activité | ❌ (#54) |
 | MW-2026-017 | User reçoit un email phishing AI-generated | Détection SPF/DKIM/DMARC + avertissement phishing affiché | ❌ (#530) |
 | MW-2026-018 | User envoie email vers Gmail/Yahoo (bulk) | SPF/DKIM/DMARC validés, spam rate <0.3%, unsubscribe header | ❌ (#540) |
+| MW-2026-019 | User envoie email E2EE à un destinataire PGP | Email chiffré, clé PGP vérifiée, déchiffrement côté destinataire | ❌ (#522) |
 
 ---
 
