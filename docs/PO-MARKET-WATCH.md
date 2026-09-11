@@ -255,6 +255,8 @@
 - Phased deployment recommended: testing mode first, then enforce
 - **Pour misfits.ai** : issue #537 (SMTP security hardening) covers STARTTLS, DANE, MTA-STS. Low adoption globally but NIS2/CRA may accelerate it.
 
+**Fastmail 2026 (vérification)** : stabilité des prix (Basic $3/mo, Standard $5/mo, Pro $9/mo). ~1000 masked aliases, JMAP natif, calendar sync. Pas de nouveautés majeures. Leur positionnement "privacy sans E2EE" vs notre "E2EE + IA locale".
+
 **HEY 2026 (mise à jour)** : le service de Basecamp reste à $99/an (personal) et $12/user/mo (custom domain). Le screener (filtrage des nouveaux expéditeurs) et le blocage des tracking pixels sont toujours leurs différenciateurs. Basecamp 5 (2026) confirme l'intégration calendrier-email. Leçon : l'email "opinionated" est un marché de niche — notre approche est moins radicale (compatible IMAP/SMTP).
 
 **Email migration tools 2026** : Google Data Migration Service permet l'import depuis IMAP, Gmail, Outlook. Besoin d'un wizard d'import pour les utilisateurs qui migrent vers misfits.ai (issue #549).
