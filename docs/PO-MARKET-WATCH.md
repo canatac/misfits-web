@@ -370,6 +370,14 @@
 - **Critères clés** : contraste couleur ≥4.5:1, texte alternatif images, structure logique (headings), liens descriptifs, pas de texte dans images, contenu zoomable 400%.
 - **Pour misfits.ai** : notre web PWA doit être conforme WCAG 2.2 AA. Critique pour l'accessibilité et la conformité légale.
 
+**Email Design Trends 2026** :
+- **Dark mode** : standard 2026, pas optionnel. Optimisation mobile-first obligatoire.
+- **Mobile-first** : 60-70% des emails ouverts sur mobile. Layouts single-column.
+- **Accessibilité** : contraste, alt text, structure logique, boutons tactiles (44x44px min).
+- **Minimalisme** : structures simplifiées, un CTA principal, typographie bold.
+- **Motion** : animations légères pour guider l'attention, pas pour le spectacle.
+- **Pour misfits.ai** : notre web PWA doit intégrer dark mode, mobile-first, et accessibilité dès le design.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
