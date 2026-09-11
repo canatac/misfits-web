@@ -358,6 +358,8 @@
 - **Betterbird** : Thunderbird fork for power users.
 - **Leçon** : les clients open source restent pertinents pour les users privacy-conscious. Notre différence : web PWA + IA locale (Hermes) + stack email souveraine.
 
+**Missive 2026** : team email collaboration. $14-36/user/mois. Shared inbox, internal chat-in-thread, SMS/social accounts, tasks, integrations. Leçon : la collaboration email en équipe est un segment distinct. Notre différence : web PWA souveraine + IA locale (Hermes).
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
