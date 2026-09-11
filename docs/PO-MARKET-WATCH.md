@@ -318,6 +318,8 @@
 
 **Mailfence 2026** : email privacy-first, Belgique (UE). €3.50/user/mois. E2EE, zero-access architecture, open-source, independently audited. 5-50GB/user. GDPR compliant. Leçon : les providers européens (Belgique, Pays-Bas, Suisse) dominent le segment privacy-first. Notre différence : IA locale (Hermes) + intégration email/calendar/tasks unifiée.
 
+**Shortwave 2026** : client Gmail-first avec IA native. $18-120/user/mois. AI search, bundles, Ghostwriter, semantic search, summarization. Gmail-only (pas Outlook). Leçon : l'IA native dans les clients email est la tendance 2026. Notre différence : IA locale (Hermes) + web PWA souveraine (pas dépendance Gmail API).
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
