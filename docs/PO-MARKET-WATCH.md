@@ -279,6 +279,14 @@
 - **Menace** : "harvest now, decrypt later" — messages capturés aujourd'hui seront déchiffrés par ordinateur quantique (~15 ans).
 - **Pour misfits.ai** : issue #522 (Kyber+Dilithium) validée. Notre E2E encryption doit être quantum-resistant d'ici 2030.
 
+**GDPR Enforcement 2026** :
+- **2,500+ fines** totales depuis 2018, >7B€ cumulés. ~1.2B€ en 2025 seul.
+- **Top fines 2026** : Free Mobile €42M (sécurité insuffisante), Reddit £14.5M (données enfants), IQVIA €5M (données santé).
+- **Google** : €325M (CNIL) — ads dans Gmail sans consentement + consentement invalide.
+- **ePrivacy** : tracking pixels dans emails = consentement requis (Italie).
+- **Tendance** : enforcement ↑, average fine ~€2.4M. Email marketing violations = top 3 causes.
+- **Pour misfits.ai** : notre approche privacy-first (pas de tracking, pas de pub) = risque minimal. Issue #514 (export RGPD) critique.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
