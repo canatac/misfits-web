@@ -260,6 +260,8 @@
 
 **Hey.com 2026** : email par Basecamp/37signals. 3 plans : HEY for You ($99/an), HEY for Work ($12/user/mois), HEY for Families ($179/an, 5 personnes). 30 jours d'essai gratuit. Features : screener (filtrage sender), privacy-first, no AI. Leçon : modèle "no free plan" + prix transparent. Notre différence : freemium + IA locale (Hermes). Hey cible les users anti-Gmail, prêts à payer pour la simplicité.
 
+**eM Client 2026** : client desktop sérieux (macOS, Windows, iOS, Android). Free tier + payant. Local storage, chiffrement, email/calendar/tasks unifié. HIPAA compliant. Leçon : les clients desktop locaux restent pertinents pour les users privacy-conscious qui ne veulent pas de cloud. Notre différence : web PWA + IA locale (Hermes) = moderne vs desktop traditionnel.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
