@@ -177,6 +177,7 @@
 | MW-2026-019 | User envoie email E2EE à un destinataire PGP | Email chiffré, clé PGP vérifiée, déchiffrement côté destinataire | ❌ (#522) |
 | MW-2026-020 | IA locale (Hermes) traite un email sans cloud | Résumé/draft généré on-device, aucune donnée ne quitte l'appareil | ❌ (Hermes AI à implémenter) |
 | MW-2026-021 | User souscrit au plan Pro ($5/mo) | Paiement réussi, stockage 50GB activé, custom domain disponible | ❌ (billing à implémenter) |
+| MW-2026-022 | User connecte un compte externe (GIMAP/SMTP) | Emails synchronisés, envoi possible, dossiers préservés | ❌ (#541) |
 
 ---
 
@@ -473,6 +474,13 @@
 - **PreVeil** : E2EE, zero-knowledge. Free tier. Military-grade encryption.
 - **Virtru** : proprietary encryption. Seamless for Virtru users. Link-based for non-users.
 - **Pour misfits.ai** : notre stack email souveraine + IA locale = position unique. Avantage = contrôle total + privacy by design.
+
+**AI Agent Workflow Automation 2026** :
+- **Tendance** : AI agents deviennent des workflow engines. Détection d'initiation d'actions, complétion de tâches multi-étapes sans prompt humain.
+- **Make (Integromat)** : hybride agents + automation. Combine agentic + deterministic automation.
+- **Google Cloud** : Agent trends 2026 report. "The era of simple prompts is over."
+- **Réalité** : les agents autonomes complètent <2.5% des tâches seuls. Le contexte, governance, et MCP sont mandatory.
+- **Pour misfits.ai** : notre IA locale (Hermes) = position unique pour l'automation email privacy-first.
 
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
