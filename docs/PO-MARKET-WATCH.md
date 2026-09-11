@@ -172,6 +172,7 @@
 | MW-2026-014 | User crée un événement depuis un email | Événement créé, pré-remplissage, sync CalDAV | ❌ (issue #526) |
 | MW-2026-015 | User lance l'import wizard Gmail/Outlook | Import réussi, dossiers préservés, métadonnées intactes | ❌ (#549) |
 | MW-2026-016 | User génère un masked email via l'API | Alias créé (xxxxx@misfits.ai), forward activé, compteur d'activité | ❌ (#54) |
+| MW-2026-017 | User reçoit un email phishing AI-generated | Détection SPF/DKIM/DMARC + avertissement phishing affiché | ❌ (#530) |
 
 ---
 
