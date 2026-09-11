@@ -400,6 +400,13 @@
 - **Microsoft Copilot/Google Gemini** : AI baked into email provider.
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique. Avantage = privacy (on-device) vs cloud AI.
 
+**MCP (Model Context Protocol) 2026** :
+- **Standard** : protocole ouvert (Anthropic) pour connecter IA → outils externes (email, calendar, CRM).
+- **Fonctionnalités** : ressources, prompts, tools (serveur) + sampling, roots, elicitation (client).
+- **Transports** : stdio + Streamable HTTP. HTTP+SSE déprécié.
+- **Adoption** : eM Client 11 ajoute MCP. Missive supporte MCP (Notion, Linear, Attio, Stripe).
+- **Pour misfits.ai** : opportunité d'intégrer MCP pour connecter Hermes AI à d'autres outils.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
