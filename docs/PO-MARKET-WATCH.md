@@ -26,7 +26,14 @@
 | **CRA** (Cyber Resilience Act, sep 2026) | Produits numériques EU | Reporting vulnérabilités 24h/72h (ENISA), full compliance déc 2027 |
 
 ### Focus NIS2 / DORA / CRA 2026
-- **NIS2** pleinement appliqué (oct 2026) — incident reporting 24h, audits supply chain, responsabilité du management.
+**NIS2 2026 (pleine application)** : la directive NIS2 (UE 2022/2555) est pleinement appliquée depuis octobre 2026. Points clés :
+- Article 23 : timeline incident reporting 24h/72h/30j
+- Article 20 : responsabilité personnelle du management
+- Amendes : jusqu'à 10M€ ou 2% du CA mondial
+- L'annexe d'un Implementing Act mentionne explicitement la sécurité email (DMARC/DKIM/SPF)
+- 7 États membres renvoyés devant la CJUE pour non-transposition
+- Coordination CRA-NIS2 pour éviter les doublons de reporting
+- Opprobre sur les email providers : obligation de moyens renforcée
 - **DORA** (financial services) — pénalités jusqu'à 2% du CA annuel mondial. Même si misfits.ai n'est pas une entité financière, nos clients B2B peuvent exiger la conformité DORA.
 - **CRA** reporting obligatoire dès le **11 septembre 2026** : vulnérabilités exploitées (24h early warning, 72h notification détaillée). Full CRA (conformité technique, marquage CE, évaluation de conformité) → 11 décembre 2027. Notre stack (3 repos, Next.js, Rust, infra as code) est concerné. La transparence (repos publics) facilite la conformité (SBOM, documentation technique).
 
