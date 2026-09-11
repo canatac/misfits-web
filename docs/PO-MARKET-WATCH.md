@@ -301,6 +301,8 @@
 
 **Spike 2026 (détail)** : email en style chat (bulles de message). $5/mo (Pro), $35/mo (AI agents). Unified inbox, team collaboration, video calls, AI writing. Avantage = UX moderne, chat naturel. Inconvénient = gimmicky UI (pour certains), pas d'IA autonome, prix élevé pour équipes. Leçon : l'email conversationnel est une tendance UX — notre "chat mail" (misfits.ai) est pionnière sur ce positionnement.
 
+**Canary Mail 2026** : client email privacy-first avec E2EE, AI locale (pas de cloud). $3/mo (Pro). Features : encryption, AI drafting/summarization, read receipts, unified inbox. Avantage = privacy + sécurité. Inconvénient = prix, moins de features collaboratives. Alternative à Spark pour les users privacy-conscious.
+
 **Missive 2026 (détail)** : team inbox + shared inboxes + internal chat + AI drafting. $14/mo (Starter), $24/mo (Productive, AI features), $36/mo (Business). AI via Missive credits (BYOK support). Free plan for teams up to 3. Avantage = collaboration + AI intégrés. Inconvénient = AI credits en sus, reporting limité. Leçon : l'email team avec AI intégrée est un positionnement fort — notre "chat mail" + IA locale peut viser le même marché mais avec la privacy en plus.
 
 **Drag 2026** : alternative à Missive. $12/$18 (AI inclus)/$24. Shared inbox avec Kanban board. AI included (pas de crédits en sus). Positionnement similaire à Missive mais moins cher.
