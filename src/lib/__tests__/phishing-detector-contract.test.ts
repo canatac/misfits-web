@@ -56,7 +56,7 @@ describe("phishing-detector contract", () => {
 
     it("flags IP address URLs", () => {
       const links = analyzeLinks(
-        '<a href="http://192.168.1.1/login">Click here</a>'
+        '<a href="192.168.1.1/login">Click here</a>'
       );
       expect(links).toHaveLength(1);
       expect(links[0].riskScore).toBeGreaterThanOrEqual(30);
