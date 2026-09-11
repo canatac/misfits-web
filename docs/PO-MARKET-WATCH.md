@@ -178,6 +178,7 @@
 | MW-2026-020 | IA locale (Hermes) traite un email sans cloud | Résumé/draft généré on-device, aucune donnée ne quitte l'appareil | ❌ (Hermes AI à implémenter) |
 | MW-2026-021 | User souscrit au plan Pro ($5/mo) | Paiement réussi, stockage 50GB activé, custom domain disponible | ❌ (billing à implémenter) |
 | MW-2026-022 | User connecte un compte externe (GIMAP/SMTP) | Emails synchronisés, envoi possible, dossiers préservés | ❌ (#541) |
+| MW-2026-023 | User change la langue de l'interface (i18n) | Interface traduite, dates/nombres formatés selon locale | ❌ (i18n à implémenter) |
 
 ---
 
@@ -481,6 +482,21 @@
 - **Google Cloud** : Agent trends 2026 report. "The era of simple prompts is over."
 - **Réalité** : les agents autonomes complètent <2.5% des tâches seuls. Le contexte, governance, et MCP sont mandatory.
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique pour l'automation email privacy-first.
+
+**Enterprise SSO 2026** :
+- **Standards** : SAML 2.0 (XML, enterprise) + OIDC (JSON, moderne) + OAuth 2.0.
+- **User Provisioning** : SCIM + automated provisioning. Self-service admin configuration.
+- **Role Management** : Granular RBAC mapping. Strong tenant isolation.
+- **Audit Logs** : Full audit trail. Compliance-ready reporting.
+- **MFA** : TOTP/HOTP, FIDO2/WebAuthn, biometrics, magic links.
+- **Identity Providers** : Okta, Microsoft Entra ID, Auth0, Keycloak.
+- **Pour misfits.ai** : le SSO/SAML sera nécessaire pour le plan Business/Enterprise. Prévoir intégration future.
+
+**Internationalization (i18n) 2026** :
+- **i18n vs l10n** : i18n = ingénierie (extraction strings, Unicode, RTL, locale-aware formatting). l10n = contenu (traduction, adaptation culturelle).
+- **Bonnes pratiques** : externaliser les strings, UTF-8 end-to-end, locale-aware libraries (Intl), pseudo-localization pour tests.
+- **ROI** : refactoring i18n post-développement = coûteux. Intégration dès le départ = négligeable.
+- **Pour misfits.ai** : notre web PWA Next.js doit intégrer i18n dès le design. Préparer l'internationalisation pour les marchés FR, EN, DE, ES.
 
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
