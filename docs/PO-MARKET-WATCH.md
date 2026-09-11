@@ -442,6 +442,14 @@
 - **Tendances** : local inference 18x moins cher que cloud. Privacy regulations (GDPR, LGPD, Law 25) = enforcement réel.
 - **Pour misfits.ai** : notre IA locale (Hermes) = position unique. "The AI that reads your inbox, but never leaks it."
 
+**Post-Quantum Email 2026** :
+- **Tuta Mail** : premier provider E2EE post-quantique (mars 2024). Protocole hybride x25519 + ML-KEM (NIST).
+- **Proton Mail** : lancement post-quantique en 2026.
+- **NIST FIPS 203/204/205** : ML-KEM (key encapsulation), ML-DSA (signatures), SLH-DSA. Déployables maintenant.
+- **US Federal Government** : PQC obligatoire d'ici 2026 pour agences et contractants.
+- **DKIM post-quantique** : Dilithium ou Falcon pour signatures résistantes.
+- **Pour misfits.ai** : notre E2E encryption (#522) doit intégrer PQC d'ici 2030.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
