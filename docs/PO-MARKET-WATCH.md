@@ -422,6 +422,14 @@
 - **Authentication** : stricter requirements (SPF/DKIM/DMARC/MTA-STS) critical for deliverability.
 - **Pour misfits.ai** : notre approche privacy-first + IA locale = aligné avec les tendances 2026.
 
+**Email Encryption 2026 (E2EE/PGP)** :
+- **E2EE standards** : PGP (open source, universel) vs S/MIME (entreprises). Tuta utilise chiffrement propriétaire (AES 256/RSA 2048).
+- **Proton Mail** : PGP + zero-access + Swiss jurisdiction. Lancement post-quantique en 2026.
+- **Tuta** : chiffrement propriétaire, sujets chiffrés, open source, Allemagne.
+- **Mailfence** : PGP + S/MIME, Belgique.
+- **Métadonnées** : E2EE ne protège pas les métadonnées (sender, recipient, timestamp, sujet PGP). Combiner avec Tor + aliases.
+- **Pour misfits.ai** : notre E2E encryption (issue #522) doit intégrer PGP pour l'interopérabilité + post-quantique d'ici 2030.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
