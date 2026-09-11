@@ -409,6 +409,8 @@
 
 **SaneBox 2026** : AI email filtering. $7-36/mois. Header-based processing (pas de lecture du corps). SaneLater, SaneBlackHole, SaneReminders, custom folders. Leçon : le filtrage AI passif est un segment distinct. Notre différence : IA locale (Hermes) + web PWA souveraine.
 
+**Clean Email 2026** : bulk inbox cleanup. $9.99/mois. Unsubscriber, Auto Clean rules, bulk actions, categorization. Leçon : le nettoyage d'email en masse est un segment distinct. Notre différence : IA locale (Hermes) + web PWA souveraine.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
