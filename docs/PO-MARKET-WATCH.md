@@ -359,6 +359,14 @@
 - **Fonctionnement** : alias → forwarding → inbox réelle. Reverse aliases pour répondre sans exposer l'adresse réelle.
 - **Pour misfits.ai** : notre gestionnaire d'aliases (issue #516) doit inclure reverse aliases, custom domains, et intégration avec notre stack email souveraine.
 
+**Green Email Hosting 2026** :
+- **Infomaniak** (Suisse) : data centers renouvelables propres. Héberge Proton Mail.
+- **Google Cloud** : 100% énergie renouvelable depuis 2017. Objectif 24/7 carbone-free d'ici 2030.
+- **GreenGeeks** : 300% renouvelable via RECs. Vérifié Green Web Foundation.
+- **Krystal** (UK) : 100% renouvelable. Vérifié Green Web Foundation.
+- **DreamHost** : carbone neutre via offsets.
+- **Pour misfits.ai** : notre hébergement sur Scaleway (FR) = avantage carbone. Le "green badge" 100% renouvelable est un différenciateur marque fort.
+
 **Open Source Email Clients 2026** :
 - **Thunderbird** : most established open source client. Free, Windows/Mac/Linux. Multiple accounts, filters, calendar, encryption. "Supernova" redesign (v115) improved UI. Monthly feature releases + annual ESR.
 - **Evolution** : full groupware (email/calendar/contacts/tasks). Exchange/ActiveSync support. Best for Microsoft 365 on Linux.
