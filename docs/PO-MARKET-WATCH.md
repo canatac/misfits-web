@@ -246,6 +246,15 @@
 - **Proton mobile Rust** : confirme que Rust est le choix performance pour l'email
 - **Notre stack** : Rust (backend) + Next.js (frontend) = positionné pour la vitesse
 
+**SMTP security 2026 (MTA-STS/DANE/TLS-RPT)** :
+- DMARCguard Feb 2026 scan (5.5M domains) : MTA-STS 0.3% (15,997), DANE 0.0% (30) — MTA-STS leads by 533x
+- US adoption (PowerDMARC 2026) : MTA-STS 1.7%, DNSSEC 18.0%, DMARC 95.8%, p=reject 49.0%
+- Microsoft 365 now supports both MTA-STS and DANE per connector
+- Best practice: deploy MTA-STS first for compatibility, then add DANE where DNSSEC is available
+- TLS-RPT (RFC 8460) is the feedback mechanism for both — JSON reports on TLS failures
+- Phased deployment recommended: testing mode first, then enforce
+- **Pour misfits.ai** : issue #537 (SMTP security hardening) covers STARTTLS, DANE, MTA-STS. Low adoption globally but NIS2/CRA may accelerate it.
+
 **HEY 2026 (mise à jour)** : le service de Basecamp reste à $99/an (personal) et $12/user/mo (custom domain). Le screener (filtrage des nouveaux expéditeurs) et le blocage des tracking pixels sont toujours leurs différenciateurs. Basecamp 5 (2026) confirme l'intégration calendrier-email. Leçon : l'email "opinionated" est un marché de niche — notre approche est moins radicale (compatible IMAP/SMTP).
 
 **Email migration tools 2026** : Google Data Migration Service permet l'import depuis IMAP, Gmail, Outlook. Besoin d'un wizard d'import pour les utilisateurs qui migrent vers misfits.ai (issue #549).
