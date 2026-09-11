@@ -289,6 +289,15 @@
 
 **Mimestream 2026** : client macOS natif Gmail. Alternatives : Spark Mail (cross-platform, free tier, smart inbox), Superhuman (premium, Outlook support), Shortwave (Gmail + AI search/summaries), Apple Mail (native, gratuit). Leçon : les clients Gmail natifs sont en déclin (Notion Mail shutdown, Google tue les clients tiers via API restrictions). Notre approche (web PWA souveraine) est à l'abri de ces changements d'API.
 
+**Gmail/Yahoo Sender Requirements 2026** :
+- **Bulk sender threshold** : 5,000+ emails/jour vers Gmail/Yahoo
+- **Authentication** : SPF + DKIM + DMARC obligatoires. DMARC policy minimum `p=none`, alignment requis.
+- **Spam rate** : <0.10% (ne doit jamais atteindre 0.30%)
+- **Unsubscribe** : one-click unsubscribe (RFC 8058) obligatoire pour marketing
+- **Infrastructure** : PTR records valides, TLS encryption, RFC 5322 compliance
+- **Apple** : devrait formaliser les exigences 2026-2027
+- **Pour misfits.ai** : notre stack email (SPF/DKIM/DMARC natif) est déjà conforme. Issue #540 (spam rate monitoring) critique pour maintenir <0.3%.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
