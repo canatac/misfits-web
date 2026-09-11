@@ -378,6 +378,12 @@
 - **Motion** : animations légères pour guider l'attention, pas pour le spectacle.
 - **Pour misfits.ai** : notre web PWA doit intégrer dark mode, mobile-first, et accessibilité dès le design.
 
+**Zero Trust Architecture (ZTA) 2026** :
+- **Principe** : "never trust, always verify". Chaque requête d'accès est vérifiée (identité, device, location, comportement).
+- **Avantages** : détection menaces ↓50%, surface attaque ↓50-80%, accès non autorisés ↓75-95%.
+- **Pour email** : vérification continue des identités, permissions limitées par défaut, détection anomalies de session.
+- **Pour misfits.ai** : notre stack email souveraine + IA locale (Hermes) = position unique pour implémenter ZTA.
+
 **Fastmail 2026 (détail)** : 3 plans (Basic $3/mo 6GB, Standard $5/mo 60GB, Pro $9/mo 150GB). ~1000 masked email aliases, JMAP natif, Squire 2.0, offline, calendar sync. Leur killer feature = masked emails anti-spam.
 
 **Skiff**: shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
