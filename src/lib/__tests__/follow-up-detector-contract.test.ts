@@ -129,7 +129,8 @@ describe("follow-up-detector contract", () => {
         {
           ...baseEmail,
           folder: "inbox",
-          preview: "I'll send the report by Friday",
+          preview: "Just checking in",
+          body: "<p>I'll send the report by Friday</p>",
         },
       ]);
       expect(result).toHaveLength(0);
