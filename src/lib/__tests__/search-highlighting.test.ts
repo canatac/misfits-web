@@ -26,6 +26,6 @@ describe("search-highlighting", () => {
   it("escapes html in highlighted text", () => {
     const result = computeHighlights("a", "<a>");
     const html = applyHighlights(result.text, result.ranges);
-    expect(html).toContain("&lt;mark&gt;");
+    expect(html).toBe("&lt;<mark>a</mark>&gt;");
   });
 });
