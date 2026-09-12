@@ -1,15 +1,38 @@
 /**
  * AttachmentCard — extracted from email-view (Sprint 13).
+ * Clickable image attachments open the inline preview lightbox.
  */
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { File as FileIcon } from "lucide-react";
 import type { EmailAttachment } from "@/types/email";
 import { ATTACHMENT_ICONS, formatFileSize } from "./email-view-utils";
 
-export function AttachmentCard({ attachment }: { attachment: EmailAttachment }) {
+export function AttachmentCard({
+  attachment,
+  onPreview,
+}: {
+  attachment: EmailAttachment;
+  onPreview?: () => void;
+}) {
   const Icon = ATTACHMENT_ICONS[attachment.type] ?? FileIcon;
+  const isPreviewable = attachment.contentType?.startsWith("image/") && onPreview;
   return (
-    <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card)] p-3 transition-colors hover:bg-[var(--color-muted)]">
+    <button
+      type="button"
+      onClick={() => {
+        if (isPreviewable) {
+          onPreview();
+        }
+      }}
+      className={cn(
+        "flex w-full cursor-default items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-card)] p-3 transition-colors hover:bg-[var(--color-muted)]",
+        isPreviewable && "cursor-pointer"
+      )}
+      disabled={!isPreviewable}
+      aria-label={isPreviewable ? `Preview ${attachment.filename}` : attachment.filename}
+      data-testid="attachment-card"
+    >
       <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-muted)]">
         <Icon className="h-5 w-5 text-[var(--color-muted-fg)]" />
       </div>
@@ -25,11 +48,12 @@ export function AttachmentCard({ attachment }: { attachment: EmailAttachment }) 
         <a
           href={attachment.downloadUrl ?? "#"}
           download={attachment.filename}
+          onClick={(e) => e.stopPropagation()}
           aria-label={`Download ${attachment.filename}`}
         >
           Download
         </a>
       </Button>
-    </div>
+    </button>
   );
 }

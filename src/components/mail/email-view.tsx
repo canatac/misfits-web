@@ -4,6 +4,8 @@
  * Email View — displays a single email with sanitized HTML body,
  * blocked external images (toggle to load), attachment list, action buttons,
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
+ *
+ * Includes inline attachment preview lightbox for image attachments (Issue #451).
  */
 import { useState, useMemo } from "react";
 import { useEmailBodyHydration } from "./hooks/useEmailBodyHydration";
@@ -24,6 +26,7 @@ import { useLabelStore } from "@/stores/label-store";
 import { LabelManager } from "@/components/mail/label-manager";
 import { SecurityBanner } from "@/components/mail/security-banner";
 import { AttachmentCard } from "./attachment-card";
+import { AttachmentPreviewLightbox } from "./attachment-preview-lightbox";
 import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
@@ -43,6 +46,8 @@ export function EmailView({ className }: EmailViewProps) {
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
 
+  const [previewAttachmentIndex, setPreviewAttachmentIndex] = useState<number | null>(null);
+
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId]
@@ -56,6 +61,18 @@ export function EmailView({ className }: EmailViewProps) {
       new Set([...email.labels, ...(assignments[email.id] ?? [])])
     );
   }, [email, assignments]);
+
+  const previewableAttachments = useMemo(() => {
+    if (!email) return [];
+    return email.attachments.filter((a) => a.contentType?.startsWith("image/"));
+  }, [email]);
+
+  const openPreview = (attachmentId: string) => {
+    const idx = previewableAttachments.findIndex((a) => a.id === attachmentId);
+    if (idx >= 0) setPreviewAttachmentIndex(idx);
+  };
+
+  const closePreview = () => setPreviewAttachmentIndex(null);
 
   const {
     loadImages,
@@ -223,13 +240,29 @@ export function EmailView({ className }: EmailViewProps) {
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {email.attachments.map((att) => (
-                  <AttachmentCard key={att.id} attachment={att} />
+                  <AttachmentCard
+                    key={att.id}
+                    attachment={att}
+                    onPreview={
+                      att.contentType?.startsWith("image/")
+                        ? () => openPreview(att.id)
+                        : undefined
+                    }
+                  />
                 ))}
               </div>
             </div>
           )}
         </div>
       </ScrollArea>
+
+      {previewAttachmentIndex != null && previewableAttachments.length > 0 && (
+        <AttachmentPreviewLightbox
+          attachments={previewableAttachments}
+          initialIndex={previewAttachmentIndex}
+          onClose={closePreview}
+        />
+      )}
 
       <LabelManager
         open={labelManagerOpen}
