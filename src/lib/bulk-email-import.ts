@@ -23,7 +23,7 @@ export interface ImportProgress {
 
 type ProgressCallback = (progress: ImportProgress) => void;
 
-const MBOX_FROM_RE = /^From .*[0-9]{4}$/m;
+const MBOX_FROM_RE = /^From .*(\d{4})/;
 const MBOX_HEADER_RE = /^[\w-]+: /;
 
 export function isMboxFormat(content: string): boolean {
