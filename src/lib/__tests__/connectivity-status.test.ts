@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   getConnectivityState,
   isOffline,
@@ -45,12 +45,12 @@ describe('connectivity-status', () => {
 
     it('updates timestamp on each change', () => {
       const before = getConnectivityState().timestamp;
-      vi.useFakeTimers();
-      vi.advanceTimersByTime(1000);
+      const spy = vi.spyOn(Date, 'now');
+      spy.mockReturnValue(before + 1000);
       updateConnectivity('offline');
       const after = getConnectivityState().timestamp;
       expect(after).toBeGreaterThan(before);
-      vi.useRealTimers();
+      spy.mockRestore();
     });
   });
 
