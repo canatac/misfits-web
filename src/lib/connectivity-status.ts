@@ -97,27 +97,19 @@ export function initConnectivityMonitoring(): () => void {
   const handleOnline = () => updateConnectivity('online');
   const handleOffline = () => updateConnectivity('offline');
 
-  // Use Network Information API for slow connection detection
-  const nav = navigator as Navigator & {
-    connection?: { effectiveType: string; addEventListener: (e: string, cb: () => void) => void };
-  };
-
-  const handleConnectionChange = () => {
-    const connection = nav.connection;
-    if (connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g') {
-      updateConnectivity('slow');
-    }
-  };
-
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
 
-  nav.connection?.addEventListener('change', handleConnectionChange);
+  const connection = (navigator as any).connection as { effectiveType?: string; addEventListener?: (e: string, cb: () => void) => void } | undefined;
+  connection?.addEventListener?.('change', () => {
+    if (connection?.effectiveType === '2g' || connection?.effectiveType === 'slow-2g') {
+      updateConnectivity('slow');
+    }
+  });
 
   return () => {
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
-    // Note: connection.removeEventListener not broadly supported
   };
 }
 
