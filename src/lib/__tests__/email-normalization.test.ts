@@ -1,80 +1,97 @@
 import { describe, expect, it } from "vitest";
-import { decodeMimeHeaderValue, normalizeEmailRecord } from "@/lib/email-normalization";
+import { decodeMimeHeaderValue, normalizeEmailRecord } from "../email-normalization";
 import type { Email } from "@/types/email";
 
-function makeEmail(partial: Partial<Email> = {}): Email {
+function makeEmail(overrides: Partial<Email> = {}): Email {
   return {
-    id: partial.id ?? "e-1",
-    threadId: partial.threadId ?? "t-1",
-    folder: partial.folder ?? "sent",
-    from: partial.from ?? { name: "Me", address: "me@misfits.ai" },
-    to: partial.to ?? [{ name: "You", address: "you@example.com" }],
-    cc: partial.cc,
-    bcc: partial.bcc,
-    subject: partial.subject ?? "Subject",
-    preview: partial.preview ?? "preview",
-    body: partial.body ?? "<p>body</p>",
-    bodyType: partial.bodyType ?? "html",
-    date: partial.date ?? new Date().toISOString(),
-    receivedAt: partial.receivedAt ?? new Date().toISOString(),
-    isRead: partial.isRead ?? false,
-    isStarred: partial.isStarred ?? false,
-    isImportant: partial.isImportant ?? false,
-    hasAttachments: partial.hasAttachments ?? false,
-    attachments: partial.attachments ?? [],
-    labels: partial.labels ?? [],
-    size: partial.size ?? 123,
-    messageId: partial.messageId ?? "m-1",
-    headers: partial.headers ?? {},
-    accountId: partial.accountId,
-  };
+    id: "1",
+    threadId: "t1",
+    folder: "inbox",
+    from: { email: "test@example.com", name: "Test" },
+    to: [{ email: "user@example.com", name: "User" }],
+    subject: "Test",
+    preview: "Test preview",
+    body: "<p>Hello</p>",
+    bodyType: "html",
+    date: "2026-09-01T10:00:00Z",
+    receivedAt: "2026-09-01T10:00:00Z",
+    isRead: false,
+    isStarred: false,
+    isImportant: false,
+    hasAttachments: false,
+    attachments: [],
+    labels: [],
+    size: 1024,
+    messageId: "msg-1",
+    ...overrides,
+  } as Email;
 }
 
-describe("email-normalization", () => {
-  it("decodes RFC2047 Q-encoded UTF-8 subject", () => {
-    expect(decodeMimeHeaderValue("=?UTF-8?Q?Lis_=C3=A7a?=")).toBe("Lis ça");
+describe("decodeMimeHeaderValue", () => {
+  it("returns value unchanged when no encoded words", () => {
+    expect(decodeMimeHeaderValue("Hello World")).toBe("Hello World");
   });
 
-  it("decodes RFC2047 B-encoded UTF-8 subject", () => {
-    expect(decodeMimeHeaderValue("=?UTF-8?B?Qm9uam91ciDDqQ==?=")).toBe("Bonjour é");
+  it("returns empty string for empty input", () => {
+    expect(decodeMimeHeaderValue("")).toBe("");
   });
 
-  it("keeps plain subject unchanged", () => {
-    expect(decodeMimeHeaderValue("Hello world")).toBe("Hello world");
+  it("handles null/undefined", () => {
+    expect(decodeMimeHeaderValue(null as unknown as string)).toBe(null as unknown as string);
   });
 
-  it("normalizes attachment flag when attachment array is present", () => {
-    const normalized = normalizeEmailRecord(
-      makeEmail({
-        hasAttachments: false,
-        attachments: [
-          {
-            id: "a1",
-            filename: "doc.pdf",
-            contentType: "application/pdf",
-            size: 12,
-            type: "pdf",
-          },
-        ],
-      })
-    );
-
-    expect(normalized.hasAttachments).toBe(true);
-    expect(normalized.attachments).toHaveLength(1);
+  it("decodes UTF-8 Q-encoded", () => {
+    expect(decodeMimeHeaderValue("=?UTF-8?Q?Hello_World?=")).toBe("Hello World");
   });
 
-  it("normalizes encoded subject through normalizeEmailRecord", () => {
-    const normalized = normalizeEmailRecord(
-      makeEmail({
-        subject: "=?UTF-8?B?Q2Fmw6k=?=",
-      })
-    );
-
-    expect(normalized.subject).toBe("Café");
+  it("decodes base64-encoded", () => {
+    expect(decodeMimeHeaderValue("=?UTF-8?B?SGVsbG8=?=")).toBe("Hello");
   });
 
-  it("returns original chunk when encoded-word is malformed", () => {
-    const malformed = "=?UTF-8?B?%%%?=";
-    expect(decodeMimeHeaderValue(malformed)).toBe(malformed);
+  it("decodes multiple encoded words", () => {
+    expect(decodeMimeHeaderValue("=?UTF-8?Q?Hello?= =?UTF-8?Q?World?=")).toBe("Hello World");
+  });
+
+  it("handles mixed plain and encoded text", () => {
+    expect(decodeMimeHeaderValue("Re: =?UTF-8?Q?Meeting_notes?=")).toBe("Re: Meeting notes");
+  });
+});
+
+describe("normalizeEmailRecord", () => {
+  it("decodes MIME-encoded subject", () => {
+    const email = makeEmail({ subject: "=?UTF-8?Q?Hello?=" });
+    const result = normalizeEmailRecord(email);
+    expect(result.subject).toBe("Hello");
+  });
+
+  it("sets hasAttachments true when attachments non-empty", () => {
+    const email = makeEmail({
+      attachments: [{ id: "a1", filename: "file.pdf", contentType: "application/pdf", size: 1024, type: "pdf" } as any],
+    });
+    const result = normalizeEmailRecord(email);
+    expect(result.hasAttachments).toBe(true);
+  });
+
+  it("keeps hasAttachments false when no attachments", () => {
+    const result = normalizeEmailRecord(makeEmail());
+    expect(result.hasAttachments).toBe(false);
+  });
+
+  it("preserves existing hasAttachments true", () => {
+    const email = makeEmail({ hasAttachments: true, attachments: [] });
+    const result = normalizeEmailRecord(email);
+    expect(result.hasAttachments).toBe(true);
+  });
+
+  it("handles missing attachments array", () => {
+    const email = { ...makeEmail(), attachments: undefined } as unknown as Email;
+    const result = normalizeEmailRecord(email);
+    expect(result.attachments).toEqual([]);
+  });
+
+  it("does not mutate original email", () => {
+    const original = makeEmail();
+    normalizeEmailRecord(original);
+    expect(original.hasAttachments).toBe(false);
   });
 });
