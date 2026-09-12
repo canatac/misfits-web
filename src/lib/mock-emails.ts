@@ -56,9 +56,7 @@ type EmailSeed = {
 const seeds = seedsJson as EmailSeed[];
 
 function makeAttachmentId(): string {
-  return typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `att-${Math.random().toString(36).slice(2)}`;
+  return `att-${Math.random().toString(36).slice(2)}`;
 }
 
 function seedMessageId(i: number): string {
