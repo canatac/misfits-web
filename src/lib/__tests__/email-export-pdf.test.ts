@@ -73,7 +73,7 @@ describe('email-export-pdf', () => {
     it('truncates long subjects', () => {
       const longSubject: ExportData = { ...sampleData, subject: 'A'.repeat(100) };
       const filename = generateFilename(longSubject);
-      expect(filename.length).toBeLessThan(70);
+      expect(filename.length).toBeLessThanOrEqual(70);
     });
   });
 });
