@@ -17,8 +17,9 @@ describe("email-digest", () => {
   it("groups messages by sender + normalized subject", () => {
     const groups = groupMessages(sample);
     expect(groups).toHaveLength(2);
-    expect(groups[0].messages).toHaveLength(2);
-    expect(groups[1].messages).toHaveLength(1);
+    // sorted by latestAt desc: bob (now) first, alice (now-500) second
+    expect(groups[0].messages).toHaveLength(1);
+    expect(groups[1].messages).toHaveLength(2);
   });
 
   it("builds a digest with correct totals", () => {
