@@ -40,9 +40,10 @@ describe('prefetch-bodies', () => {
     });
 
     it('returns null for expired entries', () => {
-      const spy = vi.spyOn(Date, 'now');
+      let fakeTime = 1_000_000;
+      const spy = vi.spyOn(Date, 'now').mockImplementation(() => fakeTime);
       prefetchEmailBody('email-1', 'Hello');
-      spy.mockReturnValue(Date.now() + 31_000);
+      fakeTime += 31_000;
       expect(getPrefetchedBody('email-1')).toBeNull();
       spy.mockRestore();
     });
@@ -90,11 +91,12 @@ describe('prefetch-bodies', () => {
 
   describe('cleanExpiredEntries', () => {
     it('removes only expired entries', () => {
-      const spy = vi.spyOn(Date, 'now');
+      let fakeTime = 1_000_000;
+      const spy = vi.spyOn(Date, 'now').mockImplementation(() => fakeTime);
       prefetchEmailBody('email-1', 'Old');
-      spy.mockReturnValue(Date.now() + 15_000);
+      fakeTime += 15_000;
       prefetchEmailBody('email-2', 'New');
-      spy.mockReturnValue(Date.now() + 35_000);
+      fakeTime += 20_000;
 
       const removed = cleanExpiredEntries();
       expect(removed).toBe(1);
