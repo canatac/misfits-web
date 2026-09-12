@@ -24,7 +24,7 @@ export function parseUnsubscribeHeader(header: string): UnsubscribeInfo | null {
 
   const url = urlMatch[1];
   const isMailto = url.toLowerCase().startsWith('mailto:');
-  const isOneClick = header.toLowerCase().includes('list-unsubscribe-post');
+  const isOneClick = header.toLowerCase().includes('=one-click') || header.toLowerCase().includes('list-unsubscribe-post');
 
   return {
     url,
