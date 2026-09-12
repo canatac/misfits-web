@@ -45,9 +45,7 @@ export function audit(
 ): AuditEntry {
   const entry: AuditEntry = {
     id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     type,
     at: Date.now(),
     origin,
