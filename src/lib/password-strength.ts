@@ -31,7 +31,7 @@ export function evaluatePasswordStrength(password: string): PasswordStrength {
       score: 0,
       label: "Very weak",
       color: "var(--color-danger-500)",
-      percent: 0,
+      percent: 10,
     };
   }
 
