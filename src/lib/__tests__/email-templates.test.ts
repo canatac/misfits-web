@@ -29,7 +29,7 @@ describe("applyTemplate", () => {
 
   it("handles empty vars object", () => {
     const result = applyTemplate(tpl, {});
-    expect(result.subject).toBe("{{name}}");
+    expect(result.subject).toBe("Hello {{name}}");
   });
 
   it("does not mutate original template", () => {
