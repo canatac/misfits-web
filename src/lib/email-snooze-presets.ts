@@ -25,7 +25,7 @@ function safeStorage(): Storage | null {
   try { return window.localStorage; } catch { return null; }
 }
 
-export function loadCustomSnoozePresets(userId: string): CustomSnoozePreset[] {
+function loadAllCustomSnoozePresets(): CustomSnoozePreset[] {
   const storage = safeStorage();
   if (!storage) return [];
   try {
@@ -33,18 +33,24 @@ export function loadCustomSnoozePresets(userId: string): CustomSnoozePreset[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((p: CustomSnoozePreset) => p.userId === userId);
+    return parsed;
   } catch { return []; }
+}
+
+export function loadCustomSnoozePresets(userId: string): CustomSnoozePreset[] {
+  return loadAllCustomSnoozePresets().filter((p) => p.userId === userId);
 }
 
 export function saveCustomSnoozePreset(userId: string, preset: SnoozePreset): CustomSnoozePreset[] {
   const storage = safeStorage();
   if (!storage) return [];
-  const existing = loadCustomSnoozePresets(userId).filter((p) => p.id !== preset.id);
+  const all = loadAllCustomSnoozePresets().filter(
+    (p) => !(p.userId === userId && p.id === preset.id),
+  );
   const custom: CustomSnoozePreset = { ...preset, userId };
-  existing.push(custom);
-  storage.setItem(SNOOZE_CUSTOM_KEY, JSON.stringify(existing));
-  return existing;
+  all.push(custom);
+  storage.setItem(SNOOZE_CUSTOM_KEY, JSON.stringify(all));
+  return loadCustomSnoozePresets(userId);
 }
 
 export function deleteCustomSnoozePreset(userId: string, presetId: string): void {
