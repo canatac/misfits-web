@@ -30,7 +30,7 @@ export function createRule(
   pattern: string
 ): NotificationRule {
   return {
-    id: crypto.randomUUID(),
+    id: `rule-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     type,
     field,
     pattern: pattern.toLowerCase(),
