@@ -50,7 +50,7 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
     // Simulate alert generation from generateAlerts()
     const alert = {
       id: `alert-${incident.id}`,
-      type: incident.type,
+      type: incident.type as string,
       severity: incident.type === "dmarc" ? "critical" : "warning",
       message: incident.message,
       timestamp: incident.ts,
