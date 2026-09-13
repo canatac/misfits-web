@@ -71,7 +71,7 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
       resolved: false,
     };
 
-    const severity = incident.type === "dmarc" ? "critical" : "warning";
+    const severity: "critical" | "warning" = incident.type === "dmarc" ? "critical" : "warning";
     expect(severity).toBe("critical");
   });
 
