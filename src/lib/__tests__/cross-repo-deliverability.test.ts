@@ -10,7 +10,7 @@ import type { AuthStatus } from "@/types/security";
 
 describe("cross-repo: deliverability-monitor + email-auth-api", () => {
   it("AdminDeliverabilityDiagnosticsResponse maps to HeaderAnalysis shape", () => {
-    const diagnostics: AdminDeliverabilityDiagnosticsResponse = {
+    const diagnostics = {
       window: "24h",
       spf: { valid: true, record: "v=spf1 include:_spf.google.com ~all" },
       dkim: { valid: false },
@@ -41,8 +41,8 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
     const incident = {
       id: "inc-1",
       ts: "2026-09-10T08:00:00Z",
-      type: "spf" as const,
-      status: "fail" as const,
+      type: "spf" as string,
+      status: "fail",
       message: "SPF record missing",
       resolved: false,
     };
@@ -50,7 +50,7 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
     // Simulate alert generation from generateAlerts()
     const alert = {
       id: `alert-${incident.id}`,
-      type: incident.type as string,
+      type: incident.type,
       severity: incident.type === "dmarc" ? "critical" : "warning",
       message: incident.message,
       timestamp: incident.ts,
@@ -65,21 +65,21 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
     const incident = {
       id: "inc-2",
       ts: "2026-09-10T08:00:00Z",
-      type: "dmarc" as const,
-      status: "fail" as const,
+      type: "dmarc" as string,
+      status: "fail",
       message: "DMARC policy not enforced",
       resolved: false,
     };
 
-    const severity: "critical" | "warning" = incident.type === "dmarc" ? "critical" : "warning";
+    const severity = incident.type === "dmarc" ? "critical" : "warning";
     expect(severity).toBe("critical");
   });
 
   it("compliance summary requires all auth checks passing", () => {
-    const allPass = [
-      { type: "spf" as const, status: "pass" as AuthStatus, lastChecked: new Date().toISOString() },
-      { type: "dkim" as const, status: "pass" as AuthStatus, lastChecked: new Date().toISOString() },
-      { type: "dmarc" as const, status: "pass" as AuthStatus, lastChecked: new Date().toISOString() },
+    const allPass: Array<{ type: string; status: AuthStatus; lastChecked: string }> = [
+      { type: "spf", status: "pass", lastChecked: new Date().toISOString() },
+      { type: "dkim", status: "pass", lastChecked: new Date().toISOString() },
+      { type: "dmarc", status: "pass", lastChecked: new Date().toISOString() },
     ];
 
     const passCount = allPass.filter((r) => r.status === "pass").length;
@@ -89,9 +89,9 @@ describe("cross-repo: deliverability-monitor + email-auth-api", () => {
   });
 
   it("non-compliant when any auth check fails", () => {
-    const results = [
-      { type: "spf" as const, status: "pass" as AuthStatus, lastChecked: new Date().toISOString() },
-      { type: "dkim" as const, status: "fail" as AuthStatus, lastChecked: new Date().toISOString() },
+    const results: Array<{ type: string; status: AuthStatus; lastChecked: string }> = [
+      { type: "spf", status: "pass", lastChecked: new Date().toISOString() },
+      { type: "dkim", status: "fail", lastChecked: new Date().toISOString() },
     ];
 
     const compliant = results.every((r) => r.status === "pass");
