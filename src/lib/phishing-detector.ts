@@ -93,80 +93,13 @@ function hasSuspiciousTld(domain: string): boolean {
 }
 
 /**
- * Analyze links in the body for mismatched display text, URL obfuscation,
- * and suspicious destinations.
+ * Strip HTML tags from text, leaving tag names behind (for display text analysis).
  */
-function analyzeLinks(body: string): {
-  links: SuspiciousLink[];
-  indicators: SecurityIndicator[];
-} {
-  const links: SuspiciousLink[] = [];
-  const indicators: SecurityIndicator[] = [];
-  const urls = extractLinks(body);
-
-  for (const url of urls) {
-    const domain = getDomain(url);
-    let riskScore = 0;
-    const reasons: string[] = [];
-
-    // Check for IP address instead of domain
-    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)) {
-      riskScore += 30;
-      reasons.push("URL uses IP address instead of domain name");
-    }
-
-    // Check for URL shorteners
-    if (/bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly|is\.gd/i.test(url)) {
-      riskScore += 20;
-      reasons.push("URL uses a link shortener");
-    }
-
-    // Check for suspicious TLD
-    if (domain && hasSuspiciousTld(domain)) {
-      riskScore += 25;
-      reasons.push(`Suspicious top-level domain: ${domain}`);
-    }
-
-    // Check for @ in URL (credential stuffing trick)
-    if (url.includes("@") && !url.startsWith("mailto:")) {
-      riskScore += 35;
-      reasons.push("URL contains @ symbol (credential obfuscation)");
-    }
-
-    // Check for excessive subdomains
-    if (domain && domain.split(".").length > 4) {
-      riskScore += 15;
-      reasons.push("Excessive subdomains");
-    }
-
-    // Check for non-standard port
-    if (/:\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
-      riskScore += 10;
-      reasons.push("Non-standard port in URL");
-    }
-
-    // Check for hex/encoded obfuscation
-    if (/%[0-9a-fA-F]{2}/.test(url)) {
-      riskScore += 10;
-      reasons.push("URL contains encoded characters");
-    }
-
-    if (riskScore > 0) {
-      links.push({
-        url,
-        reason: reasons.join("; ") || "Suspicious link",
-        riskScore: Math.min(riskScore, 100),
-      });
-      indicators.push({
-        type: "link",
-        severity: riskScore >= 30 ? "high" : riskScore >= 15 ? "medium" : "low",
-        description: `Suspicious link: ${domain || "unknown"}`,
-        detail: reasons.join("; "),
-      });
-    }
-  }
-
-  return { links, indicators };
+function stripHtmlTags(html: string): string {
+  return html.replace(/<[^>]*>/g, (match) => {
+    const tagName = match.match(/<\/?\s*([a-zA-Z0-9]+)/);
+    return tagName ? tagName[1] : "";
+  });
 }
 
 /**
@@ -278,7 +211,7 @@ function analyzeSender(email: Email): SecurityIndicator[] {
 /**
  * Analyze authentication headers (SPF/DKIM/DMARC).
  */
-function analyzeHeaders(email: Email): {
+function analyzeEmailHeaders(email: Email): {
   analysis: HeaderAnalysis;
   indicators: SecurityIndicator[];
 } {
@@ -341,8 +274,8 @@ export function scanEmail(email: Email): PhishingResult {
   // Run all analyzers
   const contentIndicators = analyzeContent(email);
   const senderIndicators = analyzeSender(email);
-  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeaders(email);
-  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinks(email.body);
+  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeEmailHeaders(email);
+  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinksInternal(email.body);
 
   allIndicators.push(...contentIndicators, ...senderIndicators, ...headerIndicators, ...linkIndicators);
 
@@ -403,3 +336,213 @@ export function getRecommendedAction(threatLevel: ThreatLevel): string {
 
 /** Backwards-compatible alias for scanEmail. */
 export const detectPhishing = scanEmail;
+
+/**
+ * Analyze links in HTML body and return suspicious links.
+ */
+export function analyzeLinks(html: string): SuspiciousLink[] {
+  return analyzeLinksInternal(html).links;
+}
+
+/**
+ * Internal implementation that returns both links and indicators.
+ */
+function analyzeLinksInternal(body: string): {
+  links: SuspiciousLink[];
+  indicators: SecurityIndicator[];
+} {
+  const links: SuspiciousLink[] = [];
+  const indicators: SecurityIndicator[] = [];
+
+  // Parse <a> tags to get href and display text
+  const linkRegex = /<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match;
+
+  while ((match = linkRegex.exec(body)) !== null) {
+    const url = match[1];
+    const rawDisplayText = match[2];
+    const displayText = stripHtmlTags(rawDisplayText).trim();
+    const domain = getDomain(url);
+    let riskScore = 0;
+    const reasons: string[] = [];
+
+    // Check for IP address instead of domain
+    if (/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)) {
+      riskScore += 30;
+      reasons.push("URL uses IP address instead of domain name");
+    }
+
+    // Check for punycode
+    if (/xn--/i.test(url)) {
+      riskScore += 40;
+      reasons.push("Punycode domain detected");
+    }
+
+    // Check for URL shorteners
+    if (/bit\.ly|tinyurl|t\.co|goo\.gl|ow\.ly|is\.gd/i.test(url)) {
+      riskScore += 20;
+      reasons.push("URL uses a link shortener");
+    }
+
+    // Check for suspicious TLD
+    if (domain && hasSuspiciousTld(domain)) {
+      riskScore += 25;
+      reasons.push(`Suspicious top-level domain: ${domain}`);
+    }
+
+    // Check for @ in URL (credential stuffing trick)
+    if (url.includes("@") && !url.startsWith("mailto:")) {
+      riskScore += 35;
+      reasons.push("URL contains @ symbol (credential obfuscation)");
+    }
+
+    // Check for excessive subdomains
+    if (domain && domain.split(".").length > 4) {
+      riskScore += 15;
+      reasons.push("Excessive subdomains");
+    }
+
+    // Check for non-standard port
+    if (/:\\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
+      riskScore += 10;
+      reasons.push("Non-standard port in URL");
+    }
+
+    // Check for hex/encoded obfuscation
+    if (/%[0-9a-fA-F]{2}/.test(url)) {
+      riskScore += 10;
+      reasons.push("URL contains encoded characters");
+    }
+
+    // Check for mismatched display text vs URL
+    if (displayText && displayText.length > 0) {
+      const displayDomain = getDomain(displayText);
+      if (displayDomain && domain && displayDomain !== domain) {
+        riskScore += 20;
+        reasons.push("Display text doesn't match URL");
+      }
+      if (displayDomain && domain && displayDomain === domain) {
+        continue;
+      }
+      if (/click here|click below|verify|update|secure login/i.test(displayText) && riskScore === 0) {
+        riskScore += 20;
+        reasons.push("Display text is suspicious");
+      }
+    }
+
+    if (riskScore > 0) {
+      links.push({
+        url,
+        displayText: displayText || undefined,
+        reason: reasons.join("; ") || "Suspicious link",
+        riskScore: Math.min(riskScore, 100),
+      });
+      indicators.push({
+        type: "link",
+        severity: riskScore >= 30 ? "high" : riskScore >= 15 ? "medium" : "low",
+        description: `Suspicious link: ${domain || "unknown"}`,
+        detail: reasons.join("; "),
+      });
+    }
+  }
+
+  return { links, indicators };
+}
+
+/**
+ * Analyze email headers for SPF/DKIM/DMARC status.
+ */
+export function analyzeHeaders(headers: Record<string, string> | undefined): HeaderAnalysis {
+  const h = headers || {};
+  const spf = (h["spf"] || h["Received-SPF"] || h["received-spf"] || "none").toLowerCase();
+  const dkim = (h["dkim"] || h["DKIM-Signature"] || h["dkim-signature"] || "none").toLowerCase();
+  const dmarc = (h["dmarc"] || h["Authentication-Results"] || "none").toLowerCase();
+
+  const analysis: HeaderAnalysis = {
+    spf: spf.includes("pass") ? "pass" : spf.includes("fail") ? "fail" : "none",
+    dkim: dkim.includes("pass") || h["DKIM-Signature"] || h["dkim-signature"] ? "pass" : dkim.includes("fail") ? "fail" : "none",
+    dmarc: dmarc.includes("pass") ? "pass" : dmarc.includes("fail") ? "fail" : "none",
+    details: [],
+  };
+
+  if (analysis.spf === "fail") {
+    analysis.details.push("SPF failed — sender IP not authorized");
+  }
+  if (analysis.dkim === "fail") {
+    analysis.details.push("DKIM failed — signature invalid");
+  }
+  if (analysis.dmarc === "none" && analysis.spf !== "none") {
+    analysis.details.push("DMARC not found");
+  }
+
+  return analysis;
+}
+
+/**
+ * Detect typosquatting domains.
+ */
+export function detectTyposquatting(domain: string): boolean {
+  const typosquatPatterns = [
+    /paypa1/, /g00gle/, /arnazon/, /micros0ft/, /app1e/, /faceb00k/, /tw1tter/,
+    /lndedln/, /llnkedln/, /netf1x/, /d1sh/, /d1shnetwork/, /spot1fy/,
+  ];
+  const lower = domain.toLowerCase();
+  return typosquatPatterns.some((p) => p.test(lower));
+}
+
+/**
+ * Detect urgency scam patterns.
+ */
+export function detectUrgencyScam(body: string): SecurityIndicator[] {
+  const indicators: SecurityIndicator[] = [];
+  const urgencyPatterns = [
+    /\burgent\b/i, /\basap\b/i, /\bimmediately\b/i, /\bact now\b/i,
+    /\bverify your account\b/i, /\bclick here\b/i, /\bsuspend/i,
+    /\bdeadline\b/i, /\byou must\b/i, /\bfinal notice\b/i, /\baccount will be\b/i,
+  ];
+
+  for (const pattern of urgencyPatterns) {
+    if (pattern.test(body)) {
+      indicators.push({
+        type: "content",
+        severity: "medium",
+        description: "Urgency language detected",
+      });
+      break;
+    }
+  }
+
+  return indicators;
+}
+
+/**
+ * Detect Business Email Compromise (BEC).
+ */
+export function detectBEC(email: Email): SecurityIndicator[] {
+  const indicators: SecurityIndicator[] = [];
+  const text = `${email.subject} ${email.preview}`.toLowerCase();
+
+  // Skip internal emails (misfits.ai domain)
+  const fromDomain = getDomain(email.from.address);
+  if (fromDomain === "misfits.ai" || email.from.name === email.from.address) {
+    return indicators;
+  }
+
+  const financialKeywords = [
+    /wire transfer/i, /payment/i, /invoice/i, /bank account/i,
+    /transfer funds/i, /urgent payment/i, /ceo/i, /cfo/i, /director/i,
+  ];
+
+  const hasFinancial = financialKeywords.some((p) => p.test(text));
+  const hasUrgency = /\burgent\b/i.test(text) || /\bimmediately\b/i.test(text);
+
+  if (hasFinancial && hasUrgency) {
+    indicators.push({
+      type: "bec",
+      severity: "high",
+      description: "Potential Business Email Compromise",
+    });
+  }
+
+  return indicators;
+}
