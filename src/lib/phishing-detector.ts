@@ -46,6 +46,8 @@ const URGENCY_PATTERNS = [
   /update your payment/i, /invoice attached/i, /wire transfer/i,
   /bank account/i, /social security/i, /ssn/i, /password/i,
   /click here/i, /click below/i, /log in to/i, /sign in to/i,
+  /act now/i, /asap/i, /final notice/i, /expire/i, /suspended/i,
+  /limited time/i, /right away/i, /must verify/i, /verify now/i,
 ];
 
 /** Regex for extracting URLs from text. */
@@ -53,6 +55,20 @@ const URL_REGEX = /https?:\/\/[^\s<>"']+/gi;
 
 /** Regex for extracting email addresses from text. */
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
+
+/** Known typosquatting domains. */
+const TYPOSQUAT_DOMAINS = [
+  "paypa1.com", "g00gle.com", "arnazon.com", "micros0ft.com", "app1e.com",
+  "faceb00k.com", "tw1tter.com", "l1nkedin.com", "netfl1x.com", "amaz0n.com",
+  "micr0soft.com", "g00gle.com", "y4hoo.com", "pr0ton.com",
+];
+
+/** BEC-related financial keywords. */
+const BEC_FINANCIAL_KEYWORDS = [
+  "wire transfer", "payment", "invoice", "bank account", "routing number",
+  "swift code", "iban", "funds transfer", "urgent payment", "ceo requested",
+  "confidential payment", "urgent wire", "transfer funds",
+];
 
 function extractLinks(body: string): string[] {
   return body.match(URL_REGEX) || [];
@@ -96,7 +112,11 @@ function hasSuspiciousTld(domain: string): boolean {
  * Analyze links in the body for mismatched display text, URL obfuscation,
  * and suspicious destinations.
  */
-function analyzeLinks(body: string): {
+export function analyzeLinks(body: string): SuspiciousLink[] {
+  return analyzeLinksDetailed(body).links;
+}
+
+function analyzeLinksDetailed(body: string): {
   links: SuspiciousLink[];
   indicators: SecurityIndicator[];
 } {
@@ -140,7 +160,7 @@ function analyzeLinks(body: string): {
     }
 
     // Check for non-standard port
-    if (/:\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
+    if (/:\\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
       riskScore += 10;
       reasons.push("Non-standard port in URL");
     }
@@ -277,49 +297,99 @@ function analyzeSender(email: Email): SecurityIndicator[] {
 
 /**
  * Analyze authentication headers (SPF/DKIM/DMARC).
+ * Can accept either an Email object or a raw headers record.
  */
-function analyzeHeaders(email: Email): {
-  analysis: HeaderAnalysis;
-  indicators: SecurityIndicator[];
-} {
-  const indicators: SecurityIndicator[] = [];
-  const headers = email.headers || {};
+export function analyzeHeaders(input: Email | Record<string, string> | undefined): HeaderAnalysis {
+  const headers = input === undefined
+    ? {}
+    : "headers" in input
+      ? (input.headers || {})
+      : input;
 
-  const spf = (headers["spf"] || headers["Received-SPF"] || "none").toLowerCase();
-  const dkim = (headers["dkim"] || headers["DKIM-Signature"] ? "pass" : "none").toLowerCase();
-  const dmarc = (headers["dmarc"] || headers["Authentication-Results"] || "none").toLowerCase();
+  const spf = (headers["spf"] || headers["Received-SPF"] || headers["received-spf"] || "none").toLowerCase();
+  const dkimHeader = headers["dkim"] || headers["DKIM-Signature"] || headers["dkim-signature"];
+  const dkim = dkimHeader ? "pass" : "none";
+  const dmarcRaw = (headers["dmarc"] || headers["Authentication-Results"] || "none").toLowerCase();
 
   const analysis: HeaderAnalysis = {
     spf: spf.includes("pass") ? "pass" : spf.includes("fail") ? "fail" : "none",
-    dkim: dkim.includes("pass") || headers["DKIM-Signature"] ? "pass" : "none",
-    dmarc: dmarc.includes("pass") ? "pass" : dmarc.includes("fail") ? "fail" : "none",
+    dkim: dkim.includes("pass") ? "pass" : "none",
+    dmarc: dmarcRaw.includes("dmarc=pass") ? "pass" : dmarcRaw.includes("dmarc=fail") ? "fail" : "none",
     details: [],
   };
 
   if (analysis.spf === "fail") {
-    indicators.push({
-      type: "header",
-      severity: "high",
-      description: "SPF check failed",
-      detail: "Sender not authorized to send from this domain",
-    });
+    analysis.details.push("SPF failed — sender IP not authorized");
   }
   if (analysis.dkim === "none") {
-    indicators.push({
-      type: "header",
-      severity: "low",
-      description: "No DKIM signature",
-    });
+    analysis.details.push("DKIM not found");
+  }
+  if (analysis.dmarc === "none") {
+    analysis.details.push("DMARC not found");
   }
   if (analysis.dmarc === "fail") {
+    analysis.details.push("DMARC failed");
+  }
+
+  return analysis;
+}
+
+/**
+ * Detect typosquatting domains.
+ */
+export function detectTyposquatting(domain: string): boolean {
+  const lower = domain.toLowerCase();
+  for (const typosquat of TYPOSQUAT_DOMAINS) {
+    if (lower === typosquat || lower.endsWith("." + typosquat)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Detect urgency/scam language in text.
+ */
+export function detectUrgencyScam(text: string): SecurityIndicator[] {
+  const indicators: SecurityIndicator[] = [];
+  for (const pattern of URGENCY_PATTERNS) {
+    if (pattern.test(text)) {
+      indicators.push({
+        type: "content",
+        severity: "medium",
+        description: "Urgency language detected",
+        detail: `Pattern matched: ${pattern.source}`,
+      });
+      break; // Only first match
+    }
+  }
+  return indicators;
+}
+
+/**
+ * Detect Business Email Compromise (BEC) indicators.
+ */
+export function detectBEC(email: Email): SecurityIndicator[] {
+  const indicators: SecurityIndicator[] = [];
+
+  // Skip internal emails (from.name === from.address for internal)
+  if (email.from.name && email.from.address && email.from.name === email.from.address) {
+    return indicators;
+  }
+
+  const text = `${email.subject} ${email.preview} ${email.body}`.toLowerCase();
+  const hasFinancialKeyword = BEC_FINANCIAL_KEYWORDS.some((kw) => text.includes(kw));
+
+  if (hasFinancialKeyword) {
     indicators.push({
-      type: "header",
+      type: "bec",
       severity: "high",
-      description: "DMARC check failed",
+      description: "Potential Business Email Compromise",
+      detail: "Email contains financial keywords that may indicate BEC",
     });
   }
 
-  return { analysis, indicators };
+  return indicators;
 }
 
 /**
@@ -341,10 +411,23 @@ export function scanEmail(email: Email): PhishingResult {
   // Run all analyzers
   const contentIndicators = analyzeContent(email);
   const senderIndicators = analyzeSender(email);
-  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeaders(email);
-  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinks(email.body);
+  const headerAnalysis = analyzeHeaders(email);
+  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinksDetailed(email.body);
+  const typosquatIndicator = detectTyposquatting(getDomain(email.from.address))
+    ? [{ type: "domain" as const, severity: "high" as const, description: `Typosquatting domain: ${getDomain(email.from.address)}` }]
+    : [];
+  const urgencyIndicators = detectUrgencyScam(`${email.subject} ${email.preview} ${email.body}`);
+  const becIndicators = detectBEC(email);
 
-  allIndicators.push(...contentIndicators, ...senderIndicators, ...headerIndicators, ...linkIndicators);
+  allIndicators.push(
+    ...contentIndicators,
+    ...senderIndicators,
+    ...headerAnalysis.details.map((d) => ({ type: "header" as const, severity: "low" as const, description: d })),
+    ...linkIndicators,
+    ...typosquatIndicator,
+    ...urgencyIndicators,
+    ...becIndicators,
+  );
 
   // Calculate score
   let score = 0;
