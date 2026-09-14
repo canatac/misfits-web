@@ -12,24 +12,24 @@ export interface UnsubscribeInfo {
   isOneClick: boolean;
 }
 
-export interface UnsubscribeToken { 
-  email: string; 
-  newsletterId: string; 
-  signature: string; 
-  expiresAt: number 
+export interface UnsubscribeToken {
+  email: string;
+  newsletterId: string;
+  signature: string;
+  expiresAt: number;
 }
 
-export interface UnsubscribeResult { 
-  success: boolean; 
-  newsletterId: string; 
-  preferencesRetained: boolean 
+export interface UnsubscribeResult {
+  success: boolean;
+  newsletterId: string;
+  preferencesRetained: boolean;
 }
 
-export interface BulkUnsubscribeResult { 
-  total: number; 
-  succeeded: number; 
-  failed: number; 
-  results: UnsubscribeResult[] 
+export interface BulkUnsubscribeResult {
+  total: number;
+  succeeded: number;
+  failed: number;
+  results: UnsubscribeResult[];
 }
 
 export function generateUnsubscribeToken(email: string, newsletterId: string, ttlMs: number = 86400000): UnsubscribeToken {
@@ -37,14 +37,18 @@ export function generateUnsubscribeToken(email: string, newsletterId: string, tt
   return { email, newsletterId, signature: `${email}:${newsletterId}:${expiresAt}`, expiresAt };
 }
 
-export function isTokenValid(token: UnsubscribeToken): boolean { return token.expiresAt > Date.now(); }
+export function isTokenValid(token: UnsubscribeToken): boolean {
+  return token.expiresAt > Date.now();
+}
 
 export function parseUnsubscribeToken(payload: string): UnsubscribeToken | null {
   try {
     const d = JSON.parse(decodeURIComponent(payload));
     if (typeof d.email !== "string" || typeof d.newsletterId !== "string" || typeof d.expiresAt !== "number") return null;
     return d;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export function buildUnsubscribeUrl(baseUrl: string, token: UnsubscribeToken): string {
@@ -63,7 +67,7 @@ export function bulkUnsubscribe(tokens: UnsubscribeToken[], retainPreferences: b
 
 export function formatUnsubscribeConfirmation(result: UnsubscribeResult): string {
   return result.success ? `Successfully unsubscribed from ${result.newsletterId}.` : `Failed to unsubscribe from ${result.newsletterId}. Token may be expired.`;
-
+}
 
 /**
  * Parse List-Unsubscribe header
@@ -136,5 +140,4 @@ export function getUnsubscribeLink(headers: Record<string, string>): string | nu
 
   const info = parseUnsubscribeHeader(header);
   return info?.url ?? null;
-
 }
