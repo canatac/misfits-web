@@ -67,6 +67,9 @@ export function formatSnoozeDuration(offsetMs: number): string {
   if (hours >= 1 && Math.abs(offsetMs - hours * 3_600_000) < 180_000) {
     return hours === 1 ? "1 hour" : `${hours} hours`;
   }
+  if (offsetMs < 60_000) {
+    return `${Math.round(offsetMs / 1000)} seconds`;
+  }
   if (minutes >= 1) {
     return minutes === 1 ? "1 minute" : `${minutes} minutes`;
   }
