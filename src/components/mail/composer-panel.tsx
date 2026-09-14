@@ -25,6 +25,7 @@ import { AttachmentZone } from "@/components/mail/attachment-zone";
 import { useComposerStore } from "@/stores/composer-store";
 import { getActiveSignature } from "@/lib/signatures";
 import { useAuthStore } from "@/stores/auth-store";
+import { useAccountStore } from "@/stores/account-store";
 import { hasPersistedDraft } from "@/stores/composer-store-helpers";
 import type { Recipient, RecipientType } from "@/types/composer";
 import { AIComposerPanel } from "@/components/mail/ai-composer-panel";
@@ -85,6 +86,8 @@ export function ComposerPanel({
   const aiGenerating = useAIStore((s) => s.isGenerating);
 
   const isComposerEmpty = subject.trim() === "" && body.trim() === "";
+  // Per-account signature (Issue #423)
+  const activeAccount = useAccountStore((s) => s.getActiveAccount());
 
   const {
     isSending,
@@ -100,13 +103,24 @@ export function ComposerPanel({
   } = useComposerSend({ variant, onClose });
 
   // Initialise signature + autosave on mount.
-  // If a persisted draft exists (from a previous accidental close), show a restore toast.
   useEffect(() => {
     if (!signature) {
       const user = useAuthStore.getState().user;
-      const email = user?.email ?? "hermes@misfits.ai";
-      const name = user?.displayName ?? email.split("@")[0];
-      store.setSignature(getActiveSignature(name, email));
+      const email = activeAccount?.email ?? user?.email ?? "hermes@misfits.ai";
+      const name = activeAccount?.name ?? user?.displayName ?? email.split("@")[0];
+
+      // Prefer per-account signature if set (Issue #423)
+      const accountSig = activeAccount?.signature;
+      if (accountSig) {
+        store.setSignature({
+          id: `account-${activeAccount.id}`,
+          name: `${activeAccount.name ?? activeAccount.email} signature`,
+          html: accountSig,
+          isDefault: true,
+        });
+      } else {
+        store.setSignature(getActiveSignature(name, email));
+      }
     }
     if (hasPersistedDraft()) {
       const snap = store.loadPersistedDraft();
@@ -256,7 +270,6 @@ export function ComposerPanel({
               </div>
               <div
                 className="prose-mail text-sm text-[var(--color-fg)]"
-                // biome-ignore lint: signature HTML is generated internally
                 dangerouslySetInnerHTML={{ __html: signature.html }}
               />
             </div>

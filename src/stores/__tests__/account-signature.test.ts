@@ -49,7 +49,6 @@ describe("Account Store — per-account signature (Issue #423)", () => {
   it("sets a signature on an account", () => {
     const sig = "<strong>Hermes</strong><br/>misfits.ai";
     useAccountStore.getState().setAccountSignature("acc-1", sig);
-
     const account = useAccountStore.getState().getAccountById("acc-1");
     expect(account?.signature).toBe(sig);
   });
@@ -57,7 +56,6 @@ describe("Account Store — per-account signature (Issue #423)", () => {
   it("clears a signature when set to undefined", () => {
     useAccountStore.getState().setAccountSignature("acc-1", "<b>Test</b>");
     useAccountStore.getState().setAccountSignature("acc-1", undefined);
-
     const account = useAccountStore.getState().getAccountById("acc-1");
     expect(account?.signature).toBeUndefined();
   });
@@ -124,5 +122,26 @@ describe("Account Store — per-account signature (Issue #423)", () => {
     const raw = mem.get("misfits-accounts");
     const parsed = JSON.parse(raw!);
     expect(parsed.state.accounts[0].signature).toBe(sig);
+  });
+  
+  it("includes signature in state for persistence", () => {
+    const sig = "<b>Persisted</b>";
+    useAccountStore.getState().setAccountSignature("acc-1", sig);
+    const state = useAccountStore.getState();
+    expect(state.accounts[0].signature).toBe(sig);
+  });
+
+  it("updates signature via updateAccount", () => {
+    const sig = "<b>Updated</b>";
+    useAccountStore.getState().updateAccount("acc-1", { signature: sig });
+    const account = useAccountStore.getState().getAccountById("acc-1");
+    expect(account?.signature).toBe(sig);
+  });
+
+  it("getActiveAccount returns account with signature", () => {
+    const sig = "<b>Active</b>";
+    useAccountStore.getState().setAccountSignature("acc-1", sig);
+    const active = useAccountStore.getState().getActiveAccount();
+    expect(active?.signature).toBe(sig);
   });
 });
