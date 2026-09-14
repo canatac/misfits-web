@@ -72,7 +72,7 @@ export function generateNewsletterSummary(
     .replace(/<[^>]*>/g, "")
     .split(/[.!?]+/)
     .map((s) => s.trim())
-    .filter((s) => s.length > 20 && s.length < 200);
+    .filter((s) => s.length > 0 && s.length < 200);
 
   const keyPoints = sentences.slice(0, 5);
 
