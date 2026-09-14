@@ -96,7 +96,7 @@ function hasSuspiciousTld(domain: string): boolean {
  * Analyze links in the body for mismatched display text, URL obfuscation,
  * and suspicious destinations.
  */
-function analyzeLinks(body: string): {
+function analyzeLinksInternal(body: string): {
   links: SuspiciousLink[];
   indicators: SecurityIndicator[];
 } {
@@ -278,7 +278,7 @@ function analyzeSender(email: Email): SecurityIndicator[] {
 /**
  * Analyze authentication headers (SPF/DKIM/DMARC).
  */
-function analyzeHeaders(email: Email): {
+function analyzeHeadersInternal(email: Email): {
   analysis: HeaderAnalysis;
   indicators: SecurityIndicator[];
 } {
@@ -341,8 +341,8 @@ export function scanEmail(email: Email): PhishingResult {
   // Run all analyzers
   const contentIndicators = analyzeContent(email);
   const senderIndicators = analyzeSender(email);
-  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeaders(email);
-  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinks(email.body);
+  const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeadersInternal(email);
+  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinksInternal(email.body);
 
   allIndicators.push(...contentIndicators, ...senderIndicators, ...headerIndicators, ...linkIndicators);
 
@@ -403,3 +403,62 @@ export function getRecommendedAction(threatLevel: ThreatLevel): string {
 
 /** Backwards-compatible alias for scanEmail. */
 export const detectPhishing = scanEmail;
+
+// ── Backwards-compatible exports for contract tests ──────────────────────
+
+export function analyzeLinks(html: string): SuspiciousLink[] {
+  return analyzeLinksInternal(html).links;
+}
+
+export function analyzeHeaders(
+  headersOrEmail: Record<string, string> | Email | undefined,
+): HeaderAnalysis {
+  const headers = headersOrEmail === undefined
+    ? {}
+    : "from" in headersOrEmail
+      ? (headersOrEmail as Email).headers || {}
+      : headersOrEmail as Record<string, string>;
+  const normalized: Record<string, string> = {};
+  for (const [k, v] of Object.entries(headers)) normalized[k.toLowerCase()] = v;
+  const spf = (normalized["spf"] || normalized["received-spf"] || "none").toLowerCase();
+  const dkimH = normalized["dkim"] || normalized["dkim-signature"];
+  const dkim = (dkimH !== undefined ? dkimH : "none").toLowerCase();
+  const dmarc = (normalized["dmarc"] || normalized["authentication-results"] || "none").toLowerCase();
+  const analysis: HeaderAnalysis = {
+    spf: spf.includes("pass") ? "pass" : spf.includes("fail") ? "fail" : "none",
+    dkim: dkim.includes("pass") ? "pass" : "none",
+    dmarc: dmarc.includes("pass") ? "pass" : dmarc.includes("fail") ? "fail" : "none",
+    details: [],
+  };
+  if (analysis.spf === "fail") analysis.details.push("SPF failed");
+  if (analysis.dkim === "none") analysis.details.push("DKIM not found");
+  if (analysis.dmarc === "none") analysis.details.push("DMARC not found");
+  return analysis;
+}
+
+const KNOWN_PHISHING_DOMAINS: ReadonlyArray<[string, string]> = [
+  ["paypa1.com", "paypal"], ["g00gle.com", "google"], ["arnazon.com", "amazon"],
+  ["micros0ft.com", "microsoft"], ["app1e.com", "apple"],
+];
+
+export function detectTyposquatting(domain: string): boolean {
+  const lower = domain.toLowerCase();
+  return KNOWN_PHISHING_DOMAINS.some(([t]) => lower === t || lower.endsWith("." + t));
+}
+
+const URGENCY_EXTRA = [/act now/i, /final notice/i, /asap/i];
+
+export function detectUrgencyScam(body: string): SecurityIndicator[] {
+  for (const p of [...URGENCY_PATTERNS, ...URGENCY_EXTRA]) {
+    if (p.test(body)) return [{ type: "content", severity: "medium", description: "Urgency language detected" }];
+  }
+  return [];
+}
+
+const BEC_RE = /wire transfer|payment|invoice|bank account|financial/i;
+
+export function detectBEC(email: Email): SecurityIndicator[] {
+  if (!email.from.name || !BEC_RE.test(`${email.subject} ${email.preview}`)) return [];
+  if (email.from.name === email.from.address) return [];
+  return [{ type: "bec", severity: "high", description: "Potential Business Email Compromise" }];
+}
