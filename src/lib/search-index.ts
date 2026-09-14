@@ -169,7 +169,7 @@ export class EmailSearchIndex {
   private tokenize(text: string): string[] {
     return text
       .toLowerCase()
-      .replace(/[^\w\s.]/g, " ")
+      .replace(/[^\w\s@.]/g, " ")
       .split(/\s+/)
       .filter((t) => t.length > 2);
   }
