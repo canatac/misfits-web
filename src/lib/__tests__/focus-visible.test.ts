@@ -86,28 +86,30 @@ describe("applyFocusRing", () => {
 });
 
 describe("prefersReducedMotion", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-    Object.defineProperty(window, "matchMedia", {
-      writable: true,
-      value: vi.fn(),
-    });
-  });
-
   it("returns true when user prefers reduced motion", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue({
-      matches: true,
-      media: "(prefers-reduced-motion: reduce)",
-    } as unknown as MediaQueryList);
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockReturnValue({
+        matches: true,
+        media: "(prefers-reduced-motion: reduce)",
+      } as unknown as MediaQueryList),
+    );
     expect(prefersReducedMotion()).toBe(true);
   });
 
   it("returns false when user does not prefer reduced motion", () => {
-    vi.spyOn(window, "matchMedia").mockReturnValue({
-      matches: false,
-      media: "(prefers-reduced-motion: reduce)",
-    } as unknown as MediaQueryList);
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockReturnValue({
+        matches: false,
+        media: "(prefers-reduced-motion: reduce)",
+      } as unknown as MediaQueryList),
+    );
     expect(prefersReducedMotion()).toBe(false);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 });
 
