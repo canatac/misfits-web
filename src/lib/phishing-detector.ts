@@ -96,12 +96,8 @@ function hasSuspiciousTld(domain: string): boolean {
  * Analyze links in the body for mismatched display text, URL obfuscation,
  * and suspicious destinations.
  */
-function analyzeLinks(body: string): {
-  links: SuspiciousLink[];
-  indicators: SecurityIndicator[];
-} {
+export function analyzeLinks(body: string): SuspiciousLink[] {
   const links: SuspiciousLink[] = [];
-  const indicators: SecurityIndicator[] = [];
   const urls = extractLinks(body);
 
   for (const url of urls) {
@@ -140,7 +136,7 @@ function analyzeLinks(body: string): {
     }
 
     // Check for non-standard port
-    if (/:\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
+    if (/:\\d{2,5}\//.test(url) && !/:443\//.test(url) && !/:80\//.test(url)) {
       riskScore += 10;
       reasons.push("Non-standard port in URL");
     }
@@ -157,13 +153,30 @@ function analyzeLinks(body: string): {
         reason: reasons.join("; ") || "Suspicious link",
         riskScore: Math.min(riskScore, 100),
       });
-      indicators.push({
-        type: "link",
-        severity: riskScore >= 30 ? "high" : riskScore >= 15 ? "medium" : "low",
-        description: `Suspicious link: ${domain || "unknown"}`,
-        detail: reasons.join("; "),
-      });
     }
+  }
+
+  return links;
+}
+
+/**
+ * Analyze links and return security indicators (for internal use).
+ */
+function analyzeLinksWithIndicators(body: string): {
+  links: SuspiciousLink[];
+  indicators: SecurityIndicator[];
+} {
+  const links = analyzeLinks(body);
+  const indicators: SecurityIndicator[] = [];
+
+  for (const link of links) {
+    const domain = getDomain(link.url);
+    indicators.push({
+      type: "link",
+      severity: link.riskScore >= 30 ? "high" : link.riskScore >= 15 ? "medium" : "low",
+      description: `Suspicious link: ${domain || "unknown"}`,
+      detail: link.reason,
+    });
   }
 
   return { links, indicators };
@@ -342,7 +355,7 @@ export function scanEmail(email: Email): PhishingResult {
   const contentIndicators = analyzeContent(email);
   const senderIndicators = analyzeSender(email);
   const { analysis: headerAnalysis, indicators: headerIndicators } = analyzeHeaders(email);
-  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinks(email.body);
+  const { links: suspiciousLinks, indicators: linkIndicators } = analyzeLinksWithIndicators(email.body);
 
   allIndicators.push(...contentIndicators, ...senderIndicators, ...headerIndicators, ...linkIndicators);
 
