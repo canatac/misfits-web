@@ -59,8 +59,18 @@ describe("search-index", () => {
 
     it("searches by body content", () => {
       const index = createSearchIndex();
-      index.indexEmail(makeEmail({ id: "e1", body: "<p>Project roadmap discussion</p>" }));
-      index.indexEmail(makeEmail({ id: "e2", body: "<p>Team lunch</p>" }));
+      index.indexEmail(makeEmail({
+        id: "e1",
+        subject: "Project discussion",
+        preview: "Project discussion",
+        body: "<p>Project roadmap discussion</p>",
+      }));
+      index.indexEmail(makeEmail({
+        id: "e2",
+        subject: "Team lunch",
+        preview: "Team lunch",
+        body: "<p>Team lunch</p>",
+      }));
 
       const results = index.search("roadmap");
       expect(results).toHaveLength(1);

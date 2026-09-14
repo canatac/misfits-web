@@ -169,9 +169,9 @@ export class EmailSearchIndex {
   private tokenize(text: string): string[] {
     return text
       .toLowerCase()
-      .replace(/[^\w\s@.]/g, " ")
+      .replace(/[^\w\s.]/g, " ")
       .split(/\s+/)
-      .filter((t) => t.length > 1);
+      .filter((t) => t.length > 2);
   }
 
   /**
@@ -186,6 +186,19 @@ export class EmailSearchIndex {
       body: 1,
     };
     return weights[field] || 1;
+  }
+
+  /**
+   * Index text for a specific field of an email.
+   */
+  private indexText(emailId: string, field: string, text: string): void {
+    const terms = this.tokenize(text);
+    for (let i = 0; i < terms.length; i++) {
+      const term = terms[i];
+      const entries = this.index.get(term) || [];
+      entries.push({ emailId, field, position: i });
+      this.index.set(term, entries);
+    }
   }
 }
 
@@ -202,9 +215,9 @@ export function createSearchIndex(): EmailSearchIndex {
 export function tokenizeQuery(query: string): string[] {
   return query
     .toLowerCase()
-    .replace(/[^\w\s@.]/g, " ")
+    .replace(/[^\w\s.]/g, " ")
     .split(/\s+/)
-    .filter((t) => t.length > 1);
+    .filter((t) => t.length > 2);
 }
 
 /**
