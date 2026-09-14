@@ -23,13 +23,15 @@ export function MailSidebarHost({
 
       <div
         className={cn(
-          "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl transition-all duration-200 ease-out lg:block",
-          desktopSidebarOpen ? "lg:w-64" : "lg:w-0"
+          "hidden h-full shrink-0 overflow-hidden rounded-2xl border border-[#202024] bg-[#101012]/90 shadow-2xl lg:block",
+          "w-64 transition-[transform,opacity] duration-200 ease-out motion-reduce:duration-0 will-change-transform",
+          desktopSidebarOpen
+            ? "translate-x-0 opacity-100"
+            : "-translate-x-full opacity-0"
         )}
+        aria-hidden={!desktopSidebarOpen}
       >
-        {desktopSidebarOpen && (
-          <MailSidebar onCompose={onCompose} className="lg:pt-12" />
-        )}
+        <MailSidebar onCompose={onCompose} className="lg:pt-12" />
       </div>
 
       {mobileSidebarOpen && (

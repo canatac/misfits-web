@@ -55,15 +55,18 @@ export function shouldNotify(
 
   // Normal mode: check block rules first
   for (const rule of rules) {
-    if (!rule.enabled) continue;
-
+    if (!rule.enabled || rule.type !== 'block') continue;
     const value = getFieldValue(context, rule.field);
     if (!value) continue;
+    if (matchesPattern(value, rule.pattern)) return false;
+  }
 
-    const matches = matchesPattern(value, rule.pattern);
-
-    if (rule.type === 'block' && matches) return false;
-    if (rule.type === 'allow' && matches) return true;
+  // Then check allow rules
+  for (const rule of rules) {
+    if (!rule.enabled || rule.type !== 'allow') continue;
+    const value = getFieldValue(context, rule.field);
+    if (!value) continue;
+    if (matchesPattern(value, rule.pattern)) return true;
   }
 
   // No matching rules: default to notify
