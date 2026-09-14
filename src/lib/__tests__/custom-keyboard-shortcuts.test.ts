@@ -19,10 +19,6 @@ import {
   type ShortcutDefinition,
 } from "@/lib/custom-keyboard-shortcuts";
 
-import {
-,
-} from "@/lib/custom-keyboard-shortcuts";
-
 function makeKeyEvent(init: Partial<KeyboardEvent>): KeyboardEvent {
   return new KeyboardEvent("keydown", init);
 }
@@ -89,7 +85,7 @@ describe("custom-keyboard-shortcuts", () => {
 
   it("findActionForKey returns null when no match", () => {
     expect(findActionForKey("z")).toBeNull();
-  }):
+  });
 });
 
 
