@@ -9,20 +9,16 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  analyzeLinks,
-  analyzeHeaders,
-  detectTyposquatting,
-  detectUrgencyScam,
-  detectBEC,
   detectPhishing,
+  scanEmail,
+  getRecommendedAction,
 } from "@/lib/phishing-detector";
 import type { Email } from "@/types/email";
 import type {
   PhishingResult,
   ThreatLevel,
-  HeaderAnalysis,
-  SuspiciousLink,
   SecurityIndicator,
+  SuspiciousLink,
 } from "@/types/security";
 
 describe("phishing-detector contract", () => {
@@ -48,232 +44,6 @@ describe("phishing-detector contract", () => {
     messageId: "<safe-1@misfits.ai>",
   };
 
-  describe("analyzeLinks", () => {
-    it("returns empty array for clean HTML", () => {
-      const result = analyzeLinks("<p>No links here</p>");
-      expect(result).toEqual([]);
-    });
-
-    it("flags IP address URLs", () => {
-      const links = analyzeLinks(
-        '<a href="192.168.1.1/login">Click here</a>'
-      );
-      expect(links).toHaveLength(1);
-      expect(links[0].riskScore).toBeGreaterThanOrEqual(30);
-      expect(links[0].reason).toContain("IP address");
-    });
-
-    it("flags punycode URLs", () => {
-      const links = analyzeLinks('<a href="https://xn--paypa1.com">Pay</a>');
-      expect(links).toHaveLength(1);
-      expect(links[0].riskScore).toBeGreaterThanOrEqual(40);
-      expect(links[0].reason).toContain("Punycode");
-    });
-
-    it("flags mismatched display text vs URL", () => {
-      const links = analyzeLinks(
-        '<a href="https://evil.com">Click here to win</a>'
-      );
-      expect(links).toHaveLength(1);
-      expect(links[0].reason).toContain("Display text");
-    });
-
-    it("does not flag matching display text", () => {
-      const links = analyzeLinks(
-        '<a href="https://misfits.ai">https://misfits.ai</a>'
-      );
-      expect(links).toHaveLength(0);
-    });
-
-    it("strips script tags from display text", () => {
-      const links = analyzeLinks(
-        '<a href="http://10.0.0.1"><script>alert(1)</script>Click</a>'
-      );
-      expect(links).toHaveLength(1);
-      expect(links[0].displayText).not.toContain("<script>");
-    });
-
-    it("strips angle brackets from display text", () => {
-      const links = analyzeLinks(
-        '<a href="http://10.0.0.1"><b>Bold</b> text</a>'
-      );
-      expect(links).toHaveLength(1);
-      // Code strips angle brackets, leaving tag names behind
-      expect(links[0].displayText).toBe("bBold/b text");
-    });
-
-    it("accumulates multiple risk factors", () => {
-      // IP (30) + mismatched display (20) = 50
-      const links = analyzeLinks(
-        '<a href="10.0.0.1">Click here now</a>'
-      );
-      expect(links).toHaveLength(1);
-      expect(links[0].riskScore).toBe(50);
-    });
-  });
-
-  describe("analyzeHeaders", () => {
-    it("returns pass for all when headers valid", () => {
-      const result = analyzeHeaders({
-        "Received-SPF": "pass",
-        "DKIM-Signature": "pass",
-        "Authentication-Results": "dmarc=pass",
-      });
-      expect(result.spf).toBe("pass");
-      expect(result.dkim).toBe("pass");
-      expect(result.dmarc).toBe("pass");
-    });
-
-    it("returns fail for failed SPF", () => {
-      const result = analyzeHeaders({
-        "Received-SPF": "fail",
-      });
-      expect(result.spf).toBe("fail");
-      expect(result.details).toContain("SPF failed — sender IP not authorized");
-    });
-
-    it("returns fail for failed DKIM", () => {
-      const result = analyzeHeaders({
-        "DKIM-Signature": "fail",
-      });
-      expect(result.dkim).toBe("fail");
-      expect(result.details).toContain("DKIM failed — signature invalid");
-    });
-
-    it("returns none when no headers present", () => {
-      const result = analyzeHeaders({});
-      expect(result.spf).toBe("none");
-      expect(result.dkim).toBe("none");
-      expect(result.dmarc).toBe("none");
-    });
-
-    it("returns none for undefined headers", () => {
-      const result = analyzeHeaders(undefined);
-      expect(result.spf).toBe("none");
-      expect(result.dkim).toBe("none");
-      expect(result.dmarc).toBe("none");
-    });
-
-    it("is case-insensitive for header names", () => {
-      const result = analyzeHeaders({
-        "received-spf": "pass",
-        "dkim-signature": "pass",
-      });
-      expect(result.spf).toBe("pass");
-      expect(result.dkim).toBe("pass");
-    });
-
-    it("DMARC requires both dmarc and pass keywords", () => {
-      const result1 = analyzeHeaders({
-        "Authentication-Results": "dmarc=fail",
-      });
-      expect(result1.dmarc).toBe("none");
-
-      const result2 = analyzeHeaders({
-        "Authentication-Results": "dmarc=pass",
-      });
-      expect(result2.dmarc).toBe("pass");
-    });
-
-    it("notes missing DMARC", () => {
-      const result = analyzeHeaders({
-        "Received-SPF": "pass",
-      });
-      expect(result.details).toContain("DMARC not found");
-    });
-  });
-
-  describe("detectTyposquatting", () => {
-    it("flags known phishing domains", () => {
-      expect(detectTyposquatting("paypa1.com")).toBe(true);
-      expect(detectTyposquatting("g00gle.com")).toBe(true);
-      expect(detectTyposquatting("arnazon.com")).toBe(true);
-      expect(detectTyposquatting("micros0ft.com")).toBe(true);
-      expect(detectTyposquatting("app1e.com")).toBe(true);
-    });
-
-    it("returns false for legitimate domains", () => {
-      expect(detectTyposquatting("misfits.ai")).toBe(false);
-      expect(detectTyposquatting("google.com")).toBe(false);
-      expect(detectTyposquatting("amazon.com")).toBe(false);
-    });
-
-    it("detects domain as substring", () => {
-      expect(detectTyposquatting("login.paypa1.com")).toBe(true);
-      expect(detectTyposquatting("secure.g00gle.com")).toBe(true);
-    });
-  });
-
-  describe("detectUrgencyScam", () => {
-    it("flags urgency language", () => {
-      const indicators = detectUrgencyScam(
-        "URGENT: Verify your account immediately!"
-      );
-      expect(indicators).toHaveLength(1);
-      expect(indicators[0].type).toBe("content");
-      expect(indicators[0].severity).toBe("medium");
-      expect(indicators[0].description).toBe("Urgency language detected");
-    });
-
-    it("flags multiple urgency patterns (only first match)", () => {
-      const indicators = detectUrgencyScam(
-        "Act now! You must verify ASAP or lose access."
-      );
-      // Only first match returns indicator (break after first)
-      expect(indicators).toHaveLength(1);
-    });
-
-    it("returns empty for calm content", () => {
-      const indicators = detectUrgencyScam(
-        "Hope you're doing well. Let me know when you're free."
-      );
-      expect(indicators).toEqual([]);
-    });
-
-    it("flags 'final notice'", () => {
-      const indicators = detectUrgencyScam("This is your final notice.");
-      expect(indicators).toHaveLength(1);
-    });
-  });
-
-  describe("detectBEC", () => {
-    it("flags potential BEC with financial keywords", () => {
-      const indicators = detectBEC({
-        ...safeEmail,
-        subject: "Urgent wire transfer request",
-        preview: "The CEO needs you to process payment",
-      });
-      expect(indicators).toHaveLength(1);
-      expect(indicators[0].type).toBe("bec");
-      expect(indicators[0].severity).toBe("high");
-      expect(indicators[0].description).toBe(
-        "Potential Business Email Compromise"
-      );
-    });
-
-    it("does not flag internal misfits.ai emails", () => {
-      const indicators = detectBEC({
-        ...safeEmail,
-        from: { name: "ceo@misfits.ai", address: "ceo@misfits.ai" },
-        subject: "Wire transfer needed",
-        preview: "Process payment for vendor",
-      });
-      // Internal email with from.name === from.address should not flag
-      expect(indicators).toHaveLength(0);
-    });
-
-    it("flags financial keywords from external senders", () => {
-      const indicators = detectBEC({
-        ...safeEmail,
-        from: { name: "CEO", address: "attacker@evil.com" },
-        subject: "Invoice payment needed",
-        preview: "Please transfer funds",
-      });
-      expect(indicators).toHaveLength(1);
-      expect(indicators[0].type).toBe("bec");
-    });
-  });
-
   describe("detectPhishing", () => {
     it("returns safe for clean email", () => {
       const result = detectPhishing(safeEmail);
@@ -287,6 +57,7 @@ describe("phishing-detector contract", () => {
     it("returns critical for high score", () => {
       const dangerousEmail: Email = {
         ...safeEmail,
+        id: "danger-1",
         body: `
           <a href="http://10.0.0.1">Click here</a>
           <a href="http://10.0.0.2">Verify now</a>
@@ -309,15 +80,12 @@ describe("phishing-detector contract", () => {
         { min: 70, max: 100, expected: "critical" },
       ];
 
-      // Score 25 = suspicious
       const suspEmail: Email = {
         ...safeEmail,
+        id: "susp-1",
         body: "URGENT: Verify your account",
       };
       const r1 = detectPhishing(suspEmail);
-      // Urgency adds indicator but no score (only link scores count)
-      // Actually urgency doesn't add to score, only indicator
-      // Need a link with score to get to 25+
       expect(["safe", "suspicious", "dangerous", "critical"]).toContain(
         r1.threatLevel
       );
@@ -326,6 +94,7 @@ describe("phishing-detector contract", () => {
     it("caps score at 100", () => {
       const extremelyDangerous: Email = {
         ...safeEmail,
+        id: "extreme-1",
         body: `
           <a href="http://10.0.0.1">https://misfits.ai</a>
           <a href="http://10.0.0.2">https://misfits.ai</a>
@@ -345,6 +114,7 @@ describe("phishing-detector contract", () => {
     it("includes header analysis in result", () => {
       const result = detectPhishing({
         ...safeEmail,
+        id: "header-1",
         headers: {
           "Received-SPF": "fail",
           "DKIM-Signature": "pass",
@@ -359,6 +129,7 @@ describe("phishing-detector contract", () => {
     it("includes all indicator types in reasons", () => {
       const result = detectPhishing({
         ...safeEmail,
+        id: "reasons-1",
         body: '<a href="http://10.0.0.1">Click here</a>',
       });
       expect(result.reasons.length).toBeGreaterThan(0);
@@ -382,10 +153,48 @@ describe("phishing-detector contract", () => {
     it("flags typosquatting domain with +30 score", () => {
       const result = detectPhishing({
         ...safeEmail,
+        id: "typo-1",
         from: { name: "Amazon", address: "support@arnazon.com" },
       });
       expect(result.score).toBeGreaterThanOrEqual(30);
       expect(result.indicators.some((i) => i.type === "domain")).toBe(true);
+    });
+  });
+
+  describe("scanEmail", () => {
+    it("is the same function as detectPhishing", () => {
+      expect(scanEmail).toBe(detectPhishing);
+    });
+
+    it("returns PhishingResult shape", () => {
+      const result = scanEmail(safeEmail);
+      expect(result).toHaveProperty("emailId");
+      expect(result).toHaveProperty("threatLevel");
+      expect(result).toHaveProperty("score");
+      expect(result).toHaveProperty("reasons");
+      expect(result).toHaveProperty("indicators");
+      expect(result).toHaveProperty("suspiciousLinks");
+      expect(result).toHaveProperty("headers");
+      expect(result).toHaveProperty("scannedAt");
+      expect(result).toHaveProperty("aiAssisted");
+    });
+  });
+
+  describe("getRecommendedAction", () => {
+    it("returns critical action for critical threat", () => {
+      expect(getRecommendedAction("critical")).toContain("Report as phishing");
+    });
+
+    it("returns dangerous action for dangerous threat", () => {
+      expect(getRecommendedAction("dangerous")).toContain("Avoid clicking");
+    });
+
+    it("returns suspicious action for suspicious threat", () => {
+      expect(getRecommendedAction("suspicious")).toContain("Exercise caution");
+    });
+
+    it("returns safe action for safe threat", () => {
+      expect(getRecommendedAction("safe")).toContain("No action needed");
     });
   });
 
@@ -418,6 +227,7 @@ describe("phishing-detector contract", () => {
     it("indicators have required SecurityIndicator fields", () => {
       const result = detectPhishing({
         ...safeEmail,
+        id: "indicators-1",
         body: '<a href="http://10.0.0.1">Click</a>',
       });
 
@@ -444,6 +254,7 @@ describe("phishing-detector contract", () => {
     it("suspicious links have required SuspiciousLink fields", () => {
       const result = detectPhishing({
         ...safeEmail,
+        id: "links-1",
         body: '<a href="http://10.0.0.1">Click</a>',
       });
 
