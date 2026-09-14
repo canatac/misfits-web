@@ -256,6 +256,7 @@ export const useComposerStore = create<ComposerStore>((set, get) => ({
         to: prefill.to, cc: prefill.cc, bcc: prefill.bcc,
         subject: prefill.subject, body: prefill.body,
         inReplyTo: prefill.inReplyTo, references: prefill.references,
+        attachments: prefill.attachments,
       });
     }
     get().startAutosave();

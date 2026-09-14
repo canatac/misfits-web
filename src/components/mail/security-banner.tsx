@@ -74,6 +74,7 @@ export function SecurityBanner({
         config.bg,
         config.border
       )}
+      data-testid="security-banner"
     >
       <div className="flex items-start gap-3">
         <Icon className={cn("mt-0.5 h-5 w-5 shrink-0", config.text)} />

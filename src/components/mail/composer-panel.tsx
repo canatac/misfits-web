@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * Composer panel — full composer UI combining recipient inputs, subject,
+ * Tiptap editor, attachments and signature, with an action bar (Send,
+ * Send later, Save draft, Discard, Full screen, Compact), undo-send banner,
+ * attachment-mention warning, external-recipient warning, Cmd/Ctrl+Enter to
+ * send, loading/error states, and "Save as template".
+ *
+ * Can render in two variants:
+ *  - "panel" (default): bordered card, used inside the mail-page modal.
+ *  - "page": full-height, used by the /compose route.
+ */
 import { useEffect, useRef, useState } from "react";
 import { Paperclip } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +35,7 @@ import type { Editor } from "@tiptap/react";
 import { ComposerToolbar } from "./composer/composer-toolbar";
 import { ComposerFooter } from "./composer/composer-footer";
 import { ComposerWarnings } from "./composer/composer-warnings";
+import { SaveAsTemplateDialog } from "./composer/save-as-template-dialog";
 import { useComposerSend } from "./hooks/useComposerSend";
 
 interface ComposerPanelProps {
@@ -68,10 +80,12 @@ export function ComposerPanel({
   const [showCcBcc, setShowCcBcc] = useState(false);
   const [sendLaterDate, setSendLaterDate] = useState<string>("");
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [aiEditor, setAiEditor] = useState<Editor | null>(null);
   const attachmentsSectionRef = useRef<HTMLDivElement>(null);
   const aiGenerating = useAIStore((s) => s.isGenerating);
 
+  const isComposerEmpty = subject.trim() === "" && body.trim() === "";
   // Per-account signature (Issue #423)
   const activeAccount = useAccountStore((s) => s.getActiveAccount());
 
@@ -163,10 +177,12 @@ export function ComposerPanel({
         sendLaterDate={sendLaterDate}
         saveStatus={saveStatus}
         lastSavedAt={lastSavedAt}
+        isComposerEmpty={isComposerEmpty}
         onToggleAI={() => setShowAIPanel((v) => !v)}
         onSetSendLaterDate={setSendLaterDate}
         onSendLater={(iso) => handleSend({ sendLater: iso })}
         onSaveDraft={handleSaveDraft}
+        onSaveAsTemplate={() => setShowTemplateDialog(true)}
         onToggleCompact={toggleCompact}
         onToggleFullScreen={toggleFullScreen}
         onClose={onClose}
@@ -271,6 +287,13 @@ export function ComposerPanel({
         onSendLater={(iso) => handleSend({ sendLater: iso })}
         onSaveDraft={handleSaveDraft}
         onDiscard={handleDiscard}
+      />
+
+      <SaveAsTemplateDialog
+        open={showTemplateDialog}
+        onOpenChange={setShowTemplateDialog}
+        subject={subject}
+        body={body}
       />
 
       <AIComposerPanel

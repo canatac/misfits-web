@@ -56,6 +56,8 @@ interface AccountState {
   getActiveAccount: () => EmailAccount | undefined;
   getDefaultAccount: () => EmailAccount | undefined;
   getAccountIndex: (id: string) => number;
+
+  // Mutations
   addAccount: (input: AddAccountInput) => EmailAccount;
   removeAccount: (id: string) => void;
   setActiveAccount: (id: string) => void;
@@ -83,6 +85,8 @@ export const useAccountStore = create<AccountState>()(
       },
       getDefaultAccount: () =>
         get().accounts.find((a) => a.isDefault) ?? get().accounts[0],
+      getAccountIndex: (id) => get().accounts.findIndex((a) => a.id === id),
+
       getAccountIndex: (id) => get().accounts.findIndex((a) => a.id === id),
 
       addAccount: (input) => {
@@ -200,10 +204,15 @@ export const useAccountStore = create<AccountState>()(
       },
 
       // --- Quick switching (Issue #445) ---
+
       cycleActiveAccount: (direction) => {
         const { accounts, activeAccountId } = get();
         if (accounts.length <= 1) return;
-        const currentIdx = accounts.findIndex((a) => a.id === activeAccountId);
+
+        const currentIdx = accounts.findIndex(
+          (a) => a.id === activeAccountId
+        );
+        // If active account is not found or unified, start from first/last
         if (currentIdx === -1) {
           const nextIdx = direction === "next" ? 0 : accounts.length - 1;
           set((state) => ({
@@ -212,8 +221,11 @@ export const useAccountStore = create<AccountState>()(
           }));
           return;
         }
+
         const delta = direction === "next" ? 1 : -1;
-        const nextIdx = (currentIdx + delta + accounts.length) % accounts.length;
+        // Wrap-around modulo
+        const nextIdx =
+          (currentIdx + delta + accounts.length) % accounts.length;
         set((state) => ({
           activeAccountId: accounts[nextIdx].id,
           isUnifiedInbox: false,

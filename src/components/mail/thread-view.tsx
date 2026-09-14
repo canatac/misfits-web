@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronDown, ChevronRight, Paperclip, Star } from "lucide-react";
+/**
+ * Thread view — chronological display of all messages in a conversation.
+ */
+import { useMemo, useState, useCallback } from "react";
+import { Reply, Forward, PanelTop, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,26 +24,32 @@ interface ThreadListItemProps {
   onToggleStar: (id: string) => void;
 }
 
-function ThreadListItem({
-  thread,
-  isSelected,
-  onSelectThread,
-  onSelectEmail,
-  onToggleStar,
-}: ThreadListItemProps) {
-  const [expanded, setExpanded] = useState(false);
-  const latestMessage = getLatestMessage(thread);
-  const unread = isThreadUnread(thread);
+export function ThreadView({ thread, viewMode, className }: ThreadViewProps) {
+  const { forwardThread, replyToThread } = useThreadActions();
+  // null = mixed state, true = all collapsed, false = all expanded
+  const [forceCollapse, setForceCollapse] = useState<boolean | null>(null);
 
-  return (
-    <div
-      className={cn(
-        "border-b border-[var(--color-border)]",
-        isSelected && "bg-[#1E1A15]"
-      )}
-      data-testid={`thread-${thread.id}`}
-    >
-      {/* Thread header */}
+  const latestUnread = useMemo(() => {
+    if (!thread) return null;
+    for (let i = thread.messages.length - 1; i >= 0; i--) {
+      if (!thread.messages[i].isRead) return thread.messages[i];
+    }
+    return null;
+  }, [thread]);
+
+  const handleToggleAll = useCallback(() => {
+    setForceCollapse((prev) => {
+      if (prev === false) return true;
+      return false;
+    });
+  }, []);
+
+  const handleMixedState = useCallback(() => {
+    setForceCollapse(null);
+  }, []);
+
+  if (!thread) {
+    return (
       <div
         className={cn(
           "flex cursor-pointer items-center gap-3 px-3 py-3 transition-colors hover:bg-[var(--color-muted)]",
@@ -48,74 +57,71 @@ function ThreadListItem({
         )}
         onClick={() => onSelectThread(thread.id)}
       >
-        {/* Expand/collapse */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 shrink-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded(!expanded);
-          }}
-          aria-label={expanded ? "Collapse thread" : "Expand thread"}
-          data-testid="thread-expand"
-        >
-          {expanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+        <EmptyState
+          icon={PanelTop}
+          title="No thread selected"
+          description="Select a thread from the list to view its messages here."
+          size="lg"
+        />
+      </div>
+    );
+  }
+
+  const isAllExpanded = forceCollapse === false;
+
+  return (
+    <div
+      className={cn("flex h-full flex-col bg-[var(--color-bg)]", className)}
+      data-testid="thread-view"
+    >
+      <div className="flex items-center gap-1 border-b border-[var(--color-border)] px-3 py-2">
+        <Button variant="ghost" size="sm" onClick={() => replyToThread(thread)} className="gap-1.5">
+          <Reply className="h-4 w-4" />
+          Reply
         </Button>
-
-        {/* Avatar */}
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-500)]/20 text-xs font-medium text-[var(--color-brand-500)]">
-          {getInitials(latestMessage.from.name)}
+        <Button variant="ghost" size="sm" onClick={() => forwardThread(thread)} className="gap-1.5">
+          <Forward className="h-4 w-4" />
+          Forward thread
+        </Button>
+        <div className="ml-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleAll}
+            className="gap-1.5"
+            aria-label={isAllExpanded ? "Collapse all messages" : "Expand all messages"}
+            data-testid="thread-toggle-all"
+          >
+            {isAllExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Collapse all
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Expand all
+              </>
+            )}
+          </Button>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <span
-              className={cn(
-                "truncate text-sm",
-                unread ? "font-semibold text-[var(--color-fg)]" : "text-[var(--color-fg)]"
-              )}
-            >
-              {latestMessage.from.name}
-            </span>
-            <span className="shrink-0 text-xs text-[var(--color-muted-fg)]">
-              {formatDate(latestMessage.date)}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between gap-2">
-            <span
-              className={cn(
-                "truncate text-sm",
-                unread ? "font-medium text-[var(--color-fg)]" : "text-[var(--color-muted-fg)]"
-              )}
-            >
-              {thread.subject}
-            </span>
-            <div className="flex shrink-0 items-center gap-1.5">
-              {thread.hasAttachments && (
-                <Paperclip className="h-3.5 w-3.5 text-[var(--color-muted-fg)]" />
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleStar(latestMessage.id);
-                }}
-                className="rounded p-0.5 hover:bg-[var(--color-muted)]"
-                aria-label={latestMessage.isStarred ? "Unstar" : "Star"}
-              >
-                <Star
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    latestMessage.isStarred
-                      ? "fill-[var(--color-warning-500)] text-[var(--color-warning-500)]"
-                      : "text-[var(--color-muted-fg)]"
-                  )}
+      <ScrollArea className="flex-1">
+        <div className="mx-auto max-w-3xl p-4">
+          <div className="flex flex-col gap-4">
+            {thread.messages.map((email, idx) => (
+              <div key={email.id}>
+                {idx > 0 && <Separator className="mb-4" />}
+                <ThreadMessageItem
+                  email={email}
+                  isHighlighted={latestUnread?.id === email.id && !email.isRead}
+                  viewMode={viewMode}
+                  defaultCollapsed={
+                    idx < thread.messages.length - 1 && email.isRead
+                  }
+                  forceCollapsed={forceCollapse}
+                  onMixedState={handleMixedState}
                 />
               </button>
               <span

@@ -59,3 +59,27 @@ export const QUOTE_PATTERNS = [
 
 // Re-export EmailAttachment type for consumers
 export type { EmailAttachment };
+
+export const READING_WPM = 200;
+export const READING_MIN_WORDS = 20;
+
+export interface ReadingTimeResult {
+  minutes: number;
+  words: number;
+}
+
+/** Estimate reading time from a string (HTML or plaintext) at 200 wpm. */
+export function estimateReadingTime(raw: string): ReadingTimeResult | null {
+  if (!raw) return null;
+  const stripped = raw.replace(/<[^>]*>/g, " ");
+  const text = stripped.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+  const wordList = text.trim().split(/\s+/).filter(Boolean);
+  if (wordList.length < READING_MIN_WORDS) return null;
+  const minutes = Math.max(1, Math.round(wordList.length / READING_WPM));
+  return { minutes, words: wordList.length };
+}
+
+export function formatReadingTime(result: ReadingTimeResult | null): string {
+  if (!result) return "";
+  return `~${result.minutes} min read`;
+}

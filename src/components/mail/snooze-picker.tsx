@@ -113,7 +113,7 @@ export function SnoozePicker({
         <Separator className="my-3" />
 
         {/* Presets */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1" role="menu" aria-label="Snooze presets">
           {SNOOZE_PRESETS.map((preset) => (
             <button
               key={preset.id}
@@ -121,6 +121,7 @@ export function SnoozePicker({
               data-testid={`snooze-preset-${preset.id}`}
               onClick={() => handlePreset(preset.getUntil)}
               disabled={!emailId}
+              role="menuitem"
               className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-fg)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
             >
               <CalendarClock className="h-4 w-4 text-[var(--color-muted-fg)]" />
@@ -136,11 +137,12 @@ export function SnoozePicker({
             data-testid="snooze-custom-toggle"
             onClick={() => setShowCustom((v) => !v)}
             disabled={!emailId}
+            aria-expanded={showCustom}
             className="flex items-center gap-2 rounded-[var(--radius-sm)] px-2 py-2 text-left text-sm text-[var(--color-brand-500)] transition-colors hover:bg-[var(--color-muted)] disabled:opacity-50"
           >
             <CalendarClock className="h-4 w-4" />
             <span className="flex-1">
-              {showCustom ? "Hide custom date" : "Pick a date & time…"}
+              {showCustom ? "Hide custom date" : "Custom date & time…"}
             </span>
           </button>
         </div>
@@ -177,6 +179,7 @@ export function SnoozePicker({
                 checked={enableReminder}
                 onCheckedChange={setEnableReminder}
                 aria-label="Enable reminder"
+                id="snooze-reminder-switch"
               />
               <Input
                 value={reminder}

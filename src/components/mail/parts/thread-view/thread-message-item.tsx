@@ -12,6 +12,10 @@ interface MessageProps {
   isHighlighted: boolean;
   viewMode: "list" | "timeline";
   defaultCollapsed: boolean;
+  depth?: number;
+  isActive?: boolean;
+  forceCollapsed?: boolean | null;
+  onMixedState?: () => void;
 }
 
 export function ThreadMessageItem({
@@ -19,6 +23,10 @@ export function ThreadMessageItem({
   isHighlighted,
   viewMode,
   defaultCollapsed,
+  depth = 0,
+  isActive = false,
+  forceCollapsed = null,
+  onMixedState,
 }: MessageProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [loadImages, setLoadImages] = useState(false);
@@ -31,11 +39,22 @@ export function ThreadMessageItem({
   }, [email.id, defaultCollapsed]);
 
   const isTimeline = viewMode === "timeline";
+  const effectiveCollapsed = forceCollapsed !== null ? forceCollapsed : collapsed;
+
+  const handleToggle = () => {
+    if (forceCollapsed !== null && onMixedState) {
+      onMixedState();
+    }
+    setCollapsed((prev) => !prev);
+  };
+
+  const indentPx = Math.min(depth, 3) * 16;
 
   return (
     <div
       className={cn("relative", isTimeline && "flex gap-3 pl-2")}
       data-testid={`thread-message-${email.id}`}
+      data-depth={depth}
     >
       {isTimeline && (
         <div className="flex flex-col items-center">
@@ -48,12 +67,35 @@ export function ThreadMessageItem({
         </div>
       )}
 
+      {depth > 0 && !isTimeline && (
+        <div
+          className="absolute left-0 top-0 bottom-0 flex"
+          style={{ width: `${indentPx + 16}px` }}
+          aria-hidden="true"
+        >
+          {Array.from({ length: Math.min(depth, 3) }).map((_, level) => (
+            <div
+              key={level}
+              className={cn(
+                "h-full w-px shrink-0",
+                isActive
+                  ? "bg-[var(--color-brand-500)]"
+                  : "bg-[var(--color-brand-500)]/30"
+              )}
+              style={{ marginLeft: `${level === 0 ? 0 : 16}px` }}
+            />
+          ))}
+        </div>
+      )}
+
       <div
         className={cn(
           "flex-1",
           isHighlighted && "rounded-[var(--radius-md)] bg-[var(--color-accent)] p-3",
-          !isHighlighted && isTimeline && "pb-4"
+          !isHighlighted && isTimeline && "pb-4",
+          depth > 0 && !isTimeline && "ml-[calc(var(--depth-indent))]"
         )}
+        style={depth > 0 && !isTimeline ? { ["--depth-indent" as string]: `${indentPx + 16}px` } : undefined}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2">
@@ -87,11 +129,11 @@ export function ThreadMessageItem({
           </div>
 
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={handleToggle}
             className="rounded p-1 transition-colors hover:bg-[var(--color-muted)]"
-            aria-label={collapsed ? "Expand message" : "Collapse message"}
+            aria-label={effectiveCollapsed ? "Expand message" : "Collapse message"}
           >
-            {collapsed ? (
+            {effectiveCollapsed ? (
               <ChevronDown className="h-4 w-4 text-[var(--color-muted-fg)]" />
             ) : (
               <ChevronUp className="h-4 w-4 text-[var(--color-muted-fg)]" />
@@ -99,7 +141,7 @@ export function ThreadMessageItem({
           </button>
         </div>
 
-        {collapsed ? (
+        {effectiveCollapsed ? (
           <p className="mt-1 line-clamp-2 text-sm text-[var(--color-muted-fg)]">
             {getPreview(email)}
           </p>
@@ -118,7 +160,6 @@ export function ThreadMessageItem({
             )}
             <div
               className="prose-mail mt-2 text-sm text-[var(--color-fg)]"
-              // biome-ignore lint: HTML is sanitized via DOMPurify above
               dangerouslySetInnerHTML={{ __html: sanitized }}
               onClick={(e) => {
                 const target = e.target as HTMLElement;

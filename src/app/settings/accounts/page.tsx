@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Account Settings page — manage per-account signatures (Issue #423).
+ * Allows setting a custom HTML signature for each connected account.
+ */
 import { useState } from "react";
 import { useAccountStore } from "@/stores/account-store";
 import { Button } from "@/components/ui/button";
@@ -105,7 +109,7 @@ export default function AccountsSettingsPage() {
                       <Textarea
                         value={draftValue}
                         onChange={(e) => setDraftValue(e.target.value)}
-                        placeholder="Enter HTML signature"
+                        placeholder="Enter HTML signature (e.g., <strong>John Doe</strong><br/>Acme Corp)"
                         className="min-h-[120px] bg-[#1D1D20] border-[#242427] text-[#E0E0E0] font-mono text-sm"
                         data-testid={`signature-input-${account.id}`}
                       />
@@ -114,6 +118,7 @@ export default function AccountsSettingsPage() {
                           size="sm"
                           onClick={saveSignature}
                           className="bg-[#C49B66] text-[#0A0A0B] hover:bg-[#b78f5c]"
+                          data-testid={`save-signature-${account.id}`}
                         >
                           <Save className="h-3 w-3 mr-1" />
                           Save
@@ -130,6 +135,7 @@ export default function AccountsSettingsPage() {
                           variant="ghost"
                           onClick={resetSignature}
                           className="text-[#71717A] hover:text-[#E0E0E0]"
+                          data-testid={`reset-signature-${account.id}`}
                         >
                           <RotateCcw className="h-3 w-3 mr-1" />
                           Reset to default
@@ -152,7 +158,7 @@ export default function AccountsSettingsPage() {
                             dangerouslySetInnerHTML={{ __html: account.signature }}
                           />
                         ) : (
-                          <span>No custom signature set. Uses default.</span>
+                          <span>No custom signature set. Uses default signature.</span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -160,6 +166,7 @@ export default function AccountsSettingsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditing(account.id)}
+                          data-testid={`edit-signature-${account.id}`}
                         >
                           {account.signature ? "Edit" : "Add signature"}
                         </Button>
