@@ -5,13 +5,14 @@
  * blocked external images (toggle to load), attachment list, action buttons,
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useEmailBodyHydration } from "./hooks/useEmailBodyHydration";
 import {
   Paperclip,
   ImageOff,
   ChevronDown,
   MailOpen,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailSenderHeader } from "./email-sender-header";
@@ -28,6 +29,7 @@ import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
 import { EmailLabelsBar } from "./email-view/email-labels-bar";
+import { FindInPage } from "./email-view/find-in-page";
 
 interface EmailViewProps {
   className?: string;
@@ -42,6 +44,20 @@ export function EmailView({ className }: EmailViewProps) {
   const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
+  const [findOpen, setFindOpen] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Cmd+F / Ctrl+F opens find bar
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        e.preventDefault();
+        setFindOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
@@ -120,6 +136,7 @@ export function EmailView({ className }: EmailViewProps) {
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
+        onFindInPage={() => setFindOpen(true)}
       />
 
       <ScrollArea className="flex-1">
@@ -176,6 +193,7 @@ export function EmailView({ className }: EmailViewProps) {
           )}
 
           <div
+            ref={bodyRef}
             className="prose-mail text-[var(--color-fg)]"
             // biome-ignore lint: HTML is sanitized via DOMPurify above
             dangerouslySetInnerHTML={{ __html: processedBody }}
@@ -230,6 +248,12 @@ export function EmailView({ className }: EmailViewProps) {
           )}
         </div>
       </ScrollArea>
+
+      <FindInPage
+        bodyRef={bodyRef}
+        open={findOpen}
+        onClose={() => setFindOpen(false)}
+      />
 
       <LabelManager
         open={labelManagerOpen}
