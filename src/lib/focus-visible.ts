@@ -4,6 +4,11 @@
  * Provides a centralized focus-visible ring class + SSR-safe detection of
  * keyboard-driven focus (vs. pointer clicks) so interactive elements can
  * render focus rings only when navigating via keyboard.
+ *
+ * Also provides focus ring utilities, focus traps, and accessibility helpers
+ * for interactive elements (Issue #435).
+ *
+ * WCAG 2.4.7 compliant focus indicators using CSS custom properties.
  */
 export const FOCUS_VISIBLE_RING_CLASS = "focus-visible-ring";
 
@@ -87,10 +92,6 @@ export function isKeyboardFocusActive(): boolean {
   if (!doc) return false;
   return doc.documentElement.classList.contains("is-keyboard-focus");
 }
- * Focus visible on interactive elements (Issue #435).
- *
- * WCAG 2.4.7 compliant focus indicators using CSS custom properties.
- */
 
 export interface FocusConfig {
   color: string;

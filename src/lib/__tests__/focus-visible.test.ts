@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import {
   DEFAULT_FOCUS_CONFIG,
   FocusConfig,
@@ -9,8 +8,8 @@ import {
   getFocusTransition,
   isFocusable,
   prefersReducedMotion,
-  initFocusVisible, 
-  isKeyboardFocusActive
+  initFocusVisible,
+  isKeyboardFocusActive,
 } from "@/lib/focus-visible";
 
 function mockDom() {
@@ -97,7 +96,8 @@ describe("focus-visible", () => {
     cleanup();
     expect(dom.docEl.classList.contains("is-keyboard-focus")).toBe(false);
     expect(isKeyboardFocusActive()).toBe(false);
-
+  });
+});
 
 describe("DEFAULT_FOCUS_CONFIG", () => {
   it("has gold color for WCAG compliance", () => {
