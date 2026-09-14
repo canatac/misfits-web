@@ -101,7 +101,7 @@ describe("email-digest-mode", () => {
     ];
     const digests = buildDigests("subject-prefix", emails);
     expect(digests).toHaveLength(2);
-    const invoice = digests.find((d) => d.key === "Invoice");
+    const invoice = digests.find((d: { key: string }) => d.key === "Invoice");
     expect(invoice?.count).toBe(2);
   });
 
