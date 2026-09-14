@@ -21,16 +21,21 @@ export const DEFAULT_READING_OPTIONS: ReadingTimeOptions = {
   longReadThreshold: 5,
 };
 
+const HTML_ENTITIES: Record<string, string> = {
+  '&nbsp;': ' ',
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&apos;': "'",
+};
+
 export function stripHtml(html: string): string {
   return html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;|&apos;/g, (match) => HTML_ENTITIES[match] ?? match)
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -46,8 +51,8 @@ export function calculateReadingTime(wordCount: number, options: ReadingTimeOpti
   const minutes = Math.max(1, Math.ceil(wordCount / wpm));
   const isLongRead = minutes >= longThreshold;
   let label: string;
-  if (minutes < 1) label = "< 1 min read";
-  else if (minutes === 1) label = "1 min read";
+  if (minutes < 1) label = '< 1 min read';
+  else if (minutes === 1) label = '1 min read';
   else if (minutes < longThreshold) label = `${minutes} min read`;
   else label = `${minutes} min read • Long read`;
   return { minutes, words: wordCount, label, isLongRead };
