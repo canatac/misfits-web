@@ -17,6 +17,27 @@ export interface EmailTemplate {
   description: string;
 }
 
+/** Built-in variable definitions for templates. */
+export interface TemplateVariable {
+  key: string;
+  label: string;
+  description: string;
+  defaultValue?: string;
+}
+
+/** Default template variables available in all templates. */
+export const DEFAULT_TEMPLATE_VARIABLES: TemplateVariable[] = [
+  { key: "name", label: "Recipient Name", description: "The recipient's name", defaultValue: "there" },
+  { key: "sender", label: "Sender Name", description: "Your name" },
+  { key: "date", label: "Date", description: "Current date" },
+  { key: "topic", label: "Topic", description: "Meeting or discussion topic" },
+  { key: "location", label: "Location", description: "Meeting location" },
+  { key: "company", label: "Company", description: "Company name" },
+  { key: "amount", label: "Amount", description: "Invoice amount" },
+  { key: "number", label: "Number", description: "Invoice number" },
+  { key: "month", label: "Month", description: "Current month" },
+];
+
 export const emailTemplates: EmailTemplate[] = [
   {
     id: "tpl-welcome",
@@ -70,4 +91,73 @@ export function applyTemplate(
   const replace = (s: string) =>
     s.replace(/\{\{(\w+)\}\}/g, (_m, key: string) => vars[key] ?? `{{${key}}}`);
   return { subject: replace(template.subject), body: replace(template.body) };
+}
+
+/**
+ * Extract all variable keys from a template.
+ */
+export function extractTemplateVariables(template: EmailTemplate): string[] {
+  const keys = new Set<string>();
+  const regex = /\{\{(\w+)\}\}/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(template.subject)) !== null) {
+    keys.add(match[1]);
+  }
+  while ((match = regex.exec(template.body)) !== null) {
+    keys.add(match[1]);
+  }
+
+  return Array.from(keys);
+}
+
+/**
+ * Get default value for a template variable.
+ */
+export function getVariableDefault(key: string): string | undefined {
+  const variable = DEFAULT_TEMPLATE_VARIABLES.find((v) => v.key === key);
+  if (variable?.defaultValue) return variable.defaultValue;
+
+  // Auto-generate defaults for date/month
+  if (key === "date") return new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  if (key === "month") return new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  return undefined;
+}
+
+/**
+ * Apply template with default values for missing variables.
+ */
+export function applyTemplateWithDefaults(
+  template: EmailTemplate,
+  vars: Record<string, string>
+): { subject: string; body: string } {
+  const allVars: Record<string, string> = {};
+
+  // Apply defaults first
+  const keys = extractTemplateVariables(template);
+  for (const key of keys) {
+    allVars[key] = vars[key] ?? getVariableDefault(key) ?? `{{${key}}}`;
+  }
+
+  return applyTemplate(template, allVars);
+}
+
+/**
+ * Preview template with sample data.
+ */
+export function previewTemplate(template: EmailTemplate): { subject: string; body: string } {
+  const sampleData: Record<string, string> = {
+    name: "John Doe",
+    sender: "Jane Smith",
+    date: new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+    topic: "Project Kickoff",
+    location: "Conference Room A",
+    company: "Acme Corp",
+    amount: "$1,200.00",
+    number: "INV-2026-001",
+    month: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+  };
+
+  return applyTemplateWithDefaults(template, sampleData);
 }
