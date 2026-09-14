@@ -21,9 +21,12 @@ export type ExportFormat = "markdown" | "html";
 
 function roleLabel(role: ChatMessage["role"]): string {
   switch (role) {
-    case "user": return "**User**";
-    case "assistant": return "**Assistant**";
-    case "system": return "*System*";
+    case "user":
+      return "**User**";
+    case "assistant":
+      return "**Assistant**";
+    case "system":
+      return "*System*";
   }
 }
 
@@ -32,7 +35,11 @@ function tsToDate(ts: number): string {
 }
 
 export function toMarkdown(chat: ChatExport): string {
-  const lines = [`# ${chat.title}`, `_Exported ${tsToDate(chat.exportedAt)}_`, ""];
+  const lines = [
+    `# ${chat.title}`,
+    `_Exported ${tsToDate(chat.exportedAt)}_`,
+    "",
+  ];
   for (const m of chat.messages) {
     lines.push(`## ${roleLabel(m.role)} — ${tsToDate(m.timestamp)}`);
     lines.push(m.content, "");
@@ -41,13 +48,21 @@ export function toMarkdown(chat: ChatExport): string {
 }
 
 export function toHtml(chat: ChatExport): string {
-  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const msgs = chat.messages.map((m) => {
-    return `<div class="msg ${escape(m.role)}">
+  const escape = (s: string) =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  const msgs = chat.messages
+    .map((m) => {
+      return `<div class="msg ${escape(m.role)}">
   <div class="meta">${escape(roleLabel(m.role))} - ${escape(tsToDate(m.timestamp))}</div>
   <pre>${escape(m.content)}</pre>
 </div>`;
-  }).join("\n");
+    })
+    .join("\n");
 
   return `<!doctype html><html><head><title>${escape(chat.title)}</title></head>
 <body><h1>${escape(chat.title)}</h1>
@@ -62,7 +77,11 @@ export function exportChat(chat: ChatExport, format: ExportFormat): string {
 /** Trigger a browser download of the exported content. */
 export function downloadExport(chat: ChatExport, format: ExportFormat): void {
   const content = exportChat(chat, format);
-  if (typeof document === "undefined" || typeof URL.createObjectURL !== "function") return;
+  if (
+    typeof document === "undefined" ||
+    typeof URL.createObjectURL !== "function"
+  )
+    return;
   const mime = format === "markdown" ? "text/markdown" : "text/html";
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);

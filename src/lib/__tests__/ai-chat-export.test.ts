@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { exportChat, toHtml, toMarkdown, type ChatExport } from "@/lib/ai-chat-export";
+import {
+  exportChat,
+  toHtml,
+  toMarkdown,
+  type ChatExport,
+} from "@/lib/ai-chat-export";
 
 const chat: ChatExport = {
   title: "Test Chat",
@@ -20,9 +25,20 @@ describe("ai-chat-export", () => {
   });
 
   it("exports HTML with escaped content", () => {
-    const html = toHtml({ ...chat, messages: [{ role: "user", content: "<script>", timestamp: 1 }] });
+    const html = toHtml({
+      ...chat,
+      messages: [
+        {
+          role: "user",
+          content: `<script>alert("xss')</script>`,
+          timestamp: 1,
+        },
+      ],
+    });
     expect(html).toContain("&lt;script&gt;");
     expect(html).not.toContain("<script>");
+    expect(html).toContain("&quot;");
+    expect(html).toContain("&#39;");
   });
 
   it("exportChat dispatches by format", () => {
