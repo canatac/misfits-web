@@ -137,15 +137,15 @@ export function generateEventUID(): string {
  */
 export function formatCalDAVDate(date: string): string {
   const d = new Date(date);
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "Z");
+  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
 /**
  * Parse a CalDAV date string.
  */
 export function parseCalDAVDate(dateStr: string): string {
-  // Handle basic ISO format
-  if (dateStr.includes("T")) {
+  // Handle extended ISO format (contains dashes): 2026-09-10T12:00:00Z
+  if (dateStr.includes("-")) {
     return new Date(dateStr).toISOString();
   }
 

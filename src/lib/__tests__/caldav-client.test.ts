@@ -130,6 +130,12 @@ describe("caldav-client", () => {
       const formatted = formatCalDAVDate("2026-09-10T12:00:00Z");
       expect(formatted).toMatch(/^\d{8}T\d{6}Z$/);
     });
+
+    it("does not produce double Z", () => {
+      const formatted = formatCalDAVDate("2026-09-10T12:00:00Z");
+      expect(formatted).not.toContain("ZZ");
+      expect(formatted).toBe("20260910T120000Z");
+    });
   });
 
   describe("parseCalDAVDate", () => {
@@ -138,9 +144,18 @@ describe("caldav-client", () => {
       expect(parsed).toContain("2026-09-10");
     });
 
-    it("parses CalDAV format", () => {
+    it("parses CalDAV basic format", () => {
       const parsed = parseCalDAVDate("20260910T120000Z");
       expect(parsed).toContain("2026-09-10");
+    });
+
+    it("round-trips format and parse", () => {
+      const original = "2026-09-10T12:00:00Z";
+      const formatted = formatCalDAVDate(original);
+      const parsed = parseCalDAVDate(formatted);
+      // formatCalDAVDate strips milliseconds (CalDAV basic format), so compare
+      // the underlying instant rather than the string representation.
+      expect(new Date(parsed).getTime()).toBe(new Date(original).getTime());
     });
   });
 
