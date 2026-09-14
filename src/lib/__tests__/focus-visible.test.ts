@@ -88,6 +88,10 @@ describe("applyFocusRing", () => {
 describe("prefersReducedMotion", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: vi.fn(),
+    });
   });
 
   it("returns true when user prefers reduced motion", () => {
