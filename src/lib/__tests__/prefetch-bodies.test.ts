@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   prefetchEmailBody,
   getPrefetchedBody,
@@ -40,11 +40,12 @@ describe('prefetch-bodies', () => {
     });
 
     it('returns null for expired entries', () => {
-      vi.useFakeTimers();
+      let fakeTime = 1_000_000;
+      const spy = vi.spyOn(Date, 'now').mockImplementation(() => fakeTime);
       prefetchEmailBody('email-1', 'Hello');
-      vi.advanceTimersByTime(31_000);
+      fakeTime += 31_000;
       expect(getPrefetchedBody('email-1')).toBeNull();
-      vi.useRealTimers();
+      spy.mockRestore();
     });
   });
 
@@ -90,17 +91,18 @@ describe('prefetch-bodies', () => {
 
   describe('cleanExpiredEntries', () => {
     it('removes only expired entries', () => {
-      vi.useFakeTimers();
+      let fakeTime = 1_000_000;
+      const spy = vi.spyOn(Date, 'now').mockImplementation(() => fakeTime);
       prefetchEmailBody('email-1', 'Old');
-      vi.advanceTimersByTime(15_000);
+      fakeTime += 15_000;
       prefetchEmailBody('email-2', 'New');
-      vi.advanceTimersByTime(20_000);
+      fakeTime += 20_000;
 
       const removed = cleanExpiredEntries();
       expect(removed).toBe(1);
       expect(getPrefetchedBody('email-1')).toBeNull();
       expect(getPrefetchedBody('email-2')).toBe('New');
-      vi.useRealTimers();
+      spy.mockRestore();
     });
   });
 });
