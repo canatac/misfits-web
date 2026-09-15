@@ -1,9 +1,3 @@
-/**
- * Unit tests for email-snooze-presets.ts
- *
- * Covers: getSnoozePresets, getPresetById, formatSnoozeDuration,
- * resolveSnoozeTimestamp, findPresetByOffset.
- */
 import { describe, it, expect } from "vitest";
 import {
   getSnoozePresets,
@@ -19,12 +13,7 @@ describe("getSnoozePresets", () => {
     const presets = getSnoozePresets();
     expect(presets).toHaveLength(SNOOZE_PRESETS.length);
     expect(presets.map((p) => p.id)).toEqual([
-      "1hour",
-      "tomorrow",
-      "3days",
-      "1week",
-      "2weeks",
-      "1month",
+      "1hour", "tomorrow", "3days", "1week", "2weeks", "1month",
     ]);
   });
 
@@ -48,6 +37,11 @@ describe("getPresetById", () => {
 });
 
 describe("formatSnoozeDuration", () => {
+  it("formats seconds for sub-minute durations", () => {
+    expect(formatSnoozeDuration(30_000)).toBe("30 seconds");
+    expect(formatSnoozeDuration(1_000)).toBe("1 second");
+  });
+
   it("formats minutes", () => {
     expect(formatSnoozeDuration(5 * 60_000)).toBe("5 minutes");
     expect(formatSnoozeDuration(1 * 60_000)).toBe("1 minute");
@@ -75,10 +69,6 @@ describe("formatSnoozeDuration", () => {
   it("returns 'Invalid duration' for non-positive offsets", () => {
     expect(formatSnoozeDuration(0)).toBe("Invalid duration");
     expect(formatSnoozeDuration(-1000)).toBe("Invalid duration");
-  });
-
-  it("formats seconds for sub-minute durations", () => {
-    expect(formatSnoozeDuration(30_000)).toBe("30 seconds");
   });
 });
 
