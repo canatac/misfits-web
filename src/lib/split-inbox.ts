@@ -1,12 +1,26 @@
 /**
- * Split Inbox utility (Issue #496).
+ * Split Inbox utility (Issue #451 + #496).
  *
  * Superhuman-style inbox that automatically classifies emails into
  * "Important" and "Other" sections. Supports manual correction and
  * learning from user feedback.
  */
 
-export type InboxSection = "important" | "other";
+export interface EmailImportance {
+  emailId: string;
+  score: number;
+  category: 'important' | 'other';
+  reasons: string[];
+}
+
+export interface SenderScore {
+  email: string;
+  score: number;
+  interactionCount: number;
+  lastInteraction: number;
+}
+
+export type InboxSection = 'important' | 'other';
 
 export interface ClassifiedEmail {
   emailId: string;
@@ -28,9 +42,154 @@ export interface SplitInboxState {
   classifications: Map<string, ClassifiedEmail>;
 }
 
-/**
- * Create default split inbox settings.
- */
+const IMPORTANT_PATTERNS = [
+  /meeting/i,
+  /schedule/i,
+  /urgent/i,
+  /action required/i,
+  /deadline/i,
+  /please (reply|confirm|review)/i,
+  /your (input|response|approval)/i,
+];
+
+const LOW_PRIORITY_PATTERNS = [
+  /unsubscribe/i,
+  /newsletter/i,
+  /promotion/i,
+  /sale/i,
+  /offer/i,
+];
+
+export function calculateImportance(
+  email: { id: string; from: string; subject: string; body: string; isStarred?: boolean },
+  senderScores: Map<string, SenderScore>
+): EmailImportance {
+  const score = calculateScore(email, senderScores);
+  const reasons: string[] = [];
+
+  if (score >= 70) {
+    reasons.push('High-priority sender or content');
+  }
+  if (email.isStarred) {
+    reasons.push('Starred by user');
+  }
+  if (hasImportantPattern(email.subject + ' ' + email.body)) {
+    reasons.push('Contains important patterns');
+  }
+  if (hasLowPriorityPattern(email.subject + ' ' + email.body)) {
+    reasons.push('Low-priority content detected');
+  }
+
+  return {
+    emailId: email.id,
+    score,
+    category: score >= 50 ? 'important' : 'other',
+    reasons,
+  };
+}
+
+function calculateScore(
+  email: { from: string; subject: string; body: string; isStarred?: boolean },
+  senderScores: Map<string, SenderScore>
+): number {
+  let score = 50;
+
+  const senderScore = senderScores.get(email.from.toLowerCase());
+  if (senderScore) {
+    score += Math.min(senderScore.score, 20);
+  }
+
+  if (hasImportantPattern(email.subject)) {
+    score += 15;
+  }
+  if (hasImportantPattern(email.body)) {
+    score += 10;
+  }
+  if (hasLowPriorityPattern(email.subject + email.body)) {
+    score -= 20;
+  }
+
+  if (email.isStarred) {
+    score += 10;
+  }
+
+  return Math.max(0, Math.min(100, score));
+}
+
+function hasImportantPattern(text: string): boolean {
+  return IMPORTANT_PATTERNS.some((p) => p.test(text));
+}
+
+function hasLowPriorityPattern(text: string): boolean {
+  return LOW_PRIORITY_PATTERNS.some((p) => p.test(text));
+}
+
+export function updateSenderScore(
+  senderScores: Map<string, SenderScore>,
+  sender: string,
+  action: 'read' | 'archive' | 'star' | 'reply'
+): Map<string, SenderScore> {
+  const key = sender.toLowerCase();
+  const existing = senderScores.get(key) || {
+    email: sender,
+    score: 50,
+    interactionCount: 0,
+    lastInteraction: 0,
+  };
+
+  const newScores = new Map(senderScores);
+  let scoreDelta = 0;
+
+  switch (action) {
+    case 'read':
+      scoreDelta = 2;
+      break;
+    case 'star':
+      scoreDelta = 5;
+      break;
+    case 'reply':
+      scoreDelta = 3;
+      break;
+    case 'archive':
+      scoreDelta = -1;
+      break;
+  }
+
+  newScores.set(key, {
+    ...existing,
+    email: sender,
+    score: Math.max(0, Math.min(100, existing.score + scoreDelta)),
+    interactionCount: existing.interactionCount + 1,
+    lastInteraction: Date.now(),
+  });
+
+  return newScores;
+}
+
+export function splitInbox<
+  T extends { id: string; from: string; subject: string; body: string; isStarred?: boolean },
+>(emails: T[], senderScores: Map<string, SenderScore>): { important: T[]; other: T[] } {
+  const result: { important: T[]; other: T[] } = { important: [], other: [] };
+
+  for (const email of emails) {
+    const importance = calculateImportance(email, senderScores);
+    if (importance.category === 'important') {
+      result.important.push(email);
+    } else {
+      result.other.push(email);
+    }
+  }
+
+  return result;
+}
+
+export function getImportantCount(
+  emails: Array<{ id: string; from: string; subject: string; body: string }>,
+  senderScores: Map<string, SenderScore>
+): number {
+  return emails.filter((e) => calculateImportance(e, senderScores).category === 'important').length;
+}
+
 export function getDefaultSplitInboxSettings(): SplitInboxSettings {
   return {
     enabled: true,
@@ -39,9 +198,6 @@ export function getDefaultSplitInboxSettings(): SplitInboxSettings {
   };
 }
 
-/**
- * Create initial split inbox state.
- */
 export function createSplitInboxState(): SplitInboxState {
   return {
     important: [],
@@ -50,9 +206,6 @@ export function createSplitInboxState(): SplitInboxState {
   };
 }
 
-/**
- * Classify an email into important or other.
- */
 export function classifyEmail(
   emailId: string,
   confidence: number,
@@ -60,33 +213,27 @@ export function classifyEmail(
 ): ClassifiedEmail {
   return {
     emailId,
-    section: confidence >= threshold ? "important" : "other",
+    section: confidence >= threshold ? 'important' : 'other',
     confidence,
     classifiedAt: new Date().toISOString(),
     userCorrected: false,
   };
 }
 
-/**
- * Move an email to a different section (user correction).
- */
 export function moveEmailToSection(
   state: SplitInboxState,
   emailId: string,
   targetSection: InboxSection
 ): SplitInboxState {
-  // Remove from current section
   const newImportant = state.important.filter((id) => id !== emailId);
   const newOther = state.other.filter((id) => id !== emailId);
 
-  // Add to target section
-  if (targetSection === "important") {
+  if (targetSection === 'important') {
     newImportant.push(emailId);
   } else {
     newOther.push(emailId);
   }
 
-  // Update classification
   const classification = state.classifications.get(emailId);
   if (classification) {
     classification.section = targetSection;
@@ -100,44 +247,29 @@ export function moveEmailToSection(
   };
 }
 
-/**
- * Get emails in a specific section.
- */
-export function getEmailsInSection(
-  state: SplitInboxState,
-  section: InboxSection
-): string[] {
-  return section === "important" ? state.important : state.other;
+export function getEmailsInSection(state: SplitInboxState, section: InboxSection): string[] {
+  return section === 'important' ? state.important : state.other;
 }
 
-/**
- * Check if an email is in a specific section.
- */
 export function isEmailInSection(
   state: SplitInboxState,
   emailId: string,
   section: InboxSection
 ): boolean {
-  return section === "important"
+  return section === 'important'
     ? state.important.includes(emailId)
     : state.other.includes(emailId);
 }
 
-/**
- * Get the section an email belongs to.
- */
 export function getEmailSection(
   state: SplitInboxState,
   emailId: string
 ): InboxSection | null {
-  if (state.important.includes(emailId)) return "important";
-  if (state.other.includes(emailId)) return "other";
+  if (state.important.includes(emailId)) return 'important';
+  if (state.other.includes(emailId)) return 'other';
   return null;
 }
 
-/**
- * Get classification for an email.
- */
 export function getClassification(
   state: SplitInboxState,
   emailId: string
@@ -145,66 +277,39 @@ export function getClassification(
   return state.classifications.get(emailId);
 }
 
-/**
- * Check if a classification was user-corrected.
- */
-export function isUserCorrected(
-  state: SplitInboxState,
-  emailId: string
-): boolean {
+export function isUserCorrected(state: SplitInboxState, emailId: string): boolean {
   const classification = state.classifications.get(emailId);
   return classification?.userCorrected ?? false;
 }
 
-/**
- * Get section label for display.
- */
 export function getSectionLabel(section: InboxSection): string {
   const labels: Record<InboxSection, string> = {
-    important: "Important",
-    other: "Other",
+    important: 'Important',
+    other: 'Other',
   };
   return labels[section];
 }
 
-/**
- * Get section description for display.
- */
 export function getSectionDescription(section: InboxSection): string {
   const descriptions: Record<InboxSection, string> = {
-    important: "Emails requiring your attention",
-    other: "Newsletters, notifications, and low-priority emails",
+    important: 'Emails requiring your attention',
+    other: 'Newsletters, notifications, and low-priority emails',
   };
   return descriptions[section];
 }
 
-/**
- * Count emails in a section.
- */
-export function getSectionCount(
-  state: SplitInboxState,
-  section: InboxSection
-): number {
-  return section === "important" ? state.important.length : state.other.length;
+export function getSectionCount(state: SplitInboxState, section: InboxSection): number {
+  return section === 'important' ? state.important.length : state.other.length;
 }
 
-/**
- * Get total email count.
- */
 export function getTotalCount(state: SplitInboxState): number {
   return state.important.length + state.other.length;
 }
 
-/**
- * Check if split inbox is empty.
- */
 export function isSplitInboxEmpty(state: SplitInboxState): boolean {
   return state.important.length === 0 && state.other.length === 0;
 }
 
-/**
- * Remove an email from the split inbox.
- */
 export function removeEmailFromSplitInbox(
   state: SplitInboxState,
   emailId: string
@@ -217,9 +322,6 @@ export function removeEmailFromSplitInbox(
   };
 }
 
-/**
- * Clear all emails from the split inbox.
- */
 export function clearSplitInbox(state: SplitInboxState): SplitInboxState {
   state.classifications.clear();
   return {
@@ -229,9 +331,6 @@ export function clearSplitInbox(state: SplitInboxState): SplitInboxState {
   };
 }
 
-/**
- * Get user correction statistics.
- */
 export function getCorrectionStats(state: SplitInboxState): {
   total: number;
   corrected: number;
@@ -248,13 +347,7 @@ export function getCorrectionStats(state: SplitInboxState): {
   };
 }
 
-/**
- * Check if email should be reclassified based on user corrections.
- */
-export function shouldReclassify(
-  state: SplitInboxState,
-  emailId: string
-): boolean {
+export function shouldReclassify(state: SplitInboxState, emailId: string): boolean {
   const classification = state.classifications.get(emailId);
   if (!classification) return false;
   return classification.userCorrected;
