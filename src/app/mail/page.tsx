@@ -18,6 +18,7 @@ import { useThreadStore } from "@/stores/thread-store";
 import { useThreads } from "@/hooks/use-threads";
 import { useComposerStore } from "@/stores/composer-store";
 import { useAccountStore } from "@/stores/account-store";
+import { useMailLayoutStore } from "@/stores/mail-layout-store";
 import { useChatStore } from "@/stores/chat-store";
 import { MobileTopBar } from "./parts/MobileTopBar";
 import { MailSidebarHost } from "./parts/MailSidebarHost";
@@ -67,6 +68,8 @@ export default function MailPage() {
     setDesktopConsoleOpen,
     toggleDesktopConsole,
   } = useMailLayoutSelectors();
+  const focusMode = useMailLayoutStore((s) => s.focusMode);
+  const toggleFocusMode = useMailLayoutStore((s) => s.toggleFocusMode);
 
   const chatOpen = useChatStore((s) => s.isOpen);
   const setChatOpen = useChatStore((s) => s.setOpen);
@@ -143,6 +146,7 @@ export default function MailPage() {
     closeActiveOverlay,
     handleToggleSidebarShortcut,
     handleToggleChatShortcut,
+    handleToggleFocusMode,
   } = useMailPageHandlers({
     isDesktop,
     chatOpen,
@@ -157,6 +161,7 @@ export default function MailPage() {
     selectThread,
     setMobileView,
     setSearchOverlayOpen,
+    toggleFocusMode,
   });
 
   useMailShortcuts({
@@ -171,6 +176,7 @@ export default function MailPage() {
     onToggleChat: handleToggleChatShortcut,
     onCloseOverlay: closeActiveOverlay,
     onToggleShortcutsHelp: () => setShortcutsHelpOpen((prev) => !prev),
+    onToggleFocusMode: handleToggleFocusMode,
   });
 
   const handleToggleRightPanel = () => {
@@ -239,6 +245,8 @@ export default function MailPage() {
           selectedThread={selectedThread}
           viewMode={viewMode}
           desktopChatOpen={desktopChatOpen}
+          focusMode={focusMode}
+          onToggleFocusMode={toggleFocusMode}
           onCloseDetail={() => {
             selectThread(null);
             selectEmail(null);

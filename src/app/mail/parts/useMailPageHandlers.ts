@@ -16,6 +16,7 @@ interface HandlerArgs {
   selectThread: (id: string | null) => void;
   setMobileView: (v: "list" | "view") => void;
   setSearchOverlayOpen: (v: boolean) => void;
+  toggleFocusMode: () => void;
 }
 
 type WinFn = "__mailNavNext" | "__mailNavPrev" | "__mailArchive" | "__mailDelete";
@@ -38,6 +39,7 @@ export function useMailPageHandlers(args: HandlerArgs) {
     selectThread,
     setMobileView,
     setSearchOverlayOpen,
+    toggleFocusMode,
   } = args;
 
   const handleSearchFocus = useCallback(
@@ -86,6 +88,10 @@ export function useMailPageHandlers(args: HandlerArgs) {
     toggleChatOpen();
   }, [desktopChatOpen, isDesktop, setChatOpen, setDesktopChatOpen, toggleChatOpen]);
 
+  const handleToggleFocusMode = useCallback(() => {
+    toggleFocusMode();
+  }, [toggleFocusMode]);
+
   return {
     handleSearchFocus,
     handleNavNext,
@@ -96,5 +102,6 @@ export function useMailPageHandlers(args: HandlerArgs) {
     closeActiveOverlay,
     handleToggleSidebarShortcut,
     handleToggleChatShortcut,
+    handleToggleFocusMode,
   };
 }

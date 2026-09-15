@@ -9,6 +9,7 @@ interface MailLayoutState {
   desktopChatOpen: boolean;
   desktopHeaderOpen: boolean;
   desktopConsoleOpen: boolean;
+  focusMode: boolean;
   setHydrated: (hydrated: boolean) => void;
   setDesktopSidebarOpen: (open: boolean) => void;
   toggleDesktopSidebar: () => void;
@@ -18,6 +19,8 @@ interface MailLayoutState {
   toggleDesktopHeader: () => void;
   setDesktopConsoleOpen: (open: boolean) => void;
   toggleDesktopConsole: () => void;
+  setFocusMode: (focus: boolean) => void;
+  toggleFocusMode: () => void;
 }
 
 export const useMailLayoutStore = create<MailLayoutState>()(
@@ -28,6 +31,7 @@ export const useMailLayoutStore = create<MailLayoutState>()(
       desktopChatOpen: false,
       desktopHeaderOpen: true,
       desktopConsoleOpen: false,
+      focusMode: false,
       setHydrated: (hydrated) => set({ hydrated }),
       setDesktopSidebarOpen: (open) => set({ desktopSidebarOpen: open }),
       toggleDesktopSidebar: () =>
@@ -41,6 +45,8 @@ export const useMailLayoutStore = create<MailLayoutState>()(
       setDesktopConsoleOpen: (open) => set({ desktopConsoleOpen: open }),
       toggleDesktopConsole: () =>
         set((s) => ({ desktopConsoleOpen: !s.desktopConsoleOpen })),
+      setFocusMode: (focus) => set({ focusMode: focus }),
+      toggleFocusMode: () => set((s) => ({ focusMode: !s.focusMode })),
     }),
     {
       name: "misfits-mail-layout",
@@ -50,6 +56,7 @@ export const useMailLayoutStore = create<MailLayoutState>()(
         desktopChatOpen: state.desktopChatOpen,
         desktopHeaderOpen: state.desktopHeaderOpen,
         desktopConsoleOpen: state.desktopConsoleOpen,
+        focusMode: state.focusMode,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

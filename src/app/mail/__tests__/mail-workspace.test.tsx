@@ -29,6 +29,8 @@ describe("MailWorkspace", () => {
         selectedThread={null}
         viewMode="list"
         desktopChatOpen={true}
+        focusMode={false}
+        onToggleFocusMode={() => {}}
         onCloseChat={() => {}}
         onCloseDetail={onCloseDetail}
       />
@@ -56,6 +58,8 @@ describe("MailWorkspace", () => {
         selectedThread={null}
         viewMode="list"
         desktopChatOpen={false}
+        focusMode={false}
+        onToggleFocusMode={() => {}}
         onCloseChat={() => {}}
         onCloseDetail={onCloseDetail}
       />
@@ -70,5 +74,52 @@ describe("MailWorkspace", () => {
 
     closeButton.click();
     expect(onCloseDetail).toHaveBeenCalledTimes(1);
+  });
+
+  it("collapses list pane when focus mode is active", () => {
+    const onToggle = vi.fn();
+    render(
+      <MailWorkspace
+        mobileView="list"
+        hasDesktopSelection={true}
+        threadingEnabled={false}
+        selectedThread={null}
+        viewMode="list"
+        desktopChatOpen={false}
+        focusMode={true}
+        onToggleFocusMode={onToggle}
+        onCloseChat={() => {}}
+        onCloseDetail={() => {}}
+      />
+    );
+
+    const listPane = screen.getByTestId("mail-list-pane");
+    expect(listPane.className).toContain("w-0");
+    expect(listPane.className).toContain("shrink-0");
+    expect(listPane.className).toContain("border-transparent");
+    expect(screen.queryByTestId("mock-email-list")).toBeNull();
+  });
+
+  it("toggles focus mode via toolbar button", () => {
+    const onToggle = vi.fn();
+    render(
+      <MailWorkspace
+        mobileView="list"
+        hasDesktopSelection={true}
+        threadingEnabled={false}
+        selectedThread={null}
+        viewMode="list"
+        desktopChatOpen={false}
+        focusMode={false}
+        onToggleFocusMode={onToggle}
+        onCloseChat={() => {}}
+        onCloseDetail={() => {}}
+      />
+    );
+
+    const toggle = screen.getByTestId("focus-mode-toggle");
+    expect(toggle).toBeTruthy();
+    toggle.click();
+    expect(onToggle).toHaveBeenCalledTimes(1);
   });
 });

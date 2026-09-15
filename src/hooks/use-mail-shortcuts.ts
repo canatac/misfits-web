@@ -1,6 +1,6 @@
 /**
  * Keyboard shortcuts hook for the mail interface.
- * j/k: navigate emails, e: archive, #: delete, c: compose, / or Cmd/Ctrl+K: search focus, Esc: close
+ * j/k: navigate emails, e: archive, #: delete, c: compose, f: focus mode, / or Cmd/Ctrl+K: search focus, Esc: close
  * Only active when not in input/textarea/contenteditable.
  */
 import { useEffect, useCallback } from "react";
@@ -19,6 +19,7 @@ export interface MailShortcutHandlers {
   onToggleStar?: () => void;
   onMarkUnread?: () => void;
   onToggleShortcutsHelp?: () => void;
+  onToggleFocusMode?: () => void;
 }
 
 const INPUT_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
@@ -87,6 +88,12 @@ export function useMailShortcuts(handlers: MailShortcutHandlers): void {
         case "/":
           e.preventDefault();
           handlers.onSearchFocus();
+          break;
+        case "f":
+          if (handlers.onToggleFocusMode) {
+            e.preventDefault();
+            handlers.onToggleFocusMode();
+          }
           break;
         case "Escape": {
           e.preventDefault();
