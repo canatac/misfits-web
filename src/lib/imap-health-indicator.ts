@@ -119,7 +119,7 @@ export function deriveStatus(
   lastErrorAt: string | null
 ): HealthStatus {
   if (successRate < HEALTH_THRESHOLDS.DOWN_RATE) return "down";
-  if (successRate < HEALTH_THRESHOLDS.DEGRADED_RATE) return "degraded";
+  if (successRate <= HEALTH_THRESHOLDS.DEGRADED_RATE) return "degraded";
   if (avgLatencyMs > HEALTH_THRESHOLDS.HIGH_LATENCY_MS) return "degraded";
   if (successRate === 1 && !lastErrorAt) return "healthy";
   // Check if the last sample was an error
