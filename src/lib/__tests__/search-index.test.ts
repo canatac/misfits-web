@@ -59,11 +59,12 @@ describe("search-index", () => {
 
     it("searches by body content", () => {
       const index = createSearchIndex();
-      index.indexEmail(makeEmail({ id: "e1", body: "<p>Project roadmap discussion</p>" }));
-      index.indexEmail(makeEmail({ id: "e2", body: "<p>Team lunch</p>" }));
+      index.indexEmail(makeEmail({ id: "e1", subject: "Alpha", preview: "Beta", body: "<p>Project roadmap discussion</p>" }));
+      index.indexEmail(makeEmail({ id: "e2", subject: "Gamma", preview: "Delta", body: "<p>Team lunch</p>" }));
 
       const results = index.search("roadmap");
       expect(results).toHaveLength(1);
+      expect(results[0].email.id).toBe("e1");
     });
 
     it("returns empty results for no match", () => {
