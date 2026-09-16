@@ -76,11 +76,12 @@ describe("triage-agent", () => {
   describe("deleteRule", () => {
     it("removes rule by id", () => {
       const rules = [
-        createTriageRule({ name: "R1", description: "Test", conditions: {}, actions: {} }),
-        createTriageRule({ name: "R2", description: "Test", conditions: {}, actions: {} }),
+        { ...createTriageRule({ name: "R1", description: "Test", conditions: {}, actions: {} }), id: "rule-1" },
+        { ...createTriageRule({ name: "R2", description: "Test", conditions: {}, actions: {} }), id: "rule-2" },
       ];
       const result = deleteRule(rules, rules[0].id);
       expect(result).toHaveLength(1);
+      expect(result[0].id).toBe("rule-2");
     });
   });
 
