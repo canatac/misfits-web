@@ -129,7 +129,10 @@ export function validateCalDAVAccount(account: CalDAVAccount): {
  * Generate a unique ID for a calendar event.
  */
 export function generateEventUID(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}@misfits.ai`;
+  const array = new Uint8Array(8);
+  crypto.getRandomValues(array);
+  const rand = Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${Date.now()}-${rand}@misfits.ai`;
 }
 
 /**
