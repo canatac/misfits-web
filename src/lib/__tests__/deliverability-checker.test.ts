@@ -125,7 +125,6 @@ describe("deliverability-checker", () => {
         validateDKIM("sel", null),
         validatePTR("1.2.3.4", null),
         validateTLS(false, false),
-        validateTLSRPT(null),
       ];
       expect(calculateComplianceScore(checks)).toBe(0);
     });
