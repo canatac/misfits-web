@@ -74,10 +74,14 @@ describe("groupByDay", () => {
 
 describe("findNextAvailableSlot", () => {
   it("finds first future empty slot", () => {
+    const start = new Date();
+    start.setDate(start.getDate() + 1);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
     const grid = buildScheduleGrid(
       "day",
-      "2026-03-15T00:00:00Z",
-      "2026-03-16T00:00:00Z",
+      start.toISOString(),
+      end.toISOString(),
       [],
       60
     );
