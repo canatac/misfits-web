@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto-resume waiting agents to default mission (DISABLED - nudger script removed)
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=/bin/sleep infinity
+Restart=no
+
+[Install]
+WantedBy=default.target
