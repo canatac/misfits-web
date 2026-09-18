@@ -1,0 +1,32 @@
+[Unit]
+Description=Fleet Hermes Launcher Relay v4 (agent: %i)
+After=network-online.target redis-server.service
+Wants=network-online.target
+Requires=redis-server.service
+
+[Service]
+Type=simple
+User=root
+Environment="REDIS_HOST=172.16.12.2"
+Environment="REDIS_PORT=6379"
+Environment="REDIS_PASS=OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW"
+Environment="HERMES_PROVIDER=nous"
+Environment="HERMES_MODEL=meituan/longcat-2.0:free"
+Environment="LAUNCHER_BIN=/opt/fleet/launcher/fleet_launcher.py"
+Environment="LOG_DIR=/var/log/fleet"
+Environment="QUERY_DIR=/tmp/fleet/queries"
+Environment="CLAIM_TTL=300"
+ExecStart=/usr/bin/python3 /opt/fleet/launcher/fleet_relay_v4.py %i
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Hardening
+NoNewPrivileges=false
+ProtectSystem=false
+ProtectHome=false
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
