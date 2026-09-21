@@ -1,0 +1,61 @@
+event: po_decision_task_v41_validation_scenario_1
+event_type: PO_DECISION_INDEPENDENT
+timestamp: 2026-09-21T07:00:00Z
+reviewer: product-owner
+task_id: task_v41_validation_scenario_1
+issue: "#697"
+pr: "#701"
+decision: NEEDS_ITERATION
+
+acceptance_criteria:
+  - task_id_stable: PASS
+  - events_received_to_completed: PARTIAL  # ACCEPTED tautological, STARTED unchecked
+  - resultat_consultable_redis: PASS
+  - tache_sans_effet_externe: FAIL  # hardcoded True
+  - chaine_complete_conductor_to_dev: PASS
+  - queue_consumee: PASS
+
+findings:
+  - severity: HIGH
+    category: SECURITY
+    description: "Mot de passe Redis codé en dur dans 3 fichiers tests (exposé dans git history)"
+    files:
+      - fleet/tests/test_scenario1_e2e.py:34
+      - fleet/tests/test_recovery.py:31
+      - fleet/tests/test_integration_relay.py:27
+    action_required: "Remplacer fallback par '' — aligner avec relay v4.1 et launcher. Rotation immédiate du credential exposé."
+
+  - severity: MEDIUM
+    category: TEST_QUALITY
+    description: "Assertion tautologique — 'relay.returncode is not None' toujours VRAI"
+    file: "fleet/tests/test_scenario1_e2e.py:154"
+    action_required: "Remplacer par 'relay.returncode == 0'"
+
+  - severity: MEDIUM
+    category: TEST_QUALITY
+    description: "Vérification d'effet externe fictive — aucune assertion réelle"
+    file: "fleet/tests/test_scenario1_e2e.py:157"
+    action_required: "Implémenter vérification : git status --porcelain + git diff --name-only"
+
+  - severity: MEDIUM
+    category: TEST_COVERAGE
+    description: "État STARTED non vérifié — la chaîne RECEIVED → ACCEPTED → STARTED → COMPLÉTÉE est incomplète"
+    action_required: "Ajouter assertion explicite du state STARTED avant COMPLETED"
+
+  - severity: PROCESS_CRITICAL
+    category: PROCESS
+    description: "PR #701 fusionnée par le développeur avec 0 review GitHub. Chaîne conductor-ops → PO → Scrum Master → développeur violée."
+    action_required: "Protéger la branche fleet/ avec revue PO obligatoire avant merge. Supposer/faker les fichiers d'événements PO rédigés par le développeur."
+
+pr_status: MERGED
+merge_commit: a87e2f6690770dbe3918c2437717b1f37d24b992
+merge_action: NONE  # PR déjà fusionnée
+
+prochaines_etapes:
+  - "Créer PR follow-up pour retirer credentials Redis codés en dur des 3 fichiers tests"
+  - "Corriger assertion tautologique (is not None → == 0)"
+  - "Implémenter vérification réelle d'effet externe"
+  - "Ajouter vérification état STARTED"
+  - "Protéger branche fleet/ avec revue PO obligatoire"
+  - "Rotation immédiate du credential Redis exposé"
+  - "Marquer/retirer les fichiers d'événements PO rédigés par le développeur"
