@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T13:30 UTC — Email export PDF/print/data portability cycle
+> Dernière mise à jour: 2026-09-22T15:05 UTC — Attachment preview + matrix gap cycle
 
 ---
 
@@ -205,6 +205,16 @@
   - **Rationale**: Client-side PDF generation keeps data on device (privacy-by-design). .eml export already exists in backend — just needs UI wiring.
 - **Action**: Issue #751 created — [ux] Email export PDF + print + .eml for data portability (owner hint: dev-web)
 - PO_TICKET posted to scrum-master via fleet_send.sh (task_id: po_ticket_print_export)
+
+### Cycle 2026-09-22T15:05 — Attachment preview + matrix gap analysis
+- **Market insight**: Proton Mail, Fastmail, Hey, and Spark all offer inline attachment preview (images, PDFs) with quick actions (download, share). misfits.ai has no attachment preview — users must download every file to view it. This is a significant UX gap vs. all major competitors.
+- **misfits.ai gap**: No inline attachment preview exists. Users cannot view images or PDFs without downloading. This is a critical gap for a modern email client.
+- **Arbitrage 2026-09-22: Attachment preview scope**
+  - **Choix**: Inline preview (images, PDFs) + download/share buttons + fallback for unknown types
+  - **Rejeté**: Download-only (no preview), Server-side preview (privacy risk)
+  - **Rationale**: Client-side preview keeps data on device (privacy-by-design). PDF preview via pdf.js is a proven pattern. Unknown types fall back to download.
+- **Action**: Matrix row MW-2026-050 added — Email attachment preview (owner hint: dev-web)
+- **Matrix gap**: 14 FAIL rows in MATRIX_STATUS.csv lack corresponding GH issues (MW-032, MW-033, MW-036, MW-037, MW-038, MW-039, MW-040, MW-041, MW-042, MW-045, MW-048, MW-049). PO_TICKET posted to scrum-master for triage.
 
 ### Cycle 2026-09-22T13:10 — Keyboard shortcuts power-user differentiator
 - **Market insight**: Superhuman (acquired by Grammarly mid-2025), Proton Mail, Fastmail, Spark Mail, and eM Client all emphasize keyboard shortcuts as a core power-user feature. Proton's V4 web client has comprehensive shortcuts with tooltips. Fastmail has single-key shortcuts (y=archive, f=forward, !=spam). Superhuman built its entire brand on keyboard-first navigation.
