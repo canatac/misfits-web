@@ -1,0 +1,59 @@
+=== Testeur Production Smoke Test 20260922T150735Z ===
+Target: https://mail.misfits.ai
+Role: testeur | Tick: cron
+
+--- 1. Public routes ---
+/ -> HTTP 200
+/login -> HTTP 200
+/register -> HTTP 200
+/mail -> HTTP 307 (auth gate OK)
+/compose -> HTTP 307 (auth gate OK)
+/inbox -> HTTP 307 (auth gate OK)
+/dashboard -> HTTP 307 (auth gate OK)
+/admin -> HTTP 307 (auth gate OK)
+/settings -> HTTP 307 (auth gate OK)
+/contacts -> HTTP 307 (auth gate OK)
+/calendar -> HTTP 200
+/search -> HTTP 307 (auth gate OK)
+/newsletters -> HTTP 200
+/files -> HTTP 200
+/monitoring -> HTTP 307 (auth gate OK)
+
+--- 2. Auth-gate endpoints (no session) ---
+/api/emails -> HTTP 307 (PASS - auth gate)
+/api/external-accounts -> HTTP 307 (PASS - auth gate)
+/api/hermes/runs -> HTTP 307 (PASS - auth gate)
+/api/admin/ai-activity -> HTTP 307 (PASS - auth gate)
+/api/admin/users -> HTTP 307 (PASS - auth gate)
+/api/admin/whoami -> HTTP 500 (FAIL - backend proxy error)
+
+--- 3. CORS test (spoofed origin: https://evil.com) ---
+/api/emails OPTIONS -> no CORS header (PASS - no reflection)
+/api/external-accounts OPTIONS -> no CORS header (PASS - no reflection)
+/api/hermes/runs OPTIONS -> no CORS header (PASS - no reflection)
+
+--- 4. Security headers ---
+permissions-policy: present
+referrer-policy: strict-origin-when-cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+--- 5. HTTPS reachability ---
+mail.misfits.ai:443 -> HTTP 200 (0.09s)
+
+--- 6. Feature code analysis ---
+Keyboard shortcuts (MW-043): useMailShortcuts integrated in mail/page.tsx + KeyboardShortcutsHelp component
+Email forward (MW-048): handleForward in useEmailActions.tsx + Forward button in email-toolbar.tsx
+Reading mode (MW-032): immersive-reading.tsx exists, integrated in email-view.tsx
+
+--- Summary ---
+PASS: 14/15 public routes correct
+PASS: 5/6 auth-gate endpoints secure
+PASS: 3/3 CORS tests clean
+PASS: 6/6 security headers present
+PASS: HTTPS 200 OK
+FAIL: 1/6 auth-gate (/api/admin/whoami -> 500, backend proxy issue)
+
+New Gherkin test created: MW-2026-048-email-forward.feature (5 scenarios)
