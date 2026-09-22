@@ -1,0 +1,27 @@
+testeur_tick_20260922_MW059_email_pin_star.txt
+============================================
+TICK: 2026-09-22T22:05Z (cron)
+ROLE: testeur
+ACTION: MW-2026-059 Email pin/star — production verification
+
+PRODUCTION TEST RESULTS:
+- POST /api/emails/{id}/action {"action":"star"} (anon) → 401 AUTH_REQUIRED ✓
+- POST /api/emails/{id}/action {"action":"unstar"} (anon) → 401 AUTH_REQUIRED ✓
+- toggleStar in JS bundle: 1 reference (Zustand store) ✓
+- "starred" filter in JS bundle: 1 reference (filter logic) ✓
+- GET /api/emails (anon) → 401 (auth bypass regression: PASS) ✓
+
+FEATURE VERDICT:
+  MW-2026-059 Email pin/star: DEPLOYED (code in bundle, API gated correctly)
+  - Frontend: toggleStar + starred filter present in production bundle
+  - Backend: /api/emails/{id}/action endpoint exists, requires auth
+  - Anonymous test confirms no PII leak (401 response)
+
+LIMITATION: Full UI test (click star → verify persistence → filter starred)
+  requires authenticated session. Anonymous test confirms deployment + auth gating only.
+
+Gherkin feature file created: MW-2026-059-email-pin-star.feature
+
+DELTA vs previous tick:
+  New feature tested: MW-2026-059 (pin/star)
+  Auth bypass regression: still PASS
