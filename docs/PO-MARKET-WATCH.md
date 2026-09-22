@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T07:58 UTC — DMARC/BIMI cycle
+> Dernière mise à jour: 2026-09-22T08:30 UTC — Sprint 1 FAIL triage cycle
 
 ---
 
@@ -168,5 +168,12 @@
   - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
 - Issue #710 créée: [po] feature: DMARC/BIMI trust indicator in email view (owner hint: dev-web)
 - PO_TICKET envoyé à scrum-master via bus (task_id: po_dmarc_bimi_20260922)
+
+### Cycle 2026-09-22T08:30 — Sprint 1 FAIL triage
+- 21 FAIL rows in MATRIX_STATUS.csv triaged → 8 PO_TICKETs posted to scrum-master
+- New FAIL issues found: #719 (i18n), #718 (on-device AI), #717 (newsletter)
+- Tickets posted: MW-023, MW-020, MW-016, MW-017, MW-018, MW-019, MW-021, MW-022
+- All tickets include row_id, expected test evidence, owner hints, and repo routing
+- No ROOT_GO received → no dev actions taken
 
 *Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
