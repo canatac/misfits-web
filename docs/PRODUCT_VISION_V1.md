@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T14:00 UTC — PO cycle: 50 rows total, 4 tickets posted to scrum-master (MW-050 attachment preview UX #752, DKIM crash loop #566, auth regression #426)
+> Dernière mise à jour: 2026-09-22T14:17 UTC — PO cycle: 51 rows total, 7 tickets posted to scrum-master (MW-053 API 502 regression #755, MW-050 attachment preview UX #752, DKIM crash loop #566, auth regression #426, MW-018 GDPR data deletion #581, MW-035 auth bypass regression #757)
 
 ---
 
