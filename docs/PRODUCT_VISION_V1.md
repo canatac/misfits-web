@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T13:30 UTC — PO cycle: new matrix row MW-2026-049 (Email export PDF + print, #751), 49 rows total, 1 ticket posted to scrum-master
+> Dernière mise à jour: 2026-09-22T14:15 UTC — PO cycle: P0 regression #755 (API 502 outage) ticketed to scrum-master, 49 matrix rows, 1 ticket posted
 
 ---
 
