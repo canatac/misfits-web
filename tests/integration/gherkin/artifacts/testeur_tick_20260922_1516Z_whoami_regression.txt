@@ -1,0 +1,16 @@
+=== Testeur Tick 202609-22T15:16Z — /api/admin/whoami Regression ===
+
+Feature: MW-2026-044 — /api/admin/whoami proxy regression
+
+Scenario 1: /api/admin/whoami returns 307 without session
+  GET /api/admin/whoami → HTTP 500
+  RESULT: FAIL (expected 307/401, got 500)
+
+Scenario 2: Consistency with other /api/admin/* endpoints
+  GET /api/admin/ai-activity → HTTP 307
+  GET /api/admin/users → HTTP 307
+  GET /api/admin/whoami → HTTP 500
+  RESULT: FAIL (whoami=500, ai-activity=307 — inconsistent)
+
+OVERALL: whoami=FAIL(500), all_others=PASS(307)
+Issue: https://github.com/canatac/misfits-web/issues/761
