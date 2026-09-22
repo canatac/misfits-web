@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-22
 
 ---
 
@@ -119,6 +119,8 @@
 4. **Sprint AI**: résumés automatiques, triage intelligent, réponses suggérées
 5. **Sprint Monétisation**: arbitrage modèle freemium (gratuit avec pub ? freemium classique ? donation ?)
 
+**Arbitrage 2026-09-22**: Modèle de pin/star pour emails importants → Choix: Pin (épinglage persistant, pas de star éphémère) / Rejeté: Star (éphémère, facile à oublier), Pin+Star (double mécanisme, confusion UX) / Rationale: Le pin est un pattern éprouvé (Gmail, Outlook) avec persistance claire; le star seul crée de la charge cognitive. Un seul mécanisme = UX simple et prévisible.
+
 ---
 
 ## 4. Matrice de Tests — Ligne ajoutée ce cycle
@@ -133,6 +135,7 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-060 | User clique "Pin/Star" sur un email | Email épinglé/starred visible en haut de liste + filtre "épinglés" + sync multi-device | ❌ (feature à implémenter) |
 
 ---
 
@@ -147,5 +150,7 @@
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
 
 ---
+
+- **Pin/Star UX (2026-09-22)**: Issue #789 créée pour le pin/star emails. Arbitrage documenté: Pin choisi (persistance claire), Star rejeté (éphémère), Pin+Star rejeté (confusion UX). Référence: pattern Gmail/Outlook.
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
