@@ -1,0 +1,30 @@
+{
+  "batch_id": "tick-20260922-1140",
+  "role": "testeur",
+  "ts": "2026-09-22T11:40:00Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "smoke_test": {
+    "public_routes": {"/": 200, "/login": 200, "/register": 200, "/reset-password": 200},
+    "protected_routes_no_cookie": {"/mail": 307, "/mail/compose": 307, "/dashboard": 307, "/settings": 307},
+    "api_security": {
+      "/api/emails": {"expected": "307|401", "actual": 200, "status": "FAIL-P0"},
+      "/api/emails/": {"expected": "307|401", "actual": 308, "status": "PASS"},
+      "/api/hermes/runs": {"expected": "307|401", "actual": 307, "status": "PASS"},
+      "/api/admin/ai-activity": {"expected": "307|401", "actual": 307, "status": "PASS"},
+      "/api/external-accounts": {"expected": "307|401", "actual": 200, "status": "FAIL-P1"}
+    }
+  },
+  "findings": [
+    {"severity": "P0", "issue": "#730", "title": "/api/emails still returns 200 with 31KB PII inbox data", "evidence": "Deploy failed: caddy validate rejects @cors origin matcher (module not registered: http.matchers.origin). Fix committed but never deployed to VM.", "status": "REOPENED-DEPLOY-BLOCKED"},
+    {"severity": "P1", "issue": "#730", "title": "/api/external-accounts exposed (200, exact path bypasses /api/external-accounts/*)", "evidence": "Caddyfile handle /api/external-accounts/* doesn't match exact path /api/external-accounts", "status": "OPEN"},
+    {"severity": "ROOT_CAUSE", "issue": "Caddyfile", "title": "@cors origin matcher incompatible with VM Caddy version", "evidence": "CI run 35722412187: caddy validate fails -> deploy aborts -> old Caddyfile remains on VM", "status": "BLOCKS-ALL-DEPLOYS"}
+  ],
+  "gherkin_created": ["MW-2026-029-auth-bypass.feature"],
+  "commands_executed": [
+    "curl smoke test all API routes -> P0 FAIL /api/emails, P1 FAIL /api/external-accounts",
+    "gh run view 35722412187 --log-failed -> Deploy Caddyfile failed: http.matchers.origin not registered",
+    "git commit + push Gherkin feature -> 6cd3409 on fix/middleware-auth-bypass-rebased",
+    "gh issue comment 730 -> https://github.com/canatac/misfits-web/issues/730#issuecomment-5775797521",
+    "gh api issues/730 state=open -> issue REOPENED"
+  ]
+}
