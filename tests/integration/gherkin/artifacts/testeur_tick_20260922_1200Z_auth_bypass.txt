@@ -1,0 +1,23 @@
+=== testeur tick 2026-09-22T12:00Z — Auth bypass MW-029/035 verification ===
+Timestamp: 2026-09-22T12:00:00Z
+Target: https://mail.misfits.ai
+
+Endpoint tests (NO auth cookie):
+1. GET /api/emails           → HTTP 200, 47 emails returned (PII: jan.atac@misfits.fr, can.atac@gmail.com)
+2. GET /api/external-accounts → HTTP 200, empty array [] (no auth gate)
+3. GET /api/emails/ID/attachments/att-0 → HTTP 307 (NOW PROTECTED — was 200)
+4. GET /api/hermes/runs      → HTTP 307 (protected)
+5. GET /api/admin/ai-activity → HTTP 307 (protected)
+
+CORS test:
+- Origin: https://evil.example.com → vary: Origin header present but no ACAO reflection
+
+Summary:
+- /api/emails: STILL EXPOSED (P0, PR #741 CONFLICTING not deployed)
+- /api/external-accounts: no auth gate but empty (low risk)
+- /api/attachments: NOW PROTECTED (307 redirect)
+- /api/hermes/runs, /api/admin/ai-activity: protected (307)
+
+MATRIX: MW-2026-029 FAIL, MW-2026-035 FAIL
+Issue: https://github.com/canatac/misfits-web/issues/733 (OPEN)
+PR: https://github.com/canatac/misfits-web/pull/741 (OPEN, CONFLICTING, CI green)
