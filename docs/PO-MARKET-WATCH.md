@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T13:30 UTC — Email export PDF/print/data portability cycle
+> Dernière mise à jour: 2026-09-22T14:00 UTC — DKIM crash loop + auth regression triage cycle
 
 ---
 
@@ -215,3 +215,11 @@
   - **Rationale**: Power users expect comprehensive defaults out of the box. Customization can follow in v2. The shortcut help panel (Ctrl+/) is a Proton best practice that aids discoverability.
 - **Competitor reference**: Proton (G+I=inbox, Ctrl+Shift+M=compose), Fastmail (y=archive, f=forward, .=action menu), Superhuman (cmd+K=command palette)
 - **Action**: Create GH issue for keyboard shortcut system with matrix row MW-2026-043
+
+### Cycle 2026-09-22T14:00 — DKIM crash loop + auth regression triage
+- **DKIM service crash loop**: Issue #566 (reimagined-guide) confirms dkim-service still crashing due to missing `xml-js` module. Fix must land in studious-octo-rotary-phone. PO_TICKET posted to scrum-master (task_id: po_ticket_dkim_crash).
+- **Auth bypass regression**: MW-2026-035 still FAIL-FIX-PR-741. Issue #426 shows PR #422 typecheck failure (api-auth exports removed). PO_TICKET posted to scrum-master (task_id: po_ticket_auth_regression).
+- **MATRIX_STATUS.csv**: 39 FAIL rows total, 24 without linked issue. New tickets posted for DKIM (MW-2026-036/045) and auth regression (MW-2026-035).
+- **No ROOT_GO received** → no dev actions taken.
+
+* Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
