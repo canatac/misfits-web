@@ -28,7 +28,7 @@ MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentifi
 MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
 MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL,misfits-web,dev-web
 MW-2026-029,Auth bypass /api/emails + /api/hermes/runs + /api/admin,Requete non authentifiee sur /api/emails retourne 200 + inbox complet,/api/emails retourne 401 + proxy Next.js + Caddy auth routes restaurés + Origin non reflété,FAIL-FIX-PR-741,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL,misfits-web,dev-web
+MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL-ISSUE-745,misfits-web,dev-web
 MW-2026-033,Frontend feature batch,User utilise une feature frontend du batch P1,Feature implémentée + tests Gherkin PASS + API fonctionnelle,FAIL,misfits-web,dev-web
 MW-2026-034,Production reachability,User accède à mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PARTIAL,misfits-web+reimagined-guide,dev-back+dev-int
 MW-2026-035,Auth bypass /api/emails regression,Requete non authentifiee sur /api/emails retourne 200,/api/emails retourne 401 + proxy Next.js restauré + CORS non réfléchi,FAIL-FIX-PR-741,misfits-web+reimagined-guide,dev-web+dev-back
