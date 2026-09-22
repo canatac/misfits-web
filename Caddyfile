@@ -20,15 +20,27 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
 
-            # CORS — only allow whitelisted origins with credentials
+            # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
+            # Remove any CORS headers sent by the upstream Rust backend
+            header_down -Access-Control-Allow-Origin
+            header_down -Access-Control-Allow-Credentials
+            header_down -Access-Control-Allow-Methods
+            header_down -Access-Control-Allow-Headers
+            header_down -Access-Control-Expose-Headers
+            header_down -Access-Control-Max-Age
+
+            # Enforce whitelist — only mail.misfits.ai allowed (all methods, not just OPTIONS)
+            header_down Access-Control-Allow-Origin "https://mail.misfits.ai"
+            header_down Access-Control-Allow-Credentials "true"
+            header_down Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            header_down Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
+            header_down Access-Control-Max-Age "3600"
+
+            # Handle preflight explicitly for early 200 response
             @corsPreflight {
                 method OPTIONS
             }
-            header @corsPreflight Access-Control-Allow-Origin "https://mail.misfits.ai"
-            header @corsPreflight Access-Control-Allow-Credentials "true"
-            header @corsPreflight Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-            header @corsPreflight Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
-            header @corsPreflight Access-Control-Max-Age "3600"
+            respond @corsPreflight 200
         }
     }
 

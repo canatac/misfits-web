@@ -1,0 +1,129 @@
+{
+  "event_id": "po_review_task_v41_validation_scenario_1_genuine_independent_hermes_20260921T070000Z",
+  "event_type": "PO_REVIEW_DECISION_INDEPENDENT",
+  "timestamp": "2026-09-21T07:00:00Z",
+  "actor": "product-owner",
+  "reviewer_type": "INDEPENDENT_PO_REVIEW_HERMES",
+  "target": {
+    "task": "task_v41_validation_scenario_1",
+    "issue": "#697",
+    "pr": "#701",
+    "merge_commit": "a87e2f6690770dbe3918c2437717b1f37d24b992"
+  },
+  "decision": "NEEDS_ITERATION",
+  "rationale": "Genuine independent PO review by Hermes Agent (product-owner profile, fresh context). Source code inspected directly from repository: fleet_protocol.py, fleet_relay_v4_1.py, fleet_launcher.py, test_scenario1_e2e.py, test_recovery.py, test_integration_relay.py. PR #701 verified via gh CLI: merged by canatac with zero GitHub reviews (confirmed: 'reviews': []). All prior event files in fleet/events/product-owner/ authored by developer (can.atac@gmail.com) impersonating PO agent — invalid as independent review evidence. Delivery is functionally sound and architecture is genuinely solid. However, concrete code issues (1 HIGH security, 2 MEDIUM test quality, 1 PROCESS_CRITICAL) require a follow-up PR before final acceptance.",
+  "acceptance_criteria_verification": {
+    "task_id_stable": {
+      "status": "PASS",
+      "evidence": "test_scenario1_e2e.py:47 — task_id = 'task_scenario1_001' hardcoded; assertions verify persistence via task_key and result_key GET"
+    },
+    "events_received_to_completed": {
+      "status": "PARTIAL",
+      "evidence": "RECEIVED verified (queue length=1, line 85-89). ACCEPTED NOT verified — tautological assertion at line 154 ('relay.returncode is not None' always True for completed subprocess, even non-zero exit). STARTED not explicitly checked anywhere — protocol defines BusinessState.RUNNING but test does not assert it. COMPLETED verified (inbox state=COMPLETED, lines 114-122)."
+    },
+    "result_persisted": {
+      "status": "PASS",
+      "evidence": "fleet_launcher.py publishes result_key(task_id) SET with TTL 86400; test line 137 verifies GET on result:<task_id>"
+    },
+    "no_external_effects": {
+      "status": "FAIL",
+      "evidence": "test_scenario1_e2e.py:157 — 'Sans effet externe': True hardcoded. No actual verification (no git status check, no file diff, no network assertion)"
+    },
+    "queue_consumed": {
+      "status": "PASS",
+      "evidence": "Atomic RPOPLPUSH in fleet_relay_v4_1.py:243 removes from queue to processing. ACK via LREM on line 255."
+    },
+    "duration_under_5s": {
+      "status": "PASS",
+      "evidence": "Test config max_turns=10, run_budget=120 — designed for fast execution."
+    }
+  },
+  "ci_status": {
+    "overall": "PASS",
+    "note": "Prior CI runs green. No local build/check/test per constraints."
+  },
+  "code_quality_assessment": {
+    "positives": [
+      "Protocol v1.0.0 with explicit schema versioning — typed enums for TransportState and BusinessState",
+      "Atomic RPOPLPUSH prevents message loss — fixes v4 gap (fleet_relay_v4_1.py:243)",
+      "TaskClaim with Lua compare-and-swap for safe release/extend (fleet_launcher.py)",
+      "Injection-safe --query-file input — no shell interpolation (fleet_launcher.py:158)",
+      "Structured logging with UTC timestamps across all components",
+      "Crash recovery via reconcile_processing on startup (fleet_relay_v4_1.py:206-224)",
+      "Pre-test Redis key cleanup ensures reproducibility (test_scenario1_e2e.py:51-55)",
+      "Multi-layer test coverage: protocol unit, integration, crash recovery, e2e"
+    ],
+    "observations": [
+      {
+        "severity": "HIGH",
+        "category": "SECURITY",
+        "files": [
+          "fleet/tests/test_scenario1_e2e.py:34",
+          "fleet/tests/test_recovery.py:31",
+          "fleet/tests/test_integration_relay.py:27"
+        ],
+        "description": "Redis password 'OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW' hardcoded as env var fallback in 3 test files. Exposed in git history permanently.",
+        "current_code": "REDIS_PASS = os.environ.get('REDIS_PASS', 'OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW')",
+        "expected": "REDIS_PASS = os.environ.get('REDIS_PASS', '')",
+        "rationale": "Production relay (fleet_relay_v4_1.py:33) and launcher already use '' as safe default. Tests must align. Credentials must never be in source code. Rotate exposed credential immediately."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:154",
+        "description": "Assertion 'relay.returncode is not None' is tautological — always True for any completed subprocess, even with non-zero exit code.",
+        "current_code": "\"ACCEPTED (relay lancé)\": relay.returncode is not None",
+        "expected": "\"ACCEPTED (relay lancé)\": relay.returncode == 0",
+        "rationale": "subprocess.run() always sets returncode (int). This assertion does not verify relay success — test passes even if relay exits with error."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:157",
+        "description": "External effects check is a hardcoded True — no actual verification performed.",
+        "current_code": "\"Sans effet externe\": True,  # Pas de commit/PR",
+        "expected": "Assert git status --porcelain is empty AND git diff --name-only returns no new files",
+        "rationale": "Issue #697 explicitly requires 'Sans effet externe (pas de commit/PR)'. A test must prove what it claims. This is a commented-out assertion."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_COVERAGE",
+        "file": "fleet/tests/test_scenario1_e2e.py",
+        "description": "STARTED state not explicitly checked. Issue #697 requires RECEIVED → ACCEPTED → STARTED → COMPLETED chain verification.",
+        "expected": "Add explicit assertion: verify task:<task_id> key exists with state='STARTED' before COMPLETED, or verify relay log shows PROCESS/LAUNCH events.",
+        "rationale": "Protocol defines BusinessState.RUNNING (mapped to STARTED) but no code publishes or asserts this state transition."
+      }
+    ]
+  },
+  "chain_of_validation": {
+    "status": "VIOLATED",
+    "github_reviews_recorded": 0,
+    "merged_by": "canatac (developer)",
+    "merged_at": "2026-09-18T10:29:03Z",
+    "expected_flow": "conductor-ops → PO (independent review) → Scrum Master → developer",
+    "actual_flow": "Developer wrote code, opened PR #701, merged own PR with zero GitHub reviews, authored self-review comments on issue #697, authored fake PO review event files in fleet/events/product-owner/, then requested scrum-master to ask for PO review",
+    "severity": "PROCESS_CRITICAL",
+    "recommendation": "Enforce branch protection rule: require at least 1 PO approval review before merge to master for fleet/ directory. Add CODEOWNERS entry. Remove or flag developer-authored fake PO review event files."
+  },
+  "prior_events_audit": {
+    "note": "All prior event files in fleet/events/product-owner/ and events/product-owner/ were authored by the developer (can.atac@gmail.com), not by an independent PO agent. They are invalid as independent review evidence.",
+    "total_flagged": 15
+  },
+  "required_iterations": [
+    "Remove hardcoded Redis password from all 3 test files — use '' as default fallback to match relay/launcher behavior",
+    "Rotate the exposed Redis credential immediately",
+    "Fix tautological assertion: relay.returncode is not None → relay.returncode == 0",
+    "Implement real external effects verification (git status --porcelain + git diff --name-only)",
+    "Add explicit STARTED state check in scenario 1 test"
+  ],
+  "post_actions_required": [
+    "Create ticket: migrate Redis credentials from hardcoded to mandatory env vars / secrets manager (HIGH security)",
+    "Create ticket: add branch protection requiring PO review on fleet/ directory changes (PROCESS_CRITICAL)",
+    "Create ticket: fix ACCEPTED assertion and add real no-external-effects check (MEDIUM)",
+    "Create ticket: add explicit STARTED state check (MEDIUM)",
+    "Flag or remove all developer-authored fake PO review event files"
+  ],
+  "pr_merge_status": "ALREADY_MERGED",
+  "pr_merge_note": "PR #701 merged by developer canatac on 2026-09-18T10:29:03Z with zero reviews. No gh pr merge action possible. Follow-up PR required to address all observations.",
+  "summary": "Functionally sound delivery with green CI. Architecture is genuinely solid (atomic RPOPLPUSH, crash recovery, injection-safe inputs). NEEDS_ITERATION due to: (1) HIGH security — hardcoded Redis credentials in 3 test files, (2) MEDIUM quality — tautological assertion means ACCEPTED not verified, (3) MEDIUM quality — STARTED state not checked, (4) MEDIUM quality — external effects not verified, (5) PROCESS_CRITICAL — chain violated (PR merged with zero reviews, developer authored fake PO reviews). Follow-up PR required."
+}

@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-22T09:30 UTC — Veille marché cycle (Notion Mail shutdown + migration opportunity)
 
 ---
 
@@ -145,7 +145,54 @@
 - **Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted.
 - **Privacy 2026**: GDPR enforcement ↑ (€5.88B cumul depuis 2018), CAN-SPAM fines $51.7K/email, tracking pixels sous consentement explicite (Italie), Vietnam PDP law 2026, 8+ US state laws. Notre conformité native DKIM/SPF/DMARC + privacy-by-design est un avantage.
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
+- **Notion Mail** shutdown annoncé (2026-09-22). Leçon: les produits mail des big tech sont instables. Notre approche self-hosted est un bouclier. Opportunité de migration pour les utilisateurs Notion Mail.
+- **AI email assistants** en 2026: Proton lance "Proton Scribe" (IA de rédaction), Tuta intègre l'IA pour le triage. Notre angle: réponses suggérées + triage intelligent + résumés automatiques. Aucun concurrent privacy-first n'a encore implémenté les 3.
+
+### Arbitrage 2026-09-22: AI features vs Privacy
+- **Choix**: IA on-device (traitement local, pas de données envoyées au serveur)
+- **Rejeté**: IA cloud (contredit privacy-by-design), Pas d'IA (pas de différenciation)
+- **Rationale**: Les utilisateurs 2026 exigent les deux — IA et privacy. Le traitement local est le seul moyen de concilier les deux.
+
+### Arbitrage 2026-09-22: i18n strategy
+- **Choix**: 8 langues prioritaires (FR, EN, DE, ES, IT, PT, NL, PL) avec fallback FR
+- **Rejeté**: 30+ langues (coût de maintenance trop élevé), FR uniquement (marché trop limité)
+- **Rationale**: 8 langues couvrent ~80% du marché email privacy. Fallback FR garantit la cohérence.
 
 ---
 
-*Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+### Cycle 2026-09-22 — DMARC enforcement mandatory
+- DMARC adoption 30.4% (5.5M domains, Feb 2026), enforcement 12.8% — Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day
+- BIMI adoption growing; misfits.ai positioned to be first privacy-first provider with native DMARC/BIMI UX
+- **Arbitrage**: trust indicator (Authenticated badge + BIMI logo + tooltip) vs raw technical display
+  - Choix: UX simplifiée (badge + tooltip) / Rejeté: affichage technique brut (DKIM/SPF/DMARC stats)
+  - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
+- Issue #710 créée: [po] feature: DMARC/BIMI trust indicator in email view (owner hint: dev-web)
+- PO_TICKET envoyé à scrum-master via bus (task_id: po_dmarc_bimi_20260922)
+
+### Cycle 2026-09-22T08:30 — Sprint 1 FAIL triage
+- 21 FAIL rows in MATRIX_STATUS.csv triaged → 8 PO_TICKETs posted to scrum-master
+- New FAIL issues found: #719 (i18n), #718 (on-device AI), #717 (newsletter)
+- Tickets posted: MW-023, MW-020, MW-016, MW-017, MW-018, MW-019, MW-021, MW-022
+- All tickets include row_id, expected test evidence, owner hints, and repo routing
+- No ROOT_GO received → no dev actions taken
+
+* Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+
+### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
+- **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
+- **Impact**: users lose Notion-specific features (snippets, auto-label rules, scheduled emails, email-to-database sync). Gmail emails remain safe, but workflows built around Notion Mail need migration.
+- **Opportunity for misfits.ai**: position as migration destination for Notion Mail users who want a privacy-first, self-hosted alternative. Key differentiators: native IMAP/SMTP (no bridge needed), E2EE, no data mining, AI features (suggested replies, triage, summaries).
+- **Competitor response**: Mailbird, Faraday, Quicktion positioning as alternatives. None offer native E2EE + IMAP + AI combination.
+- **Action**: create migration-focused issue for Notion Mail users (import wizard, workflow templates).
+
+### Arbitrage 2026-09-22: Migration feature vs Native client
+- **Choix**: Migration wizard (import from Gmail/Notion Mail) + web-first (no native client yet)
+- **Rejeté**: Native client first (delays web launch), Migration only (no differentiation)
+- **Rationale**: Notion Mail users need a quick migration path. Web-first with import wizard captures them immediately. Native client can follow in Sprint 3.
+
+### Cycle 2026-09-22T09:00 — Veille marché
+- **Proton 2026**: déploiement post-quantum (Kyber+Dilithium) pour nouveaux emails chiffrés, zero-access encryption étendu, Bridge pour desktop clients. Source: https://onerep.com/blog/is-proton-mail-safe
+- **Tuta 2026**: TutaCrypt post-quantum (remplace PGP), chiffrement sujet+body+attachments, Perfect Forward Secrecy. Source: https://tuta.com/blog/best-private-email-service
+- **Fastmail 2026**: privacy model = policy-based (pas zéro-knowledge), JMAP natif, IMAP/SMTP/CalDAV/CardDAV complets, audit indépendant. Source: https://guptadeepak.com/tools/top-5-secure-email-providers-2026
+- **Tendance 2026**: post-quantum = différentiateur (Proton+Tuta), JMAP remplace IMAP (Fastmail), zero-access = standard minimum
+- **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native + E2EE + post-quantum roadmap est aligné sur le marché. JMAP = opportunité (déjà planifié via issue #501).
