@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T09:30 UTC — Veille marché cycle (Notion Mail shutdown + migration opportunity)
+> Dernière mise à jour: 2026-09-22T12:56 UTC — UX proposal cycle (email forward button)
 
 ---
 
@@ -177,6 +177,13 @@
 - No ROOT_GO received → no dev actions taken
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+
+### Cycle 2026-09-22T12:56 — Email forward UX proposal
+- Issue #747 created: [ux] Email forward button with pre-filled composer
+- PO_TICKET posted to scrum-master via fleet_send.sh (task_id: po_ux_forward_20260922)
+- scrum-master session was down → restarted via agent-deck launch
+- 19 FAIL rows in MATRIX_STATUS.csv all have corresponding GH issues
+- No new actionable items found this cycle
 
 ### Cycle 2026-09-22T12:30 — Swipe gestures issue + reading mode integration
 - Issue #744 created: [ux] Email triage swipe gestures — archive/mark-as-read (MW-2026-038)
