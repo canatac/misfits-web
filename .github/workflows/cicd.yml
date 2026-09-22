@@ -174,11 +174,13 @@ jobs:
             # Pull latest Caddyfile from GitHub raw at this commit, validate, deploy
             curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/Caddyfile" -o /tmp/Caddyfile
             caddy validate --config /tmp/Caddyfile
-            sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
+            # Caddy container mounts ./Caddyfile from the deploy dir (docker-compose.deploy.yml volume)
+            # MUST copy to deploy dir, not /etc/caddy — container uses network_mode: host + relative path
+            cp /tmp/Caddyfile ${{ secrets.VM_DEPLOY_DIR }}/rg-backend/Caddyfile
             rm -f /tmp/Caddyfile
             # Caddy runs in docker — restart container to pick up new config
             cd ${{ secrets.VM_DEPLOY_DIR }} && docker compose -f docker-compose.deploy.yml restart caddy
-            echo "Caddyfile deployed and Caddy container restarted."
+            echo "Caddyfile deployed to rg-backend/ and Caddy container restarted."
 
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
