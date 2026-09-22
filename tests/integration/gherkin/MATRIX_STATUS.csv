@@ -6,7 +6,7 @@ MW-2026-004,Email templates,User crée template Réponse standard,Template sauve
 MW-2026-005,PWA offline,User accède /mail hors ligne,Liste des emails récents affichés depuis le cache + indicateur hors ligne,FAIL-GHERKIN-ISSUE-711,misfits-web,dev-web
 MW-2026-006,Custom domain,User avec custom domain @entreprise.com,Domaine vérifié (SPF/DKIM/DMARC) + emails envoyés sans erreur,PASS,reimagined-guide,dev-back
 MW-2026-007,Create event from email,User clique Create event depuis un email,Événement créé dans le calendrier + lien vers l'email source,FAIL-GHERKIN-ISSUE-712,misfits-web,dev-web
-MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,FAIL-GHERKIN-ISSUE-713,misfits-web,dev-web
+MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,PARTIAL-ISSUE-713,misfits-web,dev-web
 MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
 MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL,reimagined-guide,dev-back
@@ -47,4 +47,4 @@ MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture lo
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-773,misfits-web,dev-web
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL-ISSUE-771,misfits-web,dev-web
-MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,Endpoints retournent 200/401 (pas 502) — backend joignable,FAIL-ISSUE-774,misfits-web+reimagined-guide,dev-back+dev-int
+MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,Endpoints retournent 200/401 (pas 502) — backend joignable,PASS,PASS-REGRESSION-2026-09-22T16:57Z,misfits-web+reimagined-guide,dev-back+dev-int
