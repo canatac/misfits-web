@@ -27,12 +27,12 @@ MW-2026-025,Post-quantum encryption,User envoie email avec signature Dilithium,E
 MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentification JMAP réussie + sync mail/calendar fonctionnel + fallback IMAP OK,FAIL,reimagined-guide,dev-back
 MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
 MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL-GHERKIN-ISSUE-721,misfits-web,dev-web
-MW-2026-029,Auth bypass (P0),User non authentifié accède à /api/emails,/api/hermes/runs,/api/admin/ai-activity,Requête rejetée 401 + pièces jointes protégées + hermes/runs + ai-activity protégés,FAIL-ISSUE-723-ISSUE-722,misfits-web,dev-web
+MW-2026-029,Auth bypass (P0),User non authentifié accède à /api/emails,/api/hermes/runs,/api/admin/ai-activity,Requête rejetée 401 + pièces jointes protégées + hermes/runs + ai-activity protégés,PARTIAL-FIX-20260922T1100Z-admin-hermes-OK-api-emails-STILL-OPEN,misfits-web,dev-web
 MW-2026-030,CORS reflection + auth bypass (P0),Attaquant envoie requête CORS avec Origin arbitraire,Origin non reflété + /api/admin/* exige token valide,FAIL-GHERKIN-ISSUE-558,reimagined-guide,dev-back
 MW-2026-031,CORS misconfig + admin bypass (P0),Accès non authentifié à /api/admin/*,Requête rejetée 401 + Origin non reflété,FAIL-GHERKIN-ISSUE-556,reimagined-guide,dev-back
 MW-2026-032,Reading mode (HTML sanitize),User clique Mode lecture sur un email HTML,Contenu purifié sans scripts/styles inline + images lazy-loading + texte lisible (line-height>=1.5, max-width<=800px),FAIL-ISSUE-724,misfits-web,dev-web
 MW-2026-033,Keyboard shortcuts,User presse c/r/a/f/e/#/j/k/Enter/Esc/?,Chaque raccourci déclenche l'action correspondante + modal help affiché avec ?,FAIL-TESTED-3/4-FAIL-c/?/not-implemented,misfits-web,dev-web
-MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PARTIAL-HTTPS-ONLY-20260922T1047Z,misfits-web,dev-back
+MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PASS-20260922T1100Z,misfits-web,dev-back
 MW-2026-035,Auth bypass /api/emails exposed,User non authentifié accède à /api/emails,Requête rejetée 401 + proxy Next.js + Caddy auth routes restaurés,FAIL-ISSUE-730-ISSUE-731-PROD-DOWN,misfits-web,dev-web
 MW-2026-036,DKIM service crash loop,User envoie email via DKIM service,Service DKIM opérationnel + email signé correctement + pas de crash,FAIL-ISSUE-566,reimagined-guide,dev-back
 MW-2026-037,Unified search bar,User types natural language query in search bar,Search results displayed with filters + keyboard shortcut Ctrl+K works,FAIL-NOT-IMPLEMENTED,misfits-web,dev-web
