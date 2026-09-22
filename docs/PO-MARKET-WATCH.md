@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T23:00 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 59 rows (55 FAIL), state=ON, 0 PO_TICKETs posted (no new actionable gaps)
+> Dernière mise à jour: 2026-09-22T23:10 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 64 rows (59 FAIL), state=ON, 2 PO_TICKETs posted (MW-2026-017, MW-2026-019)
 
 ---
 
@@ -289,6 +289,18 @@
 - **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T23:10Z — Veille Notion Mail shutdown + migration opportunity
+- **Notion Mail shutdown**: Notion announced Mail shutdown (2026-09-22). Users need alternatives. This is a market opportunity for misfits.ai. Source: https://www.notion.com/blog/notion-mail
+- **Migration opportunity**: Notion Mail users (Gmail sync, snippets, templates) need a new home. misfits.ai can capture this demand with a migration wizard.
+- **misfits.ai angle**: Issue #721 (Notion Mail migration) already exists. Accelerate to capture shutdown demand.
+- **Arbitrage 2026-09-22: Notion Mail migration priority**
+  - **Choix**: P1 — accelerate migration wizard (capture shutdown demand)
+  - **Rejeté**: P2 — wait for users to come naturally
+  - **Rationale**: Notion Mail shutdown creates immediate demand. Early mover advantage in migration tools.
+- **Action**: PO_TICKET posted to scrum-master for MW-2026-017 (email export .eml batch) + MW-2026-019 (multi-account aggregation)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
 
 ### Cycle 2026-09-22T23:00Z — Veille email authentication adoption 2026 (DMARC, BIMI, MTA-STS, DANE)
 - **DMARC adoption**: 30.4% of 5.5M domains (Feb 2026), enforcement 12.8%. Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day. Source: https://dmarcguard.io/research/email-authentication
