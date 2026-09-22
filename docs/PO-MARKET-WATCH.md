@@ -178,6 +178,19 @@
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
+### Cycle 2026-09-22T10:10 — Veille marché + UX proposal
+- **Proton 2026**: zero-access encryption étendu, Bridge pour desktop clients, mobile Rust engine avec offline search. Source: https://onerep.com/blog/is-proton-mail-safe
+- **Tuta 2026**: TutaCrypt post-quantum (remplace PGP), conversation view, email import/export single-click. Source: https://guptadeepak.com/tools/top-5-secure-email-providers-2026
+- **Fastmail 2026**: privacy model = policy-based, JMAP natif, custom domain dès Standard $5/mo, send later, spam filtering. Source: https://forwardemail.net/en/blog/fastmail-vs-proton-mail-email-service-comparison
+- **Tendance 2026**: post-quantum = différentiateur (Proton+Tuta), JMAP remplace IMAP (Fastmail), zero-access = standard minimum
+- **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native + E2EE + post-quantum roadmap est aligné sur le marché. JMAP = opportunité (déjà planifié via issue #560).
+
+### Arbitrage 2026-09-22: UX swipe gesture for mobile
+- **Choix**: Swipe right = archive, swipe left = delete (configurable in settings)
+- **Rejeté**: Long-press context menu (slower), No gesture support (mobile UX gap)
+- **Rationale**: Proton/Fastmail both offer swipe gestures in mobile. This is a 2026 baseline expectation. Effort: M (2-3 days dev-web).
+- **PO_TICKET posted to scrum-master via bus (task_id: po_swipe_gesture_20260922)
+
 ### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
 - **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
 - **Impact**: users lose Notion-specific features (snippets, auto-label rules, scheduled emails, email-to-database sync). Gmail emails remain safe, but workflows built around Notion Mail need migration.
