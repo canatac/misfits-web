@@ -1,0 +1,17 @@
+testeur tick 2026-09-22T19:06Z — Production non-regression test
+=========================================================
+MW-2026-054 Gherkin: 5/5 PASS
+MW-2026-044 Auth bypass: 4/4 PASS
+
+Production endpoints:
+  GET /                    -> HTTP 200 (site up)
+  GET /mail                -> HTTP 307 (auth gate OK)
+  GET /api/emails          -> HTTP 401 (no leak)
+  GET /api/external-accounts -> HTTP 307 (no leak)
+  GET /api/admin           -> HTTP 307 (no leak)
+  GET /api/hermes/runs     -> HTTP 307 (no leak)
+  POST /api/auth/login     -> HTTP 401 (backend reachable, auth working)
+  POST /api/compose/send   -> HTTP 404 (route not impl, PR #784 pending)
+  GET /api/admin/whoami    -> HTTP 401 (not 500, proxy fixed)
+
+Verdict: No regression. MW-2026-054 PARTIAL (compose/send 404, fix in PR #784).
