@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T20:30 UTC — veille PQC market ($2.2B→$20.5B by 2033, CAGR 37.8%), matrix 57 rows (37 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-059 CI/CD health_statuses directive)
+> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
 
 ---
 
@@ -138,6 +138,15 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
+- **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.
+- **BIMI adoption**: Brand Indicators for Message Identification en adoption croissante. Notre stack DKIM/SPF/DMARC native est un prérequis BIMI — avantage compétitif.
+- **AMP for Gmail**: Google pousse AMP pour emails dynamiques. Attention: risque de spam/malware si AMP se généralise. Notre approche privacy-first (pas de tracking pixels) est compatible.
+- **AI filtering**: Les inbox providers utilisent l'IA pour le triage. Notre angle: IA on-device (traitement local) pour ne pas envoyer de données au serveur.
+- **POP3 deprecation**: Google a déprécié POP3. Basic IMAP auth en cours de dépréciation → OAuth 2.0. Notre stack IMAP/SMTP native est un avantage pour les power users.
+- **Consolidation**: Les mailbox providers s'consolident. Les petits domaines externalisent leur inbound mail. Opportunité pour misfits.ai (self-hosted, souverain).
+- **EU preference**: L'UE préfère de plus en plus les logiciels non-US. Notre approche EU-first (GDPR natif) est un avantage.
 
 ### 2026-09-22T20:30 UTC — CI/CD deploy blocker (MW-2026-059)
 - Issue #787: Caddyfile `health_statuses` directive invalid (should be `health_status` singular)
