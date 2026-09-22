@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T20:30 UTC — 6 new issues created (#595-#600), 3 PO_TICKETs posted to scrum-master, matrix updated (52 rows, 36 FAIL)
+> Dernière mise à jour: 2026-09-22T21:15 UTC — veille PQC market ($2.2B→$20.5B by 2033, CAGR 37.8%), matrix 56 rows (36 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-056 reading mode integration)
 
 ---
 
@@ -271,3 +271,11 @@
 - **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T21:15Z — Veille PQC market + reading mode integration ticket
+- **Post-quantum cryptography market**: $2.2B (2026) → $20.5B (2033), CAGR 37.8% (Grand View Research). Juniper Research: $1.2B (2026) → $13B (2035), CAGR 30%. Market.us: $142.4B US market, CAGR 37.2%. Consensus: PQC adoption accelerating, hybrid cryptography (classical + quantum-safe) is the transition pattern.
+- **Implication misfits.ai**: Our roadmap (TutaCrypt-inspired, Kyber+Dilithium) is aligned with market direction. Early adoption of hybrid PQC for email encryption is a competitive differentiator. Issue #60 (studious-octo-rotary-phone) tracks this.
+- **Matrix gap**: MW-2026-056 (reading mode integration) identified as FAIL — component exists but not integrated in email-view. Issue #781 already exists.
+- **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
