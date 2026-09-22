@@ -11,6 +11,7 @@ import {
   MailOpen,
   Sparkles,
 } from "lucide-react";
+import { ImmersiveReadingButton } from "../immersive-reading";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +37,8 @@ interface EmailToolbarProps {
   onHermesReplyDraft: () => void;
   onHermesTranslate: () => void;
   onHermesTodos: () => void;
+  isReadingActive: boolean;
+  onToggleReadingMode: () => void;
 }
 
 export function EmailToolbar({
@@ -51,6 +54,8 @@ export function EmailToolbar({
   onHermesReplyDraft,
   onHermesTranslate,
   onHermesTodos,
+  isReadingActive,
+  onToggleReadingMode,
 }: EmailToolbarProps) {
   return (
     <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
@@ -107,6 +112,10 @@ export function EmailToolbar({
           <DropdownMenuItem onClick={onHermesTodos}>Extraire TODO</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ImmersiveReadingButton
+        onClick={onToggleReadingMode}
+        isActive={isReadingActive}
+      />
       <Button
         variant="ghost"
         size="icon"

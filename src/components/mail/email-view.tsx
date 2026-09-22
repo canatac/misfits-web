@@ -5,7 +5,7 @@
  * blocked external images (toggle to load), attachment list, action buttons,
  * and collapsible quoted replies. Plaintext fallback for multipart/alternative.
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useEmailBodyHydration } from "./hooks/useEmailBodyHydration";
 import {
   Paperclip,
@@ -28,6 +28,10 @@ import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
 import { EmailLabelsBar } from "./email-view/email-labels-bar";
+import {
+  useImmersiveReading,
+  ImmersiveReadingProvider,
+} from "./immersive-reading";
 
 interface EmailViewProps {
   className?: string;
@@ -42,6 +46,9 @@ export function EmailView({ className }: EmailViewProps) {
   const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
+  const { isActive: isReadingActive, toggleImmersive: toggleReadingMode } =
+    useImmersiveReading();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
@@ -120,10 +127,13 @@ export function EmailView({ className }: EmailViewProps) {
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
+        isReadingActive={isReadingActive}
+        onToggleReadingMode={toggleReadingMode}
       />
 
       <ScrollArea className="flex-1">
-        <div className="mx-auto max-w-3xl p-6">
+        <ImmersiveReadingProvider contentRef={contentRef}>
+        <div ref={contentRef} className="mx-auto max-w-3xl p-6">
           <EmailLabelsBar
             emailId={email.id}
             subject={email.subject}
@@ -229,6 +239,7 @@ export function EmailView({ className }: EmailViewProps) {
             </div>
           )}
         </div>
+        </ImmersiveReadingProvider>
       </ScrollArea>
 
       <LabelManager
