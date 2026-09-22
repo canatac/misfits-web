@@ -14,23 +14,35 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const upstream = await fetch(
-    `${resolveBackendBaseUrl()}/api/admin/whoami`,
-    {
-      method: "GET",
-      headers: buildForwardHeaders(request),
-      cache: "no-store",
-    }
-  );
+  try {
+    const upstream = await fetch(
+      `${resolveBackendBaseUrl()}/api/admin/whoami`,
+      {
+        method: "GET",
+        headers: buildForwardHeaders(request),
+        cache: "no-store",
+      }
+    );
 
-  const contentType =
-    upstream.headers.get("content-type") || "application/json";
-  const text = await upstream.text().catch(() => "");
-  return new NextResponse(text, {
-    status: upstream.status,
-    headers: {
-      "Content-Type": contentType,
-      "Cache-Control": "no-store",
-    },
-  });
+    const contentType =
+      upstream.headers.get("content-type") || "application/json";
+    const text = await upstream.text().catch(() => "");
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (error) {
+    // Backend unreachable — return 502 (not 500) with structured error.
+    // Prevents the admin console from misinterpreting a 500 as an auth failure.
+    return NextResponse.json(
+      {
+        code: "BACKEND_UNREACHABLE",
+        message: "Unable to reach the backend whoami service",
+      },
+      { status: 502, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 }
