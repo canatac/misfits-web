@@ -5,6 +5,9 @@
  * enforcement flag is active on the backend. Consumed by the admin console
  * to switch between "viewer" and full CRUD affordances without guessing
  * from a client-side role field.
+ *
+ * This route is public (no session required) per middleware config — the
+ * backend responds with a system identity when ADMIN_RBAC_ENFORCE is off.
  */
 
 import { NextResponse } from "next/server";
@@ -26,7 +29,14 @@ export async function GET(request: Request) {
       headers: buildForwardHeaders(request),
       cache: "no-store",
     }
-  );
+  ).catch(() => null);
+
+  if (!upstream) {
+    return NextResponse.json(
+      { error: { message: "Backend admin whoami unavailable", code: "BACKEND_UNREACHABLE" } },
+      { status: 502 }
+    );
+  }
 
   const contentType =
     upstream.headers.get("content-type") || "application/json";
