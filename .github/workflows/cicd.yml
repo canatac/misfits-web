@@ -176,8 +176,9 @@ jobs:
             caddy validate --config /tmp/Caddyfile
             sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
             rm -f /tmp/Caddyfile
-            sudo systemctl reload caddy
-            echo "Caddyfile deployed and Caddy reloaded."
+            # Caddy runs in docker — restart container to pick up new config
+            cd ${{ secrets.VM_DEPLOY_DIR }} && docker compose -f docker-compose.deploy.yml restart caddy
+            echo "Caddyfile deployed and Caddy container restarted."
 
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
