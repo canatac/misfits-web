@@ -1,0 +1,35 @@
+{
+  "batch_id": "tick-20260922-1154",
+  "role": "testeur",
+  "ts": "2026-09-22T11:54:08Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "smoke_test": {
+    "public_routes": {"/": 200, "/login": 200, "/register": 200, "/reset-password": 200},
+    "protected_routes_no_cookie": {"/mail": 307, "/mail/compose": 307, "/dashboard": 307, "/settings": 307},
+    "api_security": {
+      "/api/emails": {"expected": "307|401", "actual": 200, "status": "FAIL-P0"},
+      "/api/emails/": {"expected": "307|401", "actual": 308, "status": "PASS"},
+      "/api/external-accounts": {"expected": "307|401", "actual": 200, "status": "FAIL-P1"},
+      "/api/external-accounts/": {"expected": "307|401", "actual": 308, "status": "PASS"},
+      "/api/admin/ai-activity": {"expected": "307|401", "actual": 307, "status": "PASS"},
+      "/api/hermes/runs": {"expected": "307|401", "actual": 307, "status": "PASS"}
+    }
+  },
+  "findings": [
+    {"severity": "P0", "issue": "#730,#731,#733", "title": "/api/emails exact path returns 200 with full inbox PII (47 emails)", "evidence": "Caddyfile handle /api/emails/* doesn't match exact path /api/emails - falls through to email-api:8000 bypassing Next.js auth", "status": "FIXED-IN-PR-741"},
+    {"severity": "P1", "issue": "#730", "title": "/api/external-accounts exact path returns 200 (empty array but info disclosure)", "evidence": "Same wildcard matcher issue as /api/emails", "status": "FIXED-IN-PR-741"},
+    {"severity": "BLOCKER", "issue": "CI/CD", "title": "caddy validate fails: permission denied on /var/log/caddy/misfits-web.log", "evidence": "CI runs as debian, log dir owned by caddy:caddy mode 755", "status": "FIXED-IN-PR-741"}
+  ],
+  "fix_applied": {
+    "branch": "fix/caddyfile-deploy-log-perms",
+    "commit": "c932cd5",
+    "pr": "https://github.com/canatac/misfits-web/pull/741",
+    "changes": ["log output: file->stdout (fixes CI deploy)", "path matcher: /api/emails/* -> /api/emails* (fixes auth bypass)", "path matcher: /api/external-accounts/* -> /api/external-accounts* (fixes auth bypass)"]
+  },
+  "commands_executed": [
+    "curl smoke test all API routes -> P0 FAIL /api/emails, P1 FAIL /api/external-accounts",
+    "gh run view 35723284305 --log-failed -> permission denied on log file",
+    "git commit c932cd5 -> fix log perms + path matcher",
+    "gh pr create -> PR #741"
+  ]
+}
