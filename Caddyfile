@@ -8,10 +8,6 @@
 }
 
 mail.misfits.ai, www.mail.misfits.ai {
-    # CORS — strict whitelist, NO arbitrary origin reflection
-    @cors origin https://mail.misfits.ai
-    @cors origin https://www.mail.misfits.ai
-
     # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
     # middleware enforces session auth. Catching these BEFORE the generic /api/*
     # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
@@ -44,7 +40,6 @@ mail.misfits.ai, www.mail.misfits.ai {
         }
     }
 
-    # Non-sensitive API routes — direct to backend (health, auth, public)
     handle /api/* {
         reverse_proxy http://email-api:8000 {
             # Forward real client IP
@@ -67,12 +62,6 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_down Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
             header_down Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
             header_down Access-Control-Max-Age "3600"
-
-            # Handle preflight explicitly for early 200 response
-            @corsPreflight {
-                method OPTIONS
-            }
-            respond @corsPreflight 200
         }
     }
 
