@@ -11,28 +11,28 @@ mail.misfits.ai, www.mail.misfits.ai {
     # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
     # middleware enforces session auth. Catching these BEFORE the generic /api/*
     # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
-    handle /api/admin/* {
+    handle /api/admin* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    handle /api/hermes/* {
+    handle /api/hermes* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    handle /api/emails/* {
+    handle /api/emails* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    handle /api/external-accounts/* {
+    handle /api/external-accounts* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
