@@ -1,0 +1,25 @@
+testeur_tick PRODUCTION NON-REGRESSION
+=======================================
+TICK: 2026-09-22T22:16Z (cron)
+ROLE: testeur
+ACTION: Production non-regression + MW-059/063 verification
+
+PRODUCTION TEST RESULTS:
+- GET / (HTTPS) → 200 ✓
+- GET /login → 200 ✓
+- GET /api/emails (anon) → 401 ✓ (MW-044 auth bypass regression: PASS)
+- GET /api/external-accounts (anon) → 307 ✓
+- GET /api/hermes/runs (anon) → 307 ✓
+- GET /api/admin (anon) → 307 ✓
+- POST /api/emails/{id}/action {"action":"star"} (anon) → 401 AUTH_REQUIRED ✓ (MW-059 endpoint exists)
+- POST /api/emails/bulk-action (anon) → 404 (MW-063: NOT DEPLOYED)
+
+FEATURE VERDICT:
+  MW-044 Auth bypass regression: PASS (all endpoints correctly gated)
+  MW-059 Email pin/star: DEPLOYED (endpoint exists, auth-gated)
+  MW-063 Bulk email selection: NOT DEPLOYED (404, no endpoint yet)
+
+DELTA vs previous tick (22:05Z):
+  No new feature deploys detected.
+  Auth bypass regression: stable PASS.
+  MW-063 still waiting for backend deployment.
