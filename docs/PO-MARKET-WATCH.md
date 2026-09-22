@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-22T21:20 UTC — matrix gap closure (5 FAIL rows → GH issues), matrix 62 rows (37 FAIL), state=ON, 0 bus messages, 5 issues created (#794,#795,#796,#63,#606)
 
 ---
 
@@ -212,6 +212,17 @@
 - **Matrix gaps**: 12 FAIL rows still lack GH issues (MW-009, 017, 019, 022, 025, 026, 027, 039, 040, 041, 042, 045). Most are backend/security features already tracked in reimagined-guide or studious-octo-rotary-phone.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-056 for bulk selection regression)
+
+### Cycle 2026-09-22T21:20Z — Matrix gap closure (5 FAIL rows → GH issues)
+- **Matrix gap analysis**: 5 FAIL rows lacked GH issues (MW-2026-056, 059, 060, 061, 062). Created 5 new issues:
+  - #794 (misfits-web): Reading mode integration in email-view (MW-2026-056)
+  - #795 (misfits-web): Email pin/star stability follow-up (MW-2026-059)
+  - #796 (misfits-web): BIMI brand indicator in inbox (MW-2026-060)
+  - #63 (studious-octo-rotary-phone): DKIM2 signature support (MW-2026-061)
+  - #606 (reimagined-guide): OAuth 2.0 IMAP authentication (MW-2026-062)
+- **MATRIX_STATUS.csv updated**: 5 rows now linked to issues (MW-2026-056, 059, 060, 061, 062)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
