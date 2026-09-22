@@ -1,0 +1,31 @@
+=== Testeur Tick 2026-09-22T15:23Z — Production Non-Regression Suite ===
+
+--- Auth Gate Consistency (all should be 307) ---
+  /api/admin/whoami       → 500  ❌ FAIL (expected 307/401)
+  /api/admin/ai-activity  → 307  ✅
+  /api/admin/users        → 307  ✅
+  /api/emails             → 307  ✅
+  /api/external-accounts  → 307  ✅
+  /api/hermes/runs        → 307  ✅
+
+--- Frontend ---
+  GET / → 200 ✅
+
+--- SMTP Reachability ---
+  nc -w5 mail.misfits.ai 587 → TIMEOUT ❌ NEW REGRESSION
+
+--- IMAP Reachability ---
+  nc -w5 mail.misfits.ai 993 → Connection refused ❌ NEW REGRESSION
+
+--- HTTPS Reachability ---
+  nc -w5 mail.misfits.ai 443 → OPEN ✅
+
+--- whoami response ---
+  HTTP/2 500, via: 1.1 Caddy, body: empty
+
+=== SUMMARY ===
+- whoami=500 (persistent, issue #761)
+- SMTP 587=unreachable (NEW regression, issue #740)
+- IMAP 993=unreachable (NEW regression, issue #740)
+- HTTPS=200 ✅
+- Auth gate (5 endpoints)=307 ✅
