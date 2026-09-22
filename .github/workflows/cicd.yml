@@ -161,6 +161,24 @@ jobs:
           echo "REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
 
+      - name: Deploy Caddyfile to VM (fixes #730, #436 — auth bypass via proxy)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -euo pipefail
+            # Pull latest Caddyfile from GitHub raw at this commit, validate, deploy
+            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/Caddyfile" -o /tmp/Caddyfile
+            caddy validate --config /tmp/Caddyfile
+            sudo cp /tmp/Caddyfile /etc/caddy/Caddyfile
+            rm -f /tmp/Caddyfile
+            sudo systemctl reload caddy
+            echo "Caddyfile deployed and Caddy reloaded."
+
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
@@ -219,3 +237,25 @@ jobs:
             echo "ERROR: footer web commit label mismatch after deploy (expected misfits-web@${EXPECTED_WEB_SHA})." >&2
             exit 1
           fi
+
+      - name: Verify auth bypass fix (closes #730, #436)
+        run: |
+          set -euo pipefail
+          echo "Verifying /api/emails returns 401 without auth..."
+          ATTEMPTS=10
+          SLEEP_SECONDS=3
+          OK=0
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/emails || true)"
+            echo "Attempt ${i}: /api/emails → ${HTTP_CODE}"
+            if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "307" ]; then
+              OK=1
+              break
+            fi
+            sleep "$SLEEP_SECONDS"
+          done
+          if [ "$OK" -ne 1 ]; then
+            echo "ERROR: /api/emails still returns ${HTTP_CODE} (expected 401 or 307). Auth bypass still active." >&2
+            exit 1
+          fi
+          echo "PASS: /api/emails correctly returns ${HTTP_CODE} (auth enforced)"
