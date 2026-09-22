@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-22T22:30 UTC — veille AI email features 2026 (Proton Scribe, Tuta AI triage, Canary Mail AI Copilot), matrix 58 rows (54 FAIL), state=ON, 1 PO_TICKET posted to scrum-master (27 actionable FAIL rows)
 
 ---
 
@@ -288,6 +288,19 @@
 - **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T22:30Z — Veille AI email features 2026 (Proton Scribe, Tuta AI, Canary Mail)
+- **Proton Scribe**: Proton lance "Proton Scribe" (IA de rédaction) — confirme la tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
+- **Tuta AI triage**: Tuta intègre l'IA pour le triage automatique des emails. Tuta a fermement engagé de ne jamais inclure l'IA — changement de cap majeur 2026. Source: https://nordvpn.com/blog/tutanota
+- **Canary Mail AI Copilot**: Canary Mail positionné comme alternative Proton avec AI + unified inbox + encryption. AI Copilot features: drafting replies, summarizing threads, prioritizing inbox. Source: https://canarymail.io/blog/proton-ai-alternative
+- **misfits.ai angle**: Our 3 AI features (réponses suggérées + triage intelligent + résumés automatiques) are still differentiated vs Proton (Scribe = drafting only) and Tuta (triage only). But gap is closing — accelerate AI sprint.
+- **Arbitrage 2026-09-22: AI feature scope**
+  - **Choix**: All 3 AI features (summaries + triage + suggested replies) in Sprint 1, not staggered
+  - **Rejeté**: Staggered rollout (summaries first, triage later), AI cloud-based (privacy risk)
+  - **Rationale**: Competitors are shipping AI fast. Our differentiation window is narrow. All 3 features share the same backend infrastructure (LLM API) — no reason to stagger.
+- **Action**: PO_TICKET posted to scrum-master for 27 actionable FAIL rows from MATRIX_STATUS.csv scan
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
 
 ### Cycle 2026-09-22T21:15Z — Veille PQC market + reading mode integration ticket
 - **Post-quantum cryptography market**: $2.2B (2026) → $20.5B (2033), CAGR 37.8% (Grand View Research). Juniper Research: $1.2B (2026) → $13B (2035), CAGR 30%. Market.us: $142.4B US market, CAGR 37.2%. Consensus: PQC adoption accelerating, hybrid cryptography (classical + quantum-safe) is the transition pattern.
