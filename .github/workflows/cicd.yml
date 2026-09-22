@@ -174,9 +174,9 @@ jobs:
             # Pull latest Caddyfile from GitHub raw at this commit, validate, deploy
             curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/Caddyfile" -o /tmp/Caddyfile
             caddy validate --config /tmp/Caddyfile
-            # Caddy container mounts ./Caddyfile from the deploy dir (docker-compose.deploy.yml volume)
-            # MUST copy to deploy dir, not /etc/caddy — container uses network_mode: host + relative path
-            cp /tmp/Caddyfile ${{ secrets.VM_DEPLOY_DIR }}/rg-backend/Caddyfile
+            # Caddy container mounts ./Caddyfile relative to docker-compose.deploy.yml (at VM_DEPLOY_DIR root)
+            # MUST copy to deploy dir root — rg-backend/ subdir does not exist on VM (fixes #810)
+            mkdir -p ${{ secrets.VM_DEPLOY_DIR }} && cp /tmp/Caddyfile ${{ secrets.VM_DEPLOY_DIR }}/Caddyfile
             rm -f /tmp/Caddyfile
             # Caddy runs in docker — restart container to pick up new config
             cd ${{ secrets.VM_DEPLOY_DIR }} && docker compose -f docker-compose.deploy.yml restart caddy
