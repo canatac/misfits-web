@@ -25,14 +25,14 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    handle /api/emails/* {
+    handle /api/emails* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    handle /api/external-accounts/* {
+    handle /api/external-accounts* {
         reverse_proxy http://misfits-web:3000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
@@ -81,12 +81,10 @@ mail.misfits.ai, www.mail.misfits.ai {
         -Server
     }
 
-    # Logging
+    # Logging — use stdout to avoid permission issues during CI validate
+    # (caddy runs as root during validate but as caddy user via systemd)
     log {
-        output file /var/log/caddy/misfits-web.log {
-            roll_size 10mb
-            roll_keep 5
-        }
+        output stdout
         format json
     }
 }
