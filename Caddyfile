@@ -41,7 +41,7 @@ mail.misfits.ai, www.mail.misfits.ai {
     }
 
     handle /api/* {
-        reverse_proxy http://email-api:8000 {
+        reverse_proxy http://localhost:8000 {
             # Forward real client IP
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
