@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T21:15 UTC — veille PQC market ($2.2B→$20.5B by 2033, CAGR 37.8%), matrix 56 rows (36 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-056 reading mode integration)
+> Dernière mise à jour: 2026-09-22T20:30 UTC — veille PQC market ($2.2B→$20.5B by 2033, CAGR 37.8%), matrix 57 rows (37 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-059 CI/CD health_statuses directive)
 
 ---
 
@@ -138,6 +138,14 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-22T20:30 UTC — CI/CD deploy blocker (MW-2026-059)
+- Issue #787: Caddyfile `health_statuses` directive invalid (should be `health_status` singular)
+- 3 consecutive master commits failed CI/CD deploy (7cf26dc, b32553a, 440a4ae)
+- Production stuck — security fixes and features not deploying
+- Fix: change `health_statuses 200` → `health_status 200` in Caddyfile line 55
+- Owner: dev-int (Caddyfile/CI-CD specialty)
+- Priority: P0 — blocks all deploys
 
 - **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
 - **Tuta 2026**: Fast Sync (10x faster), conversation view, email import/export single-click, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché.
