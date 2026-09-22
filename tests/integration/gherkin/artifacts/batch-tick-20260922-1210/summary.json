@@ -1,0 +1,26 @@
+{
+  "batch_id": "tick-20260922-1210",
+  "role": "testeur",
+  "ts": "2026-09-22T12:10:00Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "auth_bypass_regression": {
+    "/api/emails": {"expected": "307|401", "actual": 200, "status": "FAIL-P0"},
+    "/api/external-accounts": {"expected": "307|401", "actual": 200, "status": "FAIL-P1"},
+    "/api/admin/ai-activity": {"expected": "307|401", "actual": 307, "status": "PASS"}
+  },
+  "new_tests_created": [
+    {"id": "MW-032", "feature": "reading-mode", "status": "FAIL", "issue": "#745", "finding": "Component exists in source but not integrated in email-view.tsx or deployed bundle"},
+    {"id": "MW-037", "feature": "unified-search", "status": "FAIL", "issue": null, "finding": "Gherkin feature created, no implementation found"},
+    {"id": "MW-038", "feature": "swipe-gestures", "status": "FAIL", "issue": null, "finding": "Gherkin feature created, no implementation found"},
+    {"id": "MW-028", "feature": "notion-mail-migration", "status": "FAIL", "issue": null, "finding": "Gherkin feature created, no implementation found"}
+  ],
+  "pr_status": {
+    "auth_bypass_fix": {"pr": 743, "state": "OPEN", "mergeable": "MERGEABLE", "ci": "ALL_GREEN", "action_needed": "merge + deploy"}
+  },
+  "commands_executed": [
+    "curl /api/emails -> 200 (P0 FAIL, PR #743 not yet deployed)",
+    "curl /api/external-accounts -> 200 (P1 FAIL)",
+    "grep immersive-reading in deployed JS chunks -> NOT FOUND",
+    "gh issue create -> #745 (MW-032 reading mode not integrated)"
+  ]
+}
