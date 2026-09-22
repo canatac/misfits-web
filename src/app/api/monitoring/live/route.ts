@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveBackendBaseUrl } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
-
-function resolveMonitoringBaseUrl(): string {
-  const raw =
-    process.env.MONITORING_API_BASE ||
-    process.env.BACKEND_URL ||
-    "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const messageId = params.get("message_id")?.trim();
 
   const upstreamUrl = new URL(
-    `${resolveMonitoringBaseUrl()}/api/monitoring/live`
+    `${resolveBackendBaseUrl()}/api/monitoring/live`
   );
   if (messageId) upstreamUrl.searchParams.set("message_id", messageId);
 

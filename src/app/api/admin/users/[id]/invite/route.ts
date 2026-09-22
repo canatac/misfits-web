@@ -3,15 +3,10 @@
  * Body is empty; the backend triggers the invite email through dkim-service.
  */
 import { NextResponse } from "next/server";
-import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { buildForwardHeaders, resolveBackendBaseUrl } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function backend(): string {
-  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
 
 export async function POST(
   request: Request,
@@ -25,7 +20,7 @@ export async function POST(
     );
   }
   const upstream = await fetch(
-    `${backend()}/api/admin/users/${encodeURIComponent(id)}/invite`,
+    `${resolveBackendBaseUrl()}/api/admin/users/${encodeURIComponent(id)}/invite`,
     {
       method: "POST",
       headers: buildForwardHeaders(request),

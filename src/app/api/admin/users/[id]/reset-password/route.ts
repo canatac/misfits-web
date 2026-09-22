@@ -3,15 +3,10 @@
  * Optional body: { newPassword?: string, revokeSessions?: boolean }.
  */
 import { NextResponse } from "next/server";
-import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { buildForwardHeaders, resolveBackendBaseUrl } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function backend(): string {
-  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
 
 export async function POST(
   request: Request,
@@ -28,7 +23,7 @@ export async function POST(
   const headers = buildForwardHeaders(request);
   headers.set("Content-Type", "application/json");
   const upstream = await fetch(
-    `${backend()}/api/admin/users/${encodeURIComponent(id)}/reset-password`,
+    `${resolveBackendBaseUrl()}/api/admin/users/${encodeURIComponent(id)}/reset-password`,
     {
       method: "POST",
       headers,
