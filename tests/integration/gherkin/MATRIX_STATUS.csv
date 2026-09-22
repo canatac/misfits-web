@@ -55,4 +55,6 @@ MW-2026-059,Email pin/star,User clique sur l'icône pin/star sur un email,Email 
 MW-2026-060,BIMI brand indicator,User reçoit un email d'un domaine avec BIMI,Logo de la marque affiché dans l'inbox + DMARC policy enforce + VMC certificate valid,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-061,DKIM2 signature,User envoie un email avec DKIM2,Email signé avec algorithme DKIM2 + vérifiable par le destinataire + fallback DKIM1,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte externe via OAuth 2.0,Connexion OAuth 2.0 réussie + token stocké de manière sécurisée + refresh automatique,FAIL,reimagined-guide,dev-back
-MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL-ISSUE-801,misfits-web,dev-web
+MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL-ISSUE-801-TESTED-2026-09-22T21:49Z,misfits-web,dev-web
+MW-2026-064,Email snooze presets,User clique Snooze sur un email + sélectionne 1h/1d/1w,Email masqué temporairement + réapparaît à l'heure prévue + badge snooze visible + annulation possible,FAIL-ISSUE-798,misfits-web,dev-web
+MW-2026-065,Email pin/star stability follow-up,User épingle un email + vérifie persistance après refresh,Pin/star persisté après refresh + filtre pin/star fonctionnel + tri stable,FAIL-ISSUE-795,misfits-web,dev-web

@@ -1,0 +1,31 @@
+testeur_tick_20260922T2149Z_bulk_selection_MW063.txt
+==============================================
+TICK: 2026-09-22T21:49Z (cron)
+ROLE: testeur
+ACTION: MW-2026-063 Bulk email selection — production verification
+
+PRODUCTION TEST RESULTS:
+- GET / → 200 OK ✓
+- GET /api/emails (anon) → 401 AUTH_REQUIRED ✓ (regression PASS)
+- POST /api/emails/bulk (anon) → 404 (endpoint not implemented)
+- POST /api/emails/action (anon) → 404 (endpoint not implemented)
+- bulkAction in JS store (chunk 6730): 1 reference ✓
+  Actions handled: archive, delete, markRead, markUnread, star, unstar
+- selectedEmailIds (Set) in store: present ✓
+- Checkbox UI in email list: NOT FOUND ✗
+- FloatingActionBar / BulkActionBar component: NOT FOUND ✗
+- toggleSelect / selectAll functions: NOT FOUND ✗
+
+FEATURE VERDICT:
+  MW-2026-063 Bulk email selection: FAIL
+  - State layer: IMPLEMENTED (bulkAction + selectedEmailIds in Zustand store)
+  - UI layer: MISSING (no checkboxes, no floating bar, no toggle functions)
+  - API layer: MISSING (no server-side bulk endpoint)
+  - Auth gating: N/A (endpoint doesn't exist, store-only)
+
+Gherkin feature file created: MW-2026-063-bulk-email-selection.feature
+
+DELTA vs previous tick:
+  New ticket tested: MW-2026-063 (bulk email selection, issue #801)
+  Auth bypass regression: still PASS
+  Production reachability: 200 OK
