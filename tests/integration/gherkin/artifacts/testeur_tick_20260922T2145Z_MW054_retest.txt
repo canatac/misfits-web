@@ -1,0 +1,23 @@
+testeur tick 2026-09-22T21:45Z — MW-2026-054 Re-test (auth login + compose send)
+=====================================================================
+
+Production endpoints tested anonymously against https://mail.misfits.ai:
+
+POST /api/auth/login    → 401 {"message":"Identifiant ou mot de passe incorrect."}  ← FIXED (was 404)
+POST /api/compose/send  → 404                                                      ← STILL FAIL
+GET /api/admin/whoami   → 401 {"error":{"message":"Authentication required"}}       ← FIXED (was 500, #790)
+GET /api/emails (unauth) → 401 (no PII leak, body length 58)                       ← PASS
+GET /api/external-accounts (unauth) → 307 (body length 42)                         ← PASS
+
+Verdict:
+  MW-2026-054 POST /api/auth/login: PASS (401, endpoint now exists)
+  MW-2026-054 POST /api/compose/send: FAIL (404, endpoint not implemented)
+  #790 GET /api/admin/whoami: PASS (401, fix confirmed in production)
+  Auth bypass regression: PASS (no PII leak, all routes gated)
+
+Delta vs previous tick:
+  /api/auth/login: 404 → 401 (backend fix deployed)
+  /api/admin/whoami: 500 → 401 (#790 fix confirmed deployed)
+  /api/compose/send: still 404 (needs implementation)
+
+Issue created: https://github.com/canatac/misfits-web/issues/793
