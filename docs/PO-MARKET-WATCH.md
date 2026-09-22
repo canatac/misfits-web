@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T09:30 UTC — Veille marché cycle (Notion Mail shutdown + migration opportunity)
+> Dernière mise à jour: 2026-09-22T11:30 UTC — Veille marché cycle (email security trends 2026: DMARC enforcement, post-quantum, self-hosting challenges)
 
 ---
 
@@ -133,6 +133,7 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-034 | User active DMARC enforcement (p=reject) | Emails rejetés si DMARC fail, rapport DMARC visible dans /admin, badge trust dans l'UI | ❌ (DMARC enforcement + trust UX à implémenter) |
 
 ---
 
@@ -190,6 +191,16 @@
 - **Rejeté**: Long-press context menu (slower), No gesture support (mobile UX gap)
 - **Rationale**: Proton/Fastmail both offer swipe gestures in mobile. This is a 2026 baseline expectation. Effort: M (2-3 days dev-web).
 - **PO_TICKET posted to scrum-master via bus (task_id: po_swipe_gesture_20260922)
+
+### Cycle 2026-09-22T11:30 — Email security trends 2026
+- **Halon 2026**: DMARC enforcement increasingly required, legacy systems breaking. Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day. POP3 deprecated, Basic IMAP auth → OAuth2 migration. DKIM2 rollout begins.
+- **Redsift 2026**: Email = most exploited attack vector. Domain-level policy enforcement + continuous visibility required. DMARC p=reject (not p=none) becomes baseline. MFA monitoring for bypass techniques.
+- **Mailjet 2026**: 25.7% of senders unsure if authenticated. Stronger DMARC enforcement (quarantine/reject) expected. Authentication = baseline for inbox placement, not just best practice.
+- **Self-hosting challenge**: Reddit r/SelfHosting consensus — "self-hosting email in 2026 is effectively impossible" due to deliverability, spam filtering, and major provider lock-in. Our managed SaaS approach (not pure self-host) is validated.
+- **Arbitrage 2026-09-22**: DMARC enforcement UX vs raw technical display
+  - Choix: UX simplifiée (badge Authenticated + BIMI logo + tooltip) / Rejeté: affichage technique brut
+  - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
+- **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native est un avantage. L'UX de confiance (badge + BIMI) est un différenciateur. Le self-hosting pur est un piège — notre modèle SaaS avec option self-host est le bon positionnement.
 
 ### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
 - **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
