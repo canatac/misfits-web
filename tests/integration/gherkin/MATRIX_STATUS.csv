@@ -47,3 +47,4 @@ MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture lo
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
+MW-2026-054,Auth login + compose send 502,User se connecte + envoie un email,/api/auth/login retourne 307 + /api/compose/send retourne 200/307 + SMTP 587 reachable + IMAP 993 reachable,FAIL-ISSUE-764,misfits-web+reimagined-guide,dev-back+dev-int

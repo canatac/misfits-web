@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect, createContext, useContext } from "react";
 import { Archive, Trash2, CheckCircle, X, Undo2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { subscribeToToasts } from "@/lib/ui/toast";
 
 interface ToastAction {
   id: string;
@@ -57,14 +56,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     },
     [removeToast],
   );
-
-  // Subscribe to the event bus so hooks/stores can dispatch toasts
-  // without importing components (maintains hexagonal architecture).
-  useEffect(() => {
-    return subscribeToToasts((input) => {
-      addToast(input);
-    });
-  }, [addToast]);
 
   return (
     <ToastContext.Provider value={{ addToast, removeToast, toasts }}>
@@ -137,7 +128,6 @@ function ToastItem({
       </button>
       <button
         onClick={handleDismiss}
-        aria-label="Close toast"
         className="p-1 rounded-lg text-[#71717A] hover:text-white hover:bg-[#1D1D20] transition-colors"
       >
         <X className="h-3 w-3" />

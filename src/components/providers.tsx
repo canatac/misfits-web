@@ -6,7 +6,6 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast, Toaster } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
-import { ToastProvider } from "@/components/ui/toast-provider";
 import { I18nProvider } from "@/i18n/provider";
 import { CommandPalette } from "@/components/command-palette";
 import { useCommandPaletteKeyboard } from "@/hooks/use-command-palette";
@@ -48,12 +47,10 @@ export function Providers({ children }: { children: ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <I18nProvider>
-          <ToastProvider>
-            <TooltipProvider delayDuration={300} skipDelayDuration={0}>
-              {children}
-            </TooltipProvider>
-            <Toaster position="bottom-right" richColors />
-          </ToastProvider>
+          <TooltipProvider delayDuration={300} skipDelayDuration={0}>
+            {children}
+          </TooltipProvider>
+          <Toaster position="bottom-right" richColors />
         </I18nProvider>
       </QueryClientProvider>
       <CommandPalette />
