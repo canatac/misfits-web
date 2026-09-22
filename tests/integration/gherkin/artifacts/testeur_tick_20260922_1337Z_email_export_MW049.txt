@@ -1,0 +1,32 @@
+=== Testeur Tick 2026-0922T1337Z — Email Export PDF/Print/EML/HTML (MW-049) ===
+
+MW-049 Email Export — FAIL (library exists but NOT wired to UI)
+
+Code analysis:
+- email-export-pdf.ts: generatePrintHtml(), printEmail(), generateFilename() — EXISTS
+  - generatePrintHtml: builds print-ready HTML with headers + body + attachments — PASS
+  - printEmail: window.open + print() — PASS (standard pattern)
+  - generateFilename: sanitizes subject + timestamp — PASS
+- BUT: email-export-pdf.ts is NOT imported by any component (grep returns empty)
+- email-toolbar.tsx: NO Export/Print buttons — FAIL
+  - Has: Archive, Delete, MarkUnread, Reply, ReplyAll, Forward, Hermes menu, Find, Star, More
+  - Missing: Export dropdown (PDF/EML/HTML), Print button
+- email-view.tsx: NO export/print handlers wired — FAIL
+
+Production verification:
+- /mail → 307 (auth gate OK, cannot verify UI without login)
+- JS bundle search: email-export NOT found in deployed chunks
+- Feature is NOT deployed despite library existing in source
+
+Non-regression checks:
+- /api/emails (unauth) → 307 PASS
+- /api/external-accounts (unauth) → 307 PASS
+- /api/admin/ai-activity (unauth) → 307 PASS
+- /api/hermes/runs (unauth) → 307 PASS
+- mail.misfits.ai:443 → 200 PASS
+- Security headers: HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, CSP, Permissions-Policy — ALL PASS
+- CORS: OPTIONS with spoofed Origin → 403 (no reflection) — PASS
+
+Verdict: FAIL — MW-049 not implemented in UI
+Issue: #751 (already open)
+Next: MW-050 (Attachment preview + quick actions)

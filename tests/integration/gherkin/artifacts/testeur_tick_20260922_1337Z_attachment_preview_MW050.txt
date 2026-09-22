@@ -1,0 +1,32 @@
+=== Testeur Tick 2026-0922T1337Z — Attachment Preview + Quick Actions (MW-050) ===
+
+MW-050 Attachment Preview — FAIL (partial implementation)
+
+Code analysis:
+- attachment-card.tsx: Basic card with filename + size + Download button — PARTIAL
+  - Shows: icon, filename, size, type, Download button
+  - Missing: inline preview thumbnail, quick actions (view/save/share), security badge
+- attachment-zone.tsx: Composer upload zone (outgoing) — N/A for MW-050
+- attachment-lightbox.ts: Library exists with LightboxState, open/close/navigate — EXISTS
+  - BUT: NOT imported by any component (grep returns empty)
+  - Library is dead code — not wired to UI
+
+Gap analysis (MW-050 requirements vs implementation):
+| Requirement | Status |
+|---|---|
+| Inline preview thumbnail for images | FAIL — no preview in email view |
+| PDF preview inline | FAIL |
+| Quick actions (download/save/share) | FAIL — only Download exists |
+| File type badge | PARTIAL — type shown as text |
+| File size display | PASS |
+| Security scan badge | FAIL |
+| Lightbox on click | FAIL — library exists but not wired |
+
+Non-regression checks:
+- /api/emails (unauth) → 307 PASS
+- /api/external-accounts (unauth) → 307 PASS
+- mail.misfits.ai:443 → 200 PASS
+
+Verdict: FAIL — MW-050 not implemented in UI (lightbox lib is dead code)
+Issue: #752 (already open)
+Gherkin feature: CREATED (MW-2026-050-attachment-preview.feature, 6 scenarios)
