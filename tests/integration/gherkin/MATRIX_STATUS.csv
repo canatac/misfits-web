@@ -51,7 +51,7 @@ MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login
 MW-2026-055,Reading pane split-view,User ouvre un email en mode split-view,Email affiché en panneau latéral + liste visible + navigation fluide,FAIL-ISSUE-783,misfits-web,dev-web
 MW-2026-056,Reading mode integration,User active le mode lecture depuis email-view,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL-ISSUE-781,misfits-web,dev-web
 MW-2026-058,Email export .eml batch,User exporte plusieurs emails en .eml,Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées,FAIL-ISSUE-785,misfits-web,dev-web
-MW-2026-059,Email pin/star,User clique sur l'icône pin/star sur un email,Email épinglé/starred + visible en haut de liste + filtre pin/star disponible,PARTIAL-DEPLOYED-2026-09-22T22:05Z,misfits-web,dev-web
+MW-2026-059,Email pin/star,User clique sur l'icône pin/star sur un email,Email épinglé/starred + visible en haut de liste + filtre pin/star disponible,FAIL-2026-09-22T22:20Z,misfits-web,dev-web
 MW-2026-060,BIMI brand indicator,User reçoit un email d'un domaine avec BIMI,Logo de la marque affiché dans l'inbox + DMARC policy enforce + VMC certificate valid,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-061,DKIM2 signature,User envoie un email avec DKIM2,Email signé avec algorithme DKIM2 + vérifiable par le destinataire + fallback DKIM1,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte externe via OAuth 2.0,Connexion OAuth 2.0 réussie + token stocké de manière sécurisée + refresh automatique,FAIL,reimagined-guide,dev-back
