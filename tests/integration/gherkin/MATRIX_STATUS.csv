@@ -19,11 +19,14 @@ MW-2026-017,Email export,User exporte tous ses emails en .eml,Fichier .zip tél�
 MW-2026-018,Data deletion (GDPR),User supprime son compte + toutes ses données,Compte supprimé + emails purgés + confirmation par email,FAIL,reimagined-guide,dev-back
 MW-2026-019,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affichés dans l'unified inbox + envoi possible via Gmail,FAIL,reimagined-guide,dev-back
 MW-2026-020,On-device AI processing,User active le mode IA local,Traitement IA fait sur le device + aucune donnée envoyée au serveur,FAIL-GHERKIN-ISSUE-718,misfits-web,dev-web
-MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL,reimagined-guide,dev-back
-MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL,reimagined-guide,dev-back
+MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL-GHERKIN-ISSUE-563,reimagined-guide,dev-back
+MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL-GHERKIN-ISSUE-564,reimagined-guide,dev-back
 MW-2026-023,Interface language change,User change la langue de l'interface,Interface traduite en <2s + préférence sauvegardée,FAIL-GHERKIN-ISSUE-719,misfits-web,dev-web
 MW-2026-024,DMARC/BIMI trust indicator,User ouvre un email authentifié (DKIM+SPF+DMARC pass),Badge Authenticated visible + logo BIMI affiché si présent + tooltip explicatif,PASS,misfits-web,dev-web
 MW-2026-025,Post-quantum encryption,User envoie email avec signature Dilithium,Email signé avec algorithme post-quantum + badge PQ visible + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentification JMAP réussie + sync mail/calendar fonctionnel + fallback IMAP OK,FAIL,reimagined-guide,dev-back
 MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
 MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL-GHERKIN-ISSUE-721,misfits-web,dev-web
+MW-2026-029,Auth bypass (P0),User non authentifié accède à /api/mail/inbox,Requête rejetée 401 + pièces jointes protégées,FAIL-ISSUE-722,misfits-web,dev-web
+MW-2026-030,CORS reflection + auth bypass (P0),Attaquant envoie requête CORS avec Origin arbitraire,Origin non reflété + /api/admin/* exige token valide,FAIL-GHERKIN-ISSUE-558,reimagined-guide,dev-back
+MW-2026-031,CORS misconfig + admin bypass (P0),Accès non authentifié à /api/admin/*,Requête rejetée 401 + Origin non reflété,FAIL-GHERKIN-ISSUE-556,reimagined-guide,dev-back
