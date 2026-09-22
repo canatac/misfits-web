@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T15:05 UTC — Attachment preview + matrix gap cycle
+> Dernière mise à jour: 2026-09-22T15:08 UTC — DKIM stability gaps + admin proxy 500 triage
 
 ---
 
@@ -225,3 +225,11 @@
   - **Rationale**: Power users expect comprehensive defaults out of the box. Customization can follow in v2. The shortcut help panel (Ctrl+/) is a Proton best practice that aids discoverability.
 - **Competitor reference**: Proton (G+I=inbox, Ctrl+Shift+M=compose), Fastmail (y=archive, f=forward, .=action menu), Superhuman (cmd+K=command palette)
 - **Action**: Create GH issue for keyboard shortcut system with matrix row MW-2026-043
+
+### Cycle 2026-09-22T15:08 — DKIM stability gaps + admin proxy 500 triage
+- **Matrix gap analysis**: 2 FAIL rows lacked corresponding GH issues (MW-2026-045 DKIM stability, MW-2026-036 DKIM operationnel). Both in reimagined-guide, owner hint dev-back+dev-int.
+- **New issue detected**: #761 /api/admin/whoami returns 500 (backend proxy failure) — new P1 bug from testeur, created issue #762 for tracking.
+- **Issues created**: #585 (DKIM stability), #586 (DKIM operationnel), #762 (admin whoami 500)
+- **PO_TICKETs posted to scrum-master**: 3 tickets via fleet_send_v2.sh (queue:scrum-master, ids: f2a939e3, 1951dc9d, 6632690c)
+- **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
+- **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-051 for admin proxy regression)
