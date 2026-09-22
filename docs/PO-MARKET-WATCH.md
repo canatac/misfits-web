@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T15:08 UTC — DKIM stability gaps + admin proxy 500 triage
+> Dernière mise à jour: 2026-09-22T17:05 UTC — Reading pane split-view UX proposal + matrix gap triage
 
 ---
 
@@ -133,6 +133,7 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-055 | Reading pane split-view | User clique sur un email dans la liste | Contenu email visible dans panneau droit (50%) + liste visible à gauche + Escape ferme + mobile overlay | ❌ (feature à implémenter) |
 
 ---
 
@@ -225,6 +226,16 @@
   - **Rationale**: Power users expect comprehensive defaults out of the box. Customization can follow in v2. The shortcut help panel (Ctrl+/) is a Proton best practice that aids discoverability.
 - **Competitor reference**: Proton (G+I=inbox, Ctrl+Shift+M=compose), Fastmail (y=archive, f=forward, .=action menu), Superhuman (cmd+K=command palette)
 - **Action**: Create GH issue for keyboard shortcut system with matrix row MW-2026-043
+
+### Cycle 2026-09-22T17:05 — Reading pane split-view UX proposal
+- **Market insight**: Gmail, Outlook, Superhuman, and Spark all offer a reading pane (split-view) where email content displays alongside the inbox list. misfits.ai lacks this — users must open each email in a full view, increasing click-through fatigue during triage.
+- **UX trend 2026**: "Designing for intent" (UX Collective) — interfaces adapt to user goals. A reading pane reduces friction for the most common email task: scanning and reading.
+- **Arbitrage 2026-09-22: Reading pane scope**
+  - **Choix**: Right-side panel (50% width) + Escape to dismiss + mobile full-screen overlay
+  - **Rejeté**: Bottom panel (less screen real estate), No reading pane (status quo)
+  - **Rationale**: Right-side panel matches Gmail/Outlook pattern. Mobile overlay handles small screens. No API changes needed — reuses existing /api/emails/:id endpoint.
+- **Action**: PO_TICKET posted to scrum-master for reading pane UX proposal (owner hint: dev-web)
+- **Matrix**: MW-2026-043 (complementary to keyboard shortcuts, improves triage UX)
 
 ### Cycle 2026-09-22T15:08 — DKIM stability gaps + admin proxy 500 triage
 - **Matrix gap analysis**: 2 FAIL rows lacked corresponding GH issues (MW-2026-045 DKIM stability, MW-2026-036 DKIM operationnel). Both in reimagined-guide, owner hint dev-back+dev-int.
