@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-22
 
 ---
 
@@ -149,3 +149,45 @@
 ---
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+
+---
+
+## 5. Notes de veille — 2026-09-22
+
+### Veille marché (2026-09-22T15:35 UTC)
+
+- **Proton 2026**: zero-access encryption + Swiss privacy law = positionnement le plus fort. Mobile Rust engine (offline search) + Gmail integration (send/receive). Confirme la tendance "one inbox to rule them all".
+- **Tuta 2026**: TutaCrypt (post-quantum) déployé, conversation view, email import/export single-click, Fast Sync 10x. Le "conversation view" devient un standard du marché.
+- **Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted.
+- **Hey** (Basecamp): pas d'E2EE, pas d'IMAP — workflow product, pas privacy. Basecamp 5 lance "Calendar Cover Art", "Create events from email" — confirme la tendance intégration mail+calendar.
+- **Skiff** shutdown total confirmé (février 2025). Leçon: les privacy-first SaaS acquis par des big tech disparaissent. Notre approche self-hosted/souveraine est un bouclier.
+- **Privacy 2026**: GDPR enforcement ↑ (€5.88B cumul depuis 2018), CAN-SPAM fines $51.7K/email, tracking pixels sous consentement explicite (Italie), Vietnam PDP law 2026, 8+ US state laws. Notre conformité native DKIM/SPF/DMARC + privacy-by-design est un avantage.
+- **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
+- **CounterMail**: diskless servers + anonymous registration = niveau de sécurité maximal. Notre angle: stack native + IA + self-hosted.
+
+### Leçons pour misfits.ai
+
+1. **Conversation view** = standard du marché (Tuta, Fastmail, Hey l'ont tous) — notre issue #713 est critique.
+2. **Post-quantum crypto** = différenciateur (TutaCrypt) — notre issue #502 est un avantage compétitif.
+3. **Gmail integration** = attendu par les users (Proton l'a fait) — notre issue #527 (multi-account) est aligné.
+4. **Offline search** = Proton mobile Rust engine — notre PWA offline (#521) est aligné.
+5. **Custom domain** = attendu dès l'entrée de gamme (Fastmail Standard) — notre implémentation est OK.
+6. **Zero-access encryption** = Proton le fait, pas Fastmail — notre issue #582 est un différenciateur.
+7. **Anonymous signup** = Proton (Tor), CounterMail — notre issue #583 est aligné.
+8. **MTA-STS/DANE** = pas encore standard chez les concurrents — notre issue #584 est un avantage.
+
+### Arbitrage 2026-09-22
+
+**Arbitrage 2026-09-22**: Modèle freemium → Choix: Freemium classique (gratuit 10GB, payant custom domain + features Pro) / Rejeté: Gratuit avec pub (contredit privacy-by-design), Donation (pas scalable) / Rationale: aligné avec le marché (Proton €3/mo, Tuta €3/mo, Fastmail $3/mo), notre différenciation = E2EE + IA + self-hosted natif.
+
+### Gaps identifiés → Issues à créer
+
+| Gap | Priorité | Référence |
+|-----|----------|-----------|
+| Email export (.eml, .mbox) | P1 | Proton, Tuta l'ont |
+| External account connection (IMAP/SMTP) | P1 | Proton Gmail integration |
+| JMAP server | P2 | Fastmail l'a |
+| Reading mode | P2 | Standard du marché |
+| Email attachment preview | P2 | Standard du marché |
+
+Ces gaps sont déjà couverts par des issues existantes (#552, #541, #560, #725, #752). Pas de nouvelles issues nécessaires ce cycle.
