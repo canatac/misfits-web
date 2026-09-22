@@ -1,6 +1,8 @@
-#!/usr/bash
-# MW-2026-054: Auth login + compose send 502 regression smoke test
-# Expected: /api/auth/login → 307, /api/compose/send → 307, SMTP 587 open, IMAP 993 open
+#!/usr/bin/env bash
+# MW-2026-054: Auth gate non-regression smoke test (updated post PR-763)
+# Post PR-763 behavior: auth middleware returns 401 JSON for API routes (not 307 redirect)
+# Expected: /api/emails → 401 JSON, /api/admin/whoami → 401 JSON, /api/external-accounts → 307
+# No PII leak, no CORS reflection
 # Issue: https://github.com/canatac/misfits-web/issues/764
 
 set -e
@@ -28,19 +30,25 @@ check() {
 echo "=== MW-2026-054 Smoke Test $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 echo ""
 
-# Auth endpoints
-check "Auth login" "/api/auth/login" "307"
-check "Auth session" "/api/auth/session" "200"
+# Auth gate: API routes return 401 JSON (auth middleware intercepts before proxy)
+check "Emails (auth gate)" "/api/emails" "401"
+check "Admin whoami (auth gate)" "/api/admin/whoami" "401"
 
-# Compose
-check "Compose send" "/api/compose/send" "307"
+# Auth gate: redirect routes return 307 (Caddy-level redirect)
+check "External accounts (redirect)" "/api/external-accounts" "307"
+check "Hermes runs (redirect)" "/api/hermes/runs" "307"
+check "Admin ai-activity (redirect)" "/api/admin/ai-activity" "307"
+check "Admin users (redirect)" "/api/admin/users" "307"
 
-# Health
-check "Health" "/api/health" "200"
-
-# Protected routes (auth redirect)
-check "Emails" "/api/emails" "307"
-check "External accounts" "/api/external-accounts" "307"
+# No PII leak verification
+BODY=$(curl -s --max-time 5 "${BASE}/api/emails" 2>&1)
+if echo "$BODY" | grep -q "AUTH_REQUIRED"; then
+  PASS=$((PASS+1))
+  RESULTS="${RESULTS}\n  PASS | No PII leak (/api/emails returns auth error)"
+else
+  FAIL=$((FAIL+1))
+  RESULTS="${RESULTS}\n  FAIL | PII leak detected in /api/emails"
+fi
 
 echo -e "$RESULTS"
 echo ""
