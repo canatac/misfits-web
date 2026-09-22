@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T13:10 UTC — Keyboard shortcuts power-user cycle
+> Dernière mise à jour: 2026-09-22T13:30 UTC — Email export PDF/print/data portability cycle
 
 ---
 
@@ -196,6 +196,15 @@
 - **Fastmail 2026**: privacy model = policy-based (pas zéro-knowledge), JMAP natif, IMAP/SMTP/CalDAV/CardDAV complets, audit indépendant. Source: https://guptadeepak.com/tools/top-5-secure-email-providers-2026
 - **Tendance 2026**: post-quantum = différentiateur (Proton+Tuta), JMAP remplace IMAP (Fastmail), zero-access = standard minimum
 - **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native + E2EE + post-quantum roadmap est aligné sur le marché. JMAP = opportunité (déjà planifié via issue #501).
+
+### Cycle 2026-09-22T13:30 — Email export PDF/print/data portability
+- **Market insight**: Proton Mail, Fastmail, Hey all offer native PDF export + .eml export. misfits.ai has no export capability — users forced to screenshot. This is a data portability gap that contradicts the "your email, your control" promise.
+- **Arbitrage 2026-09-22: Export format priority**
+  - **Choix**: PDF export (client-side, html2pdf.js) + print CSS + .eml export (already available backend-side)
+  - **Rejeté**: Server-side PDF generation (adds dependency), PDF only without metadata (loses context)
+  - **Rationale**: Client-side PDF generation keeps data on device (privacy-by-design). .eml export already exists in backend — just needs UI wiring.
+- **Action**: Issue #751 created — [ux] Email export PDF + print + .eml for data portability (owner hint: dev-web)
+- PO_TICKET posted to scrum-master via fleet_send.sh (task_id: po_ticket_print_export)
 
 ### Cycle 2026-09-22T13:10 — Keyboard shortcuts power-user differentiator
 - **Market insight**: Superhuman (acquired by Grammarly mid-2025), Proton Mail, Fastmail, Spark Mail, and eM Client all emphasize keyboard shortcuts as a core power-user feature. Proton's V4 web client has comprehensive shortcuts with tooltips. Fastmail has single-key shortcuts (y=archive, f=forward, !=spam). Superhuman built its entire brand on keyboard-first navigation.

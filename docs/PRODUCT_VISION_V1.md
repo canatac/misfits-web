@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T13:10 UTC — PO cycle: auth bypass regression PASS (PR #741), 43 FAIL rows scanned, 3 tickets posted to scrum-master
+> Dernière mise à jour: 2026-09-22T13:30 UTC — PO cycle: new matrix row MW-2026-049 (Email export PDF + print, #751), 49 rows total, 1 ticket posted to scrum-master
 
 ---
 
