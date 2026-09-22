@@ -11,9 +11,9 @@ MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé av
 MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
 MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL,reimagined-guide,dev-back
 MW-2026-012,DANE,User envoie email vers domaine avec DANE,TLSA record vérifié + connexion TLS validée,FAIL,reimagined-guide,dev-back
-MW-2026-013,AI email summary,User sélectionne un email + clique Résumé IA,Résumé généré en <5s + affiché dans le panneau latéral,FAIL-GHERKIN,misfits-web,dev-web
-MW-2026-014,AI smart triage,User reçoit 50 emails non lus,Emails triés par priorité + suggestions d'action (répondre/archiver/supprimer),FAIL-GHERKIN,misfits-web,dev-web
-MW-2026-015,AI suggested replies,User ouvre un email + clique Réponses suggérées,3 réponses contextuelles proposées + insertion en 1 clic,FAIL-GHERKIN,misfits-web,dev-web
+MW-2026-013,AI email summary,User sélectionne un email + clique Résumé IA,Résumé généré en <5s + affiché dans le panneau latéral,FAIL-GHERKIN-ISSUE-714,misfits-web,dev-web
+MW-2026-014,AI smart triage,User reçoit 50 emails non lus,Emails triés par priorité + suggestions d'action (répondre/archiver/supprimer),FAIL-GHERKIN-ISSUE-715,misfits-web,dev-web
+MW-2026-015,AI suggested replies,User ouvre un email + clique Réponses suggérées,3 réponses contextuelles proposées + insertion en 1 clic,FAIL-GHERKIN-ISSUE-716,misfits-web,dev-web
 MW-2026-016,Newsletter subscription,User s'abonne à une newsletter depuis un email,Newsletter ajoutée aux abonnements + emails groupés dans un dossier dédié,FAIL-GHERKIN-ISSUE-717,misfits-web,dev-web
 MW-2026-017,Email export,User exporte tous ses emails en .eml,Fichier .zip téléchargé contenant tous les emails + métadonnées,FAIL,reimagined-guide,dev-back
 MW-2026-018,Data deletion (GDPR),User supprime son compte + toutes ses données,Compte supprimé + emails purgés + confirmation par email,FAIL,reimagined-guide,dev-back
