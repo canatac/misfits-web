@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-22T23:00 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 59 rows (55 FAIL), state=ON, 0 PO_TICKETs posted (no new actionable gaps)
 
 ---
 
@@ -134,6 +134,7 @@
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-055 | Reading pane split-view | User clique sur un email dans la liste | Contenu email visible dans panneau droit (50%) + liste visible à gauche + Escape ferme + mobile overlay | ❌ (feature à implémenter) |
+| MW-2026-064 | MTA-STS outbound enforcement | User envoie email vers domaine avec MTA-STS enforce | Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré | ❌ (feature à implémenter) |
 
 ---
 
@@ -288,6 +289,35 @@
 - **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T23:00Z — Veille email authentication adoption 2026 (DMARC, BIMI, MTA-STS, DANE)
+- **DMARC adoption**: 30.4% of 5.5M domains (Feb 2026), enforcement 12.8%. Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day. Source: https://dmarcguard.io/research/email-authentication
+- **BIMI adoption**: 0.4% (20,518 domains), 71.8% have valid SVG logos. BIMI requires DMARC enforcement as prerequisite. Growing ~2%/month. Source: https://laneful.com/blog/posts/state-of-email-authentication-july-2026
+- **MTA-STS adoption**: 0.3% (15,997 domains). Requires HTTPS hosting + DNS TXT + valid TLS cert — complexity barrier. Growing ~2%/month. Source: https://laneful.com/blog/posts/state-of-email-authentication-july-2026
+- **DANE decline**: -1.5% (Migadu removed TLSA records for entire customer fleet). Without Migadu, DANE grew. Source: https://laneful.com/blog/posts/state-of-email-authentication-july-2026
+- **DKIM adoption**: 22.7% of 5.5M domains. Source: https://dmarcguard.io/research/email-authentication
+- **SPF adoption**: 56.0% of 5.5M domains. Source: https://dmarcguard.io/research/email-authentication
+- **misfits.ai position**: Our native DKIM/SPF/DMARC stack is aligned with market direction. BIMI is a competitive differentiator (issue #796). MTA-STS/DANE are tracked (issues #570, #577).
+- **Arbitrage 2026-09-22: MTA-STS vs DANE priority**
+  - **Choix**: MTA-STS first (broader adoption, no DNSSEC dependency, Google supports it)
+  - **Rejeté**: DANE first (declining adoption, DNSSEC complexity, Migadu precedent)
+  - **Rationale**: MTA-STS has 30x broader adoption than DANE. Google supports MTA-STS but not DANE. Market direction favors MTA-STS.
+- **Action**: No new issues created — existing issues cover all gaps (MW-2026-011 MTA-STS, MW-2026-012 DANE, MW-2026-024 DMARC/BIMI, MW-2026-060 BIMI)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
+
+### Cycle 2026-09-22T22:30Z — Veille AI email features 2026 (Proton Scribe, Tuta AI, Canary Mail)
+- **Proton Scribe**: Proton lance "Proton Scribe" (IA de rédaction) — confirme la tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
+- **Tuta AI triage**: Tuta intègre l'IA pour le triage automatique des emails. Tuta a fermement engagé de ne jamais inclure l'IA — changement de cap majeur 2026. Source: https://nordvpn.com/blog/tutanota
+- **Canary Mail AI Copilot**: Canary Mail positionné comme alternative Proton avec AI + unified inbox + encryption. AI Copilot features: drafting replies, summarizing threads, prioritizing inbox. Source: https://canarymail.io/blog/proton-ai-alternative
+- **misfits.ai angle**: Our 3 AI features (réponses suggérées + triage intelligent + résumés automatiques) are still differentiated vs Proton (Scribe = drafting only) and Tuta (triage only). But gap is closing — accelerate AI sprint.
+- **Arbitrage 2026-09-22: AI feature scope**
+  - **Choix**: All 3 AI features (summaries + triage + suggested replies) in Sprint 1, not staggered
+  - **Rejeté**: Staggered rollout (summaries first, triage later), AI cloud-based (privacy risk)
+  - **Rationale**: Competitors are shipping AI fast. Our differentiation window is narrow. All 3 features share the same backend infrastructure (LLM API) — no reason to stagger.
+- **Action**: PO_TICKET posted to scrum-master for 27 actionable FAIL rows from MATRIX_STATUS.csv scan
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
 
 ### Cycle 2026-09-22T21:15Z — Veille PQC market + reading mode integration ticket
 - **Post-quantum cryptography market**: $2.2B (2026) → $20.5B (2033), CAGR 37.8% (Grand View Research). Juniper Research: $1.2B (2026) → $13B (2035), CAGR 30%. Market.us: $142.4B US market, CAGR 37.2%. Consensus: PQC adoption accelerating, hybrid cryptography (classical + quantum-safe) is the transition pattern.

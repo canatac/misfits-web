@@ -56,3 +56,4 @@ MW-2026-060,BIMI brand indicator,User reçoit un email d'un domaine avec BIMI,Lo
 MW-2026-061,DKIM2 signature,User envoie un email avec DKIM2,Email signé avec algorithme DKIM2 + vérifiable par le destinataire + fallback DKIM1,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte externe via OAuth 2.0,Connexion OAuth 2.0 réussie + token stocké de manière sécurisée + refresh automatique,FAIL,reimagined-guide,dev-back
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL-ISSUE-801,misfits-web,dev-web
+MW-2026-064,MTA-STS outbound enforcement,User envoie email vers domaine avec MTA-STS enforce,Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré,Fail,reimagined-guide,dev-back
