@@ -47,6 +47,13 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
 
+            # Health check — detect backend failure fast instead of waiting for timeout (issue #755)
+            # Caddy polls /health every 5s; marks upstream down after 3 consecutive failures.
+            health_uri /health
+            health_interval 5s
+            health_timeout 3s
+            health_statuses 200
+
             # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
             # Remove any CORS headers sent by the upstream Rust backend
             header_down -Access-Control-Allow-Origin
