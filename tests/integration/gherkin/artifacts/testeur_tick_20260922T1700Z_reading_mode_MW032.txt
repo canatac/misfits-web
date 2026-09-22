@@ -1,0 +1,21 @@
+testeur_tick_20260922T1700Z_reading_mode_MW032.txt
+================================================
+TICK: 2026-09-22T17:00Z
+ROLE: testeur
+ACTION: Gherkin feature created + production smoke test
+TICKET: MW-2026-032 (Reading mode)
+
+PRODUCTION TEST RESULTS:
+- GET / → 200 OK (frontend reachable) ✓
+- GET /mail → 307 /login (auth wall, expected for anonymous) ✓
+- JS bundle scan: no readingMode/readMode/reading-mode identifiers found ✓
+- "reading" string in bundle = stack trace reference only (not feature code) ✓
+
+CONCLUSION: FAIL — Reading mode feature not implemented in production.
+No frontend route or component for reading mode exists.
+
+FILES CREATED:
+- tests/integration/gherkin/features/MW-2026-032-reading-mode.feature (8 scenarios)
+
+RELATED MATRIX ROWS:
+- MW-2026-032: FAIL (reading mode not implemented)

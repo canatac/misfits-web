@@ -1,0 +1,32 @@
+{
+  "batch_id": "tick-20260922-1130",
+  "role": "testeur",
+  "ts": "2026-09-22T11:30:00Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "smoke_test": {
+    "public_routes": {"/": 200, "/login": 200, "/register": 200, "/reset-password": 200},
+    "protected_routes_no_cookie": {"/mail": 307, "/mail/compose": 307, "/dashboard": 307, "/settings": 307},
+    "security_headers": {
+      "strict-transport-security": "present",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "x-xss-protection": "present"
+    },
+    "pwa_endpoints": {"/manifest.json": 404, "/sw.js": 404}
+  },
+  "findings": [
+    {"severity": "P0", "issue": "#730", "title": "Auth bypass /api/emails — still returns 200 with 31KB PII", "evidence": "curl /api/emails → 200 (31302 bytes)", "status": "STILL FAILING", "comment_url": "https://github.com/canatac/misfits-web/issues/730#issuecomment-5775651196"},
+    {"severity": "INFO", "issue": "#727", "title": "Production unreachable — RESOLVED, site is UP", "evidence": "curl / → 200, 0.128s", "status": "CLOSED (recommendation)", "comment_url": "https://github.com/canatac/misfits-web/issues/727#issuecomment-5775653024"},
+    {"severity": "P1", "issue": "#711", "title": "PWA offline — manifest.json 404, sw.js 404", "status": "OPEN"}
+  ],
+  "gherkin_created": [
+    "MW-2026-032-reading-mode.feature",
+    "MW-2026-037-unified-search.feature"
+  ],
+  "commands_executed": [
+    "curl smoke test all routes → see findings",
+    "git commit + push Gherkin features → a24ba7f",
+    "gh issue comment 730 → https://github.com/canatac/misfits-web/issues/730#issuecomment-5775651196",
+    "gh issue comment 727 → https://github.com/canatac/misfits-web/issues/727#issuecomment-5775653024"
+  ]
+}

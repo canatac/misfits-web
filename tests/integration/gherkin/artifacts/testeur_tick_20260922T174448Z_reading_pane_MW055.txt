@@ -1,0 +1,21 @@
+testeur_tick_READING_PANE_MW055
+================================
+TICK: 2026-09-22T17:41Z
+ROLE: testeur
+ACTION: Production smoke test — MW-2026-055 Reading pane split-view
+TICKET: MW-2026-055
+
+PRODUCTION TEST RESULTS (anonymous):
+- GET / → 200 OK (frontend reachable) ✓
+- GET /mail → 307 redirect to /login (auth wall, expected for anonymous) ✓
+- JS bundle scan (all login-page chunks): no readingPane/reading-pane/splitView/split-view/readingPanel identifiers found ✓
+- CSS scan: no reading pane / split-view class names found ✓
+- /api/mail → 404 (no dedicated mail API route) ✓
+- /api/mail/inbox → 404 ✓
+
+CONCLUSION: FAIL — Reading pane split-view feature not implemented in production.
+No frontend component, CSS class, or route for reading pane exists.
+The mail app is behind auth (redirects to /login), but no reading pane
+code is present in any publicly accessible bundle.
+
+MATRIX STATUS: FAIL (unchanged)

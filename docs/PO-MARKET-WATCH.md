@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T15:08 UTC — DKIM stability gaps + admin proxy 500 triage
+> Dernière mise à jour: 2026-09-22T20:30 UTC — veille PQC market ($2.2B→$20.5B by 2033, CAGR 37.8%), matrix 57 rows (37 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-059 CI/CD health_statuses directive)
 
 ---
 
@@ -133,10 +133,19 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-055 | Reading pane split-view | User clique sur un email dans la liste | Contenu email visible dans panneau droit (50%) + liste visible à gauche + Escape ferme + mobile overlay | ❌ (feature à implémenter) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-22T20:30 UTC — CI/CD deploy blocker (MW-2026-059)
+- Issue #787: Caddyfile `health_statuses` directive invalid (should be `health_status` singular)
+- 3 consecutive master commits failed CI/CD deploy (7cf26dc, b32553a, 440a4ae)
+- Production stuck — security fixes and features not deploying
+- Fix: change `health_statuses 200` → `health_status 200` in Caddyfile line 55
+- Owner: dev-int (Caddyfile/CI-CD specialty)
+- Priority: P0 — blocks all deploys
 
 - **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
 - **Tuta 2026**: Fast Sync (10x faster), conversation view, email import/export single-click, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché.
@@ -166,6 +175,17 @@
 - **Arbitrage**: trust indicator (Authenticated badge + BIMI logo + tooltip) vs raw technical display
   - Choix: UX simplifiée (badge + tooltip) / Rejeté: affichage technique brut (DKIM/SPF/DMARC stats)
   - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
+
+### Cycle 2026-09-22T19:10Z — Matrice de tests + auth bypass PASS
+- MW-2026-029 mis à jour: FAIL-FIX-PR-741 → PASS-FIX-PR-741-2026-09-22T19:00Z (PR #741 merged, auth bypass /api/emails corrigé)
+- 5 tickets routés vers scrum-master depuis MATRIX_STATUS.csv:
+  1. MW-2026-055 reading pane split-view (issue #775, dev-web) — feature not implemented
+  2. MW-2026-036 DKIM service opérationnel (issue #777, dev-back+dev-int) — SMTP 587 unreachable
+  3. MW-2026-0778 undo send (issue #778, dev-web) — FAIL-GHERKIN-ISSUE-705
+  4. MW-2026-050 attachment preview (issue #771, dev-web) — no attachment preview UI
+  5. MW-2026-049 email export PDF (issue #773, dev-web) — no export feature
+- Scrum-master session was in error state → restarted per ROOT policy
+- État matrice: 51 rows (39 FAIL, 10 PASS, 2 PARTIAL)
 - Issue #710 créée: [po] feature: DMARC/BIMI trust indicator in email view (owner hint: dev-web)
 - PO_TICKET envoyé à scrum-master via bus (task_id: po_dmarc_bimi_20260922)
 
@@ -175,6 +195,14 @@
 - Tickets posted: MW-023, MW-020, MW-016, MW-017, MW-018, MW-019, MW-021, MW-022
 - All tickets include row_id, expected test evidence, owner hints, and repo routing
 - No ROOT_GO received → no dev actions taken
+
+### Cycle 2026-09-22T17:35 — UX #776 duplicate closed + testeur issues routed
+- **UX #776** (bulk selection shift-click) evaluated → DUPLICATE of #390 (already covers shift-click in wireframe). Closed #776 with comment linking to #390.
+- **Testeur #775** (MW-2026-055 reading pane split-view FAIL) → PO_TICKET posted to scrum-master (task_id: po_reading_pane_20260922, owner: dev-web)
+- **Testeur #777** (MW-2026-036 DKIM SMTP 587 unreachable) → PO_TICKET posted to scrum-master (task_id: po_dkim_smtp_20260922, owner: dev-back+dev-int, P0)
+- **Matrix gaps**: 12 FAIL rows still lack GH issues (MW-009, 017, 019, 022, 025, 026, 027, 039, 040, 041, 042, 045). Most are backend/security features already tracked in reimagined-guide or studious-octo-rotary-phone.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-056 for bulk selection regression)
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
@@ -226,6 +254,16 @@
 - **Competitor reference**: Proton (G+I=inbox, Ctrl+Shift+M=compose), Fastmail (y=archive, f=forward, .=action menu), Superhuman (cmd+K=command palette)
 - **Action**: Create GH issue for keyboard shortcut system with matrix row MW-2026-043
 
+### Cycle 2026-09-22T17:05 — Reading pane split-view UX proposal
+- **Market insight**: Gmail, Outlook, Superhuman, and Spark all offer a reading pane (split-view) where email content displays alongside the inbox list. misfits.ai lacks this — users must open each email in a full view, increasing click-through fatigue during triage.
+- **UX trend 2026**: "Designing for intent" (UX Collective) — interfaces adapt to user goals. A reading pane reduces friction for the most common email task: scanning and reading.
+- **Arbitrage 2026-09-22: Reading pane scope**
+  - **Choix**: Right-side panel (50% width) + Escape to dismiss + mobile full-screen overlay
+  - **Rejeté**: Bottom panel (less screen real estate), No reading pane (status quo)
+  - **Rationale**: Right-side panel matches Gmail/Outlook pattern. Mobile overlay handles small screens. No API changes needed — reuses existing /api/emails/:id endpoint.
+- **Action**: PO_TICKET posted to scrum-master for reading pane UX proposal (owner hint: dev-web)
+- **Matrix**: MW-2026-043 (complementary to keyboard shortcuts, improves triage UX)
+
 ### Cycle 2026-09-22T15:08 — DKIM stability gaps + admin proxy 500 triage
 - **Matrix gap analysis**: 2 FAIL rows lacked corresponding GH issues (MW-2026-045 DKIM stability, MW-2026-036 DKIM operationnel). Both in reimagined-guide, owner hint dev-back+dev-int.
 - **New issue detected**: #761 /api/admin/whoami returns 500 (backend proxy failure) — new P1 bug from testeur, created issue #762 for tracking.
@@ -233,3 +271,19 @@
 - **PO_TICKETs posted to scrum-master**: 3 tickets via fleet_send_v2.sh (queue:scrum-master, ids: f2a939e3, 1951dc9d, 6632690c)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-051 for admin proxy regression)
+
+### Cycle 2026-09-22T20:30 — 6 new issues for FAIL rows without GH issues
+- **Matrix gap analysis**: 15 FAIL rows had no corresponding GH issues. Created 6 new issues in reimagined-guide for the highest-priority gaps.
+- **Issues created**: #595 (GDPR data deletion), #596 (Pro plan subscription), #597 (JMAP server), #598 (Multi-account aggregation), #599 (External account connection), #600 (Zero-access encryption)
+- **PO_TICKETs posted to scrum-master**: 3 tickets via Redis LPUSH (queue:scrum-master, positions 191-193)
+- **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
+- **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
+- **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T21:15Z — Veille PQC market + reading mode integration ticket
+- **Post-quantum cryptography market**: $2.2B (2026) → $20.5B (2033), CAGR 37.8% (Grand View Research). Juniper Research: $1.2B (2026) → $13B (2035), CAGR 30%. Market.us: $142.4B US market, CAGR 37.2%. Consensus: PQC adoption accelerating, hybrid cryptography (classical + quantum-safe) is the transition pattern.
+- **Implication misfits.ai**: Our roadmap (TutaCrypt-inspired, Kyber+Dilithium) is aligned with market direction. Early adoption of hybrid PQC for email encryption is a competitive differentiator. Issue #60 (studious-octo-rotary-phone) tracks this.
+- **Matrix gap**: MW-2026-056 (reading mode integration) identified as FAIL — component exists but not integrated in email-view. Issue #781 already exists.
+- **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",

@@ -1,0 +1,35 @@
+testeur_tick_UNDO_SEND_MW003
+==================================
+TICK: 2026-09-22T17:55Z
+ROLE: testeur
+ACTION: Production regression test — MW-2026-003 Undo send (UX issue #778)
+TICKET: MW-2026-003 / Issue #778 / MATRIX FAIL-GHERKIN-ISSUE-705
+
+PRODUCTION TEST RESULTS (anonymous):
+--- Endpoint Checks ---
+- GET /api/compose/undo (anon) → 404 ✓ (endpoint does NOT exist)
+- POST /api/compose/undo (anon) → 404 ✓ (endpoint does NOT exist)
+- GET /api/compose/send (anon) → 404 ✓ (endpoint does NOT exist)
+- GET /compose (anon) → 307 → /login (auth required) ✓
+- GET / → 200 OK (frontend reachable) ✓
+
+--- JS Bundle Scan ---
+- No "undo" or "recall" identifiers found in production JS bundles
+- No undo send UI components deployed
+
+--- Auth Regression (all PASS) ---
+- GET /api/emails (anon) → 401 ✓
+- GET /api/hermes/runs (anon) → 307 ✓
+
+CONCLUSION: FAIL — Undo send feature not implemented.
+- No /api/compose/undo endpoint
+- No undo UI in production bundles
+- /compose redirects to login (auth wall)
+- Feature requires full implementation per UX spec #778:
+  - Undo button visible 5s after send
+  - Ctrl+Z keyboard shortcut within window
+  - Email recalled to Drafts
+  - Toast notification with undo action
+
+MATRIX STATUS: FAIL (unchanged) — MW-2026-003 Undo send
+ISSUE: #778 (new UX spec), #705 (original Gherkin issue)

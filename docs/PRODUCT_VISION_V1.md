@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T14:15 UTC — PO cycle: P0 regression #755 (API 502 outage) ticketed to scrum-master, 49 matrix rows, 1 ticket posted
+> Dernière mise à jour: 2026-09-22T21:15 UTC — PO cycle: 58 matrix rows (36 FAIL, 14 PASS, 8 PARTIAL), state=ON, 0 bus messages, 1 PO_TICKET posted (MW-2026-056 reading mode integration)
 
 ---
 

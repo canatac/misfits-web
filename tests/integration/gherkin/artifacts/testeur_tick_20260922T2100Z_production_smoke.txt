@@ -1,0 +1,21 @@
+testeur_tick_PRODUCTION_SMOKE_20260922
+================================
+TICK: 2026-09-22 (cron)
+ROLE: testeur
+ACTION: Production smoke + feature scan (MW-055, MW-056 focus)
+
+PRODUCTION TEST RESULTS:
+- GET https://mail.misfits.ai/ → 200 OK (landing page) ✓
+- GET https://mail.misfits.ai/mail → 307 redirect to /login (auth wall) ✓
+- Login page renders correctly with GitHub OAuth + email form ✓
+
+FEATURE SCAN (JS bundle identifiers):
+- DEPLOYED: compose, inbox, forward, search, attachment, schedule, swipe, keyboard, export, undo, template
+- NOT DEPLOYED: reading-pane, reading-mode, split-view (MW-055, MW-056 still FAIL)
+
+REGRESSION CHECKS:
+- /api/emails (anon) → 401 ✓ (auth bypass fix holding)
+- /api/external-accounts (anon) → 307 ✓ (no PII leak)
+
+MATRIX STATUS: 34 FAIL rows unchanged. MW-055/MW-056 confirmed not yet deployed.
+NEXT: Awaiting dev-web deployment of reading pane + reading mode features.

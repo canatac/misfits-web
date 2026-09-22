@@ -39,6 +39,16 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
+    # /api/compose/* — must go through Next.js for Edge auth middleware (issue #780).
+    # Without this, Caddy proxies /api/compose/send directly to email-api:8000,
+    # bypassing Next.js session auth enforcement.
+    handle /api/compose* {
+        reverse_proxy http://misfits-web:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
 
     handle /api/* {
         reverse_proxy http://localhost:8000 {
