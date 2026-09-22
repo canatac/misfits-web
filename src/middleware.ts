@@ -70,8 +70,11 @@ function isProtected(pathname: string): boolean {
   if (pathname.startsWith("/api/hermes")) return true;
   // External accounts API requires session.
   if (pathname.startsWith("/api/external-accounts")) return true;
-  // Email attachment downloads require session (issue #421).
-  if (pathname.match(/\/api\/emails\/[^/]+\/attachments\//)) return true;
+  // Email API routes require session (P0 auth bypass regression — issue #730, #729).
+  // /api/emails and /api/emails/* (list, get, send, delete, attachments) must
+  // always be authenticated. The proxy handler forwards to the backend only
+  // after this middleware validates the session cookie.
+  if (pathname.startsWith("/api/emails")) return true;
   // Non-sensitive API routes (mail, monitoring) are server-to-server,
   // protected by the backend's own auth layer.
   if (pathname.startsWith("/api")) return false;
