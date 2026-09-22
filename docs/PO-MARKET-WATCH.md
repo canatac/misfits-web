@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T11:30 UTC — Veille marché cycle (email security trends 2026: DMARC enforcement, post-quantum, self-hosting challenges)
+> Dernière mise à jour: 2026-09-22T12:00 UTC — Veille marché cycle (email security trends 2026: DMARC enforcement, post-quantum, self-hosting challenges) + 3 P0 issues created (#731, #732, #733)
 
 ---
 
@@ -138,6 +138,15 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-22 12:00 UTC — P0 Security Triage
+- Scanned MATRIX_STATUS.csv: 31 FAIL rows, 3 PASS/PARTIAL
+- 3 new P0 issues created from FAIL rows:
+  - #731: Auth bypass /api/emails exposed (MW-2026-035, regression #730)
+  - #732: Production unreachable mail.misfits.ai:443 (MW-2026-034, #727)
+  - #733: Auth bypass /api/emails + /api/hermes/runs + /api/admin exposed (MW-2026-029)
+- All 3 issues tagged P0 + priority-P1, assigned to dev-web
+- Pattern: auth bypass regressions indicate missing integration tests for /api/* endpoints
 
 - **Proton 2026**: réécriture mobile Rust (offline search, indexation locale), intégration Gmail (send/receive depuis un seul inbox), Category View auto-grouping. Confirme la tendance "one inbox to rule them all".
 - **Tuta 2026**: Fast Sync (10x faster), conversation view, email import/export single-click, TutaCrypt rollout accéléré. Le "conversation view" devient un standard du marché.
