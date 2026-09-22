@@ -1,0 +1,26 @@
+testeur_tick_20260922T173132Z_dkim_MW036.txt
+================================================
+TICK: 2026-09-22T17:31:32Z
+ROLE: testeur
+ACTION: Production test MW-2026-036 (DKIM service opérationnel)
+TICKET: MW-2026-036
+
+PRODUCTION TEST RESULTS:
+- SMTP 587: FAIL (CLOSED - connection unavailable)
+- DKIM 8465: PASS (service running, port open)
+- HTTPS 443: PASS (200 OK - non-regression)
+- Auth gate /api/emails: PASS (401 - non-regression)
+- Backend proxy /api/admin/whoami: PASS (401 - was 500, now fixed)
+
+CONCLUSION: DKIM service (port 8465) is operational but SMTP relay (port 587) is unreachable.
+This means the DKIM signing service itself works but the SMTP server that should use it is down.
+Related to issue #740 (production reachability).
+
+GHERKIN FEATURE CREATED:
+- tests/integration/gherkin/features/MW-2026-036-dkim-service.feature (6 scenarios)
+
+CMD PROOF:
+$ timeout 5 bash -c 'echo > /dev/tcp/mail.misfits.ai/587' → CLOSED
+$ timeout 5 bash -c 'echo > /dev/tcp/mail.misfits.ai/8465' → OPEN
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/ → 200
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/emails → 401

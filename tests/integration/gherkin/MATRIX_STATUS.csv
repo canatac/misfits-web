@@ -32,7 +32,7 @@ MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture a
 MW-2026-033,Frontend feature batch,User utilise une feature frontend du batch P1,Feature implémentée + tests Gherkin PASS + API fonctionnelle,FAIL,misfits-web,dev-web
 MW-2026-034,Production reachability,User accède à mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,FAIL-ISSUE-740-REGRESSION-2026-09-22T17:18Z,misfits-web+reimagined-guide,dev-back+dev-int
 MW-2026-035,Auth bypass /api/emails regression,Requete non authentifiee sur /api/emails retourne 200,/api/emails retourne 401 + proxy Next.js restauré + CORS non réfléchi,PASS-REGRESSION-2026-09-22T17:12Z,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-036,DKIM service operationnel,User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
+MW-2026-036,DKIM service operationnel,User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL-ISSUE-777,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
 MW-2026-037,UX unified search bar,User clique sur la barre de recherche unifiée,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K,FAIL,misfits-web,dev-web
 MW-2026-038,Email triage swipe gestures,User swipe gauche/droite sur un email dans la liste,Swipe gauche = archiver + swipe droit = marquer comme lu + animation fluide + annulation possible,FAIL-ISSUE-744,misfits-web,dev-web
 MW-2026-039,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
