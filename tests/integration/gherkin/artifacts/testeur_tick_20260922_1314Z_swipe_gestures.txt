@@ -1,0 +1,42 @@
+=== Testeur Tick 2026-09-22T13:14Z — Swipe Gestures (MW-038) ===
+
+MW-038 Email Triage Swipe Gestures — FAIL (component exists but NOT integrated)
+
+Code analysis:
+- SwipeableEmailItem component: EXISTS (src/components/mail/swipeable-email-item.tsx, 231 lines)
+  - Touch handlers: handleTouchStart, handleTouchMove, handleTouchEnd — PASS
+  - Left actions (swipe right): Archive, Delete, MarkRead — PASS
+  - Right actions (swipe left): Reply — PASS
+  - SWIPE_THRESHOLD: 80px — PASS
+  - Vertical scroll guard: PASS (checks diffY > diffX)
+  - Dismiss on tap outside: PASS (closeSwipe callback)
+  - Animation: CSS translateX transition — PASS
+
+- Integration gap: FAIL
+  - SwipeableEmailItem is NOT imported in email-list.tsx
+  - EmailListItem has zero touch/swipe event handlers
+  - Component is orphaned — built but never wired to the inbox list
+  - Issue #749 references this feature
+
+- Gherkin feature: CREATED (MW-2026-038-swipe-gestures.feature, 7 scenarios)
+  - Swipe right → archive
+  - Swipe right → delete (past threshold)
+  - Swipe right → mark-as-read (past 2nd threshold)
+  - Swipe left → reply
+  - Tap outside → dismiss
+  - Below threshold → no action
+  - Vertical scroll → no swipe
+
+Non-regression checks:
+- /api/emails (unauth) → 307 PASS
+- /api/external-accounts (unauth) → 307 PASS
+- /api/admin/ai-activity (unauth) → 307 PASS
+- /api/hermes/runs (unauth) → 307 PASS
+- mail.misfits.ai:443 → 200 PASS
+
+Conclusion: Component implementation is complete and well-structured.
+Gap: integration into EmailListItem/email-list.tsx is missing.
+Status remains FAIL until SwipeableEmailItem wraps email rows in the inbox.
+
+Commit: 9f88293 (parent, feature file added in this tick)
+Issue: #744 (swipe gestures)

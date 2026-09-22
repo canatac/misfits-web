@@ -1,0 +1,26 @@
+=== Testeur Tick 2026-09-22T13:07Z — Keyboard Shortcuts (MW-043) ===
+
+MW-043 Keyboard Shortcuts System — PARTIAL (feature added, gap found)
+
+Scenarios tested via code analysis:
+- Press C → composer: PASS (use-mail-shortcuts.ts case "c")
+- Ctrl+/ → help panel: PASS (use-mail-shortcuts.ts Ctrl+/ handler)
+- ? → help panel: FAIL (no handler for "?" key in use-mail-shortcuts.ts)
+- Tooltips on hover: PASS (KeyboardShortcutsHelp component exists, 16 shortcuts defined)
+- J/K navigation: PASS (use-mail-shortcuts.ts case "j"/"k")
+- E → archive: PASS (use-mail-shortcuts.ts case "e")
+
+Gap: '?' key not wired to onToggleShortcutsHelp — only Ctrl+/ triggers help panel.
+
+Non-regression checks:
+- /api/emails (unauth) → 307 PASS
+- /api/external-accounts (unauth) → 307 PASS
+- /api/admin/ai-activity (unauth) → 307 PASS
+- /api/hermes/runs (unauth) → 307 PASS
+- mail.misfits.ai:443 → 200 PASS
+- /api/health → 502 (backend API still unreachable)
+
+Commit: a87bd90 (MW-043 Gherkin feature)
+Issue: #749 (keyboard shortcuts system)
+
+Bus: queue:testeur=0, events:testeur=0 (no new messages)
