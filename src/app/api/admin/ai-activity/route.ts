@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { buildForwardHeaders, resolveBackendBaseUrl } from "@/lib/proxy-auth";
 import { requireAuth } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function resolveBackendBaseUrl(): string {
-  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
 
 function toNumber(value: string | null, fallback: number): number {
   const n = Number(value ?? "");

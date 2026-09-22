@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
+import { resolveBackendBaseUrl } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
-
-function resolveBackendBaseUrl(): string {
-  const raw =
-    process.env.MONITORING_API_BASE ||
-    process.env.BACKEND_URL ||
-    "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   let upstream: Response;

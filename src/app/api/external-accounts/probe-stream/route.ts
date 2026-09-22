@@ -5,20 +5,15 @@
  * We forward the upstream body straight through so the browser's
  * EventSource / fetch-reader sees each frame as it arrives.
  */
-import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { buildForwardHeaders, resolveBackendBaseUrl } from "@/lib/proxy-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function backend(): string {
-  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
-
 export async function POST(request: Request) {
   const body = await request.text();
   const upstream = await fetch(
-    `${backend()}/api/external-accounts/probe-stream`,
+    `${resolveBackendBaseUrl()}/api/external-accounts/probe-stream`,
     {
       method: "POST",
       headers: {

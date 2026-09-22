@@ -90,10 +90,15 @@ function firstLine(message: string | undefined): string {
   return message.split("\n")[0]?.trim() || "(no message)";
 }
 
-function resolveBackendBaseUrl(): string {
-  const raw = process.env.BACKEND_URL || "https://api.misfits.ai";
+// Re-exported from proxy-auth for backward compatibility
+const resolveBackendBaseUrl = () => {
+  const raw =
+    process.env.BACKEND_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "http://email-api:8000"
+      : "http://localhost:8000");
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
+};
 
 function asErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
