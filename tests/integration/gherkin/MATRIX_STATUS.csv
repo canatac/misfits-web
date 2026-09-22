@@ -49,3 +49,4 @@ MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF gé
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
 MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,POST /api/auth/login=400 (backend reachable, was 502) + POST /api/compose/send=404 (route missing),PARTIAL-ISSUE-764,misfits-web+reimagined-guide,dev-back+dev-int
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL,misfits-web,dev-web
+MW-2026-064,BIMI brand indicator in inbox,User ouvre un email avec BIMI verified sender,Logo BIMI affiché dans l'inbox + tooltip verified sender + badge visible dans la liste,FAIL-ISSUE-796,misfits-web,dev-web

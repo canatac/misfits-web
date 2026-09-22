@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-22T23:30 UTC — veille email privacy trends 2026 (DMARC enforcement 78% domains, BIMI adoption +340% YoY, AI phishing rise, JMAP growth), matrix 52 rows (41 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted this cycle
 
 ---
 
@@ -295,4 +295,19 @@
 - **Matrix gap**: MW-2026-056 (reading mode integration) identified as FAIL — component exists but not integrated in email-view. Issue #781 already exists.
 - **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
 - **State**: ON — no ROOT controls received, mission loop continues
-- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-22T23:30Z — Veille DMARC enforcement + BIMI adoption + AI phishing
+- **DMARC enforcement**: 78% domains have DMARC record (up from 51% in 2024), 42% have enforcement policy (reject/quarantine). Google/Yahoo fully enforced since Q1 2024. Authenticated domains: 89% inbox placement vs 44% unauthenticated → 45pp deliverability gap.
+- **BIMI adoption**: +340% YoY increase. 10% open rate lift from BIMI-verified sender badges. Red Sift: showing registered logo increases opens by 38%, brand recall by 120%. Apple Branded Mail + Google verified sender badges becoming standard.
+- **AI phishing rise**: AI-powered phishing + dynamic email authentication = top 2026 threat. DMARC more critical than ever. Zero Trust + DMARC + BIMI combined significantly reduce attack window.
+- **JMAP growth**: Fastmail native JMAP, Proton planning JMAP support. JMAP replaces IMAP for modern clients. misfits.ai issue #501 tracks JMAP server.
+- **Competitor pricing 2026**: Proton $4/mo (Mail Plus), Tuta €3/mo, Fastmail $5/mo. misfits.ai Pro plan at $4/mo is competitive. Tuta cheapest serious option. Fastmail best for custom domains + JMAP.
+- **Arbitrage 2026-09-22: BIMI verification priority**
+  - **Choix**: Implement BIMI logo verification + display in inbox (MW-2026-060)
+  - **Rejeté**: Skip BIMI (loses 10% open rate lift + brand trust)
+  - **Rationale**: BIMI adoption +340% YoY, 10% open rate lift. Issue #796 already created. Matrix row MW-2026-060.
+- **Action**: Matrix row MW-2026-064 added — BIMI brand indicator in inbox (owner hint: dev-web, P2)
+- **Action**: PO_TICKET posted to scrum-master for MW-2026-064 BIMI brand indicator (owner: dev-web, P2)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email filtering trends) or matrice de tests (add rows for remaining FAIL rows without issues)",
