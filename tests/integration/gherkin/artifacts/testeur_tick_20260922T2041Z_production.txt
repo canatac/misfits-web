@@ -1,0 +1,19 @@
+testeur tick 2026-09-22T20:41Z — Production non-regression test
+=========================================================
+MW-2026-054 Gherkin + MW-2026-044 Auth bypass:
+
+Production endpoints:
+  GET /                    -> HTTP 200
+  GET /api/emails          -> HTTP 401 (unauth, expect 401/307)
+  GET /api/external-accounts -> HTTP 307 (unauth, expect 307)
+  GET /api/hermes/runs     -> HTTP 307 (unauth, expect 307)
+  GET /api/admin           -> HTTP 307 (expect 307)
+  GET /api/admin/whoami    -> HTTP 500 (expect 307, #790)
+  POST /api/auth/login     -> HTTP 400 (expect 401/200, MW-054)
+  POST /api/compose/send   -> HTTP 404 (expect 401/200, MW-054)
+
+Verdict:
+  MW-2026-044 Auth bypass: PASS (no PII leak, all routes gated)
+  MW-2026-054 Auth+Compose: FAIL (auth endpoints 404, not yet implemented)
+  #790 /api/admin/whoami: FAIL (500, PR #770 open fix not yet deployed)
+  No new regressions detected.
