@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T17:35 UTC — UX #776 dup closed + testeur #775/#777 routed to scrum-master
+> Dernière mise à jour: 2026-09-22T19:10 UTC — MW-2026-029 auth bypass PASS + 5 FAIL tickets routed to scrum-master
 
 ---
 
@@ -167,6 +167,17 @@
 - **Arbitrage**: trust indicator (Authenticated badge + BIMI logo + tooltip) vs raw technical display
   - Choix: UX simplifiée (badge + tooltip) / Rejeté: affichage technique brut (DKIM/SPF/DMARC stats)
   - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
+
+### Cycle 2026-09-22T19:10Z — Matrice de tests + auth bypass PASS
+- MW-2026-029 mis à jour: FAIL-FIX-PR-741 → PASS-FIX-PR-741-2026-09-22T19:00Z (PR #741 merged, auth bypass /api/emails corrigé)
+- 5 tickets routés vers scrum-master depuis MATRIX_STATUS.csv:
+  1. MW-2026-055 reading pane split-view (issue #775, dev-web) — feature not implemented
+  2. MW-2026-036 DKIM service opérationnel (issue #777, dev-back+dev-int) — SMTP 587 unreachable
+  3. MW-2026-0778 undo send (issue #778, dev-web) — FAIL-GHERKIN-ISSUE-705
+  4. MW-2026-050 attachment preview (issue #771, dev-web) — no attachment preview UI
+  5. MW-2026-049 email export PDF (issue #773, dev-web) — no export feature
+- Scrum-master session was in error state → restarted per ROOT policy
+- État matrice: 51 rows (39 FAIL, 10 PASS, 2 PARTIAL)
 - Issue #710 créée: [po] feature: DMARC/BIMI trust indicator in email view (owner hint: dev-web)
 - PO_TICKET envoyé à scrum-master via bus (task_id: po_dmarc_bimi_20260922)
 
