@@ -1,0 +1,32 @@
+testeur_tick_SMTP_REGRESSION_MW036_MW034
+=========================================
+TICK: 2026-09-22T18:38Z
+ROLE: testeur
+ACTION: Production regression — SMTP 587 reachability + DKIM 8465 status
+TICKETS: MW-2026-036 (DKIM service), MW-2026-034 (Production reachability)
+TRIGGER: New commit 972e254 (fix/smtp-port-587-mapping) detected on reimagined-guide
+
+PRODUCTION TEST RESULTS:
+- GET / → 200 OK (HTTPS reachable) ✓
+- GET /mail → 307 (auth redirect, expected) ✓
+- nc port 587 → exit=1 (CLOSED/FILTERED — SMTP submission unreachable) ✗
+- nc port 8465 → exit=0 (OPEN — TLS SMTP service running) ✓
+- nc port 8025 → exit=0 (OPEN — plaintext SMTP running) ✓
+- nc port 25 → exit=1 (CLOSED/FILTERED) ✗
+- GET /api/emails (anon) → 401 (auth bypass regression PASS) ✓
+- GET /api/external-accounts (anon) → 307 (auth bypass regression PASS) ✓
+- Port 8465 TLS: TLS 1.3, cert CN=mail.misfits.ai VALID, cipher TLS_AES_256_GCM_SHA384 ✓
+- Port 8465 protocol: responds as SMTP (220 ESMTP), not HTTP API
+
+KEY FINDING:
+- PR #593 (fix/smtp-port-587-mapping) is MERGEABLE, CI SUCCESS, but NOT YET DEPLOYED
+- Port 587 still closed — external SMTP submission impossible
+- Port 8465 is currently mapped to SMTP-with-TLS (not DKIM HTTP as intended)
+- The fix maps 587→8025 which would enable standard SMTP submission
+- Deploy status: last master deploy was 2026-09-22T17:45Z (before PR #593 merge)
+
+MATRIX STATUS:
+- MW-2026-034: PARTIAL (HTTPS ✓, SMTP 587 ✗, IMAP 993 ✗)
+- MW-2026-036: PARTIAL (DKIM 8465 running ✓, SMTP 587 unreachable ✗)
+
+CONCLUSION: No change since last tick. Awaiting PR #593 merge + deploy.
