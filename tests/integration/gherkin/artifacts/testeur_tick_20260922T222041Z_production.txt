@@ -1,0 +1,24 @@
+testeur tick 2026-09-22T22:20Z — Production non-regression test
+==========================================================
+MW-2026-044 Auth bypass + MW-2026-054 Auth+Compose + MW-2026-059 pin/star:
+
+Production endpoints:
+  GET /                    -> HTTP 200
+  GET /api/emails          -> HTTP 401 (unauth, expect 401) [PASS]
+  GET /api/external-accounts -> HTTP 307 (unauth, expect 307) [PASS]
+  GET /api/hermes/runs     -> HTTP 307 (unauth, expect 307) [PASS]
+  GET /api/admin           -> HTTP 307 (expect 307) [PASS]
+  GET /api/admin/whoami    -> HTTP 401 (was 500, expect 307/401) [PASS - #790 fixed]
+  POST /api/auth/login     -> HTTP 401 (expect 401/400) [PASS]
+  POST /api/compose/send   -> HTTP 404 (expect 401/200, MW-054) [FAIL - route not deployed]
+  POST /api/send           -> HTTP 400 (expect 400/401) [PASS]
+  POST /api/emails/action  -> HTTP 404 (expect 401, MW-059) [FAIL - endpoint not deployed]
+
+Verdict:
+  MW-2026-044 Auth bypass: PASS (all routes gated, no PII leak)
+  MW-2026-054 Auth+Compose: PARTIAL (auth/login→401 OK, compose/send→404 not deployed)
+  #790 /api/admin/whoami: PASS (was 500, now 401 — PR #770 fix deployed)
+  MW-2026-059 Email pin/star: FAIL (star UI exists in codebase but /api/emails/action→404, not deployed)
+  MW-2026-063 Bulk selection: FAIL (no UI or API deployed)
+  No new regressions detected.
+  PR #799 (compose/send) OPEN but not yet deployed.

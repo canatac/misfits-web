@@ -58,5 +58,5 @@ MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte externe via OAuth 2.0,Co
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL-ISSUE-801,misfits-web,dev-web
 MW-2026-064,MTA-STS outbound enforcement,User envoie email vers domaine avec MTA-STS enforce,Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré,Fail,reimagined-guide,dev-back
 MW-2026-065,Notion Mail migration wizard,User importe emails depuis Notion Mail,Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL-ISSUE-721,misfits-web,dev-web
-MW-2026-066,Email export .eml batch,User exporte plusieurs emails en .eml,Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées,FAIL,reimagined-guide,dev-back
-MW-2026-067,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affiches dans l unified inbox + envoi possible via Gmail,FAIL,reimagined-guide,dev-back
+MW-2026-066,Email export .eml batch,User exporte plusieurs emails en .eml,Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées,FAIL-ISSUE-612,reimagined-guide,dev-back
+MW-2026-067,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affiches dans l unified inbox + envoi possible via Gmail,FAIL-ISSUE-613,reimagined-guide,dev-back

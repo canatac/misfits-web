@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T23:10 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 64 rows (59 FAIL), state=ON, 2 PO_TICKETs posted (MW-2026-017, MW-2026-019)
+> Dernière mise à jour: 2026-09-22T23:30 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 64 rows (51 FAIL), state=ON, 2 PO_TICKETs posted (MW-2026-066, MW-2026-067)
 
 ---
 
@@ -135,6 +135,8 @@
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-055 | Reading pane split-view | User clique sur un email dans la liste | Contenu email visible dans panneau droit (50%) + liste visible à gauche + Escape ferme + mobile overlay | ❌ (feature à implémenter) |
 | MW-2026-064 | MTA-STS outbound enforcement | User envoie email vers domaine avec MTA-STS enforce | Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré | ❌ (feature à implémenter) |
+| MW-2026-066 | Email export .eml batch (backend) | User exporte plusieurs emails en .eml | Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées | ❌ (feature à implémenter) |
+| MW-2026-067 | Multi-account aggregation (backend) | User connecte un compte Gmail externe | Emails Gmail affiches dans l unified inbox + envoi possible via Gmail | ❌ (feature à implémenter) |
 
 ---
 
@@ -289,6 +291,13 @@
 - **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
+
+### Cycle 2026-09-22T23:30Z — Matrice scan: 2 new FAIL rows without issues (MW-2026-066, MW-2026-067)
+- **Scan**: 31 FAIL rows in MATRIX_STATUS.csv, 26 already have GH issues, 5 candidates checked via `gh issue list --search`
+- **New issues**: MW-2026-066 (Email export .eml batch backend) and MW-2026-067 (Multi-account aggregation backend) — both in reimagined-guide, zero existing issues across all 3 repos
+- **Action**: 2 GH issues created (#612, #613), 2 PO_TICKETs posted to scrum-master via fleet_send.sh (EXIT=0)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
 
 ### Cycle 2026-09-22T23:10Z — Veille Notion Mail shutdown + migration opportunity
 - **Notion Mail shutdown**: Notion announced Mail shutdown (2026-09-22). Users need alternatives. This is a market opportunity for misfits.ai. Source: https://www.notion.com/blog/notion-mail
