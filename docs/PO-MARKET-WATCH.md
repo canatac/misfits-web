@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T08:30 UTC — Sprint 1 FAIL triage cycle
+> Dernière mise à jour: 2026-09-22T09:00 UTC — Veille marché cycle
 
 ---
 
@@ -176,4 +176,11 @@
 - All tickets include row_id, expected test evidence, owner hints, and repo routing
 - No ROOT_GO received → no dev actions taken
 
-*Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+* Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+
+### Cycle 2026-09-22T09:00 — Veille marché
+- **Proton 2026**: déploiement post-quantum (Kyber+Dilithium) pour nouveaux emails chiffrés, zero-access encryption étendu, Bridge pour desktop clients. Source: https://onerep.com/blog/is-proton-mail-safe
+- **Tuta 2026**: TutaCrypt post-quantum (remplace PGP), chiffrement sujet+body+attachments, Perfect Forward Secrecy. Source: https://tuta.com/blog/best-private-email-service
+- **Fastmail 2026**: privacy model = policy-based (pas zéro-knowledge), JMAP natif, IMAP/SMTP/CalDAV/CardDAV complets, audit indépendant. Source: https://guptadeepak.com/tools/top-5-secure-email-providers-2026
+- **Tendance 2026**: post-quantum = différentiateur (Proton+Tuta), JMAP remplace IMAP (Fastmail), zero-access = standard minimum
+- **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native + E2EE + post-quantum roadmap est aligné sur le marché. JMAP = opportunité (déjà planifié via issue #501).
