@@ -34,3 +34,4 @@ MW-2026-032,Reading mode (HTML sanitize),User clique Mode lecture sur un email H
 MW-2026-033,Keyboard shortcuts,User presse c/r/a/f/e/#/j/k/Enter/Esc/?,Chaque raccourci déclenche l'action correspondante + modal help affiché avec ?,FAIL-GHERKIN-TESTED-PROD-DOWN,misfits-web,dev-web
 MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,FAIL-ISSUE-732-ISSUE-727-PROD-DOWN-ALL-PORTS,misfits-web,dev-back
 MW-2026-035,Auth bypass /api/emails exposed,User non authentifié accède à /api/emails,Requête rejetée 401 + proxy Next.js + Caddy auth routes restaurés,FAIL-ISSUE-730-ISSUE-731-PROD-DOWN,misfits-web,dev-web
+MW-2026-036,DKIM service crash loop,User envoie email via DKIM service,Service DKIM opérationnel + email signé correctement + pas de crash,FAIL-ISSUE-566,reimagined-guide,dev-back
