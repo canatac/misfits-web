@@ -178,12 +178,12 @@
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
-### Cycle 2026-09-22T12:30 — Swipe gestures issue + dark mode UX proposal
+### Cycle 2026-09-22T12:30 — Swipe gestures issue + reading mode integration
 - Issue #744 created: [ux] Email triage swipe gestures — archive/mark-as-read (MW-2026-038)
-- MATRIX_STATUS.csv updated: MW-2026-038 now references ISSUE-744
-- PO_TICKET posted to scrum-master for swipe gestures implementation
+- Issue #745 found: test(MW-032) reading mode component exists but not integrated in email-view
+- MATRIX_STATUS.csv updated: MW-2026-038 → ISSUE-744, MW-2026-032 → ISSUE-745
+- 2 PO_TICKETs posted to scrum-master (swipe gestures + reading mode integration)
 - Dark mode UX proposal (MW-2026-040) still pending ack from scrum-master
-- No new GH issues since last cycle (max issue #740)
 - No incoming ROOT controls or TICKET_ASSIGN messages
 
 ### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
