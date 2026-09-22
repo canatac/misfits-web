@@ -1,0 +1,24 @@
+row_id,feature,input,expected,status,repo,owner_hint
+MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
+MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL,misfits-web,dev-web
+MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL,misfits-web,dev-web
+MW-2026-004,Email templates,User crée template Réponse standard,Template sauvegardé + disponible dans le composer via menu templates,FAIL,misfits-web,dev-web
+MW-2026-005,PWA offline,User accède /mail hors ligne,Liste des emails récents affichés depuis le cache + indicateur hors ligne,FAIL,misfits-web,dev-web
+MW-2026-006,Custom domain,User avec custom domain @entreprise.com,Domaine vérifié (SPF/DKIM/DMARC) + emails envoyés sans erreur,PASS,reimagined-guide,dev-back
+MW-2026-007,Create event from email,User clique Create event depuis un email,Événement créé dans le calendrier + lien vers l'email source,FAIL,misfits-web,dev-web
+MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,FAIL,misfits-web,dev-web
+MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
+MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
+MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL,reimagined-guide,dev-back
+MW-2026-012,DANE,User envoie email vers domaine avec DANE,TLSA record vérifié + connexion TLS validée,FAIL,reimagined-guide,dev-back
+MW-2026-013,AI email summary,User sélectionne un email + clique Résumé IA,Résumé généré en <5s + affiché dans le panneau latéral,FAIL,misfits-web,dev-web
+MW-2026-014,AI smart triage,User reçoit 50 emails non lus,Emails triés par priorité + suggestions d'action (répondre/archiver/supprimer),FAIL,misfits-web,dev-web
+MW-2026-015,AI suggested replies,User ouvre un email + clique Réponses suggérées,3 réponses contextuelles proposées + insertion en 1 clic,FAIL,misfits-web,dev-web
+MW-2026-016,Newsletter subscription,User s'abonne à une newsletter depuis un email,Newsletter ajoutée aux abonnements + emails groupés dans un dossier dédié,FAIL,misfits-web,dev-web
+MW-2026-017,Email export,User exporte tous ses emails en .eml,Fichier .zip téléchargé contenant tous les emails + métadonnées,FAIL,reimagined-guide,dev-back
+MW-2026-018,Data deletion (GDPR),User supprime son compte + toutes ses données,Compte supprimé + emails purgés + confirmation par email,FAIL,reimagined-guide,dev-back
+MW-2026-019,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affichés dans l'unified inbox + envoi possible via Gmail,FAIL,reimagined-guide,dev-back
+MW-2026-020,On-device AI processing,User active le mode IA local,Traitement IA fait sur le device + aucune donnée envoyée au serveur,FAIL,misfits-web,dev-web
+MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL,reimagined-guide,dev-back
+MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL,reimagined-guide,dev-back
+MW-2026-023,Interface language change,User change la langue de l'interface,Interface traduite en <2s + préférence sauvegardée,FAIL,misfits-web,dev-web

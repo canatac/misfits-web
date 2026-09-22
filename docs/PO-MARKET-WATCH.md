@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-22
 
 ---
 
@@ -145,7 +145,19 @@
 - **Fastmail 2026**: 3 plans (Basic $3/mo, Standard $5/mo, Professional $9/mo), custom domain dès Standard, JMAP, Squire 2.0 editor, send later, spam filtering, masked emails. Positionnement "premium classique" sans E2EE — notre angle: E2EE + IA + self-hosted.
 - **Privacy 2026**: GDPR enforcement ↑ (€5.88B cumul depuis 2018), CAN-SPAM fines $51.7K/email, tracking pixels sous consentement explicite (Italie), Vietnam PDP law 2026, 8+ US state laws. Notre conformité native DKIM/SPF/DMARC + privacy-by-design est un avantage.
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
+- **Notion Mail** shutdown annoncé (2026-09-22). Leçon: les produits mail des big tech sont instables. Notre approche self-hosted est un bouclier. Opportunité de migration pour les utilisateurs Notion Mail.
+- **AI email assistants** en 2026: Proton lance "Proton Scribe" (IA de rédaction), Tuta intègre l'IA pour le triage. Notre angle: réponses suggérées + triage intelligent + résumés automatiques. Aucun concurrent privacy-first n'a encore implémenté les 3.
+
+### Arbitrage 2026-09-22: AI features vs Privacy
+- **Choix**: IA on-device (traitement local, pas de données envoyées au serveur)
+- **Rejeté**: IA cloud (contredit privacy-by-design), Pas d'IA (pas de différenciation)
+- **Rationale**: Les utilisateurs 2026 exigent les deux — IA et privacy. Le traitement local est le seul moyen de concilier les deux.
+
+### Arbitrage 2026-09-22: i18n strategy
+- **Choix**: 8 langues prioritaires (FR, EN, DE, ES, IT, PT, NL, PL) avec fallback FR
+- **Rejeté**: 30+ langues (coût de maintenance trop élevé), FR uniquement (marché trop limité)
+- **Rationale**: 8 langues couvrent ~80% du marché email privacy. Fallback FR garantit la cohérence.
 
 ---
 
-*Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+*Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
