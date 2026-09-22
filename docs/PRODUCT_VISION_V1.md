@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T08:30 UTC — PO cycle: 8 tickets posted (Sprint 1 FAIL triage, 21 FAIL rows scanned)
+> Dernière mise à jour: 2026-09-22T13:10 UTC — PO cycle: auth bypass regression PASS (PR #741), 43 FAIL rows scanned, 3 tickets posted to scrum-master
 
 ---
 
@@ -56,6 +56,7 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - [x] Stack SMTP/IMAP native
 - [x] DKIM/SPF/DMARC
 - [x] Multi-surface (mail, calendar, contacts)
+- [x] Auth bypass fix (PR #741, regression PASS 2026-09-22)
 - [ ] Scheduled send
 - [ ] Undo send
 - [ ] Email templates
