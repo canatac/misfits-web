@@ -54,3 +54,13 @@ MW-2026-057,Post-quantum hybrid encryption,User envoie email avec hybrid PQC (Ky
 MW-2026-058,Email export .eml batch,User sélectionne multiple emails + clique Export .eml,Fichier .zip téléchargé contenant tous les emails sélectionnés en format .eml + métadonnées complètes,FAIL-ISSUE-552,reimagined-guide,dev-back
 MW-2026-059,CI/CD deploy health_statuses directive,Caddyfile deployé avec health_statuses 200,CI/CD deploy réussi + Caddyfile valide + health check fonctionnel,PASS-REGRESSION-2026-09-22T20:16Z,misfits-web,dev-int
 MW-2026-060,Email pin/star quick access,User clique sur l'icone pin/star sur un email,Email épinglé visible en haut de liste + filtre épinglés + sync multi-device,FAIL-ISSUE-789,misfits-web,dev-web
+MW-2026-061,Email snooze presets,User clique Snooze sur un email + sélectionne 1h/1d/1w,Email retiré de la boîte de réception + réapparaît au moment sélectionné + badge compteur snoozé,FAIL-ISSUE-779,misfits-web,dev-web
+MW-2026-062,Undo send 5s window,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + restauré dans brouillons + toast notification,FAIL-ISSUE-778,misfits-web,dev-web
+MW-2026-063,Frontend feature batch P1,User utilise une feature frontend du batch P1,Feature implémentée + tests Gherkin PASS + API fonctionnelle,FAIL-ISSUE-736,misfits-web,dev-web
+MW-2026-064,IMAP IDLE real-time sync,Client IMAP IDLE se connecte + reçoit emails en temps réel,Connexion IDLE établie + notification inbox <5s + fallback polling,FAIL-ISSUE-589,reimagined-guide,dev-back
+MW-2026-065,Email templates API,User crée template Réponse standard via API,Template sauvegardé + variables substituées + disponible via API,FAIL-ISSUE-588,reimagined-guide,dev-back
+MW-2026-066,SMTP connection pooling,User envoie emails multiples rapidement,Connexions SMTP réutilisées + pool configurable + pas de leak,FAIL-ISSUE-587,reimagined-guide,dev-back
+MW-2026-067,Event-driven architecture,User reçoit email → traitement event-driven,Event bus déployé + services découplés + retry logic + DLQ,FAIL-ISSUE-551,reimagined-guide,dev-back
+MW-2026-068,Email templates API (legacy),User crée template via API legacy,Template sauvegardé + variables substituées + disponible via API,FAIL-ISSUE-547,reimagined-guide,dev-back
+MW-2026-069,Search filters backend,User recherche emails avec filtres date/expéditeur/pièces jointes,Recherche combinée fonctionnelle + performance <200ms,FAIL-ISSUE-545,reimagined-guide,dev-back
+MW-2026-061,Auth gate /api/admin/whoami,Requete non authentifiee sur /api/admin/whoami,307 redirect to /login (consistent with other /api/admin/*),FAIL-ISSUE-790,misfits-web+reimagined-guide,dev-web+dev-back
