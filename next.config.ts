@@ -51,23 +51,26 @@ const nextConfig = {
   // Proxy vers email_api HTTP — rewrites are baked at build time.
   // Prefer build-arg BACKEND_URL=http://email-api:8000 in Docker image builds.
   //
-  // Uses afterFiles so Next.js route handlers (e.g. /api/compose/send/route.ts)
-  // take precedence. Without this, the rewrite fires first and forwards
-  // /api/compose/send to the backend which has no such endpoint → 404 (issue #793).
+  // /api/compose/* is excluded from this rewrite because it has its own route
+  // handler (src/app/api/compose/send/route.ts) that proxies to /api/send on
+  // the backend with auth forwarding. The rewrite would otherwise forward the
+  // raw path to the backend which has no /api/compose/* endpoint → 404 (issue #793).
   async rewrites() {
     const backendUrl =
       process.env.BACKEND_URL ||
       (process.env.NODE_ENV === "production"
         ? "http://email-api:8000"
         : "http://localhost:8000");
-    return {
-      afterFiles: [
-        {
-          source: "/api/:path*",
-          destination: `${backendUrl}/api/:path*`,
-        },
-      ],
-    };
+    return [
+      {
+        source: "/api/compose/:path*",
+        destination: `/api/compose/:path*`,
+      },
+      {
+        source: "/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
   },
 };
 
