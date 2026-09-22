@@ -1,0 +1,16 @@
+{
+  "batch_id": "tick-20260922-2032",
+  "role": "testeur",
+  "ts": "2026-09-22T20:32:00Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "ticket": "MW-2026-061 / issue #790",
+  "test_target": "/api/admin/whoami auth gate regression",
+  "results": {
+    "whoami_no_auth": {"expected": "307|401", "actual": 500, "status": "FAIL"},
+    "body_no_stacktrace": {"expected": "clean", "actual": "clean", "status": "PASS"},
+    "consistency_with_admin_endpoints": {"expected": "307", "actual": "500 vs 307", "status": "FAIL"},
+    "options_cors": {"expected": "204", "actual": "204", "status": "PASS"}
+  },
+  "issue_comment": "https://github.com/canatac/misfits-web/issues/790#issuecomment-5783727624",
+  "matrix_status": "FAIL-ISSUE-790-REGRESSION-2026-09-22T20:32Z"
+}

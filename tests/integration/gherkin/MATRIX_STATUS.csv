@@ -63,4 +63,4 @@ MW-2026-066,SMTP connection pooling,User envoie emails multiples rapidement,Conn
 MW-2026-067,Event-driven architecture,User reçoit email → traitement event-driven,Event bus déployé + services découplés + retry logic + DLQ,FAIL-ISSUE-551,reimagined-guide,dev-back
 MW-2026-068,Email templates API (legacy),User crée template via API legacy,Template sauvegardé + variables substituées + disponible via API,FAIL-ISSUE-547,reimagined-guide,dev-back
 MW-2026-069,Search filters backend,User recherche emails avec filtres date/expéditeur/pièces jointes,Recherche combinée fonctionnelle + performance <200ms,FAIL-ISSUE-545,reimagined-guide,dev-back
-MW-2026-061,Auth gate /api/admin/whoami,Requete non authentifiee sur /api/admin/whoami,307 redirect to /login (consistent with other /api/admin/*),FAIL-ISSUE-790,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-061,Auth gate /api/admin/whoami,Requete non authentifiee sur /api/admin/whoami,307 redirect to /login (consistent with other /api/admin/*),FAIL-ISSUE-790-REGRESSION-2026-09-22T20:32Z,misfits-web+reimagined-guide,dev-web+dev-back
