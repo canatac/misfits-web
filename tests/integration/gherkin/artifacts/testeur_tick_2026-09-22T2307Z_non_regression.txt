@@ -1,0 +1,42 @@
+=== Testeur Non-Regression Tick 2026-09-22T23:07Z ===
+Target: https://mail.misfits.ai
+Role: testeur | Cron tick
+
+--- Auth Gates (ALL PASS) ---
+/api/emails -> 401 ✅
+/api/external-accounts -> 307 ✅
+/api/hermes/runs -> 307 ✅
+/api/admin/whoami -> 401 ✅
+/api/admin/ai-activity -> 307 ✅
+/api/admin/users -> 307 ✅
+/api/admin/change-requests -> 307 ✅
+
+--- Protected Routes (ALL PASS) ---
+/mail -> 307 ✅
+/compose -> 307 ✅
+/inbox -> 307 ✅
+/dashboard -> 307 ✅
+/settings -> 307 ✅
+/contacts -> 307 ✅
+/search -> 307 ✅
+/monitoring -> 307 ✅
+
+--- Public Routes (ALL PASS) ---
+/ -> 200 ✅
+/login -> 200 ✅
+/register -> 200 ✅
+/reset-password -> 200 ✅
+
+--- CORS ---
+No evil.com origin reflection ✅
+
+--- Compose/Send (MW-054) ---
+POST /api/auth/login -> 400 (backend reachable, no 502) ✅
+
+--- New Test Created ---
+MW-2026-049-email-export-pdf-print.feature (5 scenarios)
+
+=== SUMMARY ===
+PASS: 21/21 non-regression checks
+FAIL: 0
+No new regressions detected.
