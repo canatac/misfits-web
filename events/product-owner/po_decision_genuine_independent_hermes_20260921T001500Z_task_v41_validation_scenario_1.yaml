@@ -1,0 +1,137 @@
+event: po_decision_genuine_independent_hermes_task_v41_validation_scenario_1
+timestamp: 2026-09-21T00:15:00Z
+reviewer: product-owner (genuine independent review — conducted by Hermes Agent, distinct from developer canatac)
+task_id: task_v41_validation_scenario_1
+issue: "#697"
+pr: "#701"
+merge_commit: "a87e2f6690770dbe3918c2437717b1f37d24b992"
+
+decision: NEEDS_ITERATION
+
+decision_reason: |
+  Revue PO indépendante effectuée par l'instance product-owner (Hermes Agent),
+  distincte du développeur (canatac) qui a authored tous les fichiers d'événements
+  précédents et fusionné la PR sans revue indépendante préalable.
+
+  Livrable (PR #701) : test e2e bout-en-bout validant la chaîne complète
+  publication → relay v4.1 → launcher → COMPLETED. Trois fichiers principaux
+  (test_scenario1_e2e.py, fleet_launcher.py, fleet_relay_v4_1.py) représentant
+  915 lignes de code bien structuré, avec assertions, nettoyage pré/post-test,
+  et crash recovery.
+
+  PR #701 déjà fusionnée (commit a87e2f6, 2026-09-18T10:29:03Z).
+  Aucune action de merge requise — les corrections doivent être livrées
+  dans une PR corrective dédiée.
+
+  BUG FONCTIONNEL CRITIQUE IDENTIFIÉ :
+  Ligne 266 de fleet_launcher.py, la fonction run_task() référence `args.run_budget`
+  dans le gestionnaire d'exception TimeoutExpired, mais `args` n'est PAS dans la
+  portée de cette fonction (c'est une variable locale de main()). Cela provoque
+  un NameError non géré qui fait crasher le launcher au lieu de gérer
+  élégablement le timeout. La variable correcte est `msg_run_budget` (paramètre
+  de run_task, déjà utilisé correctement ligne 245).
+
+  Ce bug rend le chemin de timeout totalement non-fonctionnel : toute tâche
+  dépassant son budget temps ne sera pas gérée correctement.
+
+  Critères d'acceptation fonctionnels :
+  - task_id stable ✓
+  - RECEIVED ✓ (queue length=1)
+  - ACCEPTED ⚠️ (assertion tautologique — ne vérifie rien)
+  - STARTED ✗ (non vérifié explicitement)
+  - COMPLETED ✓ (inbox state=COMPLETED)
+  - Résultat persistant ✓ (result_key SET avec TTL 86400)
+  - Sans effet externe ⚠️ (assert True hardcodé, pas de vérification réelle)
+
+acceptance_criteria:
+  - criterion: "Task publiée dans queue"
+    status: PASS
+    evidence: "r.rpush(queue_key(agent), json.dumps(msg)) — queue length vérifié = 1"
+  - criterion: "Réception vérifiée (RECEIVED)"
+    status: PASS
+    evidence: "Étape 3 du test : qlen == 1 assertion"
+  - criterion: "Exécution relay v4.1"
+    status: PARTIAL
+    evidence: "subprocess.run exécuté mais assertion tautologique (returncode is not None toujours True)"
+  - criterion: "Résultat COMPLETED dans inbox"
+    status: PASS
+    evidence: "inbox_len > 0 et result_data.state == 'COMPLETED'"
+  - criterion: "Task state mise à jour"
+    status: PASS
+    evidence: "task_key(task_id) contient state='COMPLETED'"
+  - criterion: "Résultat persistant Redis"
+    status: PASS
+    evidence: "result_key(task_id) SET avec TTL 86400, vérifié par GET"
+  - criterion: "Sans effet externe"
+    status: PARTIAL
+    evidence: "assert True hardcodé — pas de vérification réelle (git status, fichiers, réseau)"
+
+findings:
+  - severity: CRITICAL
+    category: FUNCTIONAL_BUG
+    description: "NameError dans run_task() ligne 266 : `args.run_budget` référence une variable hors portée. Le launcher crash sur timeout au lieu de gérer l'erreur."
+    location: "fleet/launcher/fleet_launcher.py:266"
+    recommendation: "Remplacer `args.run_budget` par `msg_run_budget` (paramètre déjà utilisé ligne 245). Ajouter un test unitaire simulant un timeout."
+  - severity: CRITICAL
+    category: SECURITY
+    description: "Mot de passe Redis codé en dur dans test_scenario1_e2e.py:34 — exposé dans git history"
+    location: "fleet/tests/test_scenario1_e2e.py:34"
+    recommendation: "Rotation immédiate du credential exposé. Migration vers variables d'environnement obligatoires + secrets manager."
+  - severity: HIGH
+    category: TEST_QUALITY
+    description: "Assertion tautologique : 'relay.returncode is not None' toujours True pour un subprocess terminé"
+    location: "fleet/tests/test_scenario1_e2e.py:154"
+    recommendation: "Remplacer par 'relay.returncode == 0'"
+  - severity: MEDIUM
+    category: ROBUSTNESS
+    description: "Defaut silencieux REDIS_HOST='172.16.12.2' — fail-fast requis en production"
+    location: "fleet/tests/test_scenario1_e2e.py:32, fleet/launcher/fleet_launcher.py:55"
+    recommendation: "RuntimeError si variables requises manquantes en production"
+  - severity: MEDIUM
+    category: TEST_COVERAGE
+    description: "État STARTED non vérifié explicitement dans le test e2e"
+    location: "fleet/tests/test_scenario1_e2e.py"
+    recommendation: "Ajouter vérification task:<task_id> state='STARTED' avant COMPLETED"
+  - severity: LOW
+    category: TEST_QUALITY
+    description: "'Sans effet externe': True hardcodé — aucune vérification réelle"
+    location: "fleet/tests/test_scenario1_e2e.py:157"
+    recommendation: "Implémenter vérification : git status --porcelain vide, pas de nouveaux fichiers"
+
+chain_of_validation:
+  status: VIOLATED
+  issue: "PR #701 fusionnée par le développeur (canatac) sans revue PO indépendante (reviews: []). Le développeur a authored tous les fichiers d'événements précédents dans fleet/events/product-owner/ — invalides comme preuve de revue indépendante."
+  expected_flow: "conductor-ops → PO (revue indépendante) → Scrum Master → développeur"
+  actual_flow: "Développeur a écrit le code, fusionné sa propre PR, puis a simulé des revues PO"
+  severity: PROCESS_CRITICAL
+  recommendation: "Protection de branche sur fleet/ exigeant revue PO. Rejeter les auto-revues."
+
+ci_status:
+  codeql: skipping
+  analyze_python: pass
+  analyze_javascript_typescript: pass
+  analyze_actions: pass
+  lint_typecheck_test: pass
+  build_docker: skipping
+  deploy_vm: skipping
+  overall: PASS
+
+constraints_respectees:
+  - aucun_build_check_test_local: true
+  - revue_independante_po: true
+  - registre_evenements_mis_a_jour: true
+
+post_actions_required:
+  - "PR corrective CRITICAL : corriger NameError dans run_task() (args.run_budget → msg_run_budget)"
+  - "PR corrective CRITICAL : rotation credential Redis + migration vers env vars / secrets manager"
+  - "Ticket HIGH : corriger assertion tautologique (returncode == 0)"
+  - "Ticket PROCESS_CRITICAL : protection de branche fleet/ avec revue PO obligatoire"
+  - "Ticket MEDIUM : ajouter vérification état STARTED"
+  - "Ticket MEDIUM : implémenter fail-fast sur config manquante"
+  - "Ticket LOW : implémenter vérification réelle d'effet externe"
+
+prochaines_etapes:
+  - "Créer PR corrective pour les 2 findings CRITICAL (NameError + credentials)"
+  - "Fusionner la PR corrective avant toute mise en production"
+  - "Créer les tickets de dettes techniques identifiés ci-dessus"
+  - "Passer à la tâche suivante du sprint"

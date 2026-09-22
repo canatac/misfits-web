@@ -1,0 +1,133 @@
+{
+  "event_id": "po_review_task_v41_validation_scenario_1_hermes_po_agent_20260920T1200Z",
+  "event_type": "PO_REVIEW_DECISION_INDEPENDENT",
+  "timestamp": "2026-09-20T12:00:00Z",
+  "actor": "product-owner",
+  "reviewer_type": "INDEPENDENT_PO_REVIEW",
+  "target": {
+    "task": "task_v41_validation_scenario_1",
+    "issue": "#697",
+    "pr": "#701",
+    "merge_commit": "a87e2f6690770dbe3918c2437717b1f37d24b992"
+  },
+  "decision": "NEEDS_ITERATION",
+  "rationale": "Independent PO review (Hermes Agent, product-owner profile) — third genuine review cycle. No code changes since prior review. PR #701 merged by developer on 2026-09-18T10:29:03Z with zero GitHub reviews. All prior event files in fleet/events/product-owner/ authored by developer impersonating PO agent. Required iterations remain unaddressed.",
+  "acceptance_criteria_verification": {
+    "task_id_stable": {
+      "status": "PASS",
+      "evidence": "test_scenario1_e2e.py:47 — task_id hardcoded 'task_scenario1_001', assertions verify persistence via task_key and result_key. Protocol v1.0.0 enforces task_id in schema."
+    },
+    "events_received_to_completed": {
+      "status": "PARTIAL",
+      "evidence": "RECEIVED verified (queue length=1). ACCEPTED tautological assertion (relay.returncode is not None — always True). STARTED not explicitly checked. COMPLETED verified (inbox state=COMPLETED)."
+    },
+    "result_persisted": {
+      "status": "PASS",
+      "evidence": "fleet_launcher.py:334 — result_key(task_id) SET with TTL 86400. Test line 137 verifies GET on result:<task_id>."
+    },
+    "no_external_effects": {
+      "status": "FAIL",
+      "evidence": "Hardcoded True on line 157/165 — no actual verification that task produces no git/file/network side effects."
+    },
+    "queue_consumed": {
+      "status": "PASS",
+      "evidence": "Atomic RPOPLPUSH in relay_v4_1.py:243 removes from queue to processing atomically. ACK via LREM on line 255."
+    },
+    "duration_under_5s": {
+      "status": "PASS",
+      "evidence": "Test config max_turns=10, run_budget=120 — designed for fast execution."
+    }
+  },
+  "ci_status": {
+    "lint_typecheck_test": "PASS (1m26s)",
+    "codeql_python": "PASS (50s)",
+    "codeql_javascript": "PASS (1m0s)",
+    "codeql_actions": "PASS (43s)",
+    "build_docker": "SKIPPED",
+    "deploy_vm": "SKIPPED",
+    "overall": "PASS"
+  },
+  "code_quality_assessment": {
+    "positives": [
+      "Protocol v1.0.0 with explicit schema versioning (fleet_protocol.py)",
+      "Atomic RPOPLPUSH prevents message loss — fixes v4 gap (fleet_relay_v4_1.py:243)",
+      "TaskClaim with Lua compare-and-swap for safe release (fleet_launcher.py:112-123)",
+      "Injection-safe --query-file input — no shell interpolation (fleet_launcher.py:158)",
+      "Structured logging with UTC timestamps across all components",
+      "Crash recovery via reconcile_processing on startup (fleet_relay_v4_1.py:206-224)",
+      "Comprehensive test coverage: protocol unit, integration, crash recovery, e2e"
+    ],
+    "observations": [
+      {
+        "severity": "HIGH",
+        "category": "SECURITY",
+        "files": [
+          "fleet/tests/test_scenario1_e2e.py:34",
+          "fleet/tests/test_recovery.py:31",
+          "fleet/tests/test_integration_relay.py:27",
+          "fleet/systemd/fleet-relay-v4.1@.service:12",
+          "fleet/monitoring/fleet_monitor.sh:7"
+        ],
+        "description": "Redis password hardcoded in 5 source files — exposed in version control and git history. NOT FIXED since prior review.",
+        "recommendation": "Mandatory REDIS_PASS env var with no default fallback; if missing, fail immediately. Rotate the exposed credential. Migrate to secrets manager for production."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:154",
+        "description": "Assertion 'relay.returncode is not None' is always True for any completed subprocess. NOT FIXED since prior review.",
+        "recommendation": "Replace with 'relay.returncode == 0' to verify actual relay execution success."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "ROBUSTNESS",
+        "files": [
+          "fleet/launcher/fleet_launcher.py:55-57",
+          "fleet/launcher/fleet_relay_v4_1.py:32-34"
+        ],
+        "description": "Default REDIS_HOST=172.16.12.2 and REDIS_PASS='' hardcoded with silent fallback. NOT FIXED since prior review.",
+        "recommendation": "Fail-fast on missing required config in production mode; require explicit opt-in for test mode."
+      },
+      {
+        "severity": "LOW",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:157",
+        "description": "'Sans effet externe': True hardcoded — no real assertion. NOT FIXED since prior review.",
+        "recommendation": "Assert no git changes (git status --porcelain), no file writes outside test/tmp directories, no network calls outside Redis."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_COVERAGE",
+        "file": "fleet/tests/test_scenario1_e2e.py",
+        "description": "STARTED state not explicitly checked in e2e test. NOT FIXED since prior review.",
+        "recommendation": "Add explicit STARTED state check: verify task:<task_id> exists with state='STARTED' before COMPLETED."
+      }
+    ]
+  },
+  "chain_of_validation": {
+    "status": "VIOLATED",
+    "issue": "PR #701 merged by developer (canatac) on 2026-09-18T10:29:03Z with zero GitHub reviews (reviews: []). All existing event files in fleet/events/product-owner/ were authored by the developer (can.atac@gmail.com) impersonating the PO agent. No branch protection on fleet/ directory.",
+    "expected_flow": "conductor-ops → PO (independent review) → Scrum Master → developer",
+    "actual_flow": "Developer wrote code, merged own PR without review, authored fake PO review event files and self-review comments",
+    "github_reviews_recorded": 0,
+    "severity": "PROCESS_CRITICAL",
+    "recommendation": "Enforce branch protection rule: require at least 1 PO approval review before merge to master for fleet/ directory. Add CODEOWNERS entry for fleet/ path."
+  },
+  "change_since_last_review": {
+    "code_changes": "NONE — no new commits to fleet/ since prior review. 4 commits (6965665, 23feca2, 13c5dd3, 3837d04) are documentation-only (YAML/JSON event files).",
+    "new_files": "events/product-owner/ directory contains 10+ YAML decision files, all authored by developer (canatac@gmail.com) — not independent PO reviews",
+    "required_iterations_addressed": "NONE — all 7 required iterations remain unaddressed"
+  },
+  "required_iterations": [
+    "Remove hardcoded Redis password from all 5 source files — use env var with mandatory fallback (fail-fast if missing)",
+    "Rotate the exposed Redis credential immediately",
+    "Fix tautological assertion: relay.returncode is not None → relay.returncode == 0 in test_scenario1_e2e.py:154",
+    "Implement real external effects verification in test (assert no git changes, no unexpected file writes outside test/tmp)",
+    "Add explicit STARTED state check in scenario 1 test",
+    "Enforce branch protection rule requiring PO review on fleet/ directory changes",
+    "Flag or remove all developer-authored fake PO review event files in fleet/events/product-owner/"
+  ],
+  "pr_merge_status": "ALREADY_MERGED",
+  "pr_merge_note": "PR #701 was merged by developer canatac on 2026-09-18T10:29:03Z. No gh pr merge needed. Follow-up PR required for required iterations.",
+  "summary": "Third genuine independent PO review. Delivery functionally sound with green CI but required iterations remain unaddressed. NEEDS_ITERATION: (1) hardcoded credentials in 5 files (HIGH), (2) tautological assertion (MEDIUM), (3) missing external effects verification (LOW), (4) chain-of-validation violation (PROCESS_CRITICAL). No code changes since prior review. PR already merged by developer without independent PO review."
+}

@@ -1,0 +1,125 @@
+{
+  "event": "PO_REVIEW_DECISION",
+  "task_id": "task_v41_validation_scenario_1",
+  "issue": 697,
+  "pr": 701,
+  "reviewer": "product-owner",
+  "reviewer_instance": "independent-hermes",
+  "timestamp": "2026-09-20T07:30:00Z",
+  "verdict": "NEEDS_ITERATION",
+  "summary": "La livraison est fonctionnellement correcte sur le plan du protocole v1.0.0 — la chaîne publication → RPOPLPUSH → launcher → claim → résultat → ACK est opérationnelle et les tests le démontrent. Cependant, plusieurs anomalies critiques empêchent l'approbation immédiate : credentials secrets en clair dans le code source, assertions tautologiques qui invalident partiellement la couverture de test, et violation confirmée de la chaîne de validation (fusion sans revue PO préalable).",
+
+  "acceptance_criteria": [
+    {
+      "criterion": "task_id stable retrouvable",
+      "status": "PASS",
+      "evidence": "task_id = 'task_scenario1_001' persisté dans Redis task:task_scenario1_001 avec TTL 86400"
+    },
+    {
+      "criterion": "Événements RECEIVED → ACCEPTED → STARTED → COMPLETED",
+      "status": "PARTIAL",
+      "evidence": "RECEIVED (queue) et COMPLETED (inbox + result) vérifiés. État ACCEPTED/STARTED non tracés comme événements Redis distincts — le claim SET NX ne produit pas d'event loggé lisible. L'assertion 'ACCEPTED (relay lancé)' vérifie seulement `relay.returncode is not None`, ce qui est tautologique pour un subprocess terminé."
+    },
+    {
+      "criterion": "Résultat consultable",
+      "status": "PASS",
+      "evidence": "result:task_scenario1_001 SET avec TTL 86400, consultable via redis-cli GET"
+    },
+    {
+      "criterion": "Queue consommée",
+      "status": "PASS",
+      "evidence": "RPOPLPUSH atomique dans fleet_relay_v4_1.py:243 — le message quitte queue:<agent> de manière irréversible"
+    },
+    {
+      "criterion": "Sans effet externe",
+      "status": "FAIL",
+      "evidence": "Le test définit `\"Sans effet externe\": True` à la ligne 157 de test_scenario1_e2e.py sans aucune vérification réelle. Aucun git status --porcelain, aucun scan de fichiers créés."
+    },
+    {
+      "criterion": "Réversible",
+      "status": "PASS",
+      "evidence": "Nettoyage en fin de test — toutes les clés Redis sont supprimées. Aucun commit/PR créé par la tâche test."
+    }
+  ],
+
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "category": "SECURITY",
+      "title": "Credentials Redis en clair dans le code source",
+      "description": "Le mot de passe Redis est codé en dur dans 3 fichiers de test et 1 script de monitoring, en clair, sans fallback sécurisé. En cas de commit sur un repo public ou de leak de logs, le mot de passe est exposé.",
+      "files": [
+        "fleet/tests/test_scenario1_e2e.py:34",
+        "fleet/tests/test_recovery.py:31",
+        "fleet/tests/test_integration_relay.py:27",
+        "fleet/monitoring/fleet_monitor.sh:7"
+      ],
+      "remediation": "Remplacer par os.environ.get('REDIS_PASS', '') avec un mécanisme de provisionnement externe (fichier .env.local ignoré par git, ou injecté par CI)."
+    },
+    {
+      "severity": "HIGH",
+      "category": "TEST_QUALITY",
+      "title": "Assertion tautologique dans test_scenario1_e2e.py:154",
+      "description": "L'expression `relay.returncode is not None` est TOUJOURS VRAIE pour un subprocess terminé — subprocess.run() retourne toujours un CompletedProcess avec returncode défini (même en cas d'erreur). Cette assertion ne vérifie rien et donne une fausse confiance.",
+      "remediation": "Remplacer par `relay.returncode == 0` pour vérifier le succès réel."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TEST_QUALITY",
+      "title": "Vérification d'effet externe absente",
+      "description": "La vérification 'Sans effet externe' est codée comme un Literal True sans aucun scan de l'état du système. Une tâche malveillante ou buggée pourrait créer des fichiers, des commits, ou des PR sans que le test ne le détecte.",
+      "remediation": "Implémenter un snapshot pré-test (git status --porcelain, ls de répertoires) et le comparer post-test. Ou utiliser un répertoire de travail isolé (tmpfs) pour l'agent test."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "RELIABILITY",
+      "title": "Heartbeat du claim non implémenté pendant l'exécution",
+      "description": "Le claim a un TTL de 300s par défaut. Si Hermes dépasse 300s d'exécution (run-budget configuré à 600s dans le pilote), le claim expire et un autre relay pourrait reprendre la tâche en double. La méthode TaskClaim.extend() existe mais n'est jamais appelée pendant run_task().",
+      "remediation": "Lancer un thread heartbeat qui appelle claim.extend() toutes les 60s pendant l'exécution de la tâche, ou aligner CLAIM_TTL sur run_budget + marge."
+    },
+    {
+      "severity": "LOW",
+      "category": "OBSERVABILITY",
+      "title": "Pas d'événements structurés pour ACCEPTED/STARTED",
+      "description": "Le protocole définit les états ACCEPTED et RUNNING dans BusinessState, mais le relay/launcher ne publie pas d'événements Redis (dans un stream ou une clé de log) quand il transite par ces états. Seuls RECEIVED (implicite via queue) et COMPLETED/FAILED sont observables.",
+      "remediation": "Publier un event dans log:fleet:<date> à chaque transition d'état, ou utiliser Redis Stream pour un journal horodaté."
+    }
+  ],
+
+  "positive_points": [
+    "Protocole v1.0.0 bien structuré avec schéma validé (fleet_protocol.py)",
+    "RPOPLPUSH atomique corrige le trou de fiabilité v4 (non-perte garantie)",
+    "TaskClaim avec Lua compare-and-swap pour libération sûre (pas de race condition)",
+    "Pas d'injection shell — query-file au lieu de query passé en argument",
+    "Logs structurés UTC avec horodatage ISO",
+    "Couverture multi-niveaux : unit + integration + crash recovery + e2e",
+    "Rollback implémenté dans fleet_migrate.py",
+    "Documentation de migration pilote complète (docs/pilote-migration-v4.1.md)"
+  ],
+
+  "process_violations": [
+    {
+      "violation": "PR #701 fusionnée sans revue PO indépendante préalable",
+      "evidence": "La PR a été mergée dans temp-merge par le développeur le 2026-09-18T10:28:56Z. Aucun commentaire de revue d'un compte distinct n'existe sur la PR. Les revues documentées sur l'issue sont toutes rédigées par le développeur lui-même.",
+      "impact": "La chaîne conductor-ops → PO → Scrum Master → développeur est court-circuitée. Le PO valide a posteriori au lieu de contrôler la qualité avant fusion.",
+      "remediation": "Configurer la branche protection sur fleet/ pour exiger une review GitHub approuvée par le PO (ou un token distinct). Bloquer le merge automatique."
+    }
+  ],
+
+  "required_actions_before_resubmission": [
+    "Retirer les credentials Redis codés en dur des 4 fichiers identifiés — injection via variable d'environnement avec fallback vide",
+    "Corriger l'assertion tautologique `is not None` → `== 0` dans test_scenario1_e2e.py:154",
+    "Implémenter une vérification réelle d'effet externe (snapshot git status --porcelain pré/post)",
+    "Aligner CLAIM_TTL sur run_budget + marge, ou implémenter le heartbeat pendant run_task()",
+    "Créer un ticket séparé pour la migration vers un secrets manager (Vault, aws secrets manager, ou k8s secrets)",
+    "Créer un ticket pour la configuration de la branche protection fleet/ sur GitHub"
+  ],
+
+  "decision_rationale": "La qualité du code production (fleet_launcher.py, fleet_relay_v4_1.py, fleet_protocol.py) est globalement satisfaisante et le protocole est bien conçu. Cependant, la sécurité des credentials en clair est un défaut bloquant qui ne peut pas être ignoré, et les assertions tautologiques invalident partiellement la confiance qu'on peut accorder aux tests. La violation du processus de validation confirme que cette livraison nécessite une itération contrôlée plutôt qu'une approbation.",
+
+  "next_steps": [
+    "Développeur corrige les 3 points critiques (credentials, assertion, claim TTL)",
+    "Nouvelle revue PO indépendante sur la branche corrigée",
+    "Vérification de la branche protection fleet/ avant la prochaine fusion"
+  ]
+}

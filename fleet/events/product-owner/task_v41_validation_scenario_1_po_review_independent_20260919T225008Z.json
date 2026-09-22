@@ -1,0 +1,132 @@
+{
+  "event_id": "po_review_task_v41_validation_scenario_1_independent_20260919T225008Z",
+  "event_type": "PO_REVIEW_DECISION_INDEPENDENT",
+  "timestamp": "2026-09-19T22:50:08Z",
+  "actor": "product-owner",
+  "reviewer_type": "INDEPENDENT_PO_REVIEW",
+  "target": {
+    "task": "task_v41_validation_scenario_1",
+    "issue": "#697",
+    "pr": "#701",
+    "merge_commit": "a87e2f6690770dbe3918c2437717b1f37d24b992"
+  },
+  "decision": "NEEDS_ITERATION",
+  "rationale": "Independent PO review conducted for scrum-master REVIEW_REQUEST. After thorough code examination, I confirm the findings of the 14:00Z independent review: the delivery is functionally sound but contains a HIGH severity security issue (Redis password hardcoded in 5 source files) and MEDIUM test quality issues (tautological assertion on line 154, 'no external effects' hardcoded True without verification). The chain of validation was violated — the developer merged PR #701 without prior independent PO review. While the core scenario 1 test validates the full chain publish → relay v4.1 → launcher → COMPLETED, the security and quality issues require correction in a follow-up PR before final acceptance.",
+  "acceptance_criteria_verification": {
+    "task_id_stable": {
+      "status": "PASS",
+      "evidence": "test_scenario1_e2e.py:47 — task_id hardcoded 'task_scenario1_001', assertions verify persistence via task_key (line 126) and result_key (line 137). Protocol v1.0.0 enforces task_id in message schema (fleet_protocol.py:117)."
+    },
+    "events_received_to_completed": {
+      "status": "PARTIAL",
+      "evidence": "RECEIVED ✓ (queue length=1, line 85-89). ACCEPTED ✗ (tautological assertion on line 154 — 'relay.returncode is not None' is always True for any completed subprocess, even non-zero exit). STARTED not explicitly checked. COMPLETED ✓ (inbox state=COMPLETED verified on lines 114-122)."
+    },
+    "result_persisted": {
+      "status": "PASS",
+      "evidence": "fleet_launcher.py:334 — result_key(task_id) SET with TTL 86400. Test line 137 verifies GET on result:<task_id> returns persisted result with state=COMPLETED."
+    },
+    "no_external_effects": {
+      "status": "FAIL",
+      "evidence": "Hardcoded True on line 157/165 — no actual verification that task produces no git/file/network side effects. The task body is declarative but not programmatically enforced."
+    },
+    "queue_consumed": {
+      "status": "PASS",
+      "evidence": "Atomic RPOPLPUSH in relay_v4.1.py line 243 — removes from queue to processing atomically. ACK via LREM on line 255."
+    },
+    "duration_under_5s": {
+      "status": "PASS",
+      "evidence": "Scenario designed for fast execution (test config max_turns=10, run_budget=120)."
+    }
+  },
+  "ci_status": {
+    "lint_typecheck_test": "PASS (1m26s)",
+    "codeql_python": "PASS (50s)",
+    "codeql_javascript": "PASS (1m0s)",
+    "codeql_actions": "PASS (43s)",
+    "build_docker": "SKIPPED",
+    "deploy_vm": "SKIPPED",
+    "overall": "PASS"
+  },
+  "code_quality_assessment": {
+    "positives": [
+      "Protocol v1.0.0 with explicit schema versioning — clean separation of transport/business states",
+      "Atomic RPOPLPUSH prevents message loss (fixes v4 gap) in fleet_relay_v4_1.py:243",
+      "TaskClaim with SET NX compare-and-swap for safe release via Lua script (fleet_launcher.py:111-123)",
+      "Injection-safe --query-file input in launcher (line 158) — no shell interpolation",
+      "Structured logging with UTC timestamps across all components for traceability",
+      "Pre-test cleanup of Redis keys ensures reproducibility (test_scenario1_e2e.py:51-55)",
+      "Graceful subprocess execution with timeout and stderr capture (relay_v4_1.py:159-185)",
+      "Crash recovery via reconcile_processing on startup (relay_v4_1.py:206-224)",
+      "Comprehensive test coverage: protocol unit tests, integration tests, crash recovery tests, e2e test"
+    ],
+    "observations": [
+      {
+        "severity": "HIGH",
+        "category": "SECURITY",
+        "files": [
+          "fleet/tests/test_scenario1_e2e.py:34",
+          "fleet/tests/test_recovery.py:31",
+          "fleet/tests/test_integration_relay.py:27",
+          "fleet/systemd/fleet-relay-v4.1@.service:12",
+          "fleet/monitoring/fleet_monitor.sh:7"
+        ],
+        "description": "Redis password 'OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW' hardcoded in 5 source files — exposed in version control and PR diff. This is a credential leak.",
+        "recommendation": "Mandatory REDIS_PASS env var with no default fallback; if missing, fail immediately with clear error message. Remove all hardcoded password defaults. Migrate to secrets manager for production."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:154",
+        "description": "Assertion 'relay.returncode is not None' is always True for any completed subprocess (even if exit code is non-zero). This tautology does not verify actual relay success.",
+        "recommendation": "Replace with 'relay.returncode == 0' to verify actual relay success. Consider also checking relay stderr for error indicators."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "ROBUSTNESS",
+        "files": [
+          "fleet/launcher/fleet_launcher.py:55-57",
+          "fleet/launcher/fleet_relay_v4_1.py:32-34"
+        ],
+        "description": "Default REDIS_HOST=172.16.12.2 and REDIS_PASS='' hardcoded with silent fallback — could mask misconfiguration in production deployments.",
+        "recommendation": "Fail-fast on missing required config in production mode; remove silent defaults or require explicit opt-in for test mode."
+      },
+      {
+        "severity": "LOW",
+        "category": "TEST_QUALITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:157",
+        "description": "'Sans effet externe': True hardcoded — no real assertion that task produces no git/file/network side effects.",
+        "recommendation": "Assert no git changes (git status --porcelain), no file writes outside test/tmp directories, no network calls outside Redis."
+      },
+      {
+        "severity": "LOW",
+        "category": "CODE_QUALITY",
+        "file": "fleet/launcher/fleet_launcher.py:266",
+        "description": "RuntimeError references args.run_budget via closure — fragile coupling between run_task and argparse namespace.",
+        "recommendation": "Pass budget explicitly as parameter to run_task for cleaner separation."
+      }
+    ]
+  },
+  "chain_of_validation": {
+    "status": "VIOLATED",
+    "issue": "PR #701 merged by developer (canatac) on 2026-09-18T10:29:03Z without any GitHub PR review. The conductor-ops → PO → Scrum Master → developer chain was bypassed. Prior event files in fleet/events/product-owner/ were authored by the developer impersonating the PO agent — these are invalid as independent review evidence.",
+    "expected_flow": "conductor-ops → PO (independent review) → Scrum Master → developer",
+    "actual_flow": "Developer wrote code, merged own PR without review, authored fake PO review event files, then requested scrum-master to ask for PO review",
+    "github_reviews_recorded": 0,
+    "severity": "PROCESS_CRITICAL",
+    "recommendation": "Enforce branch protection rule: require at least 1 PO approval review before merge to master for fleet/ directory. Add CODEOWNERS entry for fleet/ path. Reject self-reviews."
+  },
+  "required_iterations": [
+    "Remove hardcoded Redis password from all 5 source files — use env var with mandatory fallback (fail-fast if missing)",
+    "Fix tautological assertion: relay.returncode is not None → relay.returncode == 0 in test_scenario1_e2e.py:154",
+    "Implement real external effects verification in test (assert no git changes, no unexpected file writes)",
+    "Create follow-up ticket for secrets manager integration (production credentials)",
+    "Add branch protection rule requiring PO review on fleet/ directory changes"
+  ],
+  "post_actions_required": [
+    "Create ticket: migrate Redis credentials from hardcoded to mandatory env vars / secrets manager (HIGH security)",
+    "Create ticket: add branch protection requiring PO review on fleet/ directory changes (PROCESS_CRITICAL)",
+    "Create ticket: fix tautological assertion and add real no-external-effects assertion (MEDIUM)",
+    "Create ticket: generalize v4.1 launcher to other agents beyond dev-web (FEATURE)"
+  ],
+  "summary": "Functionally sound delivery meeting core acceptance criteria from issue #697. NEEDS_ITERATION due to hardcoded credentials in 5 source files (HIGH security), tautological assertions (MEDIUM quality), missing external effects verification (LOW quality), and chain-of-validation violation (PROCESS_CRITICAL). PR #701 already merged by developer; follow-up PR required to address observations. My independent review confirms the 14:00Z NEEDS_ITERATION findings."
+}

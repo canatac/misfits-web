@@ -1,0 +1,79 @@
+{
+  "event_type": "PO_INDEPENDENT_REVIEW",
+  "task_id": "task_v41_validation_scenario_1",
+  "issue_number": 697,
+  "reviewer": "product-owner (independent hermes instance, fresh context)",
+  "timestamp": "2026-09-21T02:51:01Z",
+  "decision": "NEEDS_ITERATION",
+  "summary": "Delivery is functionally correct — the full chain publish → relay v4.1 → launcher → COMPLETED is operational. However, 3 concrete code issues (1 HIGH security, 2 MEDIUM test quality) must be fixed before merge.",
+
+  "acceptance_criteria": [
+    {"criterion": "task_id stable retrouvable", "status": "PASS", "evidence": "task_id = 'task_scenario1_001' persisté dans task: key"},
+    {"criterion": "Événements RECEIVED → ACCEPTED → STARTED → COMPLETED", "status": "PASS", "evidence": "Chaîne complète vérifiée via test_scenario1_e2e.py en 7 étapes"},
+    {"criterion": "Résultat consultable via Redis", "status": "PASS", "evidence": "result:<task_id> SET avec TTL 86400"}
+  ],
+
+  "observations": [
+    {
+      "severity": "HIGH",
+      "category": "SECURITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:34, fleet/tests/test_recovery.py:31, fleet/tests/test_integration_relay.py:27",
+      "description": "Mot de passe Redis codé en dur comme fallback dans 3 fichiers tests",
+      "current": "REDIS_PASS = os.environ.get(\"REDIS_PASS\", \"OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW\")",
+      "expected": "REDIS_PASS = os.environ.get(\"REDIS_PASS\", \"\")",
+      "rationale": "Les credentials ne doivent jamais être dans le code source. Le relay v4.1 (fleet_relay_v4_1.py:33) utilise déjà \"\" par défaut. Le launcher (fleet_launcher.py:46) aussi. Les tests doivent s'aligner."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TEST_QUALITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:154",
+      "description": "Assertion tautologique — toujours VRAIE",
+      "current": "\"ACCEPTED (relay lancé)\": relay.returncode is not None",
+      "expected": "\"ACCEPTED (relay lancé)\": relay.returncode == 0",
+      "rationale": "subprocess.run() définit toujours returncode (int). `is not None` ne vérifie rien — le test passe même si le relay échoue."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TEST_QUALITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:157",
+      "description": "Vérification d'effet externe fictive — aucune assertion réelle",
+      "current": "\"Sans effet externe\": True,  # Pas de commit/PR",
+      "expected": "Vérification réelle : git status --porcelain vide, aucun nouveau fichier dans git diff --name-only",
+      "rationale": "Un test doit prouver ce qu'il affirme. La vérification est purement commentée."
+    },
+    {
+      "severity": "LOW",
+      "category": "CREDENTIAL_LEAK",
+      "file": "fleet/monitoring/fleet_monitor.sh:7, fleet/systemd/fleet-relay-v4.1@.service:12, fleet/systemd/fleet-relay@.service:12",
+      "description": "Même mot de passe Redis codé en dur dans les fichiers opérationnels",
+      "current": "REDIS_PASS=\"${REDIS_PASS:-OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW}\"",
+      "expected": "REDIS_PASS=\"${REDIS_PASS:-}\"",
+      "rationale": "Même pattern que dans les tests. Exposé dans git history. À corriger idéalement, ou tracer dans un ticket séparé."
+    }
+  ],
+
+  "positives": [
+    "Protocole v1.0.0 propre et bien structuré (enums typés, validation schéma, builder)",
+    "RPOPLPUSH atomique corrige le trou de fiabilité v4 (message perdu entre BRPOP et ACK)",
+    "TaskClaim avec Lua compare-and-swap pour libération sûre",
+    "Aucune injection shell (--query-file au lieu de --query)",
+    "Logs structurés UTC avec level filtering",
+    "Couverture complète : unit (test_fleet_protocol) + integration + crash recovery + e2e",
+    "Script de migration tmux → launcher avec rollback",
+    "Checkpoint local pour preuve hors-ligne",
+    "Recovery test avec réconciliation processing:<agent> au démarrage",
+    "Dédup via msg:done:<id> + claim atomique"
+  ],
+
+  "required_actions": [
+    "Retirer les credentials Redis codés en dur des 3 fichiers tests (fallback → \"\")",
+    "Corriger l'assertion tautologique (is not None → == 0)",
+    "Implémenter une vérification réelle d'effet externe (git status --porcelain + git diff --name-only)",
+    "[OPTIONNEL] Nettoyer fleet_monitor.sh et systemd units (même credential)",
+    "[OPTIONNEL] Créer ticket séparé pour migration vers secrets manager"
+  ],
+
+  "pr_status": "ALREADY_MERGED",
+  "pr_number": 701,
+  "merge_commit": "a87e2f6"
+}

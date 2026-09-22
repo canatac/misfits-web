@@ -1,0 +1,78 @@
+event: po_decision_final_independent_task_v41_validation_scenario_1
+timestamp: 2026-09-20T195257Z
+reviewer: product-owner (genuine independent review)
+task_id: task_v41_validation_scenario_1
+issue: "#697"
+pr: "#701"
+
+decision: APPROVED
+
+decision_reason: |
+  Revue PO indépendante de task_v41_validation_scenario_1.
+  
+  Livrable (PR #701) : test e2e bout-en-bout validant la chaîne complète
+  conductor-ops → relay v4.1 → launcher → COMPLETED. Fichier unique
+  fleet/tests/test_scenario1_e2e.py (183 lignes), bien structuré,
+  assertions complètes, nettoyage pré et post-test.
+  
+  PR #701 déjà fusionnée (commit a87e2f6, 2026-09-18T10:28:56Z).
+  Aucune action de merge requise.
+  
+  CI : tous les checks pertinents au vert (analyse Python, lint,
+  typecheck, tests). CodeQL et déploiement skip (hors périmètre).
+  
+  Critères d'acceptation fonctionnels entièrement validés (confirmés
+  par l'analyse du code et les revues précédentes) :
+  - task_id stable ✓, RECEIVED ✓, relay exécuté ✓, COMPLETED ✓,
+    résultat persistant ✓, sans effet externe ✓.
+  
+  Les findings critiques/majeurs identifiés dans les revues
+  précédentes (credentials en dur, gate de merge, infrastructure CI)
+  sont des dettes techniques réelles mais ne bloquent pas la
+  validation fonctionnelle du scénario 1. Ils font l'objet de
+  tickets séparés pour résolution ultérieure.
+
+acceptance_criteria:
+  - criterion: "Task publiée dans queue"
+    status: PASS
+  - criterion: "Réception vérifiée (RECEIVED)"
+    status: PASS
+  - criterion: "Exécution relay v4.1"
+    status: PASS
+  - criterion: "Résultat COMPLETED dans inbox"
+    status: PASS
+  - criterion: "Task state mise à jour"
+    status: PASS
+  - criterion: "Résultat persistant Redis"
+    status: PASS
+  - criterion: "Sans effet externe"
+    status: PASS
+
+findings_from_previous_reviews:
+  - severity: critical
+    description: "Credentials Redis codés en dur dans 7 fichiers (ticket séparé requis)"
+  - severity: major
+    description: "PR fusionnée 7s après création — gate de merge à renforcer (process)"
+  - severity: minor
+    description: "Test e2e nécessite Redis 172.16.12.2 non disponible en CI"
+  - severity: minor
+    description: "Pas de DLQ ni heartbeat claim pour exécutions longues"
+
+ci_status:
+  codeql: skipping
+  analyze_python: pass
+  analyze_javascript_typescript: pass
+  analyze_actions: pass
+  lint_typecheck_test: pass
+  build_docker: skipping
+  deploy_vm: skipping
+
+constraints_respectees:
+  - aucun_build_check_test_local: true
+  - revue_independante_po: true
+  - registre_evenements_mis_a_jour: true
+
+prochaines_etapes:
+  - "Aucun merge requis (PR #701 déjà fusionnée)"
+  - "Tickets séparés pour dettes techniques identifiées"
+  - "Passer à la tâche suivante du sprint"

@@ -1,0 +1,125 @@
+event_type: PO_DECISION_INDEPENDENT
+task_id: task_v41_validation_scenario_1
+issue: "#697"
+pr: "#701"
+timestamp: 2026-09-20T15:51:58Z
+reviewer: product-owner
+
+decision: NEEDS_ITERATION
+
+decision_reason: |
+  Revue PO indépendante réalisée par Hermes Agent (product-owner profile)
+  à la demande du scrum-master. La livraison est fonctionnellement correcte
+  mais présente des problèmes non-négligeables qui nécessitent une itération
+  avant acceptation finale.
+
+  Points bloquants :
+  1. CRITIQUE : Mot de passe Redis réel codé en dur dans 6 fichiers du dépôt
+     public — risque de compromission immédiate.
+  2. MAJEUR : Assertion tautologique (returncode is not None) qui ne vérifie
+     pas le succès réel du relay — le test peut passer même en cas d'échec.
+  3. MAJEUR : PR #701 auto-fusionnée par le développeur 7 secondes après
+     création, sans revue indépendante préalable — chaîne de validation violée.
+
+acceptance_criteria:
+  - criterion: "Task publiée dans queue"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:81 — r.rpush(queue_key(agent), json.dumps(msg))"
+  - criterion: "Réception vérifiée (RECEIVED)"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:85-89 — assert qlen == 1"
+  - criterion: "Exécution relay v4.1"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:97-100 — subprocess.run sur fleet_relay_v4_1.py --once"
+  - criterion: "Résultat COMPLETED dans inbox"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:109-122 — result_data.state == COMPLETED"
+  - criterion: "Task state mise à jour"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:126-131 — task_raw non vide, state vérifié"
+  - criterion: "Résultat persistant Redis"
+    status: PASS
+    evidence: "test_scenario1_e2e.py:137-144 — TTL 86400 appliquée"
+  - criterion: "Sans effet externe"
+    status: FAIL
+    evidence: "test_scenario1_e2e.py:157 — True codé en dur, aucune vérification réelle (pas de git status --porcelain, pas de vérification réseau)"
+  - criterion: "Test e2e reproductible"
+    status: PASS
+    evidence: "Nettoyage pré/post-test, 7 étapes documentées avec assertions"
+
+code_review_findings:
+  - severity: info
+    description: "Protocole v1.0.0 bien structuré : enums typés (TransportState, BusinessState, MessageType), builders make_message/make_result, validate_message avec vérification de version"
+  - severity: info
+    description: "RPOPLPUSH atomique (garantie non-perte), réconciliation au démarrage, déduplication via msg:done"
+  - severity: info
+    description: "TaskClaim idempotente avec SET NX + Lua pour release/extend sécurisé"
+  - severity: info
+    description: "Test e2e en 7 étapes claires avec assertions, nettoyage pré et post-test"
+  - severity: critical
+    description: "Mot de passe Redis codé en dur dans 6 fichiers — OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW exposé en clair dans le dépôt public. Risque de compromission immédiate."
+    files:
+      - fleet/tests/test_scenario1_e2e.py:34
+      - fleet/tests/test_recovery.py:31
+      - fleet/tests/test_integration_relay.py:27
+      - fleet/systemd/fleet-relay@.service:12
+      - fleet/systemd/fleet-relay-v4.1@.service:12
+      - fleet/monitoring/fleet_monitor.sh:7
+    action_required: "CRITIQUE : Migration vers variables d'environnement obligatoires (fail-fast si absent). Rotation immédiate du mot de passe exposé."
+  - severity: major
+    description: "Assertion tautologique ligne 154 : 'relay.returncode is not None' est toujours True pour subprocess.run (même avec exit code non-nul). Ne vérifie pas le succès réel."
+    files:
+      - fleet/tests/test_scenario1_e2e.py:154
+    action_required: "Remplacer par 'relay.returncode == 0' pour vérifier le succès réel de l'exécution"
+  - severity: major
+    description: "PR #701 fusionnée 7 secondes après création par le développeur sans revue indépendante préalable. Chaîne conductor-ops → PO → Scrum Master → développeur non respectée."
+    action_required: "Mettre en place un gate de validation obligatoire (protection branche GitHub exigeant revue PO sur fleet/)"
+  - severity: minor
+    description: "Aucune vérification réelle de l'absence d'effets externes (check codé en dur True)."
+    action_required: "Ajouter une vérification post-test (git status --porcelain vide, pas de fichiers trackés inattendus)"
+
+pr_status: MERGED
+merge_commit: a87e2f6690770dbe3918c2437717b1f37d24b992
+merge_action: NONE
+
+constraints_respected:
+  - aucun_build_check_test_local: true
+  - revue_independante_po: true
+  - chaine_conductor_po_scrum_dev: false
+  - registre_et_evenements_mis_a_jour: true
+
+next_steps:
+  - "PR déjà fusionnée — aucune action de merge requise"
+  - "CRITIQUE : Rotation du mot de passe Redis exposé + migration vers variables d'environnement obligatoires"
+  - "MAJOR : Corriger l'assertion tautologique (returncode is not None → returncode == 0)"
+  - "MAJOR : Mettre en place le gate de validation avant merge (protection branche GitHub)"
+  - "MINEUR : Ajouter vérification réelle des effets externes dans le test e2e"
+  - "Créer ticket de suivi pour chaque finding ci-dessus"
+
+criteria_met: 6
+criteria_blocked: 0
+criteria_partial: 0
+criteria_failed: 1
+criteria_total: 8
+
+verification:
+  - step: "Lecture du code source"
+    files:
+      - fleet/tests/test_scenario1_e2e.py
+      - fleet/protocol/fleet_protocol.py
+      - fleet/launcher/fleet_relay_v4_1.py
+      - fleet/launcher/fleet_launcher.py
+      - fleet/tests/test_recovery.py
+      - fleet/tests/test_integration_relay.py
+      - fleet/systemd/fleet-relay@.service
+      - fleet/systemd/fleet-relay-v4.1@.service
+      - fleet/monitoring/fleet_monitor.sh
+    result: "Code propre, bien structuré, conforme au protocole v1.0.0. Credentials exposés dans 6 fichiers. Assertion tautologique identifiée."
+  - step: "Historique Git depuis la dernière revue"
+    result: "Aucun nouveau commit de code depuis la dernière revue indépendante (2026-09-20T03:00:00Z). Seuls des commits de documentation."
+  - step: "Revues antérieures consultées"
+    files:
+      - events/product-owner/po_decision_final_independent_20260920T030000Z_task_v41_validation_scenario_1.yaml
+      - events/product-owner/po_review_task_v41_validation_scenario_1.yaml
+      - fleet/events/product-owner/task_v41_validation_scenario_1_po_review_hermes_20260920T000000Z.json
+    result: "Findings cohérents entre toutes les revues (credentials, gate merge, assertion). Cette revue confirme et renforce la décision NEEDS_ITERATION."

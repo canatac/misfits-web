@@ -1,0 +1,113 @@
+{
+  "event_id": "po_independent_review_task_v41_validation_scenario_1_2026-09-19T0410Z",
+  "event_type": "PO_REVIEW_DECISION_INDEPENDENT",
+  "timestamp": "2026-09-19T04:10:00Z",
+  "actor": "po-agent-hermes (independent instance)",
+  "target": {
+    "task": "task_v41_validation_scenario_1",
+    "issue": "#697",
+    "pr": "#701",
+    "merge_commit": "a87e2f6690770dbe3918c2437717b1f37d24b992"
+  },
+  "decision": "NEEDS_ITERATION",
+  "rationale": "True independent PO review. The delivery functionally works (publish → relay → launcher → COMPLETED) but acceptance criteria are only partially verified. Two criteria are missing (ACCEPTED/STARTED states never published to Redis), two checks are tautological/hardcoded (ACCEPTED assertion always True, no-external-effects is a literal True). The test reports 6/6 PASS but provides false confidence. The PR was already merged, so iteration requires a follow-up PR fixing these gaps.",
+  "acceptance_criteria_verification": {
+    "task_id_stable": {
+      "status": "PASS",
+      "evidence": "test_scenario1_e2e.py:47 — task_id='task_scenario1_001', verified in result:<task_id>"
+    },
+    "received_state": {
+      "status": "PASS",
+      "evidence": "Line 85-89: llen(queue:<agent>)==1 after rpush"
+    },
+    "accepted_state": {
+      "status": "FAIL",
+      "evidence": "Line 154: 'relay.returncode is not None' is ALWAYS True after subprocess.run(). Does not verify any ACCEPTED state in Redis. No ACCEPTED state is ever written by fleet_launcher.py or fleet_relay_v4_1.py."
+    },
+    "started_state": {
+      "status": "FAIL",
+      "evidence": "Never published to Redis by fleet_launcher.py. Not checked in test. Completely absent from state machine."
+    },
+    "completed_state": {
+      "status": "PASS",
+      "evidence": "Line 119-122: inbox:<sender> contains result with state=COMPLETED"
+    },
+    "result_retrievable": {
+      "status": "PASS",
+      "evidence": "Line 137-144: result:<task_id> readable via Redis GET"
+    },
+    "no_external_effects": {
+      "status": "FAIL",
+      "evidence": "Line 157: 'Sans effet externe': True — hardcoded boolean. No actual verification of git status, file writes, or network calls."
+    }
+  },
+  "ci_status": {
+    "overall": "PASS",
+    "note": "CI not re-verified in this review session (previous reports confirm green: Lint+Typecheck+Test SUCCESS, CodeQL SUCCESS)"
+  },
+  "code_quality_assessment": {
+    "positives": [
+      "Protocol v1.0.0 clean enum-based state definitions (TransportState + BusinessState)",
+      "Atomic RPOPLPUSH fixes v4 message-loss gap — crash recovery via reconcile_processing()",
+      "TaskClaim with SET NX + Lua compare-and-swap for safe release",
+      "Injection-safe --query-file pattern (no shell interpolation) in launcher",
+      "Structured UTC-timestamped logging throughout relay and launcher",
+      "Pre-test Redis cleanup ensures reproducibility"
+    ],
+    "observations": [
+      {
+        "severity": "HIGH",
+        "category": "SECURITY",
+        "file": "fleet/tests/test_scenario1_e2e.py:34",
+        "description": "Redis password hardcoded in source: REDIS_PASS default 'OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW'",
+        "recommendation": "Remove default. Require REDIS_PASS env var or fail immediately with clear error."
+      },
+      {
+        "severity": "HIGH",
+        "category": "CORRECTNESS",
+        "file": "fleet/launcher/fleet_launcher.py:266",
+        "description": "NameError bug: 'args' referenced in run_task() scope but not passed as parameter. Will crash on subprocess.TimeoutExpired.",
+        "recommendation": "Pass args.run_budget or msg_run_budget to the error string formatter."
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TESTING",
+        "file": "fleet/tests/test_scenario1_e2e.py:154",
+        "description": "ACCEPTED assertion tautological: 'relay.returncode is not None' is always True for any subprocess result",
+        "recommendation": "Verify ACCEPTED state actually published in Redis task:<task_id> state transitions"
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "TESTING",
+        "file": "fleet/tests/test_scenario1_e2e.py:157",
+        "description": "no-external-effects check is a hardcoded True literal — no real verification",
+        "recommendation": "Assert git status --porcelain is empty, no new commits, no PR created during test"
+      },
+      {
+        "severity": "MEDIUM",
+        "category": "IMPLEMENTATION",
+        "file": "fleet/launcher/fleet_launcher.py",
+        "description": "State transitions ACCEPTED → RUNNING → COMPLETED are defined in protocol but never written to Redis by launcher",
+        "recommendation": "Write task:<task_id> with state=ACCEPTED at run_task entry, state=STARTED before subprocess.run, then terminal state after"
+      }
+    ]
+  },
+  "chain_of_validation": {
+    "status": "VIOLATED",
+    "issue": "PR #701 merged without prior independent PO review. Existing event file fleet/events/product-owner/task_v41_validation_scenario_1_po_independent_review_20260919.json was authored by developer (canatac), not a separate PO instance.",
+    "expected_flow": "conductor-ops → PO (independent review) → Scrum Master → developer",
+    "actual_flow": "Developer authored own review event, merged PR, marked issue resolved",
+    "github_reviews_recorded": 0,
+    "severity": "PROCESS",
+    "recommendation": "Enforce branch protection: require at least 1 PO approval review before merge to master for fleet/ directory"
+  },
+  "required_iterations": [
+    "Add ACCEPTED and STARTED state publications in fleet_launcher.py (task:<task_id> writes)",
+    "Fix tautological ACCEPTED assertion in test_scenario1_e2e.py",
+    "Implement real no-external-effects verification (git status, no commits/PRs)",
+    "Remove hardcoded Redis password from test source",
+    "Fix NameError on 'args' in fleet_launcher.py timeout handler",
+    "Submit follow-up PR and request independent PO review BEFORE merge"
+  ],
+  "summary": "Functionally working end-to-end chain (publish→relay→launcher→COMPLETED). Test reports 6/6 PASS but 3 acceptance criteria are effectively unverified (ACCEPTED tautological, STARTED absent, no-external-effects hardcoded True). PR already merged. NEEDS_ITERATION via follow-up PR to close verification gaps and fix correctness bugs before this task can be fully validated."
+}

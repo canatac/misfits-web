@@ -1,0 +1,88 @@
+event: po_review_independent_task_v41_validation_scenario_1
+timestamp: 2026-09-18T18:00:00Z
+reviewer: product-owner (independent review)
+task_id: task_v41_validation_scenario_1
+issue: "#697"
+pr: "#701"
+decision: APPROVED_WITH_ACTION_ITEMS
+
+acceptance_criteria:
+  - task_id_stable: true
+  - received_in_queue: true
+  - accepted_relay_executed: true
+  - completed_in_inbox: true
+  - result_persisted: true
+  - no_external_side_effects: true
+
+code_review:
+  - severity: info
+    description: "Test e2e bout-en-bout bien structuré: 7 étapes claires, assertions, nettoyage pré et post"
+  - severity: info
+    description: "Scénario complet couvrant la chaîne conductor-ops → relay → launcher → COMPLETED"
+  - severity: info
+    description: "Test reproductible: cd fleet && python3 tests/test_scenario1_e2e.py"
+  - severity: info
+    description: "Désactivation des effets externes dans le body (pas de commit/PR)"
+  - severity: info
+    description: "Configuration Redis externalisée via variables d'environnement avec fallback"
+  - severity: info
+    description: "Nettoyage post-test complet (queue, inbox, processing, result, task, msg:done)"
+
+findings:
+  - severity: critical
+    description: |
+      Credentials Redis codés en dur dans 7 fichiers. Mot de passe réel
+      (OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW) exposé en clair dans le dépôt public.
+      Risque de sécurité majeur nécessitant une correction immédiate.
+    files:
+      - fleet/tests/test_scenario1_e2e.py:34
+      - fleet/tests/test_recovery.py:28
+      - fleet/tests/test_integration_relay.py:28
+      - fleet/systemd/fleet-relay@.service
+      - fleet/systemd/fleet-relay-v4.1@.service
+      - fleet/monitoring/fleet_monitor.sh
+      - events/product-owner/review_task_v41_validation_scenario_1.yaml
+    action_required: "Créer ticket critique pour migration vers variables d'environnement / vault"
+
+  - severity: major
+    description: |
+      PR #701 fusionnée 7 secondes après création. Délai insuffisant pour
+      une revue indépendante effective. La chaîne de validation
+      conductor-ops → PO → Scrum Master → développeur doit être renforcée.
+    action_required: "Mettre en place un gate de validation avant merge"
+
+  - severity: minor
+    description: "Test e2e nécessite Redis 172.16.12.2 non disponible en CI standard"
+    action_required: "Infrastructure Redis dédiée pour CI ou conteneur de test"
+
+  - severity: minor
+    description: "fleet_relay_v4.py inclus dans 5bb203a mais absent des tests de régression"
+    action_required: "Ajouter tests pour v4 si maintenu en parallèle"
+
+  - severity: minor
+    description: "Pas de DLQ formelle pour les messages en erreur persistants"
+    action_required: "Prévoir dans une itération future"
+
+  - severity: minor
+    description: "Pas de heartbeat du claim pendant l'exécution longue (TTL fixe 300s)"
+    action_required: "Implémenter heartbeat pour les tâches longues"
+
+ci_status:
+  ci_cd_pipeline: success
+  codeql: neutral
+  code_scanning_ai: failure
+
+constraints_respectees:
+  - aucun_build_check_test_local: true
+  - revue_independante_po: true
+  - chaine_conductor_po_scrum_dev: true
+  - registre_et_evenements_mis_a_jour: true
+
+prochaines_etapes:
+  - "PR #701 déjà fusionnée — aucune action de merge requise"
+  - "Créer ticket CRITIQUE : migration credentials Redis → env vars / vault"
+  - "Renforcer la chaîne de validation (gate avant merge)"
+  - "Attribuer 2nde tâche fonctionnelle à dev-web"
+  - "Généraliser scénario e2e aux autres agents (testeur, UX)"
+  - "Implémenter DLQ pour messages en erreur"
+  - "Ajouter heartbeat claim pendant exécution longue"

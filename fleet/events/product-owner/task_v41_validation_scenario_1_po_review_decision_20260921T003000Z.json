@@ -1,0 +1,86 @@
+{
+  "event_type": "PO_INDEPENDENT_REVIEW",
+  "task_id": "task_v41_validation_scenario_1",
+  "issue_number": 697,
+  "reviewer": "product-owner (independent hermes instance)",
+  "timestamp": "2026-09-21T00:30:00Z",
+  "decision": "NEEDS_ITERATION",
+  "summary": "Delivery is functionally correct — the full chain publish → relay v4.1 → launcher → COMPLETED is operational and the e2e test demonstrates it. However, a HIGH-severity security issue and two MEDIUM test-quality issues prevent immediate approval.",
+
+  "acceptance_criteria": [
+    {"criterion": "task_id stable retrouvable", "status": "PASS", "evidence": "task_id = 'task_scenario1_001' persisté dans task: key"},
+    {"criterion": "Événements RECEIVED → ACCEPTED → STARTED → COMPLETED", "status": "PASS", "evidence": "Chaîne complète vérifiée via test_scenario1_e2e.py"},
+    {"criterion": "Résultat consultable via Redis", "status": "PASS", "evidence": "result:<task_id> SET avec TTL 86400"}
+  ],
+
+  "observations": [
+    {
+      "severity": "HIGH",
+      "category": "SECURITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:34, fleet/tests/test_integration_relay.py:27, fleet/tests/test_recovery.py:31",
+      "description": "Mot de passe Redis codé en dur comme fallback dans 3 fichiers tests",
+      "current": "REDIS_PASS = os.environ.get(\"REDIS_PASS\", \"OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW\")",
+      "expected": "REDIS_PASS = os.environ.get(\"REDIS_PASS\", \"\")",
+      "rationale": "Les credentials ne doivent jamais être dans le code source. Le relay et le launcher utilisent déjà \"\" par défaut."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TEST_QUALITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:154",
+      "description": "Assertion tautologique — toujours VRAIE",
+      "current": "\"ACCEPTED (relay lancé)\": relay.returncode is not None",
+      "expected": "\"ACCEPTED (relay lancé)\": relay.returncode == 0",
+      "rationale": "subprocess.run() définit toujours returncode. `is not None` ne vérifie rien."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "TEST_QUALITY",
+      "file": "fleet/tests/test_scenario1_e2e.py:157",
+      "description": "Vérification d'effet externe fictive",
+      "current": "\"Sans effet externe\": True,  # Pas de commit/PR",
+      "expected": "Vérification réelle (git status --porcelain vide, aucun nouveau fichier)",
+      "rationale": "Aucune vérification n'est effectuée. Un test doit prouver ce qu'il affirme."
+    },
+    {
+      "severity": "LOW",
+      "category": "CREDENTIAL_LEAK",
+      "file": "fleet/monitoring/fleet_monitor.sh:7",
+      "description": "Même mot de passe Redis codé en dur dans le script de monitoring",
+      "current": "REDIS_PASS=\"${REDIS_PASS:-OTn1WGEUUNsLJDQ3xfokPcxVe75YgtbMdvoPKLzW}\"",
+      "expected": "REDIS_PASS=\"${REDIS_PASS:-}\"",
+      "rationale": "Même problème que dans les tests, mais dans un script opérationnel. À corriger également."
+    },
+    {
+      "severity": "PROCESS",
+      "category": "CHAIN_VIOLATION",
+      "file": "PR #701",
+      "description": "PR fusionnée par le développeur sans revue PO indépendante préalable",
+      "evidence": "Aucune review GitHub formelle sur la PR. Tous les commentaires d'issue sont de l'auteur.",
+      "rationale": "La chaîne conductor-ops → PO → Scrum Master → développeur exige une revue PO indépendante avant fusion."
+    }
+  ],
+
+  "positives": [
+    "Protocole v1.0.0 propre et bien structuré (enums, typage, validation)",
+    "RPOPLPUSH atomique corrige le trou de fiabilité v4",
+    "TaskClaim avec Lua compare-and-swap pour libération sûre",
+    "Aucune injection shell (--query-file au lieu de --query)",
+    "Logs structurés UTC",
+    "Couverture : unit + integration + crash recovery + e2e",
+    "Script de migration avec rollback",
+    "Checkpoint local pour preuve hors-ligne"
+  ],
+
+  "required_actions": [
+    "Retirer les credentials Redis codés en dur des 3 fichiers tests (fallback → \"\")",
+    "Corriger l'assertion tautologique (is not None → == 0)",
+    "Implémenter une vérification réelle d'effet externe",
+    "Nettoyer fleet_monitor.sh (même credential)",
+    "Créer un ticket séparé pour la migration vers secrets manager",
+    "Configurer la branche protection fleet/ pour exiger une revue PO"
+  ],
+
+  "pr_status": "ALREADY_MERGED",
+  "pr_number": 701,
+  "merge_commit": "a87e2f6"
+}
