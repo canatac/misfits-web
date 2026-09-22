@@ -46,5 +46,5 @@ MW-2026-046,Caddyfile wildcard path matching,Requete sur /api/emails (exact) + /
 MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture logs caddy,Logs caddy en stdout + deploy CI reussi + pas de permission denied,PASS,PASS-FIX-PR-741,misfits-web,dev-int
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
-MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
+MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL-ISSUE-771,misfits-web,dev-web
 MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,Endpoints retournent 200/401 (pas 502) — backend joignable,FAIL-ISSUE-764,misfits-web+reimagined-guide,dev-back+dev-int

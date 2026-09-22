@@ -1,0 +1,22 @@
+testeur_tick_20260922T1627Z_attachment_preview_MW050.txt
+================================================
+TICK: 2026-09-22T16:27Z
+ROLE: testeur
+ACTION: Gherkin feature created + production smoke test
+TICKET: MW-2026-050 (Email attachment preview)
+
+PRODUCTION TEST RESULTS:
+- GET /api/attachments → 404 (endpoint does not exist)
+- GET /api/compose/attachments → 404
+- GET /api/emails → 401 AUTH_REQUIRED (auth working correctly)
+- GET / → 200 OK (frontend reachable)
+- Landing page shows "Sign in" (no session = login wall, expected)
+
+CONCLUSION: FAIL — Attachment preview feature not implemented.
+No frontend route or API endpoint for attachment preview exists.
+
+FILES CREATED:
+- tests/integration/gherkin/features/MW-2026-050-attachment-preview.feature (9 scenarios)
+
+COMMIT: de4325d (feat/issue-713-conversation-threads)
+PUSH: OK → https://github.com/canatac/misfits-web/commit/de4325d
