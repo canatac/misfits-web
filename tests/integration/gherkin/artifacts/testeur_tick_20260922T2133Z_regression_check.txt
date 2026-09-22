@@ -1,0 +1,32 @@
+=== TESTEUR TICK 2026-09-22T21:33Z — PRODUCTION SMOKE + REGRESSION ===
+
+## MW-2026-044 / MW-2026-035 — Auth Bypass Regression (CRITICAL)
+| Endpoint                          | Expected | Actual | Result |
+|-----------------------------------|----------|--------|--------|
+| GET /api/emails (no auth)         | ≠200     | 401 AUTH_REQUIRED | PASS |
+| GET /api/external-accounts (no auth) | 307   | 307 → /login | PASS |
+| GET /api/admin/whoami (no auth)   | ≠500     | 401 Authentication required | PASS |
+| GET /api/hermes/runs (no auth)    | 307      | 307 → /login | PASS |
+| GET /api/admin (no auth)          | 307      | 307 → /login | PASS |
+| POST /api/auth/login (bad creds)  | 401      | 401 Identifiant ou mot de passe incorrect | PASS |
+| CORS Origin reflection (evil.com) | absent   | absent (no access-control-allow-origin) | PASS |
+
+## MW-2026-054 — Auth login + compose send endpoints
+| Endpoint                          | Expected       | Actual | Result |
+|-----------------------------------|----------------|--------|--------|
+| POST /api/auth/login              | 200/401/400    | 401    | PASS (no 502) |
+| POST /api/compose/send            | 200/401/400    | 404    | FAIL (route missing) |
+| GET /api/admin/whoami             | 200/307/401    | 401    | PASS |
+
+## MW-2026-034 — Production Reachability
+| Check     | Expected | Actual | Result |
+|-----------|----------|--------|--------|
+| HTTPS 443 | 200      | 200 (97ms) | PASS |
+| /mail     | 307/200  | 307 → /login | PASS |
+| DNS       | resolves | 51.158.114.182 | PASS |
+
+## Summary
+- Auth bypass regression: STABLE (all 7 checks PASS)
+- /api/compose/send: 404 (route not implemented, tracked in #793)
+- Production HTTPS: healthy (97ms response)
+- CORS: not reflecting arbitrary origins (secure)
