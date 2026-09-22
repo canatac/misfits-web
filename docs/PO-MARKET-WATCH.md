@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T19:10 UTC — MW-2026-029 auth bypass PASS + 5 FAIL tickets routed to scrum-master
+> Dernière mise à jour: 2026-09-22T20:30 UTC — 6 new issues created (#595-#600), 3 PO_TICKETs posted to scrum-master, matrix updated (52 rows, 36 FAIL)
 
 ---
 
@@ -263,3 +263,11 @@
 - **PO_TICKETs posted to scrum-master**: 3 tickets via fleet_send_v2.sh (queue:scrum-master, ids: f2a939e3, 1951dc9d, 6632690c)
 - **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
 - **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-051 for admin proxy regression)
+
+### Cycle 2026-09-22T20:30 — 6 new issues for FAIL rows without GH issues
+- **Matrix gap analysis**: 15 FAIL rows had no corresponding GH issues. Created 6 new issues in reimagined-guide for the highest-priority gaps.
+- **Issues created**: #595 (GDPR data deletion), #596 (Pro plan subscription), #597 (JMAP server), #598 (Multi-account aggregation), #599 (External account connection), #600 (Zero-access encryption)
+- **PO_TICKETs posted to scrum-master**: 3 tickets via Redis LPUSH (queue:scrum-master, positions 191-193)
+- **Matrix updated**: 6 rows now linked to issues (MW-2026-018, 019, 021, 022, 026, 027)
+- **State**: ON — no ROOT controls received, no UX proposals in queue, mission loop continues
+- **Next cycle**: veille marché (competitor pricing) or matrice de tests (add rows for remaining 9 FAIL rows without issues)
