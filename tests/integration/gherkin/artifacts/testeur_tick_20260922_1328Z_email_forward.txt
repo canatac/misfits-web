@@ -1,0 +1,37 @@
+=== Testeur Tick 2026-0922T1328Z — Email Forward (MW-048) ===
+
+MW-048 Email Forward Button — PASS (code implemented + deployed)
+
+Code analysis:
+- useEmailActions.ts: handleForward() — PASS
+  - Subject prefix "Fwd:" added correctly
+  - Body wrapped in blockquote with From/Date/Subject headers
+  - openComposer() called with pre-filled data
+- email-toolbar.tsx: Forward button — PASS
+  - Lucide Forward icon + label
+  - onClick={onForward} wired
+- email-view.tsx: Integration — PASS
+  - handleForward passed to EmailToolbar as onForward prop
+- quick-reply-box.tsx: Thread forward — PASS
+  - Forward thread button in thread view
+  - onForward(thread) callback
+
+Gherkin feature: CREATED (MW-2026-048-email-forward.feature, 5 scenarios)
+  - Forward button visibility
+  - Composer pre-filled with Fwd: subject
+  - Original body in blockquote
+  - To field empty + focused
+  - Send flow + confirmation
+
+Non-regression checks:
+- /api/emails (unauth) → 307 PASS
+- /api/external-accounts (unauth) → 307 PASS
+- /api/admin/ai-activity (unauth) → 307 PASS
+- /api/hermes/runs (unauth) → 307 PASS
+- mail.misfits.ai:443 → 200 PASS
+
+UI verification: BLOCKED (login wall — 1Password locked in headless session)
+Code-level verification: PASS — feature fully implemented and deployed
+
+Commit: d0c3927
+Issue: #747 (forward button)
