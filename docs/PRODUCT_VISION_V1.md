@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T10:30 UTC — PO cycle: 30 tickets posted (Sprint 1 FAIL triage + Notion Mail migration + UX swipe gesture + Pro plan subscription + External account connection + 3 P0 security: #722 auth bypass + #558 CORS reflection + #556 CORS misconfig + UX auto-save draft + mobile swipe gesture + reading mode HTML sanitize + keyboard shortcuts + P0 production unreachable #727 + P0 regression #729 auth bypass + P0 #730 auth bypass still exposed + 30 FAIL rows scanned, 19 distinct issues, 30 TICKET_ASSIGN posted, 1 new issue #566 DKIM crash loop added to matrix)
+> Dernière mise à jour: 2026-09-22T10:55 UTC — PO cycle: 44 tickets posted (Sprint 1 FAIL triage + Notion Mail migration + UX swipe gesture + Pro plan subscription + External account connection + 3 P0 security: #722 auth bypass + #558 CORS reflection + #556 CORS misconfig + UX auto-save draft + mobile swipe gesture + reading mode HTML sanitize + keyboard shortcuts + P0 production unreachable #727 + P0 regression #729 auth bypass + P0 #730 auth bypass still exposed + 37 FAIL rows scanned, 11 new TICKET_ASSIGN posted this cycle: MW-2026-036 DKIM crash loop + MW-2026-035 auth bypass /api/emails + MW-2026-029 auth bypass P0 + MW-2026-030 CORS reflection + MW-2026-031 CORS misconfig + MW-2026-033 keyboard shortcuts + MW-2026-032 reading mode + MW-2026-023 language change + MW-2026-034 production unreachable + 1 PO_UX_PROPOSAL unified search bar + 1 PO_UX_PROPOSAL bulk email selection)
 
 ---
 

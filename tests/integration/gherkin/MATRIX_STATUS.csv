@@ -35,3 +35,4 @@ MW-2026-033,Keyboard shortcuts,User presse c/r/a/f/e/#/j/k/Enter/Esc/?,Chaque ra
 MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PARTIAL-HTTPS-ONLY-20260922T1047Z,misfits-web,dev-back
 MW-2026-035,Auth bypass /api/emails exposed,User non authentifié accède à /api/emails,Requête rejetée 401 + proxy Next.js + Caddy auth routes restaurés,FAIL-ISSUE-730-ISSUE-731-PROD-DOWN,misfits-web,dev-web
 MW-2026-036,DKIM service crash loop,User envoie email via DKIM service,Service DKIM opérationnel + email signé correctement + pas de crash,FAIL-ISSUE-566,reimagined-guide,dev-back
+MW-2026-037,Unified search bar,User types natural language query in search bar,Search results displayed with filters + keyboard shortcut Ctrl+K works,FAIL-NOT-IMPLEMENTED,misfits-web,dev-web
