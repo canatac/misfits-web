@@ -12,7 +12,39 @@ mail.misfits.ai, www.mail.misfits.ai {
     @cors origin https://mail.misfits.ai
     @cors origin https://www.mail.misfits.ai
 
-    # API proxy routes
+    # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
+    # middleware enforces session auth. Catching these BEFORE the generic /api/*
+    # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
+    handle /api/admin/* {
+        reverse_proxy http://misfits-web:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/hermes/* {
+        reverse_proxy http://misfits-web:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/emails/* {
+        reverse_proxy http://misfits-web:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/external-accounts/* {
+        reverse_proxy http://misfits-web:3000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Non-sensitive API routes — direct to backend (health, auth, public)
     handle /api/* {
         reverse_proxy http://email-api:8000 {
             # Forward real client IP
