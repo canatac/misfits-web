@@ -1,0 +1,28 @@
+testeur tick 2026-09-22T22:41Z — Production non-regression test
+=========================================================
+MW-2026-044/046/035 Auth bypass + MW-2026-054 Auth/Compose:
+
+Production endpoints:
+  GET /                    -> HTTP 200
+  GET /mail                -> HTTP 307 (unauth redirect, expected)
+  GET /api/emails          -> HTTP 401 (unauth, expected)
+  GET /api/external-accounts -> HTTP 307 (unauth, expected)
+  GET /api/hermes/runs     -> HTTP 307 (unauth, expected)
+  GET /api/admin           -> HTTP 307 (expected)
+  GET /api/admin/whoami    -> HTTP 401 (was 500, #790 FIX DEPLOYED)
+  POST /api/auth/login     -> HTTP 401 (was 400, backend reachable, expected for invalid creds)
+  POST /api/compose/send   -> HTTP 404 (route missing, MW-054)
+  GET /api/ai/summary      -> HTTP 404 (not implemented)
+  GET /api/ai/triage       -> HTTP 404 (not implemented)
+  GET /api/ai/replies      -> HTTP 404 (not implemented)
+
+Services:
+  HTTPS 443  -> OPEN (TLSv1.3)
+  SMTP 587   -> OPEN
+
+Verdict:
+  MW-2026-044 Auth bypass: PASS (no PII leak, all routes gated)
+  MW-2026-046 Caddyfile wildcard: PASS (both /api/emails and /api/external-accounts gated)
+  #790 /api/admin/whoami: FIXED (401, was 500 — PR deployed)
+  MW-2026-054 Auth+Compose: PARTIAL (login returns 401 OK, compose/send 404 missing)
+  No new regressions detected.
