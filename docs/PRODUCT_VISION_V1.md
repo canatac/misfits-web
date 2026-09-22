@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T08:30 UTC — PO cycle: 8 tickets posted (Sprint 1 FAIL triage, 21 FAIL rows scanned)
+> Dernière mise à jour: 2026-09-22T09:30 UTC — PO cycle: 9 tickets posted (Sprint 1 FAIL triage + Notion Mail migration, 22 FAIL rows scanned, 1 new issue #721)
 
 ---
 
@@ -105,6 +105,11 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - **Choix**: Parité sur les must-have (scheduled send, undo send, templates), innovation sur l'IA et le chat mail
 - **Rejeté**: Innovation pure (les users ne quittent pas Gmail pour un produit incomplet), Parité pure (pas de différenciation)
 - **Rationale**: Les users exigent les deux en 2026
+
+### Arbitrage 2026-09-22: Notion Mail shutdown — migration opportunity
+- **Choix**: Migration wizard (import from Gmail/Notion Mail) + web-first (no native client yet)
+- **Rejeté**: Native client first (delays web launch), Migration only (no differentiation)
+- **Rationale**: Notion Mail shuts down 2026-09-22. Users need a quick migration path. Web-first with import wizard captures them immediately. Native client can follow in Sprint 3. Issue #721 created.
 
 ---
 
