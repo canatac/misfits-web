@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22
+> Dernière mise à jour: 2026-09-22T07:58 UTC — DMARC/BIMI cycle
 
 ---
 
@@ -159,5 +159,14 @@
 - **Rationale**: 8 langues couvrent ~80% du marché email privacy. Fallback FR garantit la cohérence.
 
 ---
+
+### Cycle 2026-09-22 — DMARC enforcement mandatory
+- DMARC adoption 30.4% (5.5M domains, Feb 2026), enforcement 12.8% — Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day
+- BIMI adoption growing; misfits.ai positioned to be first privacy-first provider with native DMARC/BIMI UX
+- **Arbitrage**: trust indicator (Authenticated badge + BIMI logo + tooltip) vs raw technical display
+  - Choix: UX simplifiée (badge + tooltip) / Rejeté: affichage technique brut (DKIM/SPF/DMARC stats)
+  - Rationale: les utilisateurs ne comprennent pas DMARC — l'UX doit traduire la confiance en un coup d'œil
+- Issue #710 créée: [po] feature: DMARC/BIMI trust indicator in email view (owner hint: dev-web)
+- PO_TICKET envoyé à scrum-master via bus (task_id: po_dmarc_bimi_20260922)
 
 *Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
