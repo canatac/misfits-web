@@ -21,4 +21,5 @@ MW-2026-019,Multi-account aggregation,User connecte un compte Gmail externe,Emai
 MW-2026-020,On-device AI processing,User active le mode IA local,Traitement IA fait sur le device + aucune donnée envoyée au serveur,FAIL,misfits-web,dev-web
 MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL,reimagined-guide,dev-back
 MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL,reimagined-guide,dev-back
-MW-2026-023,Interface language change,User change la langue de l'interface,Interface traduite en <2s + préférence sauvegardée,FAIL,misfits-web,dev-web
+MW-2026-023,Interface language change,User change la langue de l' interface,Interface traduite en <2s + préférence sauvegardée,FAIL,misfits-web,dev-web
+MW-2026-024,DMARC/BIMI trust indicator,User ouvre un email authentifié (DKIM+SPF+DMARC pass),Badge Authenticated visible + logo BIMI affiché si présent + tooltip explicatif,PASS,misfits-web,dev-web
