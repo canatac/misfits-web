@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T19:10 UTC — PO cycle: MW-2026-029 updated to PASS (PR #741 merged), 51 matrix rows (39 FAIL, 10 PASS, 2 PARTIAL), state=ON
+> Dernière mise à jour: 2026-09-22T20:15 UTC — PO cycle: 52 matrix rows (40 FAIL, 10 PASS, 2 PARTIAL), state=ON, 3 new issues created (#781 reading mode, #782 attachment preview, #783 split-view), 3 PO_TICKETs posted to scrum-master
 
 ---
 
