@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T12:00 UTC — PO cycle: 15 tickets posted (Sprint 1 FAIL triage, 31 FAIL rows scanned, 0 new GH issues, 1 new matrix row MW-2026-038 swipe gestures, MW-2026-018 linked to #707)
+> Dernière mise à jour: 2026-09-22T12:30 UTC — PO cycle: 17 tickets posted (Sprint 1 FAIL triage, 32 FAIL rows scanned, 1 new GH issue #744 for MW-2026-038 swipe gestures, 1 new UX proposal: dark mode toggle MW-2026-040)
 
 ---
 

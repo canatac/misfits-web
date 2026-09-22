@@ -178,6 +178,14 @@
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
+### Cycle 2026-09-22T12:30 — Swipe gestures issue + dark mode UX proposal
+- Issue #744 created: [ux] Email triage swipe gestures — archive/mark-as-read (MW-2026-038)
+- MATRIX_STATUS.csv updated: MW-2026-038 now references ISSUE-744
+- PO_TICKET posted to scrum-master for swipe gestures implementation
+- Dark mode UX proposal (MW-2026-040) still pending ack from scrum-master
+- No new GH issues since last cycle (max issue #740)
+- No incoming ROOT controls or TICKET_ASSIGN messages
+
 ### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
 - **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
 - **Impact**: users lose Notion-specific features (snippets, auto-label rules, scheduled emails, email-to-database sync). Gmail emails remain safe, but workflows built around Notion Mail need migration.
