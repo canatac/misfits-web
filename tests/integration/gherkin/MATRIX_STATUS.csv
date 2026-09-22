@@ -3,10 +3,10 @@ MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente da
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL,misfits-web,dev-web
 MW-2026-004,Email templates,User crée template Réponse standard,Template sauvegardé + disponible dans le composer via menu templates,FAIL,misfits-web,dev-web
-MW-2026-005,PWA offline,User accède /mail hors ligne,Liste des emails récents affichés depuis le cache + indicateur hors ligne,FAIL,misfits-web,dev-web
+MW-2026-005,PWA offline,User accède /mail hors ligne,Liste des emails récents affichés depuis le cache + indicateur hors ligne,FAIL-GHERKIN-ISSUE-711,misfits-web,dev-web
 MW-2026-006,Custom domain,User avec custom domain @entreprise.com,Domaine vérifié (SPF/DKIM/DMARC) + emails envoyés sans erreur,PASS,reimagined-guide,dev-back
-MW-2026-007,Create event from email,User clique Create event depuis un email,Événement créé dans le calendrier + lien vers l'email source,FAIL,misfits-web,dev-web
-MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,FAIL,misfits-web,dev-web
+MW-2026-007,Create event from email,User clique Create event depuis un email,Événement créé dans le calendrier + lien vers l'email source,FAIL-GHERKIN-ISSUE-712,misfits-web,dev-web
+MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,FAIL-GHERKIN-ISSUE-713,misfits-web,dev-web
 MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
 MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL,reimagined-guide,dev-back
