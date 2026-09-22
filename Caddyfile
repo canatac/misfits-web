@@ -81,12 +81,9 @@ mail.misfits.ai, www.mail.misfits.ai {
         -Server
     }
 
-    # Logging
+    # Logging — stdout (systemd captures via journalctl)
     log {
-        output file /var/log/caddy/misfits-web.log {
-            roll_size 10mb
-            roll_keep 5
-        }
+        output stdout
         format json
     }
 }
