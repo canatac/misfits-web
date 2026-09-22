@@ -1,22 +1,22 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T23:30 UTC — PO cycle: 54 matrix rows (22 FAIL, 6 PASS, 2 PARTIAL, 24 FAIL no-issue), state=ON, 0 bus messages, 8 PO_TICKETs posted to scrum-master (MW-2026-009/010/011/012/018/025/028/033)
+> Derniere mise a jour: 2026-09-22T23:55:00Z — PO cycle: 51 matrix rows (22 FAIL plain, 17 FAIL with issue, 6 PASS, 2 PARTIAL), state=ON, 0 bus messages, 18 PO_TICKETs posted to scrum-master (MW-2026-009/010/011/012/017/018/025/028/032/033/036/037/039/040/041/042/045/048/054-DEPLOY)
 
 ---
 
 ## 1. Mission
 
-**La boîte mail qui vous appartient vraiment.**
+**La boite mail qui vous appartient vraiment.**
 
-misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX moderne, une conformité privacy-by-design, et une stack d'authentification email complète (DKIM/SPF/DMARC). Pas un SaaS privacy-washing — une infrastructure mail que vous contrôlez.
+misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX moderne, une conformite privacy-by-design, et une stack d'authentification email complete (DKIM/SPF/DMARC). Pas un SaaS privacy-washing — une infrastructure mail que vous controlez.
 
 ---
 
 ## 2. Positionnement
 
-| Critère | misfits.ai | Proton Mail | Tuta | Fastmail | Hey |
+| Critere | misfits.ai | Proton Mail | Tuta | Fastmail | Hey |
 |---------|------------|-------------|------|----------|-----|
-| Modèle | Self-hosted / SaaS | SaaS (Swiss) | SaaS (DE) | SaaS (AU) | SaaS (US) |
+| Modele | Self-hosted / SaaS | SaaS (Swiss) | SaaS (DE) | SaaS (AU) | SaaS (US) |
 | Open source | Partiel (3 repos) | Partiel | 100% clients | Non | Non |
 | E2EE | Oui (DKIM natif) | Oui | Oui (TutaCrypt) | Non | Non |
 | IMAP/SMTP natif | **Oui** | Bridge (payant) | Non | **Oui** | Non |
@@ -30,7 +30,7 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 
 ### 3.1 Privacy by Design
 - Pas de data mining, pas de tracking pixels
-- Conformité native GDPR/CCPA/CASL/LGPD
+- Conformite native GDPR/CCPA/CASL/LGPD
 - DKIM/SPF/DMARC natif (pas de relais tiers)
 
 ### 3.2 UX Moderne
@@ -38,15 +38,15 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - Multi-surface: mail + calendar + contacts + files + translation
 - PWA avec mode hors ligne
 
-### 3.3 Sécurité
+### 3.3 Securite
 - E2EE natif
 - Roadmap post-quantum (TutaCrypt-inspired)
 - Anonymous signup optionnel
 
 ### 3.4 IA
-- Résumés automatiques
+- Resumes automatiques
 - Triage intelligent
-- Réponses suggérées
+- Reponses suggerees
 
 ---
 
@@ -57,56 +57,31 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - [x] DKIM/SPF/DMARC
 - [x] Multi-surface (mail, calendar, contacts)
 - [x] Auth bypass fix (PR #741, regression PASS 2026-09-22)
-- [ ] Scheduled send
-- [ ] Undo send
-- [ ] Email templates
+- [ ] Scheduled send (ISSUE-705)
+- [ ] DKIM service stability (MW-2026-045, ticket poste)
+- [ ] Email forward button (MW-2026-048, ticket poste)
+- [ ] Bulk email selection (MW-2026-063, ISSUE-803)
+- [ ] Email snooze presets (UX-779, ISSUE-809)
+- [ ] BIMI brand indicator (MW-2026-060, ISSUE-808)
+- [ ] Deploy failure — PR #805 Caddyfile validation (ISSUE-810, ticket MW-2026-054-DEPLOY poste)
 
-### Sprint 2 — Security
-- [ ] Post-quantum crypto roadmap
-- [ ] Anonymous signup
-- [ ] MTA-STS / DANE
+### Sprint 2 — UX & IA
+- [ ] AI email summary (ISSUE-714)
+- [ ] AI smart triage (ISSUE-715)
+- [ ] AI suggested replies (ISSUE-716)
+- [ ] Conversation view (ISSUE-713)
+- [ ] PWA offline (ISSUE-711)
+- [ ] Unified search bar (MW-2026-037, ticket poste)
+- [ ] Reading mode (MW-2026-056, ISSUE-794)
+- [ ] Email attachment preview (MW-2026-050, ISSUE-782)
+- [ ] Email export .eml batch (MW-2026-017+058, ISSUE-785)
 
-### Sprint 3 — Ecosystem
-- [ ] PWA offline
-- [ ] Intégration calendrier avancée
-- [ ] Mobile apps
-
-### Sprint 4 — AI
-- [ ] Résumés automatiques
-- [ ] Triage intelligent
-- [ ] Réponses suggérées
-
-### Sprint 5 — Monétisation
-- [ ] Modèle freemium
-- [ ] Custom domain payant
-- [ ] Plans Pro/Admin
-
----
-
-## 5. Métriques clés
-
-| Métrique | Cible | Actuel |
-|----------|-------|--------|
-| Taux de délivrabilité | >99.5% | À mesurer |
-| Temps de réponse API | <200ms p95 | À mesurer |
-| Couverture tests | >90% Domain | À mesurer |
-| Uptime | 99.9% | À mesurer |
-| NPS utilisateur | >50 | À mesurer |
-
----
-
-## 6. Arbitrages documentés
-
-### Arbitrage 2026-09-22: Modèle freemium
-- **Choix**: Freemium classique (gratuit 15GB, payant custom domain + features avancées)
-- **Rejeté**: Gratuit avec pub (contredit privacy-by-design), Donation (non scalable), 100% payant (barrière à l'entrée)
-- **Rationale**: Aligné avec le marché (Proton/Tuta/Fastmail), respecte le pilier privacy
-
-### Arbitrage 2026-09-22: Feature parity vs Innovation
-- **Choix**: Parité sur les must-have (scheduled send, undo send, templates), innovation sur l'IA et le chat mail
-- **Rejeté**: Innovation pure (les users ne quittent pas Gmail pour un produit incomplet), Parité pure (pas de différenciation)
-- **Rationale**: Les users exigent les deux en 2026
-
----
-
-*Fichier maintenu par le Product Owner.*
+### Sprint 3 — Backend & Security
+- [ ] Multi-account aggregation (MW-2026-019)
+- [ ] External account connection (MW-2026-022)
+- [ ] JMAP server (MW-2026-026)
+- [ ] Zero-access encryption (MW-2026-027)
+- [ ] Pro plan subscription (MW-2026-021)
+- [ ] MTA-STS + DANE (MW-2026-042, ticket poste)
+- [ ] Post-quantum crypto (MW-2026-040, ticket poste)
+- [ ] Anonymous signup via Tor (MW-2026-041, ticket poste)
