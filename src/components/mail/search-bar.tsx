@@ -18,8 +18,6 @@ import {
   OperatorHintsPanel,
 } from "./search-bar-dropdowns";
 import { useSearchBarHandlers } from "./search-bar/use-search-bar-handlers";
-import { useSearchAutocomplete } from "./search-bar/use-search-autocomplete";
-import { InlineSuggestion } from "./search-bar/inline-suggestion";
 
 interface SearchBarProps {
   className?: string;
@@ -72,43 +70,6 @@ export function SearchBar({
     setShowHistory,
   });
 
-  const {
-    autocomplete,
-    updateAutocomplete,
-    acceptSuggestion,
-    dismiss,
-  } = useSearchAutocomplete();
-
-  // Combined change handler that also updates autocomplete
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const cursorPos = e.target.selectionStart ?? value.length;
-    handleChange(e);
-    updateAutocomplete(value, cursorPos);
-  };
-
-  // Combined keydown handler that accepts suggestion on Tab/Right
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    handleKeyDown(e);
-
-    if (
-      (e.key === "Tab" || e.key === "ArrowRight") &&
-      autocomplete.suggestion &&
-      inputRef.current?.selectionStart === query.length
-    ) {
-      e.preventDefault();
-      const newQuery = acceptSuggestion(query, query.length);
-      // Update store and hide suggestion
-      useSearchStore.getState().setSearchQuery(newQuery);
-      dismiss();
-      // Position cursor after the operator
-      requestAnimationFrame(() => {
-        const pos = newQuery.length;
-        inputRef.current?.setSelectionRange(pos, pos);
-      });
-    }
-  };
-
   return (
     <div className={cn("relative flex items-center gap-1", className)}>
       <div className="relative flex-1">
@@ -118,8 +79,8 @@ export function SearchBar({
           type="search"
           placeholder="Search mail... (use from:, to:, subject:, is:unread, etc.)"
           value={query}
-          onChange={onInputChange}
-          onKeyDown={onKeyDown}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
           onFocus={() => {
             if (!query && searchHistory.length > 0) setShowHistory(true);
           }}
@@ -133,13 +94,6 @@ export function SearchBar({
           aria-label="Search emails"
           data-testid="search-bar-input"
           autoFocus={autoFocus}
-        />
-
-        <InlineSuggestion
-          inputRef={inputRef}
-          suggestion={autocomplete.suggestion}
-          partial={autocomplete.partial}
-          className="pr-20 pl-9"
         />
 
         <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5">

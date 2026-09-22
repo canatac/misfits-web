@@ -7,12 +7,11 @@
 import { memo, useMemo } from "react";
 import { Star, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LabelBadge } from "@/components/mail/label-badge";
 import { AccountBadge } from "@/components/mail/account-badge";
 import { SecurityIndicator } from "@/components/mail/security-indicator";
-import { BimiLogo } from "@/components/mail/bimi-logo";
-import { parseBimiHeaders } from "@/lib/bimi";
 import { useLabelStore } from "@/stores/label-store";
 import { useAccountStore } from "@/stores/account-store";
 import type { Email } from "@/types/email";
@@ -29,7 +28,7 @@ interface EmailListItemProps {
   onToggleStar: (id: string) => void;
 }
 
-export function formatDate(dateStr: string): string {
+function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -53,6 +52,13 @@ export function formatDate(dateStr: string): string {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function getInitials(name: string): string {
+  if (name === "me") return "Me";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function EmailListItemComponent({
@@ -117,12 +123,12 @@ function EmailListItemComponent({
         />
       )}
 
-      {/* Avatar / BIMI Logo */}
-      <BimiLogo
-        senderName={email.from.name}
-        bimi={parseBimiHeaders(email.headers || {})}
-        size="sm"
-      />
+      {/* Avatar */}
+      <Avatar className="h-9 w-9 shrink-0">
+        <AvatarFallback className="text-xs">
+          {getInitials(email.from.name)}
+        </AvatarFallback>
+      </Avatar>
 
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
