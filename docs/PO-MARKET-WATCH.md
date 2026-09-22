@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T17:05 UTC — Reading pane split-view UX proposal + matrix gap triage
+> Dernière mise à jour: 2026-09-22T17:35 UTC — UX #776 dup closed + testeur #775/#777 routed to scrum-master
 
 ---
 
@@ -176,6 +176,14 @@
 - Tickets posted: MW-023, MW-020, MW-016, MW-017, MW-018, MW-019, MW-021, MW-022
 - All tickets include row_id, expected test evidence, owner hints, and repo routing
 - No ROOT_GO received → no dev actions taken
+
+### Cycle 2026-09-22T17:35 — UX #776 duplicate closed + testeur issues routed
+- **UX #776** (bulk selection shift-click) evaluated → DUPLICATE of #390 (already covers shift-click in wireframe). Closed #776 with comment linking to #390.
+- **Testeur #775** (MW-2026-055 reading pane split-view FAIL) → PO_TICKET posted to scrum-master (task_id: po_reading_pane_20260922, owner: dev-web)
+- **Testeur #777** (MW-2026-036 DKIM SMTP 587 unreachable) → PO_TICKET posted to scrum-master (task_id: po_dkim_smtp_20260922, owner: dev-back+dev-int, P0)
+- **Matrix gaps**: 12 FAIL rows still lack GH issues (MW-009, 017, 019, 022, 025, 026, 027, 039, 040, 041, 042, 045). Most are backend/security features already tracked in reimagined-guide or studious-octo-rotary-phone.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-056 for bulk selection regression)
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 

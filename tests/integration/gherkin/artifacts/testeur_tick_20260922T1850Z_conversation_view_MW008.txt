@@ -1,0 +1,31 @@
+testeur_tick_CONVERSATION_VIEW_MW008
+==================================
+TICK: 2026-09-22T18:50Z
+ROLE: testeur
+ACTION: Production regression test — MW-2026-008 Conversation view + auth regression check
+TICKET: MW-2026-008 / Issue #713 / PR #772
+
+PRODUCTION TEST RESULTS (anonymous):
+--- Auth Regression (all PASS) ---
+- GET /api/emails (anon) → 401 ✓
+- GET /api/hermes/runs (anon) → 307 ✓
+- GET /api/admin/whoami (anon) → 401 ✓
+- GET / → 200 OK (frontend reachable) ✓
+
+--- Conversation View Feature ---
+- GET /api/emails/threads (anon) → 401 (endpoint EXISTS, auth required) ✓
+  (Previously returned 404 — backend deployed via PR #772)
+- JS bundle scan: "thread" found in chunk 2113-deabe4a252de3bdf.js (threadCount) ✓
+- JS bundle scan: "thread" found in chunk 6730-5ac4a51ebc9ad5e6.js (thread x30, threadId x2) ✓
+- No readingPane/splitView/readingPanel identifiers (MW-055 still not deployed)
+- No attachmentPreview/swipeGesture identifiers (MW-050/038 still not deployed)
+
+--- PR Status ---
+- PR #772 (feat/issue-713-conversation-threads): CI PASS, MERGEABLE, NOT YET MERGED
+- PR #754 (reading mode integration): CONFLICTING
+
+CONCLUSION: PARTIAL (improved) — Conversation view backend endpoint deployed
+and frontend thread code present in production bundles. Full UI verification
+requires auth (qa.admin@misfits.fr credentials needed for complete test).
+
+MATRIX STATUS: PARTIAL-ISSUE-713-ENDPOINT-DEPLOYED-2026-09-22T18:50Z (updated)

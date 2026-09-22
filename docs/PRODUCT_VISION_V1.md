@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T17:05 UTC — PO cycle: 2 issues created (#773 PDF export, #774 auth/compose 502), 50 matrix rows, state=ON
+> Dernière mise à jour: 2026-09-22T18:00 UTC — PO cycle: 5 FAIL rows linked to existing issues (#582,#583,#584,#585,#60), 51 matrix rows (40 FAIL, 9 PASS, 2 PARTIAL), state=ON
 
 ---
 
