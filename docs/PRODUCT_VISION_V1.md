@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T09:30 UTC — PO cycle: 9 tickets posted (Sprint 1 FAIL triage + Notion Mail migration, 22 FAIL rows scanned, 1 new issue #721)
+> Dernière mise à jour: 2026-09-22T10:10 UTC — PO cycle: 17 tickets posted (Sprint 1 FAIL triage + Notion Mail migration + UX swipe gesture + Pro plan subscription + External account connection + 3 P0 security: #722 auth bypass + #558 CORS reflection + #556 CORS misconfig + UX auto-save draft + mobile swipe gesture, 28 FAIL rows scanned, 0 new issues, 1 PO_TICKET posted)
 
 ---
 
@@ -59,6 +59,9 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - [ ] Scheduled send
 - [ ] Undo send
 - [ ] Email templates
+- [ ] P0: Auth bypass #722 (misfits-web) — inbox + attachments exposed
+- [ ] P0: CORS reflection + auth bypass #558 (reimagined-guide)
+- [ ] P0: CORS misconfig + admin bypass #556 (reimagined-guide)
 
 ### Sprint 2 — Security
 - [ ] Post-quantum crypto roadmap
