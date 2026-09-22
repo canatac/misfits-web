@@ -35,3 +35,7 @@ MW-2026-035,Auth bypass /api/emails regression,Requete non authentifiee sur /api
 MW-2026-036,DKIM service operationnel,User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
 MW-2026-037,UX unified search bar,User clique sur la barre de recherche unifiée,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K,FAIL,misfits-web,dev-web
 MW-2026-038,Email triage swipe gestures,User swipe gauche/droite sur un email dans la liste,Swipe gauche = archiver + swipe droit = marquer comme lu + animation fluide + annulation possible,FAIL-ISSUE-744,misfits-web,dev-web
+MW-2026-039,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
+MW-2026-040,Post-quantum crypto (TutaCrypt),User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
+MW-2026-041,Anonymous signup via Tor,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
+MW-2026-042,MTA-STS + DANE outbound,User envoie email vers domaine avec MTA-STS/DANE,Connexion TLS obligatoire + TLSA record vérifié + échec si certificat invalide,FAIL,reimagined-guide,dev-back
