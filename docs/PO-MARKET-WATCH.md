@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T09:00 UTC — Veille marché cycle
+> Dernière mise à jour: 2026-09-22T09:30 UTC — Veille marché cycle (Notion Mail shutdown + migration opportunity)
 
 ---
 
@@ -177,6 +177,18 @@
 - No ROOT_GO received → no dev actions taken
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+
+### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
+- **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
+- **Impact**: users lose Notion-specific features (snippets, auto-label rules, scheduled emails, email-to-database sync). Gmail emails remain safe, but workflows built around Notion Mail need migration.
+- **Opportunity for misfits.ai**: position as migration destination for Notion Mail users who want a privacy-first, self-hosted alternative. Key differentiators: native IMAP/SMTP (no bridge needed), E2EE, no data mining, AI features (suggested replies, triage, summaries).
+- **Competitor response**: Mailbird, Faraday, Quicktion positioning as alternatives. None offer native E2EE + IMAP + AI combination.
+- **Action**: create migration-focused issue for Notion Mail users (import wizard, workflow templates).
+
+### Arbitrage 2026-09-22: Migration feature vs Native client
+- **Choix**: Migration wizard (import from Gmail/Notion Mail) + web-first (no native client yet)
+- **Rejeté**: Native client first (delays web launch), Migration only (no differentiation)
+- **Rationale**: Notion Mail users need a quick migration path. Web-first with import wizard captures them immediately. Native client can follow in Sprint 3.
 
 ### Cycle 2026-09-22T09:00 — Veille marché
 - **Proton 2026**: déploiement post-quantum (Kyber+Dilithium) pour nouveaux emails chiffrés, zero-access encryption étendu, Bridge pour desktop clients. Source: https://onerep.com/blog/is-proton-mail-safe

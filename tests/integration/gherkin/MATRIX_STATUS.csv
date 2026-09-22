@@ -26,3 +26,4 @@ MW-2026-024,DMARC/BIMI trust indicator,User ouvre un email authentifié (DKIM+SP
 MW-2026-025,Post-quantum encryption,User envoie email avec signature Dilithium,Email signé avec algorithme post-quantum + badge PQ visible + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
 MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentification JMAP réussie + sync mail/calendar fonctionnel + fallback IMAP OK,FAIL,reimagined-guide,dev-back
 MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
+MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL,misfits-web,dev-web
