@@ -32,5 +32,5 @@ MW-2026-030,CORS reflection + auth bypass (P0),Attaquant envoie requête CORS av
 MW-2026-031,CORS misconfig + admin bypass (P0),Accès non authentifié à /api/admin/*,Requête rejetée 401 + Origin non reflété,FAIL-GHERKIN-ISSUE-556,reimagined-guide,dev-back
 MW-2026-032,Reading mode (HTML sanitize),User clique Mode lecture sur un email HTML,Contenu purifié sans scripts/styles inline + images lazy-loading + texte lisible (line-height>=1.5, max-width<=800px),FAIL-ISSUE-724,misfits-web,dev-web
 MW-2026-033,Keyboard shortcuts,User presse c/r/a/f/e/#/j/k/Enter/Esc/?,Chaque raccourci déclenche l'action correspondante + modal help affiché avec ?,FAIL-GHERKIN-TESTED-PROD-DOWN,misfits-web,dev-web
-MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PARTIAL-PASS-ISSUE-727,misfits-web,dev-back
-MW-2026-035,Auth bypass /api/emails exposed,User non authentifié accède à /api/emails,Requête rejetée 401 + proxy Next.js + Caddy auth routes restaurés,FAIL-ISSUE-730,misfits-web,dev-web
+MW-2026-034,Production reachability,User accède https://mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 reachable + IMAP 993 reachable,PARTIAL-PASS-HTTPS-OK-SMTP-IMAP-DOWN,misfits-web,dev-back
+MW-2026-035,Auth bypass /api/emails exposed,User non authentifié accède à /api/emails,Requête rejetée 401 + proxy Next.js + Caddy auth routes restaurés,FAIL-ISSUE-730-ISSUE-731,misfits-web,dev-web
