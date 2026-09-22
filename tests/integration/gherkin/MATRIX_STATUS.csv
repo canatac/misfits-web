@@ -46,3 +46,4 @@ MW-2026-046,Caddyfile wildcard path matching,Requete sur /api/emails (exact) + /
 MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture logs caddy,Logs caddy en stdout + deploy CI reussi + pas de permission denied,PASS,PASS-FIX-PR-741,misfits-web,dev-int
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,PASS-CODE-VERIFIED-2026-09-22T1328Z,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
+MW-2026-050,Attachment preview + quick actions,User ouvre un email avec une image ou PDF en pièce jointe,Preview inline affichée + bouton download + save to Files + share link + indicateur taille/type + badge scan sécurité,FAIL-ISSUE-752,misfits-web,dev-web
