@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T10:10 UTC — PO cycle: 17 tickets posted (Sprint 1 FAIL triage + Notion Mail migration + UX swipe gesture + Pro plan subscription + External account connection + 3 P0 security: #722 auth bypass + #558 CORS reflection + #556 CORS misconfig + UX auto-save draft + mobile swipe gesture, 28 FAIL rows scanned, 0 new issues, 1 PO_TICKET posted)
+> Dernière mise à jour: 2026-09-22T10:30 UTC — PO cycle: 18 tickets posted (Sprint 1 FAIL triage + Notion Mail migration + UX swipe gesture + Pro plan subscription + External account connection + 3 P0 security: #722 auth bypass + #558 CORS reflection + #556 CORS misconfig + UX auto-save draft + mobile swipe gesture + reading mode HTML sanitize, 29 FAIL rows scanned, 1 new issue #724, 1 PO_TICKET posted)
 
 ---
 
@@ -113,6 +113,11 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - **Choix**: Migration wizard (import from Gmail/Notion Mail) + web-first (no native client yet)
 - **Rejeté**: Native client first (delays web launch), Migration only (no differentiation)
 - **Rationale**: Notion Mail shuts down 2026-09-22. Users need a quick migration path. Web-first with import wizard captures them immediately. Native client can follow in Sprint 3. Issue #721 created.
+
+### Arbitrage 2026-09-22: Reading mode — HTML sanitize vs plain text
+- **Choix**: Reading mode with HTML sanitization (strip scripts/styles/trackers, keep text + lazy-loaded images)
+- **Rejeté**: Plain text only (loses formatting and images), Full HTML render (security risk, tracking pixels)
+- **Rationale**: HTML emails are the norm in 2026. A sanitized reading mode balances readability with privacy/security. Distinct from #399 (list pane collapse) — this targets email content itself. Issue #724 created.
 
 ---
 
