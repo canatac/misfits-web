@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T09:30 UTC — Veille marché cycle (Notion Mail shutdown + migration opportunity)
+> Dernière mise à jour: 2026-09-22T13:10 UTC — Keyboard shortcuts power-user cycle
 
 ---
 
@@ -196,3 +196,13 @@
 - **Fastmail 2026**: privacy model = policy-based (pas zéro-knowledge), JMAP natif, IMAP/SMTP/CalDAV/CardDAV complets, audit indépendant. Source: https://guptadeepak.com/tools/top-5-secure-email-providers-2026
 - **Tendance 2026**: post-quantum = différentiateur (Proton+Tuta), JMAP remplace IMAP (Fastmail), zero-access = standard minimum
 - **Leçons pour misfits**: notre stack DKIM/SPF/DMARC native + E2EE + post-quantum roadmap est aligné sur le marché. JMAP = opportunité (déjà planifié via issue #501).
+
+### Cycle 2026-09-22T13:10 — Keyboard shortcuts power-user differentiator
+- **Market insight**: Superhuman (acquired by Grammarly mid-2025), Proton Mail, Fastmail, Spark Mail, and eM Client all emphasize keyboard shortcuts as a core power-user feature. Proton's V4 web client has comprehensive shortcuts with tooltips. Fastmail has single-key shortcuts (y=archive, f=forward, !=spam). Superhuman built its entire brand on keyboard-first navigation.
+- **misfits.ai gap**: No keyboard shortcut system exists. Power users (our target segment) expect to process 100+ emails/day without touching a mouse. This is a significant UX gap vs. all major competitors.
+- **Arbitrage 2026-09-22: Keyboard shortcuts scope**
+  - **Choix**: Full shortcut system (compose, navigate, archive, reply, forward, search, settings) + shortcut help panel (Ctrl+/)
+  - **Rejeté**: Minimal shortcuts (only compose+send), Custom-only shortcuts (no defaults)
+  - **Rationale**: Power users expect comprehensive defaults out of the box. Customization can follow in v2. The shortcut help panel (Ctrl+/) is a Proton best practice that aids discoverability.
+- **Competitor reference**: Proton (G+I=inbox, Ctrl+Shift+M=compose), Fastmail (y=archive, f=forward, .=action menu), Superhuman (cmd+K=command palette)
+- **Action**: Create GH issue for keyboard shortcut system with matrix row MW-2026-043
