@@ -26,7 +26,19 @@ export async function GET(request: Request) {
       headers: buildForwardHeaders(request),
       cache: "no-store",
     }
-  );
+  ).catch(() => null);
+
+  if (!upstream) {
+    return NextResponse.json(
+      {
+        error: {
+          message: "Backend admin whoami unavailable",
+          code: "BACKEND_UNREACHABLE",
+        },
+      },
+      { status: 502 }
+    );
+  }
 
   const contentType =
     upstream.headers.get("content-type") || "application/json";
