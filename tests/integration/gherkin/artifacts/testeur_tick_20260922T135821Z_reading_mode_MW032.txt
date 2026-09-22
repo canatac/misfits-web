@@ -1,0 +1,2 @@
+=== Testeur Smoke — MW-032 Reading Mode (20260922T135821Z) ===
+PROD_REACHABILITY: https://mail.misfits.ai -> HTTP 200

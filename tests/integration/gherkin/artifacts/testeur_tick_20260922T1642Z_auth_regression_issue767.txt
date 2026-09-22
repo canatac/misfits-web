@@ -1,0 +1,32 @@
+testeur_tick_20260922T1642Z_auth_regression_issue767.txt
+================================================
+TICK: 2026-09-22T16:42Z
+ROLE: testeur
+ACTION: Auth bypass regression test (issue #767 acceptance criteria)
+TICKET: #767 [po] regression: Auth bypass regression test for /api/* routes
+
+PRODUCTION REGRESSION TEST RESULTS:
+- GET /api/emails → 401 {"code":"AUTH_REQUIRED"} ✓
+- GET /api/emails/test-id → 401 {"code":"AUTH_REQUIRED"} ✓
+- GET /api/hermes/runs → 307 → /login ✓
+- GET /api/admin → 307 → /login ✓
+- GET /api/admin/ai-activity → 307 → /login ✓
+- GET /api/external-accounts → 307 → /login ✓
+- GET /api/compose/send → 404 (endpoint not implemented, not bypass) ✓
+- GET /api/auth/login → 404 (endpoint not implemented) ✓
+- GET / → 200 OK (frontend reachable) ✓
+
+CORS TEST:
+- Origin: https://evil.example.com → 401 (no Access-Control-Allow-Origin reflected) ✓
+
+PII LEAK CHECK:
+- No email content, no inbox data, no admin data exposed ✓
+
+CONCLUSION: PASS — All /api/* routes properly protected.
+No auth bypass regression detected. Issue #767 acceptance criteria met.
+
+RELATED MATRIX ROWS:
+- MW-2026-029: PASS (auth bypass fixed, regression verified)
+- MW-2026-044: PASS (auth bypass regression confirmed)
+- MW-2026-046: PASS (Caddyfile wildcard path matching)
+- MW-2026-054: FAIL-ISSUE-764 (/api/compose/send + /api/auth/login 404, not implemented)

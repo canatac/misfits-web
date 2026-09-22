@@ -1,0 +1,14 @@
+=== Testeur Smoke — MW-032 Reading Mode (20260922T135910Z) ===
+PROD_REACHABILITY: https://mail.misfits.ai -> HTTP 200
+READING_MODE_IN_BUNDLE: NOT_FOUND
+BOOKOPEN_IN_BUNDLE: 0
+AUTH_BYPASS_API_EMAILS: /api/emails -> HTTP 307 (expect 307/401)
+AUTH_BYPASS_API_EXT: /api/external-accounts -> HTTP 307 (expect 307/401)
+
+=== Code Analysis ===
+immersive-reading.tsx: EXISTS
+email-view.tsx imports reading mode: 0
+email-toolbar.tsx includes reading mode: 0
+
+VERDICT: FAIL — Reading mode component exists but NOT wired into email-view.tsx
+ISSUE: #745 (test(MW-032): reading mode component exists but not integrated in email-view)

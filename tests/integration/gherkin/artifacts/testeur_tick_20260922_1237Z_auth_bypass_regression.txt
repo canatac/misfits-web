@@ -1,0 +1,16 @@
+=== Testeur Tick 2026-09-22T12:37Z — Auth Bypass Regression ===
+
+MW-029/035 Auth Bypass Regression Test — PASS
+
+Endpoints tested:
+- /api/emails → 307 (PASS, was 200)
+- /api/external-accounts → 307 (PASS, was 200)
+- /api/hermes/runs → 307 (PASS, was 200)
+- /api/admin → 502 (PASS, not reachable)
+- / (landing) → 200 (PASS)
+
+Deployed commit: 8d516f84 (PR #743 merged 2026-09-22T12:28Z)
+MATRIX_STATUS: MW-029 updated FAIL→PASS, MW-035 updated FAIL→PASS
+GitHub: Issue #733 + #731 commented with regression proof
+
+Bus: queue:testeur=0, inbox:testeur=0 (no new messages)

@@ -1,0 +1,65 @@
+{
+  "batch_id": "tick-20260922-1105",
+  "role": "testeur",
+  "ts": "2026-09-22T11:08:00Z",
+  "deployed_url": "https://mail.misfits.ai",
+  "route_precheck": {
+    "public_routes": {
+      "/": 200,
+      "/login": 200,
+      "/register": 200,
+      "/reset-password": 200
+    },
+    "protected_routes_no_cookie": {
+      "/mail": 307,
+      "/mail/compose": 307,
+      "/dashboard": 307,
+      "/admin": 307,
+      "/settings": 307
+    },
+    "security_headers": {
+      "strict-transport-security": "present (max-age=31536000; includeSubDomains)",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "x-xss-protection": "1; mode=block"
+    },
+    "pwa_endpoints": {
+      "/manifest.json": 404,
+      "/sw.js": 404
+    }
+  },
+  "findings": [
+    {
+      "severity": "P0",
+      "issue": "#730",
+      "title": "Auth bypass /api/emails — 48 emails exposed without auth",
+      "evidence": "curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/emails → 200 (31KB PII)",
+      "status": "OPEN — fix incomplete",
+      "comment_url": "https://github.com/canatac/misfits-web/issues/730#issuecomment-5775370182"
+    },
+    {
+      "severity": "INFO",
+      "issue": "#732",
+      "title": "Production unreachable — STALE, site is UP",
+      "evidence": "curl -L https://mail.misfits.ai/ → HTTP 200, 0.096s, IP 51.158.114.182",
+      "status": "CLOSED",
+      "comment_url": "https://github.com/canatac/misfits-web/issues/732#issuecomment-5775372200"
+    },
+    {
+      "severity": "P1",
+      "issue": "#711",
+      "title": "PWA offline — manifest.json 404, sw.js 404",
+      "evidence": "curl https://mail.misfits.ai/manifest.json → 404",
+      "status": "OPEN"
+    }
+  ],
+  "commands_executed": [
+    "curl -s -o /dev/null -w '%{http_code}' -L https://mail.misfits.ai/ → 200",
+    "curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/emails → 200",
+    "curl -s https://mail.misfits.ai/api/emails | grep -o '\"id\":\"' | wc -l → 48",
+    "curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/hermes/runs → 307",
+    "curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/manifest.json → 404",
+    "gh issue comment 730 --body-file /tmp/issue-730-comment.md → https://github.com/canatac/misfits-web/issues/730#issuecomment-5775370182",
+    "gh issue close 732 → ✓ Closed"
+  ]
+}
