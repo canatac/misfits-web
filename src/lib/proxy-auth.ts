@@ -28,6 +28,13 @@
  * internal services are only reachable via the Docker bridge network.
  *
  * Matches the default in next.config.ts rewrites.
+ *
+ * Fallback chain when DNS resolution of `email-api` fails (container not
+ * attached to mailnet bridge — see issue #866):
+ *   1. BACKEND_URL env var (explicit override)
+ *   2. http://email-api:8000 (Docker DNS, normal case)
+ *   3. http://host.docker.internal:8000 (Linux Docker host gateway)
+ *   4. http://localhost:8000 (last resort / dev mode)
  */
 export function resolveBackendBaseUrl(): string {
   const raw =
@@ -36,6 +43,25 @@ export function resolveBackendBaseUrl(): string {
       ? "http://email-api:8000"
       : "http://localhost:8000");
   return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+/**
+ * Ordered list of backend base URLs to try when the primary fails.
+ * Used by proxy routes that need resilience against Docker DNS failures.
+ */
+export function resolveBackendBaseUrlCandidates(): string[] {
+  const primary = resolveBackendBaseUrl();
+  const candidates = [primary];
+  if (process.env.NODE_ENV === "production") {
+    // Fallback URLs when Docker service DNS doesn't resolve
+    if (!primary.includes("host.docker.internal")) {
+      candidates.push("http://host.docker.internal:8000");
+    }
+    if (!primary.includes("localhost")) {
+      candidates.push("http://localhost:8000");
+    }
+  }
+  return candidates;
 }
 
 export function extractIncomingAuth(request: Request): {
