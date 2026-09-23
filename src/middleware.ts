@@ -75,6 +75,9 @@ function isProtected(pathname: string): boolean {
   // always be authenticated. The proxy handler forwards to the backend only
   // after this middleware validates the session cookie.
   if (pathname.startsWith("/api/emails")) return true;
+  // Template API routes require session (user-scoped resources — issue #852).
+  // /api/templates/* (CRUD) must always be authenticated.
+  if (pathname.startsWith("/api/templates")) return true;
   // Non-sensitive API routes (mail, monitoring) are server-to-server,
   // protected by the backend's own auth layer.
   if (pathname.startsWith("/api")) return false;
