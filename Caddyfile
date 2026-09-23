@@ -49,9 +49,10 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
-
+    # /api/health* — proxy directly to backend mongo-health endpoint (issue #891).
+    # Rewrite /api/health → /api/monitoring/mongo-health on backend:8000.
     handle /api/health* {
-        rewrite * /api/monitoring/mongo-health{uri}
+        rewrite * /api/monitoring/mongo-health
         reverse_proxy http://localhost:8000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
@@ -59,7 +60,6 @@ mail.misfits.ai, www.mail.misfits.ai {
         }
     }
     # /api/templates* — must go through Next.js for Edge auth middleware (issue #852).
-    # Templates are user-scoped; session auth required before proxying to backend.
     handle /api/templates* {
         reverse_proxy http://localhost:3001 {
             header_up X-Real-IP {remote_host}
