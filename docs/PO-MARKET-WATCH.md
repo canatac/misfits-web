@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T12:00 UTC — veille email privacy regulations 2026 (GDPR/ePrivacy update, CNIL tracking pixels, CCPA/CPRA, CASL, LGPD), matrix 53 rows (42 FAIL, 8 PASS, 2 PASS-FIXED), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T14:30 UTC — veille compétiteurs pricing 2026 (Fastmail/Proton/Tuta), matrix 54 rows (43 FAIL, 8 PASS, 2 PASS-FIXED), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
 
 ---
 
@@ -59,6 +59,27 @@
 || **Mobile Rust engine** | N/A | **Oui (2026)** | Non | Non | Non |
 || **Énergie** | À définir | Standard | **100% renouvelable** | Standard | Standard |
 || **Prix entrée** | Freemium (à définir) | €3/mo (15GB) | €3/mo (20GB) | $3/mo | $99/an |
+
+### Pricing 2026 — Comparatif détaillé (sources: fastmail.com/pricing, proton.me/pricing, tuta.com, guptadeepak.com, mailafiniti.com — accès 2026-09-23)
+
+| Fournisseur | Plan entrée | Plan mid | Plan pro | Stockage | Custom domain | E2EE | IMAP/SMTP natif |
+|------------|-------------|----------|----------|----------|---------------|------|-----------------|
+| **Fastmail** | $3/mo (Basic, 2GB) | $5/mo (Standard, 30GB) | $9/mo (Professional, 100GB) | 2-100GB | Dès Standard | Non (TLS only) | **Oui** |
+| **Proton** | $0 (Free, 1GB) | $3.99/mo (Mail Plus, 15GB) | $9.99/mo (Unlimited, 500GB) | 1-500GB | Payant | **Oui** | Bridge (payant) |
+| **Tuta** | $0 (Free, 1GB) | €3/mo (Premium, 20GB) | €8/mo (Business, 500GB) | 1-500GB | Dès Premium | **Oui (TutaCrypt PQ)** | Non (propriétaire) |
+| **Hey** | $99/an (base) | — | — | 100GB | Non | Non | Non |
+| **misfits.ai** | Freemium (à définir) | — | — | — | — | **Oui (DKIM natif)** | **Oui** |
+
+**Arbitrage 2026-09-23: Positionnement prix misfits.ai**
+- **Choix**: Freemium avec plan Pro à €5/mo (60GB, custom domain, IA features) — positionnement entre Tuta (€3) et Fastmail ($5)
+- **Rejeté**: Gratuit total (pas de revenus), Prix premium €10+ (pas de différenciateur suffisant), Plan unique (pas de segmentation)
+- **Rationale**: Le marché 2026 est polarisé entre Tuta (privacy pur, €3) et Proton (écosystème, €10). misfits.ai peut se positionner au milieu avec IA-first + native IMAP/SMTP + E2EE à €5/mo. Fastmail à $5/mo prouve que le prix mid-market est viable sans E2EE — notre angle E2EE + IA justifie un prix similaire.
+
+**Leçons pour misfits**:
+- Fastmail: pricing transparent, pas de plan gratuit → modèle viable. Notre freemium doit avoir des limites claires (storage, features IA).
+- Proton: l'écosystème (VPN+Drive+Pass) justifie le prix élevé. Notre angle: IA + mail natif, pas d'écosystème artificiel.
+- Tuta: le plus abordable avec E2EE (€3/mo). Notre différenciateur: IMAP/SMTP natif (Tuta est propriétaire) + IA on-device.
+- Hey: modèle unique ($99/an) ne scale pas. Notre segmentation freemium→pro est plus adaptée au marché EU.
 
 ### Points différenciants misfits.ai vs concurrence
 
@@ -214,6 +235,17 @@
 - **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-056 for bulk selection regression)
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
+
+### Cycle 2026-09-23T14:30Z — Compétiteurs pricing 2026 + arbitrage freemium
+- **Sources**: fastmail.com/pricing, proton.me/pricing, tuta.com, guptadeepak.com, mailafiniti.com (accès 2026-09-23)
+- **Fastmail 2026**: Basic $3/mo (2GB), Standard $5/mo (30GB), Professional $9/mo (100GB). Pas de plan gratuit. Custom domain dès Standard. JMAP natif. Pas d'E2EE.
+- **Proton 2026**: Free 1GB, Mail Plus $3.99/mo (15GB), Unlimited $9.99/mo (500GB). E2EE natif. Bridge IMAP/SMTP payant. Écosystème VPN+Drive+Pass.
+- **Tuta 2026**: Free 1GB, Premium €3/mo (20GB), Business €8/mo (500GB). TutaCrypt post-quantum. Client propriétaire (pas IMAP/SMTP natif).
+- **Hey**: $99/an base, pas de segmentation. Modèle unique non scalable.
+- **Arbitrage prix**: Freemium → Pro €5/mo (60GB, custom domain, IA). Positionnement entre Tuta (€3) et Fastmail ($5). Différenciateur: E2EE + IMAP/SMTP natif + IA on-device.
+- **Action**: Matrix row MW-2026-069 ajoutée — Pricing plan Pro €5/mo (owner hint: dev-back, P2)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email assistants 2026) or matrice de tests (add rows for remaining FAIL rows)
 
 ### Cycle 2026-09-22T09:30 — Notion Mail shutdown + migration opportunity
 - **Notion Mail** shuts down September 22, 2026 (confirmed by heise.de, Mailbird, Faraday). Notion shifts to agent-led email inside Notion, not a classic mail client.
