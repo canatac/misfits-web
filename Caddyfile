@@ -62,7 +62,7 @@ mail.misfits.ai, www.mail.misfits.ai {
             health_uri /health
             health_interval 5s
             health_timeout 3s
-            health_status 200
+            health_status 2xx
 
             # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
             # Remove any CORS headers sent by the upstream Rust backend
