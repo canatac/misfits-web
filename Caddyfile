@@ -63,6 +63,17 @@ mail.misfits.ai, www.mail.misfits.ai {
         }
     }
 
+    # /api/health* — must go through Next.js for Docker healthcheck (issue #891).
+    # The /api/health route handler probes backend connectivity. Without this
+    # route, Caddy proxies /api/health to the backend which has no such endpoint → 404.
+    handle /api/health* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
     handle /api/* {
         reverse_proxy http://localhost:8000 {
             header_up X-Real-IP {remote_host}

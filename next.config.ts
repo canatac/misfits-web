@@ -51,36 +51,31 @@ const nextConfig = {
   // Proxy vers email_api HTTP — rewrites are baked at build time.
   // Prefer build-arg BACKEND_URL=http://email-api:8000 in Docker image builds.
   //
-  // /api/compose/* is excluded from the generic rewrite (identity pass-through)
-  // because it has its own route handler (src/app/api/compose/send/route.ts)
-  // that proxies to /api/send on the backend with auth forwarding. Without
-  // this exclusion, the rewrite forwards /api/compose/send to the backend's
-  // /api/compose/send which doesn't exist → 404 (issue #793).
+  // Uses afterFiles so Next.js route handlers (e.g. /api/compose/send/route.ts,
+  // /api/health/route.ts) take precedence over the backend proxy rewrite.
   //
-  // /api/health is excluded because it has its own local route handler
-  // (src/app/api/health/route.ts) that probes backend connectivity for
-  // Docker healthcheck. Without this exclusion, the rewrite proxies
-  // /api/health to the backend which has no such endpoint → 404 (issue #887).
+  // Without afterFiles, the rewrite fires BEFORE route handlers and forwards
+  // /api/compose/send → backend /api/compose/send (doesn't exist → 404, issue #793)
+  // and /api/health → backend /api/health (doesn't exist → 404, issue #887/#891).
+  //
+  // With afterFiles, route handlers match first:
+  //   - /api/compose/send/route.ts transforms path → /api/send + auth forwarding
+  //   - /api/health/route.ts probes backend mongo-health for Docker healthcheck
+  //   - All other /api/* paths fall through to the rewrite → backend normally
   async rewrites() {
     const backendUrl =
       process.env.BACKEND_URL ||
       (process.env.NODE_ENV === "production"
         ? "http://email-api:8000"
         : "http://localhost:8000");
-    return [
-      {
-        source: "/api/compose/:path*",
-        destination: "/api/compose/:path*",
-      },
-      {
-        source: "/api/health",
-        destination: "/api/health",
-      },
-      {
-        source: "/api/:path*",
-        destination: `${backendUrl}/api/:path*`,
-      },
-    ];
+    return {
+      afterFiles: [
+        {
+          source: "/api/:path*",
+          destination: `${backendUrl}/api/:path*`,
+        },
+      ],
+    };
   },
 };
 
