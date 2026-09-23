@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23
+> Dernière mise à jour: 2026-09-23T04:55Z
 
 ---
 
@@ -134,6 +134,7 @@
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-078 | User active le mode IA local (on-device) | Traitement IA fait sur le device, aucune donnée envoyée au serveur, mode offline fonctionnel | ❌ (feature à implémenter — différenciateur vs Proton Scribe cloud) |
+| MW-2026-079 | User ouvre un email avec tracking pixels (newsletter) | Tracking pixels bloqués par défaut + consent gate affiché + consent loggé + opt-out dans paramètres confidentialité | ❌ (feature à implémenter — GDPR/ePrivacy compliant) |
 
 ---
 
@@ -157,3 +158,11 @@
 - **Marché**: privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 82% population mondiale couverte par lois privacy. → Le timing est bon pour un provider privacy-first avec UX moderne.
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+
+### Veille 2026-09-23T04:55Z — Compétiteurs & marché
+
+- **Fastmail** (source: guptadeepak.com, 2026-08-20): privacy model = policy-based (pas E2EE), TLS only, audité indépendamment, transparence reports. Inconvénient: juridiction australienne (Five Eyes), pas de chiffrement bout-en-bout. → **Leçon misfits**: notre E2EE natif + DKIM/SPF/DMARC est un avantage structurel vs Fastmail.
+- **Proton Mail** (source: pivot-to-ai.com): Proton Scribe (AI writer) provoque un backlash chez les users privacy-focused. Les users s'inquiètent du manque de clarté sur le threat model. → **Leçon misfits**: IA locale on-device (MW-2026-078) = réponse à cette friction. Pas de cloud AI = pas de backlash.
+- **Tuta** (source: tuta.com): #1 privacy email en 2026, 100% renouvelable, TutaCrypt post-quantum, bloque tous les third-party clients. → **Leçon misfits**: notre IMAP/SMTP natif est un avantage vs Tuta (qui bloque les clients externes).
+- **Marché** (source: guptadeepak.com): privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 144 pays avec lois data protection. → Le timing est bon pour un provider privacy-first avec UX moderne + IA locale.
+- **Hey** (Basecamp): abandon du IMAP confirmé. Basecamp 5 lance "Create events from email", "Calendar Cover Art". → **Leçon misfits**: notre intégration mail+calendar (MW-2026-007 create event from email) est alignée sur cette tendance.
