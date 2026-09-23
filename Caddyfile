@@ -59,7 +59,7 @@ mail.misfits.ai, www.mail.misfits.ai {
 
             # Health check — detect backend failure fast instead of waiting for timeout (issue #755)
             # Caddy polls /health every 5s; marks upstream down after 3 consecutive failures.
-            health_uri /health
+            health_uri /api/monitoring/mongo-health
             health_interval 5s
             health_timeout 3s
             health_status 2xx
