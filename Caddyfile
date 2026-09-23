@@ -49,6 +49,15 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
+    # /api/mail/* — must go through Next.js for Edge auth middleware (issue #820).
+    # Read receipts are user-scoped; session auth required before proxying to backend.
+    handle /api/mail* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
 
     handle /api/* {
         reverse_proxy http://localhost:8000 {
