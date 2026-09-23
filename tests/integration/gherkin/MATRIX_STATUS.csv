@@ -31,4 +31,4 @@ MW-2026-029,Auth bypass (P0),User non authentifié accède à /api/mail/inbox,Re
 MW-2026-030,CORS reflection + auth bypass (P0),Attaquant envoie requête CORS avec Origin arbitraire,Origin non reflété + /api/admin/* exige token valide,FAIL-GHERKIN-ISSUE-558,reimagined-guide,dev-back
 MW-2026-031,CORS misconfig + admin bypass (P0),Accès non authentifié à /api/admin/*,Requête rejetée 401 + Origin non reflété,FAIL-GHERKIN-ISSUE-556,reimagined-guide,dev-back
 MW-2026-032,Reading mode (HTML sanitize),User clique Mode lecture sur un email HTML,Contenu purifié sans scripts/styles inline + images lazy-loading + texte lisible (line-height>=1.5, max-width<=800px),FAIL-ISSUE-724,misfits-web,dev-web
-MW-2026-073,Backend email-api 502 regression,User envoie POST /api/compose/send,200 OK + email envoyé + pas de 502 backend_unavailable,FAIL-ISSUE-832-PR833,misfits-web+reimagined-guide,dev-back+dev-int
+MW-2026-073,Backend email-api 502 regression,User envoie POST /api/compose/send,200 OK + email envoyé + pas de 502 backend_unavailable,PASS-ISSUE-830-FIXED-PR831-2026-09-23T04:08Z,misfits-web+reimagined-guide,dev-back+dev-int
