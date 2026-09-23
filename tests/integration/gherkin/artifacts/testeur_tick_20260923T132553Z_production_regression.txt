@@ -1,0 +1,31 @@
+testeur tick 20260923T132553Z — Production regression test
+=========================================================
+Target: https://mail.misfits.ai
+
+AUTH BYPASS (MW-029 / MW-044):
+  GET /api/emails -> HTTP 307 ✓
+  GET /api/external-accounts -> HTTP 307 ✓
+  GET /api/hermes/runs -> HTTP 307 ✓
+  GET /api/admin -> HTTP 307 ✓
+  GET /api/admin/whoami -> HTTP 401 ✓
+  GET /api/templates -> HTTP 307 ✓
+
+COMPOSE/SEND REGRESSION (MW-054 / Issue #905):
+  POST /api/compose/send -> HTTP 502 ✗ (regression, expected 400)
+  POST /api/auth/login -> HTTP 503 ✗ (NEW regression, was 400)
+
+HEALTH ENDPOINTS:
+  GET /api/health -> HTTP 503 ✗ (unhealthy)
+  GET /api/monitoring/mongo-health -> HTTP 503 ✗ (NEW regression, was 200)
+
+FRONTEND:
+  GET / -> HTTP 200 ✓
+  GET /mail -> HTTP 307 ✓
+
+Verdict:
+  MW-029 Auth bypass: PASS (no PII leak, all routes gated)
+  MW-044 whoami proxy: PASS (401, not 500 — #790 fix confirmed)
+  MW-054 Compose/Send: FAIL (502, issue #905 open, dev-int assigned)
+  #905 Health: FAIL (503 unhealthy, backend inter-container networking broken)
+  NEW: /api/auth/login -> 503 (was 400, backend connectivity degraded further)
+  NEW: /api/monitoring/mongo-health -> 503 (was passing, now failing)
