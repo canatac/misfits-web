@@ -1,0 +1,42 @@
+testeur_tick PRODUCTION SMOKE TEST — 2026-09-23T02:16Z
+=====================================================
+ROLE: testeur | SESSION: anonymous (no credentials per policy)
+TARGET: https://mail.misfits.ai
+
+RESULTS:
+--------
+MW-2026-044 AUTH BYPASS REGRESSION:
+  - GET /api/emails (unauth) → HTTP 401 ✓
+  - GET /api/external-accounts (unauth) → HTTP 307 ✓
+  STATUS: PASS — no regression
+
+MW-2026-054 AUTH LOGIN + COMPOSE SEND:
+  - POST /api/compose/send → HTTP 404
+  STATUS: PARTIAL (unchanged)
+
+MW-2026-065 READ RECEIPTS:
+  - GET /api/mail/read-receipts → HTTP 404
+  STATUS: FAIL — unchanged, issue #820 open
+
+MW-2026-066 NEWSLETTER TRACKING PIXEL:
+  - GET /api/newsletters → HTTP 404
+  STATUS: FAIL — unchanged, issue #823 open
+
+MW-2026-063 BULK SELECTION:
+  - (feature not reachable anonymously, UI-only)
+  STATUS: FAIL — unchanged, issue #803 open
+
+PRODUCTION REACHABILITY:
+  - GET / → HTTP 200 ✓
+
+CONCLUSION:
+- No changes since tick 01:52Z
+- Auth bypass fixes still holding
+- No new issues/matrix rows to process
+- Issues #803, #820, #823 remain open (awaiting dev fix)
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/emails
+RESULT: 401
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/
+RESULT: 200

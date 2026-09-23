@@ -1,0 +1,55 @@
+testeur_tick PRODUCTION SMOKE TEST — $(date -u +%Y-%m-%dT%H:%M:%SZ)
+=====================================================
+ROLE: testeur | SESSION: anonymous (no credentials per policy)
+TARGET: https://mail.misfits.ai
+
+RESULTS:
+--------
+MW-2026-044 AUTH BYPASS REGRESSION:
+  - GET /api/emails (unauth) → HTTP 307 ✓
+  - GET /api/admin (unauth) → HTTP 307 ✓
+  - GET /api/external-accounts (unauth) → HTTP 307 ✓
+  STATUS: PASS — no regression
+
+MW-2026-054 AUTH LOGIN + COMPOSE SEND:
+  - POST /api/compose/send → HTTP 502
+  - POST /api/auth/login → HTTP 503
+  STATUS: FAIL — backend DOWN (issue #830 recurrent)
+
+MW-2026-067 BACKEND EMAIL-API:
+  - GET /api/health → HTTP 503
+  - POST /api/compose/send → HTTP 502
+  - POST /api/auth/login → HTTP 503
+  STATUS: FAIL — backend DOWN (issue #830 recurrent since 02:23Z)
+
+MW-2026-069 PRICING PLAN PRO:
+  - GET /pricing → HTTP 404
+  - No pricing page exists in frontend
+  STATUS: FAIL — feature not implemented (feature file generated this tick)
+
+MW-2026-034 PRODUCTION REACHABILITY:
+  - GET / → HTTP 200 ✓
+  - GET /mail → HTTP 307 (redirect to login, expected)
+  - GET /login → HTTP 200 ✓
+  STATUS: PASS — frontend reachable
+
+PRODUCTION REACHABILITY:
+  - HTTPS 200 OK ✓
+  - Frontend serves correctly ✓
+  - Backend email-api: DOWN (502/503) ✗
+
+CONCLUSION:
+- Backend DOWN since ~02:23Z (issue #830, third recurrence today)
+- Auth bypass fixes still holding (MW-044 PASS)
+- Generated Gherkin feature file for MW-2026-069 (pricing plan Pro)
+- MW-2026-033 is a batch row, all sub-features have individual rows + feature files
+- No new matrix rows to process
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/emails
+RESULT: 307
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/health
+RESULT: 503
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/
+RESULT: 200

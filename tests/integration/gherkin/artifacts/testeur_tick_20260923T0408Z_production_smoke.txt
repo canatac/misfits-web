@@ -1,0 +1,44 @@
+testeur_tick PRODUCTION SMOKE TEST — 2026-09-23T04:08:38Z
+=====================================================
+ROLE: testeur | anonymous (no credentials per policy)
+TARGET: https://mail.misfits.ai
+
+RESULTS:
+--------
+MW-2026-073 BACKEND COMPOSE REGRESSION:
+  - POST /api/compose/send → HTTP 200 + JSON validation error ✓
+  - GET /api/monitoring/mongo-health → HTTP 200 + "healthy" ✓
+  - POST /api/auth/login → HTTP 400 (validation, not 502/503) ✓
+  STATUS: PASS — backend restored after PR #831 merge
+
+MW-2026-044 AUTH BYPASS REGRESSION:
+  - GET /api/emails (unauth) → HTTP 401 ✓
+  - GET /api/admin (unauth) → HTTP 307 ✓
+  - GET /api/external-accounts (unauth) → HTTP 307 ✓
+  STATUS: PASS — no regression
+
+CORS SAFETY:
+  - Origin: https://evil.com → NOT reflected in ACAO header ✓
+  - GET /api/emails with evil Origin → HTTP 401 ✓
+
+MW-2026-034 PRODUCTION REACHABILITY:
+  - GET / → HTTP 200 ✓
+  - Mongo health → 200 ✓
+  - Backend API reachable (compose/send responds) ✓
+  STATUS: PASS — full stack operational
+
+CONCLUSION:
+- Backend RESTORED (PR #831 merged: Caddy health_uri fix)
+- All auth bypass fixes holding
+- Generated Gherkin feature file for MW-2026-073
+- MATRIX_STATUS updated: MW-073 FAIL→PASS
+- Committed: dafdb7c → pushed to fix/mw-int-caddyfile-compose-handle
+
+CMD: curl -s -X POST -H "Content-Type: application/json" -d '{}' https://mail.misfits.ai/api/compose/send
+RESULT: {"sent":false,"message":"At least one recipient (to) is required"}
+
+CMD: curl -s https://mail.misfits.ai/api/monitoring/mongo-health
+RESULT: {"status":"healthy","ping_ms":0,...,"database":"mailserver"}
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/emails
+RESULT: 401
