@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-23T14:20 UTC — PO cycle: 71 matrix rows (62 FAIL, 8 PASS, 2 PARTIAL), state=ON, 3 new GH issues created (#924-#926), P0 regression MW-2026-101 (auth 503), bus unavailable (fleet_send via tmux), scrum-master notified
+> Dernière mise à jour: 2026-09-23T15:30 UTC — PO cycle: 71 matrix rows (42 FAIL, 10 PASS, 2 PARTIAL), state=ON, market watch: Proton Lumo AI + Tuta no-AI stance, NIS2/DORA/GDPR convergence, 29 FAIL rows all have GH issues, dev sessions down (mw-int, rg-back, testeur)
 
 ---
 
@@ -106,6 +106,37 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - **Choix**: Parité sur les must-have (scheduled send, undo send, templates), innovation sur l'IA et le chat mail
 - **Rejeté**: Innovation pure (les users ne quittent pas Gmail pour un produit incomplet), Parité pure (pas de différenciation)
 - **Rationale**: Les users exigent les deux en 2026
+
+### Arbitrage 2026-09-23: AI email assistant strategy
+- **Choix**: AI on-device (local processing, no cloud AI, privacy-first)
+- **Rejeté**: Cloud AI (Proton Scribe/Lumo backlash — privacy community rejection), No AI at all (Tuta stance — limits productivity features)
+- **Rationale**: Proton Lumo (2026) shows market demand for AI drafting/summarization but privacy backlash is severe. On-device AI (MW-2026-095, MW-2026-020) aligns with privacy-by-design pillar while capturing AI productivity gains. NIS2/DORA/GDPR convergence (2026) reinforces data minimization — on-device processing reduces compliance surface.
+
+### Arbitrage 2026-09-23: Regulatory convergence (NIS2/DORA/GDPR)
+- **Choix**: Unified compliance framework — single control set mapped to GDPR Art.32, NIS2 security measures, DORA ICT risk management
+- **Rejeté**: Separate compliance programs per regulation (cost duplication, inconsistent reporting), Minimal compliance (GDPR only — misses NIS2/DORA enforcement)
+- **Rationale**: DORA fully applicable since 2025-01-17, NIS2 transposition ongoing. Email authentication (SPF/DKIM/DMARC/MTA-STS) satisfies all three frameworks simultaneously. Unified approach reduces audit burden and aligns with MW-2026-092 (TLS-RPT), MW-2026-011+042 (MTA-STS+DANE).
+
+---
+
+## 7. Notes de veille — 2026-09-23
+
+### 7.1 Proton Lumo AI (2026)
+- Proton a lancé Lumo, assistant AI privacy-first (local/on-premise), mascotte chat
+- Backlash communauté privacy après Proton Scribe (cloud AI) — Lumo est la réponse
+- Tuta maintient sa position: pas d'AI cloud dans les emails chiffrés
+- **Implication misfits.ai**: on-device AI (MW-2026-095, MW-2026-020) est la bonne voie — évite le cloud AI backlash tout en offrant les features productivité
+
+### 7.2 NIS2/DORA/GDPR convergence
+- DORA applicable depuis 2025-01-17, NIS2 transposition en cours
+- Email authentication (SPF/DKIM/DMARC/MTA-STS/DANE) satisfait les 3 frameworks
+- Reporting unifié: un seul set de contrôles → moins de charge d'audit
+- **Implication misfits.ai**: MW-2026-092 (TLS-RPT), MW-2026-011+042 (MTA-STS+DANE) couvrent NIS2+DORA simultanément
+
+### 7.3 Dev sessions status
+- mw-int, rg-back, testeur: sessions down (conductor-ops confirmed 2026-09-23)
+- Scrum a des tickets en file mais personne pour les recevoir
+- PR#906 (Caddyfile fix) CI green mais non merged — bloqué par session down
 
 ---
 
