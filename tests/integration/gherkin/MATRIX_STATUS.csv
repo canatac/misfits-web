@@ -51,3 +51,4 @@ MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL,misfits-web,dev-web
 MW-2026-064,P0 outage regression (issue #813),User accede mail.misfits.ai:443,HTTPS 200 OK + /api/emails=401 + /api/admin=307 + site fully reachable,PASS-REGRESSION-2026-09-23T00:30Z,misfits-web,dev-int
 MW-2026-065,Email read receipts,Sender active read receipt toggle + recipient opens email,MDN envoyé + statut 'Lu' visible dans Envoyés avec timestamp,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-066,Newsletter tracking pixel consent,User reçoit newsletter avec tracking pixel + consent explicite,Consent gate avant chargement pixel + log consent + opt-out disponible,FAIL,misfits-web+reimagined-guide,dev-web+dev-back

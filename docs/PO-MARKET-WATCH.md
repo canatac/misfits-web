@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T12:00 UTC — veille email privacy regulations 2026 (GDPR/ePrivacy update, CNIL tracking pixels, CCPA/CPRA, CASL, LGPD), matrix 53 rows (42 FAIL, 8 PASS, 2 PASS-FIXED), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
 
 ---
 
@@ -294,5 +294,22 @@
 - **Implication misfits.ai**: Our roadmap (TutaCrypt-inspired, Kyber+Dilithium) is aligned with market direction. Early adoption of hybrid PQC for email encryption is a competitive differentiator. Issue #60 (studious-octo-rotary-phone) tracks this.
 - **Matrix gap**: MW-2026-056 (reading mode integration) identified as FAIL — component exists but not integrated in email-view. Issue #781 already exists.
 - **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-23T12:00Z — Veille réglementaire email privacy 2026
+- **Market insight**: 144 countries now have data protection laws affecting email (vs ~100 in 2020). 82% of global population covered by privacy regulations. Only 24% of marketers are fully compliant → differentiation opportunity for privacy-native email providers.
+- **Key regulatory updates 2026**:
+  - **GDPR/ePrivacy**: ePrivacy Regulation draft (Article 3) extends extraterritorial scope — applies to non-EU companies targeting EU users. CNIL (France) published final recommendations on tracking pixels in emails (April 2026) with 3-month transition period. Italy's Garante requires prior consent before deploying tracking pixels (6-month compliance window).
+  - **CCPA/CPRA (California)**: New US state privacy laws (Alabama 2026) + child data protections. CPRA enforcement continues to expand.
+  - **CASL (Canada)**: Consent requirements and severe penalties for non-compliance.
+  - **LGPD (Brazil)**: Similar to GDPR, expanding enforcement.
+  - **Asia/Middle East**: Expanding privacy frameworks and cybersecurity reforms.
+- **Implication misfits.ai**: Our privacy-by-design architecture (no data mining, no tracking pixels, native DKIM/SPF/DMARC) is a competitive advantage. The regulatory trend validates our positioning. Need to ensure our newsletter/subscription features comply with CNIL tracking pixel consent requirements.
+- **Arbitrage 2026-09-23: Tracking pixel consent for newsletters**
+  - **Choix**: Implement consent gate before loading any tracking pixels in newsletter emails + document consent in subscription flow
+  - **Rejeté**: No tracking pixels (status quo), Implicit consent (non-compliant with CNIL)
+  - **Rationale**: CNIL requires explicit consent before deploying tracking pixels. misfits.ai newsletter feature must comply to avoid €20M+ GDPR fines. Proton Mail and Tuta already comply — this is table stakes.
+- **Action**: Matrix row MW-2026-066 added — Newsletter tracking pixel consent (owner hint: dev-web+dev-back)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
