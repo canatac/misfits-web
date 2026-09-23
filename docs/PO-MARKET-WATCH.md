@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-23
 
 ---
 
@@ -147,5 +147,12 @@
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
 
 ---
+
+### Veille marché 2026-09-23 — AI email clients & privacy
+
+- **AI email client market mature in 2026**: Canary Mail ($36/yr), Thunderbird (free + AI add-ons), Spark, SaneBox all offer AI triage, smart replies, summarization. AI features are now baseline expectations, not premium differentiators.
+- **Privacy tension**: Mailbird 2026 analysis confirms AI-driven features (smart replies, threat detection) require content access — conflicts with privacy-first positioning. misfits.ai's on-device AI (MW-2020) is a key differentiator.
+- **Apple MPP impact**: 55-60% of email opens are privacy-impacted (Apple Mail Privacy Protection). Shift from open-rate tracking to click-through metrics. Relevant for misfits.ai newsletter feature (MW-2026-016).
+- **Litmus 2026**: Apple Mail + Gmail = ~90% market share. Cross-platform consistency remains critical for PWA (MW-2026-005).
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
