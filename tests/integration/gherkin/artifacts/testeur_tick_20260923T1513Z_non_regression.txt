@@ -1,0 +1,23 @@
+TESTEUR NON-REGRESSION TICK 2026-09-23T15:13:11Z
+==================================================
+Production: https://mail.misfits.ai
+Result: 10/10 PASS, 0 FAIL
+
+TESTS:
+1. HTTPS reachability        → HTTP 200 PASS
+2. /api/health               → {"status":"healthy","ping_ms":0} PASS
+3. /api/emails (unauth)      → HTTP 307 PASS
+4. /api/external-accounts    → HTTP 307 PASS
+5. /api/admin (unauth)       → HTTP 307 PASS
+6. /api/hermes/runs (unauth) → HTTP 307 PASS
+7. POST /api/auth/login {}   → HTTP 400 PASS (validation works)
+8. POST wrong password       → HTTP 401 PASS (auth hardened)
+9. POST /api/compose/send {} → HTTP 400 PASS (validation works)
+10. CORS (Origin: evil.com)  → No reflection PASS (security intact)
+
+UI TESTS:
+- Login page loads correctly (email + password inputs, submit button present)
+- No JavaScript errors on page load
+- "Sign in to your inbox" form rendered correctly
+
+STATUS: Production stable. No regressions detected.
