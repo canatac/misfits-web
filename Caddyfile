@@ -1,0 +1,118 @@
+# Caddyfile — misfits.ai Mail reverse proxy
+# Deploy on HermesWeb VM (Scaleway DEV1-S)
+# Usage: caddy run --config Caddyfile
+
+{
+    email jan.atac@misfits.fr
+    admin off
+}
+
+mail.misfits.ai, www.mail.misfits.ai {
+    # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
+    # middleware enforces session auth. Catching these BEFORE the generic /api/*
+    # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
+    handle /api/admin* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/hermes* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/emails* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/external-accounts* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/compose* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/templates* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    # /api/mail* — must go through Next.js for Edge auth middleware (issue #820).
+    # Read receipts are user-scoped; session auth required before proxying to backend.
+    handle /api/mail* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    # /api/health* — must go through Next.js so the local route handler
+    # (src/app/api/health/route.ts) can probe backend connectivity.
+    # Without this, Caddy proxies /api/health to the backend (port 8000)
+    # which has no such endpoint → 404 (issue #887, #891).
+    handle /api/health* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    handle /api/* {
+        reverse_proxy http://localhost:8000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            health_uri /api/monitoring/mongo-health
+            health_interval 5s
+            health_timeout 3s
+            health_status 2xx
+            header_down -Access-Control-Allow-Origin
+            header_down -Access-Control-Allow-Credentials
+            header_down -Access-Control-Allow-Methods
+            header_down -Access-Control-Allow-Headers
+            header_down -Access-Control-Expose-Headers
+            header_down -Access-Control-Max-Age
+            header_down Access-Control-Allow-Origin "https://mail.misfits.ai"
+            header_down Access-Control-Allow-Credentials "true"
+            header_down Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            header_down Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
+            header_down Access-Control-Max-Age "3600"
+        }
+    }
+
+    handle {
+        reverse_proxy http://localhost:3001
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://mail.misfits.ai wss://mail.misfits.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        -Server
+    }
+
+    log {
+        output stdout
+        format json
+    }
+}

@@ -19,6 +19,45 @@
  * it has and lets the backend decide.
  */
 
+/**
+ * Resolve the backend base URL for proxy routes.
+ *
+ * Default matches the internal Docker service name (email-api:8000),
+ * NOT the public internet URL. Using the public URL from inside the
+ * container causes fetch failures (DNS/timeout → 500) because the
+ * internal services are only reachable via the Docker bridge network.
+ *
+ * Matches the default in next.config.ts rewrites.
+ */
+export function resolveBackendBaseUrl(): string {
+  const raw =
+    process.env.BACKEND_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "http://email-api:8000"
+      : "http://localhost:8000");
+  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+}
+
+/**
+ * Return backend base URL candidates with fallbacks for Docker DNS issues.
+ *
+ * In production, if the primary URL (email-api:8000) fails due to Docker
+ * service DNS not resolving, fall back to host.docker.internal and localhost.
+ */
+export function resolveBackendBaseUrlCandidates(): string[] {
+  const primary = resolveBackendBaseUrl();
+  const candidates = [primary];
+  if (process.env.NODE_ENV === "production") {
+    if (!primary.includes("host.docker.internal")) {
+      candidates.push("http://host.docker.internal:8000");
+    }
+    if (!primary.includes("localhost")) {
+      candidates.push("http://localhost:8000");
+    }
+  }
+  return candidates;
+}
+
 export function extractIncomingAuth(request: Request): {
   authorization?: string;
   cookie?: string;
