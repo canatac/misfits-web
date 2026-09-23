@@ -1,0 +1,35 @@
+=== Testeur Post-Deploy Regression Test 2026-09-23T07:40:54Z ===
+Target: https://mail.misfits.ai
+Trigger: PR #860 (59bee22) deploy completed mid-tick
+
+--- Auth Gates ---
+✅ /api/admin/whoami → 401
+✅ /api/admin/ai-activity → 307
+✅ /api/admin/users → 307
+✅ /api/admin/change-requests → 307
+✅ /api/external-accounts → 307
+✅ /api/hermes/runs → 307
+⚠️ /api/emails → 307 (was 401 — behavior change, still secure, redirects to /login)
+
+--- Protected Routes ---
+✅ /mail /compose /inbox /dashboard /settings /contacts /search /monitoring → 307
+
+--- Public Routes ---
+✅ / /login /register → 200
+
+--- MW-054 ---
+✅ POST /api/auth/login → 400
+❌ POST /api/compose/send → 502 (REGRESSION — was 400)
+
+--- CORS ---
+⚠️ /api/emails evil.com → 403 (was 401 — different but still no PII leak)
+
+--- Backend Health ---
+✅ /api/monitoring/mongo-health → 200 (MongoDB healthy)
+
+=== SUMMARY ===
+PASS: 18
+REGRESSION: 1 (POST /api/compose/send 502)
+BEHAVIOR_CHANGE: /api/emails 307 instead of 401 (still secure)
+
+GitHub Issue: https://github.com/canatac/misfits-web/issues/866
