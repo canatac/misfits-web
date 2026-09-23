@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T05:30Z
+> Dernière mise à jour: 2026-09-09
 
 ---
 
@@ -133,8 +133,6 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
-| MW-2026-078 | User active le mode IA local (on-device) | Traitement IA fait sur le device, aucune donnée envoyée au serveur, mode offline fonctionnel | ❌ (feature à implémenter — différenciateur vs Proton Scribe cloud) |
-| MW-2026-079 | User ouvre un email avec tracking pixels (newsletter) | Tracking pixels bloqués par défaut + consent gate affiché + consent loggé + opt-out dans paramètres confidentialité | ❌ (feature à implémenter — GDPR/ePrivacy compliant) |
 
 ---
 
@@ -150,34 +148,4 @@
 
 ---
 
-### Veille 2026-09-23 — IA & confidentialité
-
-- **Tuta**: refuse explicitement toute IA cloud dans la boîte mail (position anti-AI). Proton a introduit Proton Scribe (AI writer) avec backlash. → **Arbitrage misfits.ai**: IA locale (on-device) uniquement, jamais cloud. Différenciation claire vs Tuta (pas d'IA) et Proton (IA cloud).
-- **Proton**: réécriture mobile Rust avec offline search, intégration Gmail send/receive. → Confirme la tendance "one inbox". Notre multi-account aggregation (MW-2026-019) est alignée.
-- **Fastmail**: privacy policy-based (pas E2EE), TLS only, custom domain dès Standard ($5/mo), JMAP natif. → Notre angle: E2EE natif + IA + self-hosted vs leur "premium classique".
-- **Marché**: privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 82% population mondiale couverte par lois privacy. → Le timing est bon pour un provider privacy-first avec UX moderne.
-
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
-
-### Veille 2026-09-23T04:55Z — Compétiteurs & marché
-
-- **Fastmail** (source: guptadeepak.com, 2026-08-20): privacy model = policy-based (pas E2EE), TLS only, audité indépendamment, transparence reports. Inconvénient: juridiction australienne (Five Eyes), pas de chiffrement bout-en-bout. → **Leçon misfits**: notre E2EE natif + DKIM/SPF/DMARC est un avantage structurel vs Fastmail.
-- **Proton Mail** (source: pivot-to-ai.com): Proton Scribe (AI writer) provoque un backlash chez les users privacy-focused. Les users s'inquiètent du manque de clarté sur le threat model. → **Leçon misfits**: IA locale on-device (MW-2026-078) = réponse à cette friction. Pas de cloud AI = pas de backlash.
-- **Tuta** (source: tuta.com): #1 privacy email en 2026, 100% renouvelable, TutaCrypt post-quantum, bloque tous les third-party clients. → **Leçon misfits**: notre IMAP/SMTP natif est un avantage vs Tuta (qui bloque les clients externes).
-- **Marché** (source: guptadeepak.com): privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 144 pays avec lois data protection. → Le timing est bon pour un provider privacy-first avec UX moderne + IA locale.
-- **Hey** (Basecamp): abandon du IMAP confirmé. Basecamp 5 lance "Create events from email", "Calendar Cover Art". → **Leçon misfits**: notre intégration mail+calendar (MW-2026-007 create event from email) est alignée sur cette tendance.
-
-### Veille 2026-09-23T05:00Z — Sécurité & conformité
-
-- **Notion Mail shutdown** (2026-09-22): Notion arrête son service mail. Les users doivent migrer vers Gmail/Outlook/ autres. → **Opportunité misfits**: créer un wizard de migration depuis Notion Mail (import .eml, labels, templates). MW-2026-028 (Notion Mail migration) est FAIL — priorité P1.
-- **Post-quantum crypto**: NIST a finalisé ML-KEM (FIPS 203) en 2024. Tuta a déployé TutaCrypt. → **Leçon misfits**: notre roadmap post-quantum (MW-2026-009, MW-2026-025) est alignée sur la tendance. Priorité P1 pour un provider privacy-first.
-- **Auth bypass & CORS**: les failles d'authentification (MW-2026-029) et CORS (MW-2026-030/031) restent FAIL. → **Action**: routing vers dev-web (auth bypass) + dev-back (CORS) via scrum-master. Priorité P0.
-- **Newsletter tracking pixels**: la conformité GDPR/ePrivacy exige un consent gate avant tout tracking pixel (MW-2026-066, MW-2026-079). → **Leçon misfits**: notre approche privacy-by-design (pas de tracking par défaut) est un avantage compétitif.
-
-### Veille 2026-09-23T05:30Z — Matrice de tests & issues
-
-- **9 rows FAIL sans GH issue** (MW-2026-009, 010, 011, 012, 017, 019, 025, 026, 027): tous ont des issues GH existants (vérifié via `gh issue search`). Aucun gap non tracké.
-- **5 rows OPEN** (MW-2026-044, 075, 076, 077, 079): issues GH ouverts, en attente implémentation.
-- **9 rows PASS** (MW-2026-001, 006, 024, 050, 065, 066, 073, 078, 080): features implémentées ou Gherkin créées.
-- **Issues récentes** (2026-09-23): #843 (Notion migration Gherkin), #841 (on-device AI), #839 (Pro plan billing), #838 (disposable aliases), #835 (attachment preview). Toutes routées vers scrum-master.
-- **Aucun nouveau UX_PROPOSAL ou TICKET_ASSIGN** dans ce cycle. Pas d'action de routing nécessaire.
