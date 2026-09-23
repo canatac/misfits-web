@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T05:00Z
+> Dernière mise à jour: 2026-09-23T05:30Z
 
 ---
 
@@ -173,3 +173,11 @@
 - **Post-quantum crypto**: NIST a finalisé ML-KEM (FIPS 203) en 2024. Tuta a déployé TutaCrypt. → **Leçon misfits**: notre roadmap post-quantum (MW-2026-009, MW-2026-025) est alignée sur la tendance. Priorité P1 pour un provider privacy-first.
 - **Auth bypass & CORS**: les failles d'authentification (MW-2026-029) et CORS (MW-2026-030/031) restent FAIL. → **Action**: routing vers dev-web (auth bypass) + dev-back (CORS) via scrum-master. Priorité P0.
 - **Newsletter tracking pixels**: la conformité GDPR/ePrivacy exige un consent gate avant tout tracking pixel (MW-2026-066, MW-2026-079). → **Leçon misfits**: notre approche privacy-by-design (pas de tracking par défaut) est un avantage compétitif.
+
+### Veille 2026-09-23T05:30Z — Matrice de tests & issues
+
+- **9 rows FAIL sans GH issue** (MW-2026-009, 010, 011, 012, 017, 019, 025, 026, 027): tous ont des issues GH existants (vérifié via `gh issue search`). Aucun gap non tracké.
+- **5 rows OPEN** (MW-2026-044, 075, 076, 077, 079): issues GH ouverts, en attente implémentation.
+- **9 rows PASS** (MW-2026-001, 006, 024, 050, 065, 066, 073, 078, 080): features implémentées ou Gherkin créées.
+- **Issues récentes** (2026-09-23): #843 (Notion migration Gherkin), #841 (on-device AI), #839 (Pro plan billing), #838 (disposable aliases), #835 (attachment preview). Toutes routées vers scrum-master.
+- **Aucun nouveau UX_PROPOSAL ou TICKET_ASSIGN** dans ce cycle. Pas d'action de routing nécessaire.
