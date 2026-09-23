@@ -286,3 +286,25 @@ jobs:
             exit 1
           fi
           echo "PASS: /api/compose/send returns ${HTTP_CODE} (route registered)"
+
+      - name: Verify /api/health route registered (closes #887)
+        run: |
+          set -euo pipefail
+          echo "Verifying /api/health is registered (not 404)..."
+          ATTEMPTS=20
+          SLEEP_SECONDS=3
+          OK=0
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/health || true)"
+            echo "Attempt ${i}: GET /api/health → ${HTTP_CODE}"
+            if [ "$HTTP_CODE" != "404" ]; then
+              OK=1
+              break
+            fi
+            sleep "$SLEEP_SECONDS"
+          done
+          if [ "$OK" -ne 1 ]; then
+            echo "ERROR: /api/health still returns 404 — route not registered (rewrite exclusion missing)." >&2
+            exit 1
+          fi
+          echo "PASS: /api/health returns ${HTTP_CODE} (route registered)"
