@@ -39,34 +39,29 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
+    # /api/compose/* — proxied directly to email-api:8000 (issue #905).
+    # Previously routed through Next.js:3001 for Edge auth, but inter-container
+    # networking (email-api:8000 from misfits-web container) is unreliable on mailnet.
+    # The backend validates session tokens directly, so Caddy-level proxy is safe.
+    # This eliminates the 502 backend_unreachable regression from PR#894.
     handle /api/compose* {
-        reverse_proxy http://localhost:3001 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-    }
-    handle /api/templates* {
-        reverse_proxy http://localhost:3001 {
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
-            header_up X-Forwarded-Proto {scheme}
-        }
-    }
-    # /api/mail* — must go through Next.js for Edge auth middleware (issue #820).
-    # Read receipts are user-scoped; session auth required before proxying to backend.
-    handle /api/mail* {
-        reverse_proxy http://localhost:3001 {
+        reverse_proxy http://localhost:8000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
         }
     }
 
-    # /api/health* — must go through Next.js for Docker healthcheck (issue #891).
-    # The /api/health route handler probes backend connectivity. Without this
-    # route, Caddy proxies /api/health to the backend which has no such endpoint → 404.
     handle /api/health* {
+        reverse_proxy http://localhost:8000/api/monitoring/mongo-health {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    # /api/templates* — must go through Next.js for Edge auth middleware (issue #852).
+    # Templates are user-scoped; session auth required before proxying to backend.
+    handle /api/templates* {
         reverse_proxy http://localhost:3001 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
@@ -76,19 +71,28 @@ mail.misfits.ai, www.mail.misfits.ai {
 
     handle /api/* {
         reverse_proxy http://localhost:8000 {
+            # Forward real client IP
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
+
+            # Health check — detect backend failure fast instead of waiting for timeout (issue #755)
+            # Caddy polls /health every 5s; marks upstream down after 3 consecutive failures.
             health_uri /api/monitoring/mongo-health
             health_interval 5s
             health_timeout 3s
             health_status 2xx
+
+            # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
+            # Remove any CORS headers sent by the upstream Rust backend
             header_down -Access-Control-Allow-Origin
             header_down -Access-Control-Allow-Credentials
             header_down -Access-Control-Allow-Methods
             header_down -Access-Control-Allow-Headers
             header_down -Access-Control-Expose-Headers
             header_down -Access-Control-Max-Age
+
+            # Enforce whitelist — only mail.misfits.ai allowed (all methods, not just OPTIONS)
             header_down Access-Control-Allow-Origin "https://mail.misfits.ai"
             header_down Access-Control-Allow-Credentials "true"
             header_down Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
@@ -97,10 +101,12 @@ mail.misfits.ai, www.mail.misfits.ai {
         }
     }
 
+    # Static frontend
     handle {
         reverse_proxy http://localhost:3001
     }
 
+    # Security headers (defense-in-depth with Next.js)
     header {
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
@@ -111,6 +117,7 @@ mail.misfits.ai, www.mail.misfits.ai {
         -Server
     }
 
+    # Logging — stdout (systemd captures via journalctl)
     log {
         output stdout
         format json
