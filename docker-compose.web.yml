@@ -20,6 +20,8 @@ services:
       - NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=${NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION:-unknown}
       - NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=${NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION:-unknown}
     restart: unless-stopped
+    networks:
+      - mailnet
     healthcheck:
       test:
         [
@@ -34,3 +36,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+networks:
+  mailnet:
+    external: true
