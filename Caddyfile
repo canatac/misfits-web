@@ -1,0 +1,106 @@
+# Caddyfile — misfits.ai Mail reverse proxy
+# Deploy on HermesWeb VM (Scaleway DEV1-S)
+# Usage: caddy run --config Caddyfile
+
+{
+    email jan.atac@misfits.fr
+    admin off
+}
+
+mail.misfits.ai, www.mail.misfits.ai {
+    # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
+    # middleware enforces session auth. Catching these BEFORE the generic /api/*
+    # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
+    handle /api/admin* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/hermes* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/emails* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    handle /api/external-accounts* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    # /api/compose/* — must go through Next.js for Edge auth middleware (issue #780).
+    # Without this, Caddy proxies /api/compose/send directly to email-api:8000,
+    # bypassing Next.js session auth enforcement.
+    handle /api/compose* {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    handle /api/* {
+        reverse_proxy http://localhost:8000 {
+            # Forward real client IP
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+
+            # Health check — detect backend failure fast instead of waiting for timeout (issue #755)
+            # Caddy polls /health every 5s; marks upstream down after 3 consecutive failures.
+            health_uri /health
+            health_interval 5s
+            health_timeout 3s
+            health_status 2xx
+
+            # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
+            # Remove any CORS headers sent by the upstream Rust backend
+            header_down -Access-Control-Allow-Origin
+            header_down -Access-Control-Allow-Credentials
+            header_down -Access-Control-Allow-Methods
+            header_down -Access-Control-Allow-Headers
+            header_down -Access-Control-Expose-Headers
+            header_down -Access-Control-Max-Age
+
+            # Enforce whitelist — only mail.misfits.ai allowed (all methods, not just OPTIONS)
+            header_down Access-Control-Allow-Origin "https://mail.misfits.ai"
+            header_down Access-Control-Allow-Credentials "true"
+            header_down Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+            header_down Access-Control-Allow-Headers "Authorization, Content-Type, X-Requested-With"
+            header_down Access-Control-Max-Age "3600"
+        }
+    }
+
+    # Static frontend
+    handle {
+        reverse_proxy http://localhost:3001
+    }
+
+    # Security headers (defense-in-depth with Next.js)
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://mail.misfits.ai wss://mail.misfits.ai; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        -Server
+    }
+
+    # Logging — stdout (systemd captures via journalctl)
+    log {
+        output stdout
+        format json
+    }
+}
