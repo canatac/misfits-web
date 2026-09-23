@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T18:30 UTC — veille email security trends 2026 (DMARC enforcement, DKIM2 rollout, POP3 deprecation, OAuth 2.0 IMAP, AI phishing), matrix 53 rows (44 FAIL), state=ON, bus=UNAVAILABLE (Redis timeout), 13 new FAIL rows identified, scrum-master session=DEAD
+> Dernière mise à jour: 2026-09-23T14:25 UTC — veille email authentication adoption July 2026 (DMARC 64%, BIMI +2.3%, MTA-STS +2.2%, DANE -1.5%), matrix 61 rows (49 FAIL), state=ON, bus queue empty, no ROOT controls, no new actionable tickets (all FAIL rows already have issues or PO_TICKETs)
 
 ---
 
@@ -138,6 +138,14 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-23T14:25 UTC — Email authentication adoption July 2026 (Laneful + DDMARC data)
+- **DMARC**: 64% of mail-eligible domains have valid DMARC; enforcing (quarantine+reject) grew +1.1% month-over-month. Google/Yahoo continue tightening authentication requirements.
+- **BIMI**: +2.3% monthly growth among domains with valid BIMI. Brand logo in inbox is a deliverability and trust signal — our native DKIM/SPF/DMARC stack is a prerequisite.
+- **MTA-STS**: +2.2% monthly growth. 53% of domains publishing MTA-STS run in full enforce mode. TLS-RPT at 3% adoption provides visibility layer.
+- **DANE**: -1.5% decline, entirely due to Migadu removing TLSA records for their customer fleet. Excluding Migadu, DANE grew.
+- **Full stack adoption**: Only 0.6-0.9% of top-10K domains have full stack (DMARC+SPF+MTA-STS+TLS-RPT+BIMI) — massive room for growth.
+- **Implication misfits.ai**: Our native stack covers DMARC/SPF/DKIM/MTA-STS/DANE. BIMI is a natural next step (VMC certificate + SVG logo). TLS-RPT would complete the visibility layer.
 
 ### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
 - **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.

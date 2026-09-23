@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-23T14:10 UTC — PO cycle: 60 matrix rows (48 FAIL, 6 PASS, 2 PARTIAL), state=ON, 2 PO_TICKET sent to scrum-master (issue #911 regression + MW-2026-050/090 attachment preview gap), bus queue empty, no ROOT controls, latest regression #911 (backend unreachable from Caddy) owned by dev-int
+> Dernière mise à jour: 2026-09-23T14:25 UTC — PO cycle: 63 matrix rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, bus queue empty, no ROOT controls, market watch: BIMI + TLS-RPT identified as gaps (MW-2026-091/092), latest regression #911 (backend unreachable from Caddy) owned by dev-int
 
 ---
 
