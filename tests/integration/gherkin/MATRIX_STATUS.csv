@@ -55,3 +55,4 @@ MW-2026-080,Notion Mail migration wizard,User importe emails depuis Notion Mail 
 MW-2026-080,Notion Mail migration wizard,User importe emails depuis Notion Mail (Gmail sync),Emails importes via import wizard + templates migres + auto-labels recres,FAIL-ISSUE-843,misfits-web,dev-web
 MW-2026-081,Undo send with 5s window,User clique Undo send dans les 5s apres envoi,Email retire de la file d envoi + visible dans brouillons + timer 5s visible,FAIL-ISSUE-844,misfits-web,dev-web
 MW-2026-082,Keyboard shortcuts system,User appuie sur C dans l inbox + Ctrl+/ pour aide,Composer ouvert + panneau d aide raccourcis affiche + tooltips visibles,FAIL-ISSUE-845,misfits-web,dev-web
+MW-2026-083,MongoDB health endpoint (issue #830),Caddy health_uri points to /api/monitoring/mongo-health,HTTP 200 + JSON {status:healthy} + MongoDB ping <5ms,PASS-REGRESSION-2026-09-23T06:00Z,misfits-web,dev-int
