@@ -68,4 +68,4 @@ MW-2026-097,Email snooze presets,User selectionne un preset de rappel (1h, demai
 MW-2026-098,Keyboard shortcuts system,User appuie sur C dans l'inbox + Ctrl+/ pour aide,Composer ouvert + panneau d'aide raccourcis affiche + tooltips visibles,FAIL-ISSUE-919,misfits-web,dev-web
 MW-2026-099,Undo send 5s window,User clique Undo send dans les 5s apres envoi,Email retire de la file d'envoi + visible dans brouillons,FAIL-ISSUE-920,misfits-web,dev-web
 MW-2026-100,Notion Mail migration wizard,User importe emails depuis Notion Mail (Gmail sync),Emails importes via import wizard + snippets/templates migres + auto-labels recrees,FAIL-ISSUE-921,misfits-web,dev-web
-MW-2026-101,Auth login + mongo-health 503 regression,User accede /api/auth/login + /api/monitoring/mongo-health,API retourne 503 + backend unreachable from Caddy + fix deploie,FAIL-ISSUE-922,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-101,Auth login + mongo-health 503 regression,User accede /api/auth/login + /api/monitoring/mongo-health,API retourne 503 + backend unreachable from Caddy + fix deploie,FAIL-MONGO-UNHEALTHY-2026-09-23T14:48Z,misfits-web+reimagined-guide,dev-web+dev-back
