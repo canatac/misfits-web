@@ -114,8 +114,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION=misfits-web@${{ steps.labels.outputs.web_sha }}
             NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=reimagined-guide@${{ steps.labels.outputs.backend_sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=build-${{ github.sha }}
+          cache-to: type=gha,scope=build-${{ github.sha }},mode=max
 
   # ============================================================
   # Deploy to VM via SSH — after Docker push only
@@ -264,3 +264,25 @@ jobs:
             exit 1
           fi
           echo "PASS: /api/emails correctly returns ${HTTP_CODE} (auth enforced)"
+
+      - name: Verify /api/compose/send route registered (closes #818)
+        run: |
+          set -euo pipefail
+          echo "Verifying /api/compose/send is registered (not 404)..."
+          ATTEMPTS=20
+          SLEEP_SECONDS=3
+          OK=0
+          for i in $(seq 1 "$ATTEMPTS"); do
+            HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' https://mail.misfits.ai/api/compose/send || true)"
+            echo "Attempt ${i}: POST /api/compose/send → ${HTTP_CODE}"
+            if [ "$HTTP_CODE" != "404" ]; then
+              OK=1
+              break
+            fi
+            sleep "$SLEEP_SECONDS"
+          done
+          if [ "$OK" -ne 1 ]; then
+            echo "ERROR: /api/compose/send still returns 404 — route not registered in production (stale Docker cache)." >&2
+            exit 1
+          fi
+          echo "PASS: /api/compose/send returns ${HTTP_CODE} (route registered)"
