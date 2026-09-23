@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T18:30 UTC — veille email security trends 2026 (DMARC enforcement, DKIM2 rollout, POP3 deprecation, OAuth 2.0 IMAP, AI phishing), matrix 53 rows (44 FAIL), state=ON, bus=UNAVAILABLE (Redis timeout), 13 new FAIL rows identified, scrum-master session=DEAD
 
 ---
 
@@ -295,4 +295,17 @@
 - **Matrix gap**: MW-2026-056 (reading mode integration) identified as FAIL — component exists but not integrated in email-view. Issue #781 already exists.
 - **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
 - **State**: ON — no ROOT controls received, mission loop continues
-- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-23T18:30Z — Veille email security trends 2026 + matrix gap analysis
+- **Email security trends 2026** (sources: Halon, Red Sift, Barracuda, VIPRE):
+  - **DMARC enforcement**: Increasingly enforced by inbox providers; legacy systems breaking visibly. 66.2% of senders use SPF+DKIM+DMARC, but 53.8% still at p=none.
+  - **DKIM2 rollout**: New DKIM2 standard gaining adoption (Halon). misfits.ai tracking via MW-2026-061.
+  - **POP3 deprecation**: Google deprecated POP3 in 2025; other providers following. IMAP + OAuth 2.0 becoming mandatory.
+  - **OAuth 2.0 IMAP**: Basic auth deprecation accelerating (Halon, Red Sift). MW-2026-062 tracks this.
+  - **AI phishing**: Barracuda 2026 report — 3.1B emails analyzed, credential phishing scaling, callback phishing +500% QoQ, QR code attacks rising.
+  - **EU preference for non-US software**: Halon notes EU increasingly prefers non-US email services — opportunity for misfits.ai (EU-based, open source).
+- **Matrix gap analysis**: 13 FAIL rows without GH issues identified (MW-2026-012, 019, 021, 022, 026, 027, 028, 036, 039, 045, 050, 063, 066). Bus unavailable — tickets cannot be posted this cycle.
+- **Bus status**: Redis (172.16.12.2:6379) unreachable — TLS timeout. MCP fleetbus server file missing (/tmp/mcp-fleetbus/server.mjs). Scrum-master tmux session (agentdeck_scrum-master_503cf37e) is dead (no pane).
+- **State**: ON — no ROOT controls received, mission loop continues, bus outage blocks ticket routing
+- **Next cycle**: retry bus connection, route 13 pending FAIL rows to scrum-master, veille marché (Fastmail pricing deep-dive)",
