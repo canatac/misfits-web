@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T15:00 UTC — veille réglementaire email privacy 2026 (GDPR/ePrivacy/CNIL tracking pixels), matrix 56 rows (42 FAIL, 8 PASS, 2 PARTIAL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T16:15 UTC — veille réglementaire email privacy 2026 (CNIL/Garante tracking pixel consent April 2026), matrix 60 rows (49 FAIL, 8 PASS, 2 PARTIAL), state=ON, 0 bus messages, 5 TICKET_ASSIGN posted to scrum-master (MW-2026-032,033,036,037,065)
 
 ---
 
@@ -27,6 +27,15 @@
 - **53.8%** ont un DMARC policy, mais beaucoup en `p=none` (non-enforcing)
 - **25% des senders** ne savent pas s'ils sont authentifiés → risque de spam folder
 - Tendance: les inbox providers (Google, Yahoo) durcissent les règles d'authentification
+
+### Tracking Pixels — Consent Obligatoire (CNIL + Garante, Avril 2026)
+- **CNIL (France)**: Publication 14 avril 2026 — les tracking pixels dans les emails relèvent de l'ePrivacy Directive
+- **Garante (Italy)**: Publication mars 2026 — même position
+- **Règle**: Consentement préalable requis pour les pixels de tracking (open tracking, engagement tracking)
+- **Transition**: Contacts collectés avant le 14 avril 2026 → notification + opt-out requis avant le 14 juillet 2026
+- **Nouveaux contacts** (après le 14 avril 2026): consentement requis dès le premier email
+- **Impact misfits.ai**: MW-2026-066 (consent gate) + MW-2026-070 (ePrivacy/CNIL compliance) — P1 prioritaire
+- Sources: mailjet.com/blog/email-best-practices/eu-guide-to-tracking-pixels, gdprwise.eu, emparrot.com/blog/2026/07/09/cnil-garante-pixel-consent.html
 
 ### Implication misfits.ai
 > Notre stack native DKIM/SPF/DMARC est un **avantage compétitif majeur** face aux solutions SaaS qui dépendent de relais tiers. La conformité privacy-by-design (pas de data mining, pas de tracking pixels) répond aux exigences 2026.
@@ -108,6 +117,20 @@
 | PWA / offline | **P2** | Élevé | Proton (mobile) |
 | Anonymous signup | **P2** | Moyen | Proton (Tor) |
 
+### Competitor Pricing 2026 (vérifié multi-source)
+| Provider | Jurisdiction | E2EE | IMAP | Custom Domain | Starting Price |
+|----------|-------------|------|------|---------------|----------------|
+| Proton Mail | Switzerland | Yes (PGP) | Via bridge | Yes (paid) | $3.99/mo |
+| Tuta | Germany | Yes (AES/RSA + subject) | No | Yes | €3/mo |
+| Mailfence | Belgium | Yes (OpenPGP) | Yes | Yes | €3/mo |
+| StartMail | Netherlands | Yes (PGP) | Yes | Limited | $5/mo |
+| Fastmail | Australia | No (TLS at rest) | Yes | Yes | $3/mo |
+| Posteo | Germany | Optional | Yes | Yes | €1/mo |
+
+**Key insight**: Tuta is cheapest serious E2EE option (€3/mo, subject encryption, post-quantum roadmap). Proton strongest overall but limited free tier (500MB, 150 msgs/day). Fastmail best for Gmail migrants wanting normal client compat. misfits.ai differentiator: native SMTP/IMAP + self-hosted option + fleet AI maintenance.
+
+Sources: guptadeepak.com/tools/top-5-secure-email-providers-2026, tuta.com/blog/protonmail-vs-gmail, gblock.app/articles/best-private-email-providers-2026, emailalias.io/blog/best-private-email-service
+
 ---
 
 ## 3. Vision Produit — Arbitrages
@@ -146,6 +169,7 @@
 
 | ID | Input | Expected result | Status |
 |----|-------|-----------------|--------|
+| MW-2026-072 | User reçoit email avec tracking pixel (post-April 2026) | Consent gate avant chargement pixel + log consent + opt-out + conforme CNIL/Garante ePrivacy | ❌ (consent gate à implémenter) |
 | MW-2026-001 | User envoie email via SMTP 587 | DKIM signature présente dans headers, DMARC pass | ✅ (infra existante) |
 | MW-2026-002 | User clique "Scheduled send" + sélectionne date future | Email envoyé à l'heure prévue, visible dans "Envoyés" avec badge "programmé" | ❌ (feature à implémenter) |
 | MW-2026-003 | User clique "Undo send" dans les 5s après envoi | Email retiré de la file d'envoi, visible dans brouillons | ❌ (feature à implémenter) |
@@ -159,6 +183,13 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-23T16:15 UTC — CNIL/Garante tracking pixel consent + competitor pricing 2026
+- **CNIL (14 avril 2026)**: Tracking pixels dans les emails = ePrivacy Directive. Consentement préalable requis. Transition: contacts pré-14-avril → notification/opt-out avant 14-juillet. Nouveaux contacts → consentement dès le 1er email.
+- **Garante (mars 2026)**: Même position. L'Italie et la France alignées sur le consentement tracking pixels.
+- **Impact**: MW-2026-066 (consent gate) + MW-2026-070 (ePrivacy/CNIL) → P1 prioritaire. Nouveau MW-2026-072 ajouté à la matrice.
+- **Competitor pricing 2026**: Tuta €3/mo (cheapest E2EE), Proton $3.99/mo (strongest), Fastmail $3/mo (best for Gmail migrants), Posteo €1/mo (budget). misfits.ai: native SMTP/IMAP + self-hosted + fleet AI = différenciateur.
+- **5 TICKET_ASSIGN** routed to scrum-master: MW-2026-032 (reading mode), MW-2026-033 (frontend batch), MW-2026-036 (DKIM service), MW-2026-037 (unified search), MW-2026-065 (read receipts).
 
 ### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
 - **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.
