@@ -312,4 +312,12 @@
   - **Rationale**: CNIL requires explicit consent before deploying tracking pixels. misfits.ai newsletter feature must comply to avoid €20M+ GDPR fines. Proton Mail and Tuta already comply — this is table stakes.
 - **Action**: Matrix row MW-2026-066 added — Newsletter tracking pixel consent (owner hint: dev-web+dev-back)
 - **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-23T14:00Z — CI cache regression + UX approval
+- **Issue #828**: Docker GHA cache serves stale .next build — /api/compose/send returns 404 after deploy. Root cause: pnpm build layer restored from previous cache despite source changes. Fix: scope cache to commit SHA + add deploy verification step.
+- **Action**: PO_TICKET posted to scrum-master for MW-2026-068 (owner: dev-web, P1)
+- **UX approval**: Mobile swipe gestures proposal APPROVED — strong vision, solid references (Gmail/AppleMail/Spark), reasonable effort (M), consistent with misfits.ai design system. Sent UX_APPROVAL to ux-designer.
+- **Matrix update**: MW-2026-068 added to MATRIX_STATUS.csv (FAIL-ISSUE-828)
+- **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
