@@ -1,0 +1,72 @@
+testeur_tick PRODUCTION SMOKE TEST — 2026-09-23T01:52Z
+=====================================================
+ROLE: testeur | SESSION: anonymous (no credentials per policy)
+TARGET: https://mail.misfits.ai
+
+RESULTS:
+--------
+MW-2026-034 PRODUCTION REACHABILITY:
+  - GET / → HTTP 200 ✓ (HTTPS OK, 118ms)
+  - SMTP 587 → TIMED OUT (nc exit=1)
+  - IMAP 993 → CLOSED (nc exit=1)
+  STATUS: PARTIAL (HTTPS only, SMTP/IMAP unreachable from cloud)
+
+MW-2026-044 AUTH BYPASS REGRESSION:
+  - GET /api/emails (unauth) → HTTP 401 ✓
+  - GET /api/admin (unauth) → HTTP 307 ✓
+  - GET /api/external-accounts (unauth) → HTTP 307 ✓
+  - GET /api/hermes/runs (unauth) → HTTP 307 ✓
+  STATUS: PASS — no PII exposed
+
+MW-2026-054 AUTH LOGIN + COMPOSE SEND:
+  - POST /api/auth/login → HTTP 400 (backend reachable, rejects empty body) ✓
+  - POST /api/compose/send → HTTP 404 (route still missing in production)
+  STATUS: PARTIAL (login reachable, compose/send missing)
+
+MW-2026-064 P0 OUTAGE REGRESSION:
+  - GET / → HTTP 200 ✓ (site fully reachable)
+  STATUS: PASS
+
+MW-2026-065 READ RECEIPTS (retest):
+  - GET /api/mail/read-receipts → HTTP 404 (endpoint not implemented)
+  STATUS: FAIL — no change since last tick, issue #820 still open
+
+MW-2026-066 NEWSLETTER TRACKING PIXEL CONSENT (retest):
+  - GET /api/mail/tracking → HTTP 404 (endpoint not implemented)
+  - GET /api/mail/newsletter → HTTP 404 (endpoint not implemented)
+  STATUS: FAIL — no change, issue #823 still open
+
+MW-2026-063 BULK EMAIL SELECTION (retest):
+  - GET /api/mail/bulk-select → HTTP 404 (endpoint not implemented)
+  STATUS: FAIL — no change, issue #803 still open
+
+FEATURE ENDPOINT SCAN (all unauth):
+  /api/mail/forward → 404
+  /api/mail/export → 404
+  /api/mail/attachments → 404
+  /api/mail/search → 404
+  /api/mail/swipe → 404
+  /api/mail/triage → 404
+  /api/mail/suggest → 404
+  /api/mail/templates → 404
+  /api/mail/undo-send → 404
+  /api/mail/language → 404
+  /api/mail/reading-mode → 404
+  All correctly return 404 (not implemented) — no auth bypass detected
+
+CONCLUSION:
+- Auth bypass fixes still holding (MW-2026-044 PASS)
+- Site reachable (MW-2026-064 PASS)
+- /api/compose/send still 404 (MW-2026-054 PARTIAL)
+- All feature endpoints return 404 (expected for unimplemented features)
+- No regressions detected since last tick (01:30Z)
+- Issues #803, #820, #823 remain open (no fix deployed)
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/emails
+RESULT: 401
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/
+RESULT: 200
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/mail/read-receipts
+RESULT: 404

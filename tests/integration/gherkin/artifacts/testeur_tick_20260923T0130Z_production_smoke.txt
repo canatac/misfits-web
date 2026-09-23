@@ -1,0 +1,44 @@
+testeur_tick PRODUCTION SMOKE TEST — 2026-09-23T01:30Z
+=====================================================
+ROLE: testeur | SESSION: anonymous (no credentials per policy)
+TARGET: https://mail.misfits.ai
+
+RESULTS:
+--------
+MW-2026-034 PRODUCTION REACHABILITY:
+  - GET / → HTTP 200 ✓ (HTTPS OK, 82ms)
+  - SMTP 587 → CLOSED (nc exit=1)
+  - IMAP 993 → CLOSED (nc exit=1)
+  STATUS: PARTIAL (HTTPS only, SMTP/IMAP unreachable from cloud)
+
+MW-2026-044 AUTH BYPASS REGRESSION:
+  - GET /api/emails (unauth) → HTTP 401 ✓
+  - GET /api/admin (unauth) → HTTP 0 (opaqueredirect → 307) ✓
+  - GET /api/external-accounts (unauth) → HTTP 200 ct=text/html (SPA fallback, NOT JSON data) ✓
+  STATUS: PASS — no PII exposed, SPA fallback only
+
+MW-2026-054 AUTH LOGIN + COMPOSE SEND:
+  - POST /api/auth/login → HTTP 400 (backend reachable, rejects empty body) ✓
+  - POST /api/compose/send → HTTP 404 (route still missing in production)
+  STATUS: PARTIAL (login reachable, compose/send missing)
+
+MW-2026-064 P0 OUTAGE REGRESSION:
+  - GET / → HTTP 200 ✓ (site fully reachable)
+  STATUS: PASS
+
+MW-2026-065 READ RECEIPTS:
+  - GET /api/mail/read-receipts → HTTP 404 (endpoint not implemented)
+  STATUS: FAIL (API endpoint missing)
+
+CONCLUSION:
+- Auth bypass fixes are holding (MW-2026-044 PASS)
+- Site is reachable (MW-2026-064 PASS)
+- /api/compose/send still 404 (MW-2026-054 PARTIAL)
+- /api/mail/read-receipts 404 (MW-2026-065 FAIL)
+- SMTP/IMAP ports closed from cloud (MW-2026-034 PARTIAL)
+
+CMD: curl -s -o /dev/null -w "%{http_code}" https://mail.misfits.ai/api/emails
+RESULT: 401
+
+CMD: curl -s -o /dev/null -w "%{http_code}" -X POST https://mail.misfits.ai/api/compose/send
+RESULT: 404
