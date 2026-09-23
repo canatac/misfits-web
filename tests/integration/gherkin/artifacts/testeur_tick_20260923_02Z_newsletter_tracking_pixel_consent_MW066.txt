@@ -1,0 +1,40 @@
+testeur_tick_20260923_02Z_newsletter_tracking_pixel_consent_MW066.txt
+===============================================================
+TICK: 2026-09-23T02:00Z (cron)
+ROLE: testeur
+ACTION: MW-2026-066 Newsletter tracking pixel consent — production verification + Gherkin generation
+
+PRODUCTION TEST RESULTS:
+- GET /api/newsletters (anon) → 404 NOT_FOUND (endpoint not deployed)
+- POST /api/newsletters/consent (anon) → 404 NOT_FOUND (endpoint not deployed)
+- GET /api/preferences (anon) → 404 NOT_FOUND (endpoint not deployed)
+- GET /api/tracking/consent (anon) → 404 NOT_FOUND (endpoint not deployed)
+- GET /api/privacy/settings (anon) → 404 NOT_FOUND (endpoint not deployed)
+- GET /api/emails (anon) → 401 ✓ (auth bypass regression PASS)
+- GET /api/emails/1 (anon) → 401 ✓
+- GET /api/admin (anon) → 307 ✓
+- GET /api/hermes/runs (anon) → 307 ✓
+- GET /api/external-accounts (anon) → 307 ✓
+- Production reachability: HTTP 200 ✓
+
+DEPLOYMENT STATUS:
+- Newsletter tracking pixel consent: NOT DEPLOYED
+- No consent gate UI in production bundle
+- No API endpoints for newsletter/preferences/tracking/privacy
+
+FEATURE VERDICT:
+  MW-2026-066 Newsletter tracking pixel consent: FAIL (not deployed)
+  - No /api/newsletters endpoint (404)
+  - No /api/preferences endpoint (404)
+  - No consent gate UI
+  - Auth bypass regression: PASS (all vectors)
+
+Gherkin feature file: MW-2026-066-newsletter-tracking-pixel-consent.feature (7 scenarios)
+MATRIX_STATUS.csv: MW-2026-066 row added (FAIL, misfits-web+reimagined-guide, dev-web+dev-back)
+Commit: 5f4efe7
+
+TICKET: #823 [testeur] MW-2026-066 Newsletter tracking pixel consent — FAIL
+DELTA vs previous tick:
+  New ticket tested: MW-2026-066 (newsletter tracking pixel consent, issue #823)
+  Auth bypass regression: still PASS (all vectors)
+  Production: no new feature deployment since last tick
