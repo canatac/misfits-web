@@ -1,0 +1,35 @@
+=== FULL SMOKE TEST 2026-09-23T10:33:53Z ===
+Production: https://mail.misfits.ai
+
+--- Reachability ---
+HTTPS 443 → 200 (0.078s) ✓
+
+--- Auth bypass regression checks ---
+GET /api/emails (unauth) → 307 ✓
+GET /api/admin (unauth) → 307 ✓
+GET /api/admin/whoami (unauth) → 401 ✓
+GET /api/external-accounts (unauth) → 307 ✓
+GET /api/hermes/runs (unauth) → 307 ✓
+
+--- Backend endpoints ---
+POST /api/auth/login (bad creds) → 401 ✓
+POST /api/compose/send → 502 ✗ (fetch failed, backend_unavailable)
+
+--- Security headers ---
+content-security-policy ✓
+referrer-policy: strict-origin-when-cross-origin ✓
+strict-transport-security: max-age=31536000 ✓
+x-content-type-options: nosniff ✓
+x-frame-options: DENY ✓
+x-xss-protection: 1; mode=block ✓
+
+--- UI pages ---
+Landing page → renders correctly ("IA-first email client")
+Login page → renders correctly (form + GitHub OAuth button)
+
+=== SUMMARY ===
+PASS: 11/12 (92%)
+FAIL: 1/12 — POST /api/compose/send (502, MW-2026-054, issue #875)
+
+No new regressions detected. Auth bypass security is stable.
+Blocker: reimagined-guide PR #637 (CI PASS, MERGEABLE) must merge first.

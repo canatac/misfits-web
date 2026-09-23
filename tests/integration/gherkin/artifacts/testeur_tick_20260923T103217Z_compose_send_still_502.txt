@@ -1,0 +1,21 @@
+=== testeur tick 2026-09-23T10:31Z — non-regression re-test ===
+Production: https://mail.misfits.ai
+
+Results:
+GET / → 200 ✓ (0.177s)
+GET /api/emails (unauth) → 307 ✓
+GET /api/admin (unauth) → 307 ✓
+POST /api/auth/login → 401 ✓ (backend reachable, auth gate working)
+POST /api/compose/send → 502 ✗ STILL FAILING
+  Body: {"error":"backend_unavailable","message":"TypeError: fetch failed"}
+
+Status: No change from previous tick. compose/send still broken.
+
+Root cause: Docker network name mismatch (mailnet vs debian_mailnet).
+Blocker chain:
+  1. reimagined-guide PR #637 (reqwest .form() fix) — CI PASS, MERGEABLE, NOT MERGED
+  2. reimagined-guide PR #656 (network name pin) — CI FAIL (blocked by #637 compile error), MERGEABLE
+
+Once #637 is merged, #656 CI should pass → merge #656 → redeploy → compose/send should work.
+
+Matrix: MW-2026-054 status unchanged (FAIL-ISSUE-875)
