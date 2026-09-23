@@ -1,0 +1,33 @@
+testeur_tick_20260923T0951Z_compose_send_timeout.txt
+================================================
+TICK: 2026-09-23T09:51:21Z
+ROLE: testeur
+ACTION: Production regression test — MW-2026-054 compose/send endpoint
+
+PRODUCTION TEST RESULTS:
+- HTTPS 443: PASS (HTTP 200, 0.122s)
+- GET /api/emails (unauth): PASS (HTTP 307)
+- GET /api/external-accounts (unauth): PASS (HTTP 307)
+- GET /api/admin/whoami: PASS (HTTP 401)
+- POST /api/auth/login: PASS (HTTP 400, validation active)
+- POST /api/compose/send: **FAIL — HTTP 000 (TIMEOUT >15s)** ← WORSE than previous 502
+- POST /api/send (direct via Caddy): PASS (HTTP 400, backend reachable via Caddy)
+- Mongo health: PASS (status:healthy, ping_ms:2)
+
+ANALYSIS:
+- Backend IS alive (Caddy rewrite to /api/send returns 400)
+- Next.js internal proxy to email-api:8000 is COMPLETELY UNREACHABLE (timeout, not 502)
+- This confirms Docker network name mismatch between containers (issue #875 comment #3)
+- The /api/compose/send route handler in Next.js times out trying to reach email-api:8000
+- Caddy can reach backend directly but Next.js container cannot resolve email-api hostname
+
+SEVERITY: P1 — Email sending completely broken in production
+ROOT CAUSE: Docker network misalignment (reimagined-guide vs misfits-web compose files)
+
+CMD PROOF:
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai → 200
+$ curl -s -o /dev/null -w '%{http_code}' -X POST https://mail.misfits.ai/api/compose/send -H 'Content-Type: application/json' -d '{}' → 000 (TIMEOUT)
+$ curl -s -o /dev/null -w '%{http_code}' -X POST https://mail.misfits.ai/api/send -H 'Content-Type: application/json' -d '{}' → 400
+$ curl -s https://mail.misfits.ai/api/monitoring/mongo-health → {"status":"healthy","ping_ms":2}
+
+RELATED: issue #875, issue #876, MW-2026-054
