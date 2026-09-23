@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T11:30 UTC — veille privacy laws 2026 (144 pays, 82% population, GDPR fines €5.88B), competitor AI features (Proton Scribe, Tuta AI), matrix 69 rows (48 FAIL), state=ON, 0 PO_TICKETs posted (all FAIL rows have issues)
+> Dernière mise à jour: 2026-09-23T12:15 UTC — veille API monitoring 2026 (health endpoint best practices), competitor AI features (Proton Scribe, Tuta AI), matrix 64 rows (48 FAIL), state=ON, 2 tickets routed to scrum-master (#891 health regression, #674 OAuth IMAP)
 
 ---
 
@@ -137,10 +137,18 @@
 | MW-2026-064 | MTA-STS outbound enforcement | User envoie email vers domaine avec MTA-STS enforce | Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré | ❌ (feature à implémenter) |
 | MW-2026-066 | Email export .eml batch (backend) | User exporte plusieurs emails en .eml | Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées | ❌ (feature à implémenter) |
 | MW-2026-067 | Multi-account aggregation (backend) | User connecte un compte Gmail externe | Emails Gmail affiches dans l unified inbox + envoi possible via Gmail | ❌ (feature à implémenter) |
+| MW-2026-078 | Health endpoint monitoring | User accède /api/health | HTTP 200 ou 503 (jamais 404) + Docker healthcheck passes + monitoring alertes fonctionnelles | ❌ (issue #891, PR #890 deploy failed) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-23T12:15 UTC — API monitoring best practices 2026 (health endpoint reliability)
+- **Health endpoint as product surface**: /api/health is not just infra — it's the first thing monitoring tools, Docker healthchecks, and uptime probes hit. 404 on health = blind monitoring.
+- **Multi-layer checks**: Best practice 2026 = 3 check types: (1) public health endpoint, (2) authenticated read, (3) revenue path. Each with named owner.
+- **Deploy verification gap**: PR #890 added /api/health exclusion in next.config.ts but deploy failed — Docker image may not have been rebuilt with new config. Lesson: CI must verify post-deploy, not just merge.
+- **Competitor uptime**: Proton Mail publishes status.proton.me (public status page). Tuta has status.tuta.com. misfits.ai has no public status page — gap vs competitors.
+- **Actionable**: Issue #891 routed to scrum-master for dev-web+dev-int. Health endpoint must return 200/503, never 404.
 
 ### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
 - **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.
