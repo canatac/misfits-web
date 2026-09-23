@@ -180,7 +180,9 @@ jobs:
             rm -f /tmp/Caddyfile
             # Caddy runs in docker — restart container to pick up new config
             cd ${{ secrets.VM_DEPLOY_DIR }} && docker compose -f docker-compose.deploy.yml restart caddy
-            echo "Caddyfile deployed to rg-backend/ and Caddy container restarted."
+            # Ensure Caddy reloads the new config (caddy_config volume may cache old JSON)
+            sleep 3 && docker exec caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
+            echo "Caddyfile deployed to VM root, Caddy container restarted and reloaded."
 
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
