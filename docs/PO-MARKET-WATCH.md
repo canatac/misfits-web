@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-09
+> Dernière mise à jour: 2026-09-23
 
 ---
 
@@ -133,6 +133,7 @@
 | MW-2026-006 | User avec custom domain @entreprise.com | Domaine vérifié (SPF/DKIM/DMARC), emails envoyés sans erreur | ✅ (route /admin/users) |
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
+| MW-2026-078 | User active le mode IA local (on-device) | Traitement IA fait sur le device, aucune donnée envoyée au serveur, mode offline fonctionnel | ❌ (feature à implémenter — différenciateur vs Proton Scribe cloud) |
 
 ---
 
@@ -147,5 +148,12 @@
 - **8 nouvelles state privacy laws** aux USA en 2025 → la conformité US devient complexe, notre approche EU-first (GDPR natif) est un avantage.
 
 ---
+
+### Veille 2026-09-23 — IA & confidentialité
+
+- **Tuta**: refuse explicitement toute IA cloud dans la boîte mail (position anti-AI). Proton a introduit Proton Scribe (AI writer) avec backlash. → **Arbitrage misfits.ai**: IA locale (on-device) uniquement, jamais cloud. Différenciation claire vs Tuta (pas d'IA) et Proton (IA cloud).
+- **Proton**: réécriture mobile Rust avec offline search, intégration Gmail send/receive. → Confirme la tendance "one inbox". Notre multi-account aggregation (MW-2026-019) est alignée.
+- **Fastmail**: privacy policy-based (pas E2EE), TLS only, custom domain dès Standard ($5/mo), JMAP natif. → Notre angle: E2EE natif + IA + self-hosted vs leur "premium classique".
+- **Marché**: privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 82% population mondiale couverte par lois privacy. → Le timing est bon pour un provider privacy-first avec UX moderne.
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
