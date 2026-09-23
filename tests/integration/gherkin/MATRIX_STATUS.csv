@@ -47,7 +47,7 @@ MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture lo
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
-MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,POST /api/auth/login=400 (PASS) + POST /api/compose/send=400 empty (PASS) Fix deployed 2026-09-23T11:03Z,PASS-DEPLOY-2026-09-23T11:03Z,misfits-web,dev-web
+MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,POST /api/auth/login=503 (FAIL) + POST /api/compose/send=502 (FAIL) backend unreachable from Next.js container,FAIL-REGRESSION-ISSUE-905,misfits-web,dev-int
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL,misfits-web,dev-web
 MW-2026-064,P0 outage regression (issue #813),User accede mail.misfits.ai:443,HTTPS 200 OK + /api/emails=401 + /api/admin=307 + site fully reachable,PASS-REGRESSION-2026-09-23T00:30Z,misfits-web,dev-int
 MW-2026-066,Newsletter tracking pixel consent,User ouvre un email newsletter avec tracking pixels,Tracking pixels bloqués par défaut + consent gate affiché + consentement persisté + opt-out dans privacy settings,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
@@ -56,3 +56,5 @@ MW-2026-061,DKIM2 signature,User envoie email avec DKIM2 signature,Email signe a
 MW-2026-067,Composer unsaved changes indicator,User tape dans le composer puis navigue sans sauvegarder,Indicateur de modifications non sauvegardees visible + warning sur navigation + auto-save draft,FAIL-ISSUE-896,misfits-web,dev-web
 MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte IMAP via OAuth 2.0,Token OAuth 2.0 echange pour IMAP + stockage securise + refresh flow fonctionnel,FAIL-ISSUE-678,reimagined-guide,dev-back
 MW-2026-087,PR #504 CodeQL + PR #688 lint/test failures,CI tourne sur PR #504 + PR #688,CI vert sur les deux PRs + alertes CodeQL resolu + lint clean,FAIL-ISSUE-897,misfits-web,dev-web
+MW-2026-088,Compose send 502 regression,User envoie POST /api/compose/send,POST /api/compose/send=200 + email sent + no 502 in logs,FAIL-ISSUE-905,misfits-web,dev-web
+MW-2026-089,MongoDB Docker connectivity,User accede MongoDB depuis container Docker,MongoDB ping=1 from Docker container + no connection timeout + healthcheck OK,FAIL-ISSUE-670,reimagined-guide,dev-int
