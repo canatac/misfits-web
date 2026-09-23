@@ -58,3 +58,5 @@ MW-2026-062,OAuth 2.0 IMAP auth,User connecte un compte IMAP via OAuth 2.0,Token
 MW-2026-087,PR #504 CodeQL + PR #688 lint/test failures,CI tourne sur PR #504 + PR #688,CI vert sur les deux PRs + alertes CodeQL resolu + lint clean,FAIL-ISSUE-897,misfits-web,dev-web
 MW-2026-088,Compose send 502 regression,User envoie POST /api/compose/send,POST /api/compose/send=200 + email sent + no 502 in logs,FAIL-ISSUE-905,misfits-web,dev-web
 MW-2026-089,MongoDB Docker connectivity,User accede MongoDB depuis container Docker,MongoDB ping=1 from Docker container + no connection timeout + healthcheck OK,FAIL-ISSUE-670,reimagined-guide,dev-int
+MW-2026-091,BIMI brand logo,User envoie email avec BIMI logo verified,Logo brand affiche dans inbox destinataire + VMC certificat valide + SVG logo correct,FAIL-ISSUE-NEW,misfits-web+studious-octo-rotary-phone,dev-web+dev-back
+MW-2026-092,TLS-RPT reporting,User recoit rapport TLS-RPT,Rapport TLS-RPT genere + visible dans admin dashboard + alertes en cas d'echec TLS,FAIL-ISSUE-NEW,reimagined-guide,dev-back
