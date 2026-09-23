@@ -1,0 +1,23 @@
+=== TESTEUR TICK 2026-09-23T04:19Z ===
+Role: testeur | Queue: 0 messages | Branch: fix/mw-int-caddyfile-compose-handle
+
+NON-REGRESSION RESULTS:
+[1] MW-2026-029 Auth bypass: GET /api/emails → 401 ✅
+[2] MW-2026-030 CORS reflection: no ACAO header ✅
+[3] MW-2026-073 Compose/Send: POST → 400 (not 502) ✅
+[4] Frontend availability: GET / → 200 ✅
+[5] /api/admin/whoami auth gate: → 401 ✅
+[6] MongoDB health: {"status":"healthy","ping_ms":1} ✅
+[7] Security headers: HSTS, X-Frame-Options: DENY, X-Content-Type-Options: nosniff ✅
+
+ACTIONS:
+- Added Gherkin feature: MW-2026-050-attachment-preview.feature (6 scenarios)
+- Added Gherkin feature: MW-2026-065-email-read-receipts.feature (7 scenarios)
+- Added Gherkin feature: MW-2026-066-newsletter-tracking-consent.feature (5 scenarios)
+- Updated MATRIX_STATUS.csv: added MW-050, MW-065 rows
+- Commit: 9052db4 (pushed to fix/mw-int-caddyfile-compose-handle)
+
+ISSUES REFERENCE:
+- #771 (MW-050 attachment preview FAIL)
+- #820 (MW-065 read receipts FAIL)
+- #823 (MW-066 newsletter tracking consent FAIL)
