@@ -143,6 +143,16 @@
 
 ## 5. Notes de veille — Ce cycle
 
+### 2026-09-23T12:20 UTC — PO matrice scan: 8 nouvelles rows ajoutées (MW-2026-075/076/077/080/081/082/083/084/087)
+- Disposable email aliases (MW-2026-075/076): gap P2 vs Startmail/SimpleLogin — aliases jetables natifs
+- Pro plan subscription billing (MW-2026-077): freemium standard — Stripe + prorata + facture PDF
+- Notion Mail migration wizard (MW-2026-080): import .eml + labels + templates + auto-labels
+- Undo send 5s window (MW-2026-081): fenêtre 5s + préservation contenu + toast
+- Keyboard shortcuts system (MW-2026-082): help overlay + navigation + compose + archive + delete
+- Email snooze presets (MW-2026-083): presets 1h/1d/1w + vue snoozed + badge compteur
+- Email pin/star (MW-2026-084): pin/star indépendant + filtre + persistance + raccourci
+- PR #504 CodeQL + PR #688 lint/test (MW-2026-087): CI failures à résoudre
+
 ### 2026-09-23T12:15 UTC — API monitoring best practices 2026 (health endpoint reliability)
 - **Health endpoint as product surface**: /api/health is not just infra — it's the first thing monitoring tools, Docker healthchecks, and uptime probes hit. 404 on health = blind monitoring.
 - **Multi-layer checks**: Best practice 2026 = 3 check types: (1) public health endpoint, (2) authenticated read, (3) revenue path. Each with named owner.

@@ -63,3 +63,12 @@ MW-2026-067,Composer unsaved changes indicator,User navigue away from composer w
 MW-2026-068,DKIM service operationnel (no issue),User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL-ISSUE-669,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
 MW-2026-069,MongoDB unreachable from Docker,User accède mail.misfits.ai:443,HTTPS 200 OK + MongoDB reachable + containers running,FAIL-ISSUE-670,reimagined-guide,dev-int
 MW-2026-078,Health endpoint monitoring,User accède /api/health,HTTP 200 or 503 (never 404) + Docker healthcheck passes + monitoring alerts functional,FAIL-ISSUE-891,misfits-web,dev-web+dev-int
+MW-2026-075,Disposable email aliases,User crée un alias jetable @alias.misfits.ai,Alias créé + emails reçus + désactivation en 1 clic + quota 10 aliases gratuit,FAIL-ISSUE-838,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-076,Disposable email aliases API,User gère ses aliases via API REST,CRUD aliases via API + rate limiting + logs d'audit,FAIL-ISSUE-838,reimagined-guide,dev-back
+MW-2026-077,Pro plan subscription billing,User souscrit au plan Pro (€3/mo),Paiement Stripe + features Pro activées + facture PDF + prorata,FAIL-ISSUE-839,reimagined-guide,dev-back
+MW-2026-080,Notion Mail migration wizard,User importe emails depuis Notion Mail,Import .eml + labels + templates + auto-labels via wizard + progress bar,FAIL-ISSUE-843,misfits-web,dev-web
+MW-2026-081,Undo send with 5s window,User clique Undo send dans les 5s après envoi,Email retiré de la file + fenêtre 5s + préservation contenu + toast confirmation,FAIL-ISSUE-844,misfits-web,dev-web
+MW-2026-082,Keyboard shortcuts system,User utilise raccourcis clavier (j/k/c/e/#),Help overlay (?) + navigation + compose + archive + delete + reply + search,FAIL-ISSUE-845,misfits-web,dev-web
+MW-2026-083,Email snooze presets,User snooze un email (1h/1d/1w),Email snoozé + vue snoozed + cancel snooze + badge compteur + mobile overlay,FAIL-ISSUE-850,misfits-web,dev-web
+MW-2026-084,Email pin/star,User épingle/star un email,Pin/star indépendant + filtre pin/star + persistance + raccourci clavier,FAIL-ISSUE-851,misfits-web,dev-web
+MW-2026-087,PR #504 CodeQL + PR #688 lint/test failures,CI verte sur PR #504 + PR #688,CodeQL pass + lint pass + test pass + CI green + pas de nouveau alert,FAIL-ISSUE-859,misfits-web+reimagined-guide,dev-web+dev-back
