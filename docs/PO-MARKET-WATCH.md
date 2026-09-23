@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T10:05 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 1 PO_TICKET posted this cycle (MW-2026-067)
 
 ---
 
@@ -296,3 +296,10 @@
 - **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)",
+
+### 2026-09-23 — Cycle PO #N
+- **Activity**: MATRIX scan + issue creation
+- **New issue**: #877 — Composer unsaved changes indicator (MW-2026-067)
+- **PO_TICKET**: 1 posted to scrum-master (MW-2026-067, dev-web)
+- **Bus messages**: 0 actionable (queue empty)
+- **State**: ON
