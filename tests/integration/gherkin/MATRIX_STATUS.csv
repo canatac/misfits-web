@@ -51,3 +51,7 @@ MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login
 MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL,misfits-web,dev-web
 MW-2026-064,P0 outage regression (issue #813),User accede mail.misfits.ai:443,HTTPS 200 OK + /api/emails=401 + /api/admin=307 + site fully reachable,PASS-REGRESSION-2026-09-23T00:30Z,misfits-web,dev-int
 MW-2026-066,Newsletter tracking pixel consent,User ouvre un email newsletter avec tracking pixels,Tracking pixels bloqués par défaut + consent gate affiché + consentement persisté + opt-out dans privacy settings,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-080,Notion Mail migration wizard,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL-ISSUE-843,misfits-web,dev-web
+MW-2026-080,Notion Mail migration wizard,User importe emails depuis Notion Mail (Gmail sync),Emails importes via import wizard + templates migres + auto-labels recres,FAIL-ISSUE-843,misfits-web,dev-web
+MW-2026-081,Undo send with 5s window,User clique Undo send dans les 5s apres envoi,Email retire de la file d envoi + visible dans brouillons + timer 5s visible,FAIL-ISSUE-844,misfits-web,dev-web
+MW-2026-082,Keyboard shortcuts system,User appuie sur C dans l inbox + Ctrl+/ pour aide,Composer ouvert + panneau d aide raccourcis affiche + tooltips visibles,FAIL-ISSUE-845,misfits-web,dev-web
