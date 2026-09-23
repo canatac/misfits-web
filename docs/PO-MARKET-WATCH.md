@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T23:30 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 64 rows (51 FAIL), state=ON, 2 PO_TICKETs posted (MW-2026-066, MW-2026-067)
+> Dernière mise à jour: 2026-09-23T11:30 UTC — veille privacy laws 2026 (144 pays, 82% population, GDPR fines €5.88B), competitor AI features (Proton Scribe, Tuta AI), matrix 69 rows (48 FAIL), state=ON, 0 PO_TICKETs posted (all FAIL rows have issues)
 
 ---
 
@@ -326,6 +326,21 @@
 - **Action**: No new issues created — existing issues cover all gaps (MW-2026-011 MTA-STS, MW-2026-012 DANE, MW-2026-024 DMARC/BIMI, MW-2026-060 BIMI)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
+
+### Cycle 2026-09-23T11:30Z — Veille privacy laws 2026 + competitor AI features
+- **Privacy laws 2026**: 144 pays avec lois data protection (vs ~100 en 2020), 82% population mondiale couverte. GDPR fines cumulées €5.88B depuis 2018. CAN-SPAM fines $51.7K/email. Vietnam PDP law effective Jan 2026. 8+ US state privacy laws en 2025. Source: https://sendro.ai/blog/email-privacy-laws-2026
+- **GDPR enforcement**: Italy Garante exige consentement explicite pour tracking pixels (fenêtre 6 mois). France CNIL recommendations finales sur tracking pixels (transition 3 mois). EU ePrivacy derogation expired (European Parliament voted against extension). Source: https://www.youtube.com/watch?v=MI7-KsHZPYE
+- **Proton Scribe**: Proton lance IA de rédaction — confirme tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
+- **Tuta AI triage**: Tuta integre IA pour triage automatique — changement de cap majeur (Tuta avait refuse IA). Source: https://nordvpn.com/blog/tutanota
+- **Canary Mail AI Copilot**: drafting replies, summarizing threads, prioritizing inbox. Source: https://canarymail.io/blog/proton-ai-alternative
+- **misfits.ai angle**: Nos 3 AI features (reponses suggerees + triage intelligent + resumes automatiques) restent differenciees vs Proton (Scribe = drafting only) et Tuta (triage only). Mais le gap se reduit — accelerer le sprint AI.
+- **Arbitrage 2026-09-23: AI feature scope**
+  - **Choix**: All 3 AI features (summaries + triage + suggested replies) in Sprint 1, not staggered
+  - **Rejeté**: Staggered rollout (summaries first, triage later), AI cloud-based (privacy risk)
+  - **Rationale**: Competitors are shipping AI fast. Our differentiation window is narrow. All 3 features share the same backend infrastructure (LLM API) — no reason to stagger.
+- **Action**: No new issues created — all 48 FAIL rows already have GH issues. PO-MARKET-WATCH.md updated.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for new features)
 
 ### Cycle 2026-09-22T22:30Z — Veille AI email features 2026 (Proton Scribe, Tuta AI, Canary Mail)
 - **Proton Scribe**: Proton lance "Proton Scribe" (IA de rédaction) — confirme la tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
