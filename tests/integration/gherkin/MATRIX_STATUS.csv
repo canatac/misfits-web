@@ -48,3 +48,7 @@ MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
 MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,Endpoints retournent 200/401 (pas 502) — backend joignable,PARTIAL-ISSUE-764,misfits-web+reimagined-guide,dev-back+dev-int
+MW-2026-075,Disposable email aliases,User crée un alias jetable xyz123@misfits.ai,Alias créé + emails redirigés vers inbox réel + supprimable en 1 clic,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-076,Disposable email aliases management,User désactive un alias recevant du spam,Alias désactivé + emails rejetés + log des services associés,FAIL,misfits-web,dev-web
+MW-2026-077,Pro plan subscription billing,User souscrit au plan Pro via Stripe,Paiement accepté + features Pro activées + facture générée + email confirmation,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-078,On-device AI processing,User active le mode IA local dans settings,Traitement IA on-device + aucun appel réseau IA + indicateur visible + résumé en <5s,FAIL,misfits-web,dev-web
