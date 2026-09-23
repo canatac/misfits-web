@@ -48,4 +48,8 @@ MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
 MW-2026-050,Email attachment preview,User clique sur un piece jointe dans un email,Preview inline (images, PDF) + boutons telecharger/partager + fallback pour types inconnus,FAIL,misfits-web,dev-web
 MW-2026-054,Auth login + compose send endpoints,User envoie POST /api/auth/login + POST /api/compose/send,POST /api/auth/login=400 (backend reachable, was 502) + POST /api/compose/send=404 (route missing),PARTIAL-ISSUE-764,misfits-web+reimagined-guide,dev-back+dev-int
-MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL,misfits-web,dev-web
+MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating action bar appears with count + actions [Archive, Mark read, Delete, Move, Label, Snooze],FAIL-ISSUE-803,misfits-web,dev-web
+MW-2026-059,Email pin/star stability,User clique sur l'icône pin/star d'un email,Email épinglé + persisté entre sessions + visible dans la section épinglés,BLOCKED-ISSUE-807,misfits-web,dev-web
+MW-2026-056,Reading mode integration,User ouvre un email + clique mode lecture,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL-ISSUE-794,misfits-web,dev-web
+MW-2026-060,BIMI brand indicator,User ouvre un email authentifié (DKIM+SPF+DMARC pass),Badge Authenticated visible + logo BIMI affiché si présent + tooltip explicatif,FAIL-ISSUE-808,misfits-web,dev-web
+UX-779,Email snooze presets,User clique snooze + sélectionne 1h/1d/1w,Email disparaît de l inbox + réapparaît après durée + section Snoozed visible,FAIL-ISSUE-809,misfits-web,dev-web

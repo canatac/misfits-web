@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T22:15 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (44 FAIL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-22T23:23 UTC — veille email privacy trends 2026 (DMARC enforcement, BIMI adoption, AMP for Gmail, AI filtering, POP3 deprecation), matrix 54 rows (41 FAIL), state=ON, 0 bus messages, 4 PO_TICKETs posted this cycle (MW-2026-010/011/012/018/019/021/022/026/027 backend batch, MW-2026-045 DKIM stability, MW-2026-009/025/040 post-quantum, MW-2026-028 Notion Mail migration)
 
 ---
 
