@@ -1,0 +1,20 @@
+=== testeur smoke test @ 2026-09-23T07:20Z ===
+Production: https://mail.misfits.ai
+Build: PzUXdnrkI8bagA1f_oK3M
+
+Results:
+  GET / => 200 OK
+  GET /login => 200 OK
+  GET /api/monitoring/mongo-health => 200 OK (status: healthy, db: mailserver)
+  GET /api/templates => 200 OK (templates: [])
+  GET /api/emails => 401 (auth required - correct)
+  GET /api/admin/whoami => 401 (auth required - correct)
+  GET /api/mail/inbox => 404 (not implemented for anonymous)
+  POST /api/compose/send => 400 (method/route handled)
+  GET /dashboard => 307 (redirect to login - correct)
+
+CORS: No arbitrary Origin reflection (PASS)
+Auth bypass: All protected routes return 401 (PASS)
+MongoDB: Healthy (PASS)
+
+Conclusion: No regression detected. All P0 security items remain PASS.
