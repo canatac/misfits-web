@@ -1,0 +1,55 @@
+=== Testeur Non-Regression Tick 2026-09-23T03:58:46Z ===
+Target: https://mail.misfits.ai
+Role: testeur | Cron tick
+
+--- Auth Gates (unauthenticated) ---
+✅ /api/emails → 401 (expected 401)
+✅ /api/external-accounts → 307 (expected 307)
+✅ /api/hermes/runs → 307 (expected 307)
+✅ /api/admin/whoami → 401 (expected 401)
+✅ /api/admin/ai-activity → 307 (expected 307)
+✅ /api/admin/users → 307 (expected 307)
+✅ /api/admin/change-requests → 307 (expected 307)
+
+--- Protected Routes (unauthenticated → should redirect 307) ---
+✅ /mail → 307
+✅ /compose → 307
+✅ /inbox → 307
+✅ /dashboard → 307
+✅ /settings → 307
+✅ /contacts → 307
+✅ /search → 307
+✅ /monitoring → 307
+
+--- Public Routes (should be 200) ---
+✅ / → 200
+✅ /login → 200
+✅ /register → 200
+
+--- MW-054 Auth/Compose ---
+✅ POST /api/auth/login → 400
+✅ POST /api/compose/send → 400
+
+--- CORS ---
+✅ /api/emails evil.com origin → 401 (no PII leak)
+✅ /api/templates evil.com origin → 200 (public endpoint, empty data)
+
+--- Frontend Feature Endpoints (auth gate check) ---
+✅ /api/emails/bulk → 401 (auth gate OK)
+✅ /api/emails/forward → 401 (auth gate OK)
+✅ /api/emails/snooze → 401 (auth gate OK)
+✅ /api/emails/export → 401 (auth gate OK)
+✅ /api/emails/reading-mode → 401 (auth gate OK)
+✅ /api/search → 404 (not implemented)
+✅ /api/newsletter → 404 (not implemented)
+✅ /api/import → 404 (not implemented)
+✅ /api/ai/summary → 404 (not implemented)
+✅ /api/ai/triage → 404 (not implemented)
+✅ /api/events → 200 (public, empty array)
+✅ /api/templates → 200 (public, empty array)
+
+=== SUMMARY ===
+PASS: 32
+FAIL: 0
+REGRESSION: NONE
+All auth gates intact. No PII exposure on public endpoints.
