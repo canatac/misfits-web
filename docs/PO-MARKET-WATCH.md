@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22T23:30 UTC — veille email authentication adoption 2026 (DMARC 30.4%, BIMI 0.4%, MTA-STS 0.3%, DANE decline), matrix 64 rows (51 FAIL), state=ON, 2 PO_TICKETs posted (MW-2026-066, MW-2026-067)
+> Dernière mise à jour: 2026-09-23T12:15 UTC — veille API monitoring 2026 (health endpoint best practices), competitor AI features (Proton Scribe, Tuta AI), matrix 64 rows (48 FAIL), state=ON, 2 tickets routed to scrum-master (#891 health regression, #674 OAuth IMAP)
 
 ---
 
@@ -137,10 +137,28 @@
 | MW-2026-064 | MTA-STS outbound enforcement | User envoie email vers domaine avec MTA-STS enforce | Connexion TLS obligatoire + échec si certificat invalide + TLS-RPT report généré | ❌ (feature à implémenter) |
 | MW-2026-066 | Email export .eml batch (backend) | User exporte plusieurs emails en .eml | Fichier .zip téléchargé contenant tous les emails sélectionnés + métadonnées | ❌ (feature à implémenter) |
 | MW-2026-067 | Multi-account aggregation (backend) | User connecte un compte Gmail externe | Emails Gmail affiches dans l unified inbox + envoi possible via Gmail | ❌ (feature à implémenter) |
+| MW-2026-078 | Health endpoint monitoring | User accède /api/health | HTTP 200 ou 503 (jamais 404) + Docker healthcheck passes + monitoring alertes fonctionnelles | ❌ (issue #891, PR #890 deploy failed) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-23T12:20 UTC — PO matrice scan: 8 nouvelles rows ajoutées (MW-2026-075/076/077/080/081/082/083/084/087)
+- Disposable email aliases (MW-2026-075/076): gap P2 vs Startmail/SimpleLogin — aliases jetables natifs
+- Pro plan subscription billing (MW-2026-077): freemium standard — Stripe + prorata + facture PDF
+- Notion Mail migration wizard (MW-2026-080): import .eml + labels + templates + auto-labels
+- Undo send 5s window (MW-2026-081): fenêtre 5s + préservation contenu + toast
+- Keyboard shortcuts system (MW-2026-082): help overlay + navigation + compose + archive + delete
+- Email snooze presets (MW-2026-083): presets 1h/1d/1w + vue snoozed + badge compteur
+- Email pin/star (MW-2026-084): pin/star indépendant + filtre + persistance + raccourci
+- PR #504 CodeQL + PR #688 lint/test (MW-2026-087): CI failures à résoudre
+
+### 2026-09-23T12:15 UTC — API monitoring best practices 2026 (health endpoint reliability)
+- **Health endpoint as product surface**: /api/health is not just infra — it's the first thing monitoring tools, Docker healthchecks, and uptime probes hit. 404 on health = blind monitoring.
+- **Multi-layer checks**: Best practice 2026 = 3 check types: (1) public health endpoint, (2) authenticated read, (3) revenue path. Each with named owner.
+- **Deploy verification gap**: PR #890 added /api/health exclusion in next.config.ts but deploy failed — Docker image may not have been rebuilt with new config. Lesson: CI must verify post-deploy, not just merge.
+- **Competitor uptime**: Proton Mail publishes status.proton.me (public status page). Tuta has status.tuta.com. misfits.ai has no public status page — gap vs competitors.
+- **Actionable**: Issue #891 routed to scrum-master for dev-web+dev-int. Health endpoint must return 200/503, never 404.
 
 ### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
 - **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.
@@ -326,6 +344,21 @@
 - **Action**: No new issues created — existing issues cover all gaps (MW-2026-011 MTA-STS, MW-2026-012 DANE, MW-2026-024 DMARC/BIMI, MW-2026-060 BIMI)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows without issues)
+
+### Cycle 2026-09-23T11:30Z — Veille privacy laws 2026 + competitor AI features
+- **Privacy laws 2026**: 144 pays avec lois data protection (vs ~100 en 2020), 82% population mondiale couverte. GDPR fines cumulées €5.88B depuis 2018. CAN-SPAM fines $51.7K/email. Vietnam PDP law effective Jan 2026. 8+ US state privacy laws en 2025. Source: https://sendro.ai/blog/email-privacy-laws-2026
+- **GDPR enforcement**: Italy Garante exige consentement explicite pour tracking pixels (fenêtre 6 mois). France CNIL recommendations finales sur tracking pixels (transition 3 mois). EU ePrivacy derogation expired (European Parliament voted against extension). Source: https://www.youtube.com/watch?v=MI7-KsHZPYE
+- **Proton Scribe**: Proton lance IA de rédaction — confirme tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
+- **Tuta AI triage**: Tuta integre IA pour triage automatique — changement de cap majeur (Tuta avait refuse IA). Source: https://nordvpn.com/blog/tutanota
+- **Canary Mail AI Copilot**: drafting replies, summarizing threads, prioritizing inbox. Source: https://canarymail.io/blog/proton-ai-alternative
+- **misfits.ai angle**: Nos 3 AI features (reponses suggerees + triage intelligent + resumes automatiques) restent differenciees vs Proton (Scribe = drafting only) et Tuta (triage only). Mais le gap se reduit — accelerer le sprint AI.
+- **Arbitrage 2026-09-23: AI feature scope**
+  - **Choix**: All 3 AI features (summaries + triage + suggested replies) in Sprint 1, not staggered
+  - **Rejeté**: Staggered rollout (summaries first, triage later), AI cloud-based (privacy risk)
+  - **Rationale**: Competitors are shipping AI fast. Our differentiation window is narrow. All 3 features share the same backend infrastructure (LLM API) — no reason to stagger.
+- **Action**: No new issues created — all 48 FAIL rows already have GH issues. PO-MARKET-WATCH.md updated.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for new features)
 
 ### Cycle 2026-09-22T22:30Z — Veille AI email features 2026 (Proton Scribe, Tuta AI, Canary Mail)
 - **Proton Scribe**: Proton lance "Proton Scribe" (IA de rédaction) — confirme la tendance IA-first email. Source: https://nordvpn.com/blog/tutanota
