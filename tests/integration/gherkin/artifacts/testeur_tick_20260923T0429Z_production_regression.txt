@@ -1,0 +1,39 @@
+testeur_tick_20260923T0429Z_production_regression.txt
+================================================
+TICK: 2026-09-23T04:29Z
+ROLE: testeur
+ACTION: Production non-regression sweep + P0 auth verification
+TICKET: MW-2026-029 (auth bypass regression), MW-2026-032 (reading mode), MW-2026-037 (unified search)
+
+PRODUCTION REGRESSION RESULTS:
+--- Auth Bypass P0 (MW-2026-029) ---
+- GET /api/emails           → 401 {"code":"AUTH_REQUIRED"} ✓ (no inbox leak)
+- GET /api/hermes/runs       → 307 → /login ✓
+- GET /api/admin/ai-activity → 307 → /login ✓
+- GET /api/admin/users       → 307 → /login ✓
+- GET /api/external-accounts → 307 → /login ✓
+- CORS evil origin           → no ACAO reflection ✓
+- /api/emails body           → NO inbox data exposed ✓
+
+--- Frontend Auth Wall ---
+- GET /mail       → 307 → /login ✓
+- GET /dashboard  → 307 → /login ✓
+- GET /login      → 200 ✓
+
+--- Feature Status (MW-2026-032 Reading Mode) ---
+- JS bundle scan: 0 matches for readingMode/readMode/reading-mode
+- Status: FAIL — not implemented in production bundle
+
+--- Feature Status (MW-2026-037 Unified Search) ---
+- /api/search → 404 (endpoint not implemented)
+- JS bundle: minimal search refs in layout only
+- Status: FAIL — unified search not deployed
+
+--- Feature Status (MW-2026-063 Bulk Selection) ---
+- No /api/bulk endpoint found
+- Status: FAIL — bulk selection not deployed
+
+CSS VERSION: 741c7439f6e9d244 (unchanged from prior tick)
+CONCLUSION: P0 auth regression PASS — all sensitive routes protected.
+Frontend features (reading mode, unified search, bulk selection) remain FAIL.
+No version change detected since last tick.

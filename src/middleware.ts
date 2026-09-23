@@ -78,7 +78,10 @@ function isProtected(pathname: string): boolean {
   // Template API routes require session (user-scoped resources — issue #852).
   // /api/templates/* (CRUD) must always be authenticated.
   if (pathname.startsWith("/api/templates")) return true;
-  // Non-sensitive API routes (mail, monitoring) are server-to-server,
+  // Mail API routes require session (user-scoped — read receipts, issue #820).
+  // /api/mail/* (read-receipts, etc.) must always be authenticated.
+  if (pathname.startsWith("/api/mail")) return true;
+  // Non-sensitive API routes (monitoring) are server-to-server,
   // protected by the backend's own auth layer.
   if (pathname.startsWith("/api")) return false;
   return PROTECTED_PREFIXES.some(

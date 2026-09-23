@@ -1,0 +1,38 @@
+testeur_tick_20260923T1317Z_MW088_compose_send_502_regression.txt
+
+## MW-2026-088 — /api/compose/send 502 REGRESSION TEST
+## Date: 2026-09-23T13:17Z
+## Target: https://mail.misfits.ai
+## Issue: #905 (bug, priority-P1)
+
+### RESULT: FAIL (unchanged — issue still open)
+
+### Compose Send Tests
+POST /api/compose/send {} => 502 {"error":"backend_unreachable","message":"TypeError: fetch failed"}
+  EXPECTED: 200/401/400 | ACTUAL: 502 => FAIL
+
+GET /api/health => 404 (route not found)
+  EXPECTED: 200 healthy | ACTUAL: 404 => FAIL (route missing)
+
+### MW-2026-054 Regression Checks
+POST /api/auth/login {} => 400 (PASS — backend reachable via Caddy->8000)
+GET /api/emails (unauth) => 401 (PASS)
+GET /api/external-accounts (unauth) => 307 (PASS)
+
+### Security Non-Regression (ALL PASS)
+GET / => 200
+GET /api/admin => 307
+GET /api/admin/whoami => 401
+GET /api/hermes/runs => 307
+
+### Analysis
+- /api/compose/send still returns 502 (backend_unreachable from Next.js container)
+- /api/health returns 404 (not 503) — PR#894 route may have been lost in subsequent deploy
+- Root cause: inter-container networking (misfits-web -> email-api:8000) still broken
+- /api/auth/login works because it routes directly via Caddy->8000 (bypasses Next.js)
+- All auth bypass regressions remain fixed
+
+### Verdict
+MW-2026-088: FAIL — issue #905 still active
+MW-2026-054: PARTIAL (login PASS, compose/send FAIL)
+Security: ALL PASS

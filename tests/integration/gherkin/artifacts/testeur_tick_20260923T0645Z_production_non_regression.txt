@@ -1,0 +1,28 @@
+testeur_tick_20260923T0645Z_production_non_regression.txt
+================================================
+TICK: 2026-09-23T06:45:30Z
+ROLE: testeur
+ACTION: Production non-regression + Gherkin feature creation for MW-080/081/082
+
+PRODUCTION NON-REGRESSION RESULTS:
+- HTTPS 443: PASS (HTTP 200, 0.097s)
+- /api/emails auth gate: PASS (HTTP 401)
+- /api/external-accounts auth gate: PASS (HTTP 307)
+- /api/admin redirect: PASS (HTTP 307)
+- /api/monitoring/mongo-health: PASS (HTTP 200, status:healthy, ping_ms:1)
+- /api/auth/login validation: PASS (HTTP 400, validation active)
+- /api/compose/send validation: PASS (HTTP 400, recipient required)
+- /.well-known/jmap: HTTP 404 (not implemented, expected)
+
+GHERKIN FEATURES CREATED:
+- MW-2026-080-notion-mail-migration.feature (7 scenarios) → issue #843
+- MW-2026-081-undo-send.feature (6 scenarios) → issue #844
+- MW-2026-082-keyboard-shortcuts.feature (8 scenarios) → issue #845
+
+CMD PROOF:
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai → 200
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/emails → 401
+$ curl -s -o /dev/null -w '%{http_code}' https://mail.misfits.ai/api/admin → 307
+$ curl -s https://mail.misfits.ai/api/monitoring/mongo-health → {"status":"healthy","ping_ms":1}
+
+COMMIT: 4a2ac9d → pushed to fix/mw-int-docker-cache-invalidate-compose-send
