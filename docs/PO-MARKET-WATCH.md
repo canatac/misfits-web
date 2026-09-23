@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T14:30 UTC — veille compétiteurs pricing 2026 (Fastmail/Proton/Tuta), matrix 54 rows (43 FAIL, 8 PASS, 2 PASS-FIXED), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T15:00 UTC — veille réglementaire email privacy 2026 (GDPR/ePrivacy/CNIL tracking pixels), matrix 56 rows (42 FAIL, 8 PASS, 2 PARTIAL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
 
 ---
 
@@ -345,6 +345,21 @@
 - **Action**: Matrix row MW-2026-066 added — Newsletter tracking pixel consent (owner hint: dev-web+dev-back)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-23T15:00Z — Veille réglementaire email privacy 2026 + CNIL tracking pixels
+- **Sources**: sendro.ai/blog/email-privacy-laws-2026, veneratedigital.com, termsfeed.com, gdpr.eu (accès 2026-09-23)
+- **ePrivacy Regulation**: Draft Article 3 extends extraterritorial scope — applies to non-EU companies targeting EU users. Electronic marketing (email, messaging, fax, SMS) brought under single EU framework.
+- **CNIL (France) tracking pixels**: Final recommendations published April 2026 — explicit consent required before deploying tracking pixels in emails. 3-month transition period for emails sent to addresses collected before publication.
+- **Italy Garante**: Prior consent required before deploying tracking pixels — 6-month compliance window for email and mass marketing platforms.
+- **GDPR enforcement**: €5.88B cumulative fines since 2018. New US state privacy laws (Alabama 2026, 8+ states total). Brazil LGPD expanding enforcement.
+- **Implication misfits.ai**: Our privacy-by-design (no tracking pixels, no data mining) is compliant by default. Newsletter feature (MW-2026-066) must implement consent gate before loading any tracking pixels. Issue #823 already tracks this.
+- **Arbitrage 2026-09-23: Tracking pixel consent implementation**
+  - **Choix**: Consent gate (modal/banner) before loading tracking pixels + log consent + opt-out available
+  - **Rejeté**: No tracking pixels at all (limits newsletter analytics), Implicit consent (non-compliant CNIL/GDPR)
+  - **Rationale**: CNIL requires explicit consent. Proton Mail and Tuta already comply. This is table stakes for newsletter features in EU market.
+- **Action**: Matrix row MW-2026-066 already exists (FAIL, issue #823). No new issue needed — existing coverage is sufficient.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email assistants 2026) or matrice de tests (add rows for remaining FAIL rows without issues)
 
 ### Cycle 2026-09-23T14:00Z — CI cache regression + UX approval
 - **Issue #828**: Docker GHA cache serves stale .next build — /api/compose/send returns 404 after deploy. Root cause: pnpm build layer restored from previous cache despite source changes. Fix: scope cache to commit SHA + add deploy verification step.
