@@ -7,25 +7,25 @@ MW-2026-005,PWA offline,User accède /mail hors ligne,Liste des emails récents 
 MW-2026-006,Custom domain,User avec custom domain @entreprise.com,Domaine vérifié (SPF/DKIM/DMARC) + emails envoyés sans erreur,PASS,reimagined-guide,dev-back
 MW-2026-007,Create event from email,User clique Create event depuis un email,Événement créé dans le calendrier + lien vers l'email source,FAIL-GHERKIN-ISSUE-712,misfits-web,dev-web
 MW-2026-008,Conversation view,User ouvre un thread d'emails,Emails groupés par conversation + possibilité de supprimer/archiver en bloc,FAIL-GHERKIN-ISSUE-713,misfits-web,dev-web
-MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
-MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
-MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL,reimagined-guide,dev-back
-MW-2026-012,DANE,User envoie email vers domaine avec DANE,TLSA record vérifié + connexion TLS validée,FAIL,reimagined-guide,dev-back
+MW-2026-009,Post-quantum crypto,User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL-ISSUE-824,studious-octo-rotary-phone,dev-back
+MW-2026-010,Anonymous signup,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL-ISSUE-825,reimagined-guide,dev-back
+MW-2026-011,MTA-STS,User envoie email vers domaine avec MTA-STS,Connexion TLS obligatoire + échec si certificat invalide,FAIL-ISSUE-826,reimagined-guide,dev-back
+MW-2026-012,DANE,User envoie email vers domaine avec DANE,TLSA record vérifié + connexion TLS validée,FAIL-ISSUE-826,reimagined-guide,dev-back
 MW-2026-013,AI email summary,User sélectionne un email + clique Résumé IA,Résumé généré en <5s + affiché dans le panneau latéral,FAIL-GHERKIN-ISSUE-714,misfits-web,dev-web
 MW-2026-014,AI smart triage,User reçoit 50 emails non lus,Emails triés par priorité + suggestions d'action (répondre/archiver/supprimer),FAIL-GHERKIN-ISSUE-715,misfits-web,dev-web
 MW-2026-015,AI suggested replies,User ouvre un email + clique Réponses suggérées,3 réponses contextuelles proposées + insertion en 1 clic,FAIL-GHERKIN-ISSUE-716,misfits-web,dev-web
 MW-2026-016,Newsletter subscription,User s'abonne à une newsletter depuis un email,Newsletter ajoutée aux abonnements + emails groupés dans un dossier dédié,FAIL-GHERKIN-ISSUE-717,misfits-web,dev-web
-MW-2026-017,Email export,User exporte tous ses emails en .eml,Fichier .zip téléchargé contenant tous les emails + métadonnées,FAIL,reimagined-guide,dev-back
-MW-2026-018,Data deletion (GDPR),User supprime son compte + toutes ses données,Compte supprimé + emails purgés + confirmation par email,FAIL,reimagined-guide,dev-back
-MW-2026-019,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affichés dans l'unified inbox + envoi possible via Gmail,FAIL,reimagined-guide,dev-back
+MW-2026-017,Email export,User exporte tous ses emails en .eml,Fichier .zip téléchargé contenant tous les emails + métadonnées,FAIL-ISSUE-827,reimagined-guide,dev-back
+MW-2026-018,Data deletion (GDPR),User supprime son compte + toutes ses données,Compte supprimé + emails purgés + confirmation par email,FAIL-ISSUE-827,reimagined-guide,dev-back
+MW-2026-019,Multi-account aggregation,User connecte un compte Gmail externe,Emails Gmail affichés dans l'unified inbox + envoi possible via Gmail,FAIL-ISSUE-827,reimagined-guide,dev-back
 MW-2026-020,On-device AI processing,User active le mode IA local,Traitement IA fait sur le device + aucune donnée envoyée au serveur,FAIL-GHERKIN-ISSUE-718,misfits-web,dev-web
-MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL,reimagined-guide,dev-back
-MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL,reimagined-guide,dev-back
+MW-2026-021,Pro plan subscription,User souscrit au plan Pro,Paiement accepté + features Pro activées + facture générée,FAIL-ISSUE-827,reimagined-guide,dev-back
+MW-2026-022,External account connection,User connecte un compte IMAP externe,Emails du compte externe synchronisés + affichés dans l'inbox unifiée,FAIL-ISSUE-827,reimagined-guide,dev-back
 MW-2026-023,Interface language change,User change la langue de l'interface,Interface traduite en <2s + préférence sauvegardée,FAIL-GHERKIN-ISSUE-719,misfits-web,dev-web
 MW-2026-024,DMARC/BIMI trust indicator,User ouvre un email authentifié (DKIM+SPF+DMARC pass),Badge Authenticated visible + logo BIMI affiché si présent + tooltip explicatif,PASS,misfits-web,dev-web
-MW-2026-025,Post-quantum encryption,User envoie email avec signature Dilithium,Email signé avec algorithme post-quantum + badge PQ visible + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
-MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentification JMAP réussie + sync mail/calendar fonctionnel + fallback IMAP OK,FAIL,reimagined-guide,dev-back
-MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
+MW-2026-025,Post-quantum encryption,User envoie email avec signature Dilithium,Email signé avec algorithme post-quantum + badge PQ visible + vérifiable par le destinataire,FAIL-ISSUE-824,studious-octo-rotary-phone,dev-back
+MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentification JMAP réussie + sync mail/calendar fonctionnel + fallback IMAP OK,FAIL-ISSUE-827,reimagined-guide,dev-back
+MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL-ISSUE-827,reimagined-guide,dev-back
 MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL,misfits-web,dev-web
 MW-2026-029,Auth bypass /api/emails + /api/hermes/runs + /api/admin,Requete non authentifiee sur /api/emails retourne 200 + inbox complet,/api/emails retourne 401 + proxy Next.js + Caddy auth routes restaurés + Origin non reflété,FAIL-FIX-PR-741,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL,misfits-web,dev-web
@@ -35,13 +35,13 @@ MW-2026-035,Auth bypass /api/emails regression,Requete non authentifiee sur /api
 MW-2026-036,DKIM service operationnel,User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
 MW-2026-037,UX unified search bar,User clique sur la barre de recherche unifiée,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K,FAIL,misfits-web,dev-web
 MW-2026-038,Email triage swipe gestures,User swipe gauche/droite sur un email dans la liste,Swipe gauche = archiver + swipe droit = marquer comme lu + animation fluide + annulation possible,FAIL-ISSUE-744,misfits-web,dev-web
-MW-2026-039,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
-MW-2026-040,Post-quantum crypto (TutaCrypt),User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL,studious-octo-rotary-phone,dev-back
-MW-2026-041,Anonymous signup via Tor,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL,reimagined-guide,dev-back
-MW-2026-042,MTA-STS + DANE outbound,User envoie email vers domaine avec MTA-STS/DANE,Connexion TLS obligatoire + TLSA record vérifié + échec si certificat invalide,FAIL,reimagined-guide,dev-back
+MW-2026-039,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL-ISSUE-827,reimagined-guide,dev-back
+MW-2026-040,Post-quantum crypto (TutaCrypt),User envoie email avec TutaCrypt,Email signé avec algorithme post-quantum + vérifiable par le destinataire,FAIL-ISSUE-824,studious-octo-rotary-phone,dev-back
+MW-2026-041,Anonymous signup via Tor,User crée compte via Tor,Compte créé sans email de vérification + accès via .onion,FAIL-ISSUE-825,reimagined-guide,dev-back
+MW-2026-042,MTA-STS + DANE outbound,User envoie email vers domaine avec MTA-STS/DANE,Connexion TLS obligatoire + TLSA record vérifié + échec si certificat invalide,FAIL-ISSUE-826,reimagined-guide,dev-back
 MW-2026-043,Keyboard shortcuts system,User appuie sur C dans l'inbox + Ctrl+/ pour aide,Composer ouvert + panneau d'aide raccourcis affiché + tooltips visibles,PARTIAL-ISSUE-749,misfits-web,dev-web
 MW-2026-044,Auth bypass regression (post-fix),Requete non authentifiee sur /api/emails + /api/external-accounts,/api/emails retourne 307 + /api/external-accounts retourne 307 + aucun PII expose,PASS,PASS-REGRESSION-2026-09-22T12:37Z,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-045,DKIM service stability,User envoie un email via SMTP 587 apres redemarrage du service,Service DKIM non en crash loop + email signe correctement + xml-js module present,FAIL,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
+MW-2026-045,DKIM service stability,User envoie un email via SMTP 587 apres redemarrage du service,Service DKIM non en crash loop + email signe correctement + xml-js module present,FAIL-ISSUE-777,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
 MW-2026-046,Caddyfile wildcard path matching,Requete sur /api/emails (exact) + /api/external-accounts (exact),Caddy route /api/emails* + /api/external-accounts* interceptent les deux variantes + fallback 307,PASS,PASS-FIX-PR-741,misfits-web,dev-web
 MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture logs caddy,Logs caddy en stdout + deploy CI reussi + pas de permission denied,PASS,PASS-FIX-PR-741,misfits-web,dev-int
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
