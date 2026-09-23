@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-22
+> Dernière mise à jour: 2026-09-23
 
 ---
 
@@ -136,6 +136,9 @@
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-060 | User clique "Pin/Star" sur un email | Email épinglé/starred visible en haut de liste + filtre "épinglés" + sync multi-device | ❌ (feature à implémenter) |
+| MW-2026-075 | User crée un alias jetable depuis les paramètres | Alias généré (ex: xyz123@misfits.ai) + emails reçus redirigés vers l'inbox réel + suppression de l'alias en 1 clic | ❌ (feature à implémenter) |
+| MW-2026-076 | User utilise un alias jetable pour s'inscrire à un service | Email de confirmation reçu via l'alias + désactivation de l'alias si spam + log des services utilisant chaque alias | ❌ (feature à implémenter) |
+| MW-2026-077 | User passe au plan Pro (€3/mo) | Paiement accepté + features Pro activées (50GB, custom domain, IA, aliases illimités) + facture générée + email de confirmation | ❌ (billing à implémenter) |
 
 ---
 
@@ -154,3 +157,29 @@
 - **Pin/Star UX (2026-09-22)**: Issue #789 créée pour le pin/star emails. Arbitrage documenté: Pin choisi (persistance claire), Star rejeté (éphémère), Pin+Star rejeté (confusion UX). Référence: pattern Gmail/Outlook.
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+
+---
+
+## 6. Notes de veille — Cycle 2026-09-23
+
+### Nouveaux compétiteurs identifiés (2026-09-23)
+
+**Mailfence** (Belgique) — écosystème complet: email + calendar + contacts + document storage + office editor. OpenPGP natif, IMAP/SMTP complet, custom domain dès le plan Light (€1/mo). Juridiction belge (GDPR fort, pas de Cloud Act US). **Menace directe**: positionnement "tout-en-un" similaire à misfits.ai mais avec PGP natif et prix agressif.
+
+**Startmail** (Pays-Bas) — générateur d'aliases jetables illimités, PGP intégré, IMAP complet. $5/mo pour 20GB + 10 custom alias domains. **Différenciation**: aliases jetables natifs (vs notre approche à définir).
+
+**Posteo** (Allemagne) — €1/mo flat, anonymat réel (pas de CB requise), encryption au repos par clé utilisateur. **Leçon**: le marché privacy accepte des prix ultra-bas pour l'anonymat.
+
+**Canary Mail** — client email avec IA intégrée (résumés, triage, réponses suggérées). Supporte Gmail/Outlook/iCloud via IMAP. **Tendance**: l'IA embarquée dans les clients mail devient un standard.
+
+### Arbitrage 2026-09-23: Modèle de monétisation
+
+**Arbitrage 2026-09-23**: Modèle freemium → Choix: Freemium classique (gratuit 5GB, Pro €3/mo 50GB + custom domain + IA) / Rejeté: Gratuit avec pub (contredit le positionnement privacy), Donation (revenu imprévisible), 100% payant (barrière à l'entrée trop élevée) / Rationale: Le freemium classique est le standard du marché (Proton, Tuta, Fastmail, Posteo tous utilisent ce modèle). Le plan gratuit sert de funnel vers le Pro. Le custom domain en payant est le déclencheur de conversion principal.
+
+### Gap identifié: Aliases jetables natifs
+
+Startmail et SimpleLogin (acquis par Proton) offrent des aliases jetables natifs. misfits.ai n'a pas cette fonctionnalité. C'est un gap P2 pour les utilisateurs privacy-conscious qui veulent protéger leur email réel lors des inscriptions. **Issue créée**: #836
+
+### Tendance IA dans les clients mail
+
+Canary Mail et Proton (réécriture mobile Rust) intègrent l'IA directement dans le client: résumés automatiques, triage intelligent, réponses suggérées. Notre roadmap AI (MW-2026-013,014,015) est alignée mais doit accélérer. Le différentiation sera l'IA on-device (MW-2026-020) vs cloud-only chez les concurrents.
