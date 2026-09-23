@@ -1,10 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-<<<<<<< Updated upstream
-> Dernière mise à jour: 2026-09-22T23:05 UTC — PO cycle: 59 matrix rows (45 FAIL, 6 PASS, 4 PARTIAL), state=ON, 0 bus messages, 3 PO_TICKETs posted (MW-2026-063 bulk selection, MW-2026-064 MTA-STS outbound, MW-2026-060 BIMI)
-=======
-> Dernière mise à jour: 2026-09-23T17:45 UTC — PO cycle: 53 matrix rows (42 FAIL, 7 PASS, 2 PARTIAL), state=ON, 0 bus messages, 1 PO_TICKET → scrum-master (UX-composer-unsaved-changes-retry, MW-2026-067), all FAIL rows have open issues, market watch: DMARC enforcement + DKIM2 rollout trends
->>>>>>> Stashed changes
+> Dernière mise à jour: 2026-09-23T18:10 UTC — PO cycle: 52 matrix rows (23 FAIL, 6 PASS, 1 PARTIAL), state=ON, 0 bus messages, 6 PO_TICKETs → scrum-master (MW-2026-011+042/017/032/010+041/009+025+040/037), scrum queue depth=622, 6 new GH issues (#665-668, #888-889)
 
 ---
 

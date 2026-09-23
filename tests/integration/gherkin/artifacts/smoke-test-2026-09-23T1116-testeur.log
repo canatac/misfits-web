@@ -1,0 +1,22 @@
+=== SMOKE TEST TESTEUR 2026-09-23T11:16:30Z ===
+--- Site reachability ---
+GET / => HTTP 200
+--- Regression: /api/health (issue #887) ---
+GET /api/health => HTTP 404 (body: )
+--- Backend health (proxy target) ---
+GET /api/monitoring/mongo-health => HTTP 200
+--- Auth bypass regression ---
+GET /api/emails (no auth) => HTTP 401
+GET /api/external-accounts (no auth) => HTTP 307
+GET /api/admin/users (no auth) => HTTP 307
+--- MW-2026-054 validation ---
+POST /api/auth/login (empty) => HTTP 400
+POST /api/compose/send (empty) => HTTP 400
+--- Security headers ---
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+--- RESULT ---
+REGRESSION CONFIRMED: /api/health=404 (fix branch exists but not merged)
+AUTH BYPASS: PASS (all endpoints properly gated)
