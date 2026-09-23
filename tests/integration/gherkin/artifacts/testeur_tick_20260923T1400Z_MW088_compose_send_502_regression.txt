@@ -1,0 +1,44 @@
+testeur_tick_20260923T1400Z_MW088_compose_send_502_regression.txt
+
+## MW-2026-088 — /api/compose/send 502 REGRESSION TEST
+## Date: 2026-09-23T14:00Z
+## Target: https://mail.misfits.ai
+## Issue: #905 (bug, priority-P1)
+## PR: #906 (OPEN, CI PASS, NOT YET DEPLOYED)
+
+### RESULT: FAIL (unchanged — PR#906 fix not yet deployed)
+
+### Compose Send Tests (MW-2026-088)
+POST /api/compose/send {} => TIMEOUT (exit=28, >15s)
+  EXPECTED: 200/401/400 | ACTUAL: TIMEOUT => FAIL
+
+GET /api/health => 503 {"status":"unhealthy","reason":"This operation was aborted"}
+  EXPECTED: 200 healthy | ACTUAL: 503 => FAIL
+
+### MW-2026-054 Regression Checks
+POST /api/auth/login {} => 503 (REGRESSION — was 400 in prior test)
+  NOTE: /api/auth/login now also 503 — broader backend reachability issue
+GET /api/emails (unauth) => 307 redirect to /login (PASS)
+GET /api/external-accounts (unauth) => 307 redirect (PASS)
+
+### Security Non-Regression (ALL PASS)
+GET / => 200
+GET /api/admin/whoami => 401
+
+### New Finding
+POST /api/auth/login changed from 400 (PASS) to 503 (FAIL) since last tick.
+This suggests the backend reachability issue is worsening — /api/auth/login
+was previously routed directly via Caddy->8000, now returning 503.
+
+### Analysis
+- /api/compose/send: TIMEOUT (worse than 502 — container can't reach backend at all)
+- /api/health: 503 unhealthy (unchanged)
+- /api/auth/login: 503 (NEW regression — was 400)
+- PR#906 (Caddyfile fix) is OPEN with CI PASS but NOT DEPLOYED
+- Homepage still serves (200) — frontend is up, backend connectivity degraded
+
+### Verdict
+MW-2026-088: FAIL — issue #905 still active, situation worsening
+MW-2026-054: FAIL (login now 503, compose/send timeout)
+Security: ALL PASS
+ACTION_NEEDED: Deploy PR#906 immediately (P1 outage)

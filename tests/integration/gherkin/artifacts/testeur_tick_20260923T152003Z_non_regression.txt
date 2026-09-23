@@ -1,0 +1,18 @@
+TESTEUR NON-REGRESSION TICK 2026-09-23T15:19:55Z
+==================================================
+Production: https://mail.misfits.ai
+Result: 10/10 PASS, 0 FAIL
+
+TESTS:
+1. HTTPS reachability        → HTTP 200 PASS
+2. /api/health               → {"status":"healthy","ping_ms":2} PASS
+3. /api/emails (unauth)      → HTTP 307 PASS
+4. /api/external-accounts    → HTTP 307 PASS
+5. /api/admin (unauth)       → HTTP 307 PASS
+6. /api/hermes/runs (unauth) → HTTP 307 PASS
+7. POST /api/auth/login {}   → HTTP 400 PASS (validation works)
+8. POST /api/compose/send {} → HTTP 400 PASS (validation works)
+9. CORS (Origin: evil.com)   → No reflection PASS (security intact)
+10. /api/emails (follow 307) → HTTP 200 (redirects to login, expected)
+
+STATUS: Production stable. No regressions detected after Caddy fix commits.
