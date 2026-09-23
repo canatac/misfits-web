@@ -60,3 +60,12 @@ MW-2026-088,Compose send 502 regression,User envoie POST /api/compose/send,POST 
 MW-2026-089,MongoDB Docker connectivity,User accede MongoDB depuis container Docker,MongoDB ping=1 from Docker container + no connection timeout + healthcheck OK,FAIL-ISSUE-670,reimagined-guide,dev-int
 MW-2026-091,BIMI brand logo,User envoie email avec BIMI logo verified,Logo brand affiche dans inbox destinataire + VMC certificat valide + SVG logo correct,FAIL-ISSUE-NEW,misfits-web+studious-octo-rotary-phone,dev-web+dev-back
 MW-2026-092,TLS-RPT reporting,User recoit rapport TLS-RPT,Rapport TLS-RPT genere + visible dans admin dashboard + alertes en cas d'echec TLS,FAIL-ISSUE-NEW,reimagined-guide,dev-back
+MW-2026-093,Disposable email aliases,User cree un alias disposable pour une inscription,Alias cree + emails recus rediriges + suppression en 1 clic,FAIL-ISSUE-914,misfits-web,dev-web
+MW-2026-094,Pro plan subscription billing,User souscrit au plan Pro avec paiement,Paiement accepte + features Pro activees + facture generee,FAIL-ISSUE-915,misfits-web,dev-web
+MW-2026-095,On-device AI local mode,User active le mode IA local dans les parametres,Traitement IA fait sur le device + aucune donnee envoyee au serveur,FAIL-ISSUE-916,misfits-web,dev-web
+MW-2026-096,Email pin/star,User clique sur l'etoile d'un email pour le mettre en favori,Email mis en favori + visible dans le dossier favoris + sync multi-device,FAIL-ISSUE-917,misfits-web,dev-web
+MW-2026-097,Email snooze presets,User selectionne un preset de rappel (1h, demain, semaine prochaine),Email masque puis re-affiche au moment du rappel + notification,FAIL-ISSUE-918,misfits-web,dev-web
+MW-2026-098,Keyboard shortcuts system,User appuie sur C dans l'inbox + Ctrl+/ pour aide,Composer ouvert + panneau d'aide raccourcis affiche + tooltips visibles,FAIL-ISSUE-919,misfits-web,dev-web
+MW-2026-099,Undo send 5s window,User clique Undo send dans les 5s apres envoi,Email retire de la file d'envoi + visible dans brouillons,FAIL-ISSUE-920,misfits-web,dev-web
+MW-2026-100,Notion Mail migration wizard,User importe emails depuis Notion Mail (Gmail sync),Emails importes via import wizard + snippets/templates migres + auto-labels recrees,FAIL-ISSUE-921,misfits-web,dev-web
+MW-2026-101,Auth login + mongo-health 503 regression,User accede /api/auth/login + /api/monitoring/mongo-health,API retourne 503 + backend unreachable from Caddy + fix deploie,FAIL-ISSUE-922,misfits-web+reimagined-guide,dev-web+dev-back
