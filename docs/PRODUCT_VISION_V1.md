@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-22T22:15 UTC — PO cycle: 57 matrix rows (47 FAIL, 4 PASS, 2 PARTIAL), state=ON, 0 bus messages, 0 PO_TICKET posted this cycle
+> Dernière mise à jour: 2026-09-23T12:25 UTC — PO cycle: 53 matrix rows (43 FAIL, 9 PASS, 1 PARTIAL), state=ON, 0 bus messages, 0 new tickets (all FAIL rows already have GH issues), market watch: DMARC enforcement + DKIM2 rollout trends
 
 ---
 
@@ -106,6 +106,11 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - **Choix**: Parité sur les must-have (scheduled send, undo send, templates), innovation sur l'IA et le chat mail
 - **Rejeté**: Innovation pure (les users ne quittent pas Gmail pour un produit incomplet), Parité pure (pas de différenciation)
 - **Rationale**: Les users exigent les deux en 2026
+
+### Arbitrage 2026-09-23: DMARC enforcement + DKIM2 rollout
+- **Choix**: Prioriser l'application stricte DMARC (p=reject) et le support DKIM2 dans la roadmap Sprint 2
+- **Rejeté**: Ignorer DMARC/DKIM2 (risque de délivrabilité dégradée), Reporter à Sprint 4 (trop tard, les exigences 2026 sont là)
+- **Rationale**: Halon 2026 + Barracuda 2026 confirment que l'authentification email (DMARC p=reject, DKIM2, OAuth2) devient obligatoire. Google déprécie POP3 et basic IMAP auth. misfits.ai doit être en avance sur ces exigences pour se différencier comme service mail natif sécurisé.
 
 ---
 
