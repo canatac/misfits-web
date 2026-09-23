@@ -1,0 +1,22 @@
+testeur_tick MW-2026-054 REGRESSION RETEST
+=========================================
+TICK: 20260923T011317Z
+ROLE: testeur
+ACTION: MW-2026-054 regression retest — POST /api/compose/send 404
+TICKET: #818 [testeur] REGRESSION: POST /api/compose/send returns 404
+
+PRODUCTION ENDPOINT TESTS:
+- POST /api/compose/send → HTTP 404 (REGRESSION CONFIRMED)
+- GET /api/compose/send → HTTP 404
+- POST /api/auth/login → HTTP 400 (backend reachable)
+- POST /api/send → HTTP 400 (backend reachable)
+
+AUTH BYPASS REGRESSION (MW-2026-044):
+- GET /api/emails (unauth) → HTTP 401 ✓
+- GET /api/admin (unauth) → HTTP 307 ✓
+
+SITE REACHABILITY (MW-2026-064):
+- GET / → HTTP 200 (0.117s) ✓
+
+CONCLUSION: MW-2026-054 still FAIL — /api/compose/send route not registered in production.
+Issue #818 remains OPEN. Needs clean Docker rebuild + redeploy.
