@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23
+> Dernière mise à jour: 2026-09-23 (cycle 2 — veille GDPR/privacy)
 
 ---
 
@@ -156,3 +156,15 @@
 - **Litmus 2026**: Apple Mail + Gmail = ~90% market share. Cross-platform consistency remains critical for PWA (MW-2026-005).
 
 *Fichier maintenu par le PO. Cycle suivant: arbitrer sur le modèle freemium (gratuit avec pub ? freemium classique ? donation ?), explorer les offres Fastmail en détail.*
+
+### Veille marché 2026-09-23 — GDPR enforcement & privacy compliance
+
+- **GDPR fines exceed €7.1B cumulative** (2,800+ fines through mid-2025, 60%+ increase trajectory). Enforcement has shifted from sporadic penalties to sustained high-volume machine.
+- **19 US states** now have comprehensive consumer privacy laws (IAPP, Jan 2026). Indiana, Kentucky, Rhode Island joined Jan 1, 2026. California, Colorado, Connecticut, Oregon, Utah amended existing laws in 2025-2026.
+- **Global Privacy Control (GPC) signal recognition** now mandated by 8 US states. Kentucky, Rhode Island, Indiana require GPC recognition starting Jan 1, 2026.
+- **EU AI Act full enforcement** begins August 2, 2026 — AI governance documentation becomes mandatory.
+- **Italy Garante**: tracking pixels in emails now require free and specific consent (May 2026).
+- **India DPDP rollout** continues — coordinated GDPR transparency scrutiny expanding.
+- **Oregon (Jan 2026)**: prohibits data sale when consumer is under 16; prohibits precise geolocation sale within 1,750-foot radius.
+
+**Implication misfits.ai**: Our privacy-by-design architecture (no data mining, no tracking pixels, DKIM/SPF/DMARC native) is increasingly aligned with enforcement trends. GPC signal support and granular consent management should be prioritized for newsletter feature (MW-2026-016). EU AI Act compliance documentation needed for AI features (MW-2026-014, MW-2026-015, MW-2026-020).
