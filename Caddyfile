@@ -39,13 +39,11 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    # /api/compose/* — proxied directly to email-api:8000 (issue #905).
-    # Previously routed through Next.js:3001 for Edge auth, but inter-container
-    # networking (email-api:8000 from misfits-web container) is unreliable on mailnet.
-    # The backend validates session tokens directly, so Caddy-level proxy is safe.
-    # This eliminates the 502 backend_unreachable regression from PR#894.
+    # /api/compose/* — must go through Next.js for Edge auth middleware + path rewrite.
+    # Next.js /api/compose/send proxies to backend /api/send (issue #905, #780).
+    # Docker network fix (PR #663) resolved inter-container networking — safe to proxy via Next.js.
     handle /api/compose* {
-        reverse_proxy http://localhost:8000 {
+        reverse_proxy http://localhost:3001 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
