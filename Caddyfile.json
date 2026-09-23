@@ -13,6 +13,9 @@
     "max_age": 3600
   },
   "routes": {
+    "/api/health*": {
+      "upstream": "http://misfits-web:3000"
+    },
     "/api/*": {
       "upstream": "http://email-api:8000",
       "cors": {
