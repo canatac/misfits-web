@@ -46,6 +46,10 @@ MW-2026-081,Undo send with 5s window,User clique Undo send dans les 5s après en
 MW-2026-082,Keyboard shortcuts system,User presses keyboard shortcuts for navigation/actions,Shortcuts modal (? key), compose (c), search (/), navigate (j/k), archive (e), reply (r) all functional,OPEN-ISSUE-845,misfits-web,dev-web
 MW-2026-083,Email snooze presets,User clicks Snooze + selects 1h/1d/1w preset,Email disappears from inbox + reappears at selected time + badge counter visible,OPEN-ISSUE-850,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-084,Email pin/star,User clicks Pin or Star icon on email row,Email pinned to top section or starred with visual indicator + Starred smart folder filter works,OPEN-ISSUE-851,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-085,Email templates CRUD + composer,User crée template Réponse standard,Template sauvegardé + disponible dans le composer via menu templates + insertion en 1 clic,OPEN-ISSUE-852,misfits-web,dev-web
+MW-2026-085,Email templates CRUD + composer,User crée template Réponse standard,Template sauvegardé + disponible dans le composer via menu templates + insertion en 1 clic,PASS-GHERKIN-FEATURE-CREATED-ISSUE-857,misfits-web,dev-web
 MW-2026-086,GDPR breach notification (72h),User subit une fuite de données personnelles,Notification à l'autorité dans 72h + documentation interne + registre des incidents + notification aux utilisateurs si risque élevé,FAIL,reimagined-guide,dev-back
 MW-2026-087,PR #504 CodeQL + PR #688 lint/test,PR #504 (reimagined-guide import wizard) + PR #688 (misfits-web email pinning),CodeQL pass + lint/test pass + CI green,OPEN-NEW,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-088,PR #638 instant search CodeQL,PR #638 feat/issue-539-instant-search CodeQL Analysis,CodeQL pass + CI green,OPEN-ISSUE-641,reimagined-guide,dev-back
+MW-2026-089,PR #688 email pinning CI failure,PR #688 Fix/issue 459 email pinning,Lint+TypeCheck+Test pass + CI green,OPEN-ISSUE-854,misfits-web,dev-web
+MW-2026-090,PR #670 email digest utilities CI failure,PR #670 feat(issue-463) email digest utilities,Lint+TypeCheck+Test pass + CI green,OPEN-ISSUE-855,misfits-web,dev-web
+MW-2026-091,PR #504 Email Import Wizard CodeQL failure,PR #504 feat(issue-491) Email Import Wizard backend,CodeQL pass + CI green,OPEN-ISSUE-642,reimagined-guide,dev-back
