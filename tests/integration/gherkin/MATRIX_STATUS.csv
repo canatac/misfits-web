@@ -53,3 +53,4 @@ MW-2026-088,PR #638 instant search CodeQL,PR #638 feat/issue-539-instant-search 
 MW-2026-089,PR #688 email pinning CI failure,PR #688 Fix/issue 459 email pinning,Lint+TypeCheck+Test pass + CI green,OPEN-ISSUE-854,misfits-web,dev-web
 MW-2026-090,PR #670 email digest utilities CI failure,PR #670 feat(issue-463) email digest utilities,Lint+TypeCheck+Test pass + CI green,OPEN-ISSUE-855,misfits-web,dev-web
 MW-2026-091,PR #504 Email Import Wizard CodeQL failure,PR #504 feat(issue-491) Email Import Wizard backend,CodeQL pass + CI green,OPEN-ISSUE-642,reimagined-guide,dev-back
+MW-2026-092,Email bulk actions toolbar,User sélectionne multiple emails via checkboxes,Toolbar flottant avec Archive/Delete/Mark as read/Label + undo toast + compteur sélection,GHERKIN-CREATED-ISSUE-713-2026-09-23T06:55Z,misfits-web,dev-web
