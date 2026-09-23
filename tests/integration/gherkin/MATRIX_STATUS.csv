@@ -36,6 +36,6 @@ MW-2026-050,Email attachment preview with quick actions,User clique sur une piè
 MW-2026-066,Newsletter tracking pixel consent,User ouvre une newsletter avec tracking pixels,Tracking pixels bloqués par défaut + consent gate affiché + consent loggé + opt-out dans paramètres confidentialité,OPEN-ISSUE-823,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-065,Email read receipts,User active read receipt dans composer,MDN RFC 3798 envoyé + statut Delivered→Read avec timestamp dans Envoyés,OPEN-ISSUE-820,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-044,Composer focus mode,User clique Focus mode dans composer,Sidebar cachée + background assombri + compose centré max-width 700px + sortie via Esc,OPEN-ISSUE-PO-TICKET-2026-09-23,misfits-web,dev-web
-MW-2026-075,Disposable aliases,User crée un alias jetable depuis les paramètres,Alias généré + emails redirigés vers inbox réel + suppression en 1 clic,OPEN-ISSUE-838,misfits-web,dev-web
-MW-2026-076,Disposable alias usage,User utilise un alias pour s'inscrire à un service,Email reçu via alias + désactivation si spam + log des services,OPEN-ISSUE-838,misfits-web,dev-web
-MW-2026-077,Pro plan subscription,User passe au plan Pro (€3/mo),Paiement accepté + features Pro activées + facture générée + email confirmation,OPEN-ISSUE-839,misfits-web,dev-web
+MW-2026-075,Disposable email aliases creation,User crée un alias jetable xyz@misfits.ai,Alias créé + emails redirigés vers inbox réel + log des services,OPEN-ISSUE-838,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-076,Disposable alias disable/delete,User désactive ou supprime un alias,Alias désactivé (rejet emails) ou supprimé (bounce) + log mis à jour,OPEN-ISSUE-838,misfits-web+reimagined-guide,dev-web+dev-back
+MW-2026-077,Pro plan subscription billing,User souscrit plan Pro €3/mo,Paiement Stripe OK + features Pro activées + facture PDF générée + email confirmation,OPEN-ISSUE-839,misfits-web+reimagined-guide,dev-web+dev-back
