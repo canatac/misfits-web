@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T04:55Z
+> Dernière mise à jour: 2026-09-23T05:00Z
 
 ---
 
@@ -166,3 +166,10 @@
 - **Tuta** (source: tuta.com): #1 privacy email en 2026, 100% renouvelable, TutaCrypt post-quantum, bloque tous les third-party clients. → **Leçon misfits**: notre IMAP/SMTP natif est un avantage vs Tuta (qui bloque les clients externes).
 - **Marché** (source: guptadeepak.com): privacy software $5.37B (2026) → $45.13B (2032), CAGR 35.5%. 144 pays avec lois data protection. → Le timing est bon pour un provider privacy-first avec UX moderne + IA locale.
 - **Hey** (Basecamp): abandon du IMAP confirmé. Basecamp 5 lance "Create events from email", "Calendar Cover Art". → **Leçon misfits**: notre intégration mail+calendar (MW-2026-007 create event from email) est alignée sur cette tendance.
+
+### Veille 2026-09-23T05:00Z — Sécurité & conformité
+
+- **Notion Mail shutdown** (2026-09-22): Notion arrête son service mail. Les users doivent migrer vers Gmail/Outlook/ autres. → **Opportunité misfits**: créer un wizard de migration depuis Notion Mail (import .eml, labels, templates). MW-2026-028 (Notion Mail migration) est FAIL — priorité P1.
+- **Post-quantum crypto**: NIST a finalisé ML-KEM (FIPS 203) en 2024. Tuta a déployé TutaCrypt. → **Leçon misfits**: notre roadmap post-quantum (MW-2026-009, MW-2026-025) est alignée sur la tendance. Priorité P1 pour un provider privacy-first.
+- **Auth bypass & CORS**: les failles d'authentification (MW-2026-029) et CORS (MW-2026-030/031) restent FAIL. → **Action**: routing vers dev-web (auth bypass) + dev-back (CORS) via scrum-master. Priorité P0.
+- **Newsletter tracking pixels**: la conformité GDPR/ePrivacy exige un consent gate avant tout tracking pixel (MW-2026-066, MW-2026-079). → **Leçon misfits**: notre approche privacy-by-design (pas de tracking par défaut) est un avantage compétitif.
