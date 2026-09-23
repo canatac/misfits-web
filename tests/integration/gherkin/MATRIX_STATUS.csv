@@ -52,7 +52,7 @@ MW-2026-063,Bulk email selection,User selects 2+ emails via checkboxes,Floating 
 MW-2026-064,P0 outage regression (issue #813),User accede mail.misfits.ai:443,HTTPS 200 OK + /api/emails=401 + /api/admin=307 + site fully reachable,PASS-REGRESSION-2026-09-23T00:30Z,misfits-web,dev-int
 MW-2026-065,Email read receipts,Sender active read receipt toggle + recipient opens email,MDN envoyé + statut 'Lu' visible dans Envoyés avec timestamp,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-066,Newsletter tracking pixel consent,User reçoit newsletter avec tracking pixel + consent explicite,Consent gate avant chargement pixel + log consent + opt-out disponible,FAIL,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-067,Backend email-api DOWN,All /api routes return 503/502,FAIL-ISSUE-830-RECURRENT-20260923T02:38Z,misfits-web+reimagined-guide,dev-back+dev-int
+MW-2026-067,Backend email-api DOWN,All /api routes return 503/502,FAIL-ISSUE-832-RECURRENT-20260923T03:15Z,misfits-web+reimagined-guide,dev-back+dev-int
 MW-2026-068,Docker GHA cache stale .next build,CI deploy succeeds but /api/compose/send returns 404 due to stale cache,FAIL-ISSUE-828,misfits-web,dev-web
 MW-2026-069,Pricing plan Pro 5 EUR/mo,User souscrit au plan Pro 5 EUR/mo (60GB custom domain IA),Paiement accepte + features Pro activees + custom domain + IA on-device + facture generee + positionnement entre Tuta 3 EUR et Fastmail 5 USD,FAIL-GHERKIN-ISSUE-709,reimagined-guide,dev-back
 MW-2026-070,ePrivacy/CNIL tracking pixel consent,User reçoit newsletter avec tracking pixel + consent explicite,Consent gate avant chargement pixel + log consent + opt-out disponible + conforme CNIL 2026,FAIL-ISSUE-823,misfits-web+reimagined-guide,dev-web+dev-back
