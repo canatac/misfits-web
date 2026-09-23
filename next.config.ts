@@ -56,6 +56,11 @@ const nextConfig = {
   // that proxies to /api/send on the backend with auth forwarding. Without
   // this exclusion, the rewrite forwards /api/compose/send to the backend's
   // /api/compose/send which doesn't exist → 404 (issue #793).
+  //
+  // /api/health is excluded because it has its own local route handler
+  // (src/app/api/health/route.ts) that probes backend connectivity for
+  // Docker healthcheck. Without this exclusion, the rewrite proxies
+  // /api/health to the backend which has no such endpoint → 404 (issue #887).
   async rewrites() {
     const backendUrl =
       process.env.BACKEND_URL ||
@@ -66,6 +71,10 @@ const nextConfig = {
       {
         source: "/api/compose/:path*",
         destination: "/api/compose/:path*",
+      },
+      {
+        source: "/api/health",
+        destination: "/api/health",
       },
       {
         source: "/api/:path*",
