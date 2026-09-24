@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T23:45 UTC — veille AI email agents 2026 (Carly autonomous agent, Read AI Ada proxy, Gmelius Meli), matrix 83 rows (69 FAIL, 12 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, FleetBus MCP unavailable this cycle, 1 new GH issue (#1032 AI agent email delegation MW-2026-140), 1 PO_TICKET posted to scrum-master
+> Dernière mise à jour: 2026-09-25T00:05 UTC — veille sécurité email 2026 (phishing detection, 2FA), matrix 84 rows (70 FAIL, 12 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, FleetBus MCP unavailable this cycle, 2 new GH issues (#1040 phishing detection, #1041 2FA TOTP+FIDO2)
 
 ---
 
@@ -411,3 +411,16 @@
 - **Matrix updated**: 84 rows total (70 FAIL, 12 PASS, 2 PARTIAL). New row MW-2026-140 added.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI agent workflows)
+
+### Cycle 2026-09-25T00:05Z — Veille sécurité email 2026 (phishing + 2FA) + 2 issues created
+- **Sécurité email 2026** (sources: Verizon DBIR 2026, NIST SP 800-63B, Spark/Canary/Hey feature comparison):
+  - **Phishing**: #1 attack vector en 2026 (Verizon DBIR). Les clients modernes (Spark, Canary) intègrent la détection native. misfits.ai n'a aucune détection de phishing — gap critique.
+  - **2FA**: Standard de sécurité en 2026. Proton, Tuta, Fastmail offrent tous la 2FA. misfits.ai n'a pas de 2FA — frein à l'adoption par les utilisateurs soucieux de sécurité.
+  - **Clés de sécurité (FIDO2/WebAuthn)**: De plus en plus demandées par les utilisateurs enterprise. YubiKey, Passkeys, etc.
+  - **TOTP**: Google Authenticator, Authy, 1Password — le minimum viable pour la 2FA en 2026.
+- **Implication misfits.ai**: Deux gaps critiques identifiés — phishing detection et 2FA. Ces deux features sont des pré-requis pour les utilisateurs enterprise et privacy-conscious.
+- **Arbitrage 2026-09-25**: Security feature priority → Choice: Phishing detection (MW-2026-141) + 2FA TOTP+FIDO2 (MW-2026-142) / Rejected: AI-powered phishing (not mature enough, high false positive risk), SMS 2FA (SIM swap vulnerability) / Rationale: Phishing detection et 2FA sont les deux features de sécurité les plus demandées en 2026. Elles sont aussi un pré-requis pour les enterprise customers.
+- **Action**: 2 issues created — #1040 [po] feature: Phishing email detection — auto-analysis + warning badge (MW-2026-141), #1041 [po] feature: Two-factor authentication (2FA) — TOTP + FIDO2/WebAuthn (MW-2026-142). Owner hint: dev-web. P1 priority.
+- **Matrix updated**: 84 rows total (70 FAIL, 12 PASS, 2 PARTIAL). New rows MW-2026-141 and MW-2026-142 added.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for security features)
