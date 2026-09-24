@@ -7,8 +7,8 @@ Feature: MW-2026-036 — DKIM service opérationnel
     Given the DKIM service is deployed on the production server
     And the SMTP relay is configured to use the DKIM service
 
-  Scenario: SMTP port 587 is reachable from outside
-    When a client connects to mail.misfits.ai on port 587
+  Scenario: DKIM service port 8465 is reachable
+    When a client connects to mail.misfits.ai on port 8465
     Then the connection should be accepted
     And an SMTP banner should be returned
 
@@ -18,7 +18,7 @@ Feature: MW-2026-036 — DKIM service opérationnel
     And there should be no recent crash/restart cycles in the logs
 
   Scenario: Email sent via SMTP gets DKIM signature
-    When a user sends an email via SMTP port 587
+    When a user sends an email via the SMTP relay on port 8465
     Then the email should be signed with a DKIM signature
     And the DKIM-Signature header should be present
     And the signature should verify against the public key in DNS
