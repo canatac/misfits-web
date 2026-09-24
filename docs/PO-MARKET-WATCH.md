@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T15:00 UTC — veille email follow-up reminders 2026 (Mailbird snooze patterns + Superhuman follow-up best practices), matrix 63 rows (26 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #961 (MW-2026-120 follow-up reminders), all 26 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T15:10 UTC — veille thread-bundle UI 2026 (Shortwave/Superhuman conversation grouping pattern), matrix 64 rows (27 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #962 (MW-2026-121 thread-bundle UI), all 27 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
 
 ---
 
@@ -138,6 +138,15 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-24T15:10 UTC — Thread-bundle UI pattern (Shortwave/Superhuman)
+- **Shortwave** (AI-native Gmail client): thread-bundle UI — auto-groups related emails by topic, collapsible "Conversation (N)" view, reduces cognitive load and scroll
+- **Superhuman**: keyboard-first velocity + thread grouping, sub-100ms interactions
+- **Missive**: shared inboxes + AI drafting layered on top, thread-based collaboration
+- **Key shift 2026**: from passive AI assistants (help draft faster) to active agents (read inbox, classify, draft, route)
+- **Opportunity for misfits.ai**: implement thread-bundle UI in inbox — auto-group by conversation, collapse/expand, unread badge, keyboard shortcut B
+- **Action**: GH issue #962 created (MW-2026-121), routed to scrum-master for dev-web allocation
+- Source: https://missiveapp.com/blog/ai-email-assistant, https://www.getinboxzero.com/blog/post/best-ai-email-assistants
 
 ### 2026-09-24T09:37 UTC — AI privacy divergence: Proton Lumo vs Tuta no-AI stance
 - **Proton** launched Lumo AI (cloud-based AI assistant) → significant privacy community backlash; users concerned about data training and privacy erosion

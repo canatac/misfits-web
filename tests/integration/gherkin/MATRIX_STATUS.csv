@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T14:35 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (MW-2026-037 unified search bar → scrum-master, issue #939), production healthy (HTTPS 200 OK, /api/emails=307), new GH issue #939 from testeur, queue scrum-master=19, matrix 62 rows
+# Last PO cycle: 2026-09-24T14:30 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (MW-2026-120 follow-up reminders), queue scrum-master=80, matrix 63 rows
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -62,3 +62,5 @@ MW-2026-107,Email composer auto-save drafts,User compose email > ferme tab > rou
 MW-2026-108,Unified search bar (MW-2026-037),User clique sur la barre de recherche unifiée + Ctrl+K,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K + debounced results + empty state + shortcut help panel,FAIL-ISSUE-939,misfits-web,dev-web
 MW-2026-113,Email snooze presets,User snooze un email avec presets (1h, 4h, Tomorrow, Next week) + Custom,Dropdown 4 presets + Custom + email disparait inbox + reapparait au temps choisi + badge Snoozed,FAIL,misfits-web,dev-web
 MW-2026-119,Email list inline preview expansion,User clique sur un email dans la liste pour aperçu inline,Preview inline 3 lignes + icônes PJ + avatar + toggle collapse + raccourci E + état persisté localStorage,FAIL,misfits-web,dev-web
+MW-2026-120,Email follow-up reminders,User définit un rappel de suivi sur un email + choisit l'heure,Rappel affiché avec badge + notification au temps choisi + option snooze + email marqué comme suivi,FAIL,misfits-web,dev-web
+MW-2026-121,Thread-bundle UI conversation grouping,User ouvre inbox avec emails lies par conversation,Emails groupes par conversation avec badge compteur + toggle collapse/expand + indicateur non-lu + raccourci B + etat persiste localStorage,FAIL-ISSUE-962,misfits-web,dev-web
