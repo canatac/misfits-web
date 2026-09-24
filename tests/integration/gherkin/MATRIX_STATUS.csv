@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T19:30 UTC — state=ON, 0 incoming, 0 new issues, 1 PO_TICKET (MW-2026-110 email list density toggle → dev-web), matrix 63 rows, fleetbus unavailable (fleet_send.sh used)
+# Last PO cycle: 2026-09-24T20:42 UTC — state=ON, 0 incoming, 1 new issue (#941 keyboard shortcuts), 1 PO_TICKET (MW-2026-109 → scrum-master), matrix 65 rows
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -62,3 +62,5 @@ MW-2026-107,Email composer auto-save drafts,User compose email > ferme tab > rou
 MW-2026-108,Unified search bar (MW-2026-037),User clique sur la barre de recherche unifiée + Ctrl+K,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K + debounced results + empty state + shortcut help panel,FAIL-ISSUE-939,misfits-web,dev-web
 MW-2026-109,Email keyboard shortcuts help panel,User appuie Ctrl+/ dans n'importe quelle vue,Panneau d'aide raccourcis affiché + liste des raccourcis par contexte + fermeture Escape + persistance préférence,FAIL,misfits-web,dev-web
 MW-2026-110,Email list density toggle,User clique toggle densite dans la barre outils liste,Mode compact reduit hauteur rows 30% + persisted + Comfortable restore,FAIL,misfits-web,dev-web
+MW-2026-111,Dark mode + theme customization,User bascule dark mode dans settings,Theme sombre appliqué partout + préférence persistée + détection préférence système + pas de flash de thème,FAIL,misfits-web,dev-web
+MW-2026-112,Email metadata retention policy,User verifie retention metadata dans settings,Retention period configurable + auto-purge + audit log + conforme ePrivacy Regulation Art.5(1)c + GDPR Art.5(1)e,FAIL,reimagined-guide,dev-back

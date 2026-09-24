@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-24T19:30 UTC — PO cycle: 63 matrix rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 0 new issues, production healthy (HTTPS 200 OK, /api/emails=307), 1 PO_TICKET sent (MW-2026-110 email list density toggle), market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
+> Dernière mise à jour: 2026-09-24T20:50 UTC — PO cycle: 65 matrix rows (53 FAIL, 9 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 0 new issues (all FAIL rows have existing issues), production healthy, market watch: EDPB ePrivacy Regulation revision + EU Digital Omnibus
 
 ---
 
@@ -137,6 +137,12 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - mw-int, rg-back, testeur: sessions down (conductor-ops confirmed 2026-09-23)
 - Scrum a des tickets en file mais personne pour les recevoir
 - PR#906 (Caddyfile fix) CI green mais non merged — bloqué par session down
+
+### 7.4 EDPB ePrivacy Regulation revision (2026-09-24)
+- EDPB published statement on ePrivacy Regulation revision — urges swift adoption to replace ePrivacy Directive
+- Key concerns: OTT services (email, messaging) not covered by current Directive; consent requirement for communications data; technology-neutral protection
+- EDPB Work Programme 2026-2027 includes coordinated enforcement on right to erasure (GDPR Art.17) and anonymisation/pseudonymisation
+- **Implication misfits.ai**: ePrivacy Regulation will directly govern email metadata processing. Current GDPR compliance (MW-2026-018 data deletion, MW-2026-092 TLS-RPT) provides foundation, but email metadata retention policies need review. On-device AI (MW-2026-095/020) minimizes metadata exposure — aligns with EDPB push for privacy-by-default.
 
 ---
 
