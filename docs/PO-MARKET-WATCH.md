@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T23:30 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-25T00:05 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -396,4 +396,12 @@
 - **Arbitrage 2026-09-24**: AI feature priority → Choice: Unified search (MW-2026-037/108) + On-device AI agent (MW-2026-127) / Rejected: AI email marketing tools (not core product), AI calendar scheduling (lower priority) / Rationale: Search and on-device AI are the two most requested features by email users in 2026 (Canary, Superhuman, Shortwave all lead with these).
 - **Matrix gap**: Added MW-2026-122 (cheat sheet), MW-2026-126 (hover quick-actions), MW-2026-128 (focus visible keyboard nav) — all have Gherkin features but were missing from matrix.
 - **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
+
+## 5. Notes de veille — 2026-09-25T00:05 UTC
+
+- **Bus**: queue=0, no incoming messages, no ROOT controls. State=ON.
+- **Matrix scan**: 4 new FAIL rows detected (MW-2026-033, MW-2026-101, MW-2026-127, MW-2026-122) — all already have existing GH issues. No new issues created.
+- **P0 outage**: #698 still OPEN (MongoDB down). MW-2026-101 FAIL-UNHEALTHY.
+- **Competitor watch**: Canary Mail on-device AI model, Superhuman speed claims, Shortwave AI search — all reinforce the AI agent + unified search priority (MW-2026-127, MW-2026-037/108).
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
