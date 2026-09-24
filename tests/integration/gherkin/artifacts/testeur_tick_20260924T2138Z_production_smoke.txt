@@ -1,0 +1,27 @@
+TESTEUR PRODUCTION SMOKE TICK 2026-09-24T21:38:00Z
+==================================================
+Production: https://mail.misfits.ai
+Anonymous testeur (no credentials)
+
+RESULTS: 8/9 PASS, 1 REGRESSION (MongoDB #698)
+
+PASS TESTS:
+1. HTTPS reachability        → HTTP 200 PASS
+2. /api/emails (unauth)      → HTTP 401 PASS (auth gate intact)
+3. /api/admin (unauth)       → HTTP 307 PASS (redirect to login)
+4. /api/hermes/runs (unauth) → HTTP 307 PASS (redirect to login)
+5. /api/external-accounts    → HTTP 307 PASS (redirect to login)
+6. POST /api/auth/login {}   → HTTP 400 PASS (validation works)
+7. CORS (Origin: evil.com)   → No reflection PASS (security intact)
+8. POST /api/compose/send {} → HTTP 400 0.063s PASS (FIXED — was TIMEOUT 10s+, issue #1025)
+
+REGRESSION (known P0 #698 — MongoDB unhealthy 38h+):
+9. /api/health               → HTTP 503 REGRESSION
+
+NEW THIS TICK:
+- PR #1027 merged → CI/CD deployed successfully
+- /api/compose/send now returns 400 in 0.063s (was TIMEOUT 10s+)
+- Issue #1025 verified RESOLVED in production
+- middleware.test.ts fixed (200→307 expectation)
+
+STATUS: Auth/security layer all PASS. /api/compose/send fixed. MongoDB still degraded.
