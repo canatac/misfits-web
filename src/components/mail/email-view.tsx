@@ -131,8 +131,8 @@ export function EmailView({ className }: EmailViewProps) {
         onToggleReadingMode={toggleReadingMode}
       />
 
+      <ImmersiveReadingProvider contentRef={contentRef}>
       <ScrollArea className="flex-1">
-        <ImmersiveReadingProvider contentRef={contentRef}>
         <div ref={contentRef} className="mx-auto max-w-3xl p-6">
           <EmailLabelsBar
             emailId={email.id}
@@ -239,8 +239,8 @@ export function EmailView({ className }: EmailViewProps) {
             </div>
           )}
         </div>
-        </ImmersiveReadingProvider>
       </ScrollArea>
+      </ImmersiveReadingProvider>
 
       <LabelManager
         open={labelManagerOpen}
