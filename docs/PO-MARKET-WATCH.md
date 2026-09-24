@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T14:35 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 62 rows (25 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #939 (testeur MW-2026-037 unified search bar FAIL — backend down), all 25 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T17:30 UTC — veille email privacy 2026 (Proton PQ rollout, Fastmail policy-based privacy, Hey workflow model), matrix 63 rows (43 FAIL, all with existing issues), state=ON, 0 incoming bus messages, production healthy
 
 ---
 
@@ -139,6 +139,15 @@
 
 ## 5. Notes de veille — Ce cycle
 
+### 2026-09-24T15:10 UTC — Thread-bundle UI pattern (Shortwave/Superhuman)
+- **Shortwave** (AI-native Gmail client): thread-bundle UI — auto-groups related emails by topic, collapsible "Conversation (N)" view, reduces cognitive load and scroll
+- **Superhuman**: keyboard-first velocity + thread grouping, sub-100ms interactions
+- **Missive**: shared inboxes + AI drafting layered on top, thread-based collaboration
+- **Key shift 2026**: from passive AI assistants (help draft faster) to active agents (read inbox, classify, draft, route)
+- **Opportunity for misfits.ai**: implement thread-bundle UI in inbox — auto-group by conversation, collapse/expand, unread badge, keyboard shortcut B
+- **Action**: GH issue #962 created (MW-2026-121), routed to scrum-master for dev-web allocation
+- Source: https://missiveapp.com/blog/ai-email-assistant, https://www.getinboxzero.com/blog/post/best-ai-email-assistants
+
 ### 2026-09-24T09:37 UTC — AI privacy divergence: Proton Lumo vs Tuta no-AI stance
 - **Proton** launched Lumo AI (cloud-based AI assistant) → significant privacy community backlash; users concerned about data training and privacy erosion
 - **Tuta** publicly committed to NEVER implementing cloud AI in encrypted mail — strong differentiation as "privacy purist" provider
@@ -226,6 +235,14 @@
 - **Action**: PO_TICKET posted to scrum-master via Redis LPUSH (queue:scrum-master, position 19, msg_id: 3ce8f9a6d67f8f24)
 - **Matrix updated**: 62 rows total (25 pure FAIL, all have GH issues). New row MW-2026-108 added.
 - **Production**: HTTPS 200 OK, /api/emails=307 (auth gate OK)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T15:00Z — Follow-up reminders market watch + issue #961 created
+- **Market insight**: Email follow-up reminders are a standard feature in modern email clients (Mailbird, Superhuman, Gmail nudges). Users need to schedule follow-ups on sent emails to maintain conversation momentum. Mailbird's snooze pattern (Z key, right-click menu, clock icon) is the most common UX. Superhuman recommends 2-3 day spacing for follow-ups.
+- **misfits.ai gap**: MW-2026-120 (Email follow-up reminders) is a pure FAIL — no GH issue existed. Users cannot set follow-up reminders on emails, forcing them to use external task management systems.
+- **Action**: GH issue #961 created — [po] feature: Email follow-up reminders — badge + notification + snooze (MW-2026-120). Owner hint: dev-web. Priority: P1.
+- **Matrix updated**: 63 rows total (26 pure FAIL, all have GH issues)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
@@ -342,6 +359,16 @@
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
+### Cycle 2026-09-24T15:09Z — Veille AI email features 2026 (Tuta/Proton/Fastmail)
+- **Tuta**: No cloud-based AI assistants in encrypted mailbox. Privacy-first stance — AI email writer "defies the purpose of a private, secure email service." Post-quantum focus via TutaCrypt.
+- **Proton Mail**: Introduced Proton Scribe (AI email writer) — faced significant backlash from privacy-focused user base. Swiss jurisdiction, broader ecosystem (VPN, Drive, Pass).
+- **Fastmail**: No E2E encryption (TLS only). Privacy model is policy-based, not technically enforced. Australian jurisdiction (Telecommunications Act 2018 allows compelled access). Strong third-party client support (Outlook, Apple Mail).
+- **misfits.ai differentiation**: Native SMTP/IMAP + E2E (DKIM/SPF/DMARC) + PWA + multi-surface. Unique position: open-source 3-repo stack with native IMAP/SMTP. AI features (on-device) without cloud dependency — privacy-preserving AI triage/summaries.
+- **Arbitrage 2026-09-24**: AI email features → Choice: On-device AI (local processing, no cloud calls) / Rejected: Cloud AI assistant (Proton Scribe pattern — privacy backlash risk) / Rationale: Tuta proves privacy-first users reject cloud AI; misfits.ai can differentiate with on-device AI that respects zero-access encryption.
+- **Matrix gap**: No new rows needed — AI features tracked via MW-2026-103 (on-device AI privacy mode).
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: compétiteurs (Fastmail pricing deep-dive) or matrice de tests (add rows for billing flows)
+
 ### Cycle 2026-09-24T09:56Z — Competitor pricing update + market positioning
 - **Pricing comparison 2026** (sources: guptadeepak.com, usecarly.com, tuta.com, forwardemail.net):
   - **Proton Mail**: Free 500MB/150msg/day, paid from $4/mo (Mail Plus 15GB ~$3.99/mo, Unlimited 500GB ~$9.99/mo). Swiss jurisdiction, E2E PGP-based.
@@ -354,3 +381,13 @@
 - **Matrix gap**: No new rows needed — pricing/billing tracked via MW-2026-021 (Pro plan subscription).
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T17:30Z — Veille email privacy 2026 (Proton PQ rollout, Fastmail policy-based privacy)
+- **Proton Mail**: Began rolling out post-quantum protection for new encrypted emails (2026). Desktop app needs privacy model that makes sense as threats and authentication rules change.
+- **Fastmail**: Privacy model is policy-based rather than technically enforced. No E2E encryption (TLS only). Australian jurisdiction (Telecommunications Act 2018 allows compelled access). Independently audited, publishes transparency reports.
+- **Hey**: Workflow product (Imbox, Feed, Paper Trail). Pixel tracking blocked by default. No E2E encryption. Distinctly different experience from Gmail.
+- **misfits.ai differentiation**: Native SMTP/IMAP + E2E (DKIM/SPF/DMARC) + PWA + multi-surface. Unique position: open-source 3-repo stack with native IMAP/SMTP. AI features (on-device) without cloud dependency.
+- **Arbitrage 2026-09-24**: Post-quantum encryption → Choice: Prioritize TutaCrypt implementation (MW-2026-009/025/040) / Rejected: Wait for NIST finalization / Rationale: Proton already rolling out PQ protection — misfits.ai must match to remain competitive.
+- **Matrix gap**: No new rows needed — PQ crypto tracked via MW-2026-009/025/040.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: matrice de tests (add rows for billing flows) or backlog refresh (SCRUM_REQUEST_BACKLOG)
