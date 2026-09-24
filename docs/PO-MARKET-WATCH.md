@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T09:37 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 61 rows (24 pure FAIL), state=ON, 1 PO_TICKET sent (MW-2026-107 composer auto-save drafts #937 → scrum-master), production healthy
+> Dernière mise à jour: 2026-09-24T09:56 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 61 rows (24 pure FAIL), state=ON, 0 incoming bus messages, 0 new GH issues since #938, all 24 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
 
 ---
 
@@ -324,4 +324,25 @@
 - **Matrix total**: 55 rows (45 FAIL, 8 PASS, 2 PARTIAL)
 - **Bus status**: Redis unreachable — tickets cannot be posted this cycle
 - **State**: ON — no ROOT controls received, mission loop continues
-- **Next cycle**: retry bus connection, route pending FAIL rows to scrum-master, veille marché",
+- **Next cycle**: retry bus connection, route pending FAIL rows to scrum-master, veille marché
+
+### Cycle 2026-09-24T09:56Z — Matrix audit + bus recovery + UX improvement proposal
+- **Matrix audit**: 61 rows total, 24 pure FAIL, all 24 already have GH issues created. No new actionable FAIL rows without issues.
+- **Bus status**: Redis (172.16.12.2:6379) reachable, 0 messages in all queues. Fleetbus MCP server file missing (/tmp/mcp-fleetbus/server.mjs) — bus_post/bus_pull via Redis direct.
+- **New GH issues since last cycle**: #938 (testeur MW-2026-107 composer auto-save drafts FAIL), #937 (PO MW-2026-107), #936 (PO MW-2026-066 newsletter tracking pixel consent), #935 (PO MW-2026-063 bulk email selection floating action bar)
+- **UX improvement proposal**: Email composer auto-save drafts (MW-2026-107) — issue #937 already created. Testeur issue #938 reports backend down, routes exist. P1 priority.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T09:56Z — Competitor pricing update + market positioning
+- **Pricing comparison 2026** (sources: guptadeepak.com, usecarly.com, tuta.com, forwardemail.net):
+  - **Proton Mail**: Free 500MB/150msg/day, paid from $4/mo (Mail Plus 15GB ~$3.99/mo, Unlimited 500GB ~$9.99/mo). Swiss jurisdiction, E2E PGP-based.
+  - **Tuta**: Free 1GB, paid from €3/mo (Revolutionary), custom domain €3/mo. German jurisdiction, E2E AES/RSA + quantum-safe options. Best value for encrypted email.
+  - **Fastmail**: No free tier, from $3/mo (Enhanced 10GB), Team $9/mo. Australian jurisdiction, TLS only (no E2E), but SMTP/IMAP/API access. Power-user inbox.
+  - **Mailbox.org**: €1/mo, German jurisdiction, PGP + at rest. Budget privacy option.
+  - **StartMail**: ~$3/mo, Dutch jurisdiction, PGP E2E.
+- **misfits.ai positioning**: Native SMTP/IMAP + E2E (DKIM/SPF/DMARC) + PWA + multi-surface. Unique differentiator: open-source 3-repo stack with native IMAP/SMTP (competitors require bridges or lack E2E). Pricing opportunity: undercut Proton ($4/mo) while offering native IMAP (Proton requires paid Bridge for IMAP).
+- **Arbitrage 2026-09-24**: Pricing model → Choice: Freemium (free tier 1GB, Pro €3/mo) / Rejected: $4/mo minimum (Proton parity), usage-based billing / Rationale: Tuta proves €3/mo is viable for E2E email; misfits.ai can match with native IMAP + PWA as differentiators.
+- **Matrix gap**: No new rows needed — pricing/billing tracked via MW-2026-021 (Pro plan subscription).
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
