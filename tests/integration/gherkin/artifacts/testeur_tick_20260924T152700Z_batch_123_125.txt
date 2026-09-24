@@ -1,0 +1,14 @@
+=== testeur tick 2026-09-24T15:27:00Z ===
+MW-2026-123/124/125: Batch Gherkin creation for new PO UX features
+Action: Created 3 Gherkin feature files, updated MATRIX_STATUS.csv, committed + pushed, created 3 GH issues
+Result: Gherkin created for all 3, all features FAIL (not implemented)
+Evidence:
+- MW-2026-123: MW-2026-123-email-context-menu.feature created (6 scenarios) → issue #972
+- MW-2026-124: MW-2026-124-reading-progress-indicator.feature created (5 scenarios) → issue #973
+- MW-2026-125: MW-2026-125-desktop-notifications.feature created (7 scenarios) → issue #974
+Production: HTTPS=200 OK, /api/health=503 (mongo down ping_ms=5000)
+Auth regression: PASS (/api/emails=401, /api/external-accounts=307, /api/admin=307, wildcard paths=401/307)
+Security headers: PASS (HSTS, X-Frame-Options DENY, X-Content-Type-Options nosniff, Referrer-Policy)
+MongoDB regression: comment on issue #698 (reimagined-guide) — still DOWN 26h+
+Commit: 0a633c6 (branch testeur/mw-113-119-gherkin, pushed)
+No new deployment since last tick (14:15Z). No version change detected.
