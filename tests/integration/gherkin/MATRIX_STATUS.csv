@@ -1,4 +1,4 @@
-# Last PO cycle: 2026-09-25T01:30Z UTC — state=ON, 0 incoming bus messages, 84 matrix rows, 1 TASK (#1044 MongoDB P0) + 1 PO_TICKET (MW-2026-107 composer drafts) posted to scrum-master, no ROOT controls
+# Last PO cycle: 2026-09-25T02:00Z UTC — state=ON, 0 incoming bus messages, 84 matrix rows, 1 PO_TICKET (MW-2026-062 OAuth2 IMAP) posted to scrum-master, P0 #1044 still OPEN (MongoDB 503), no ROOT controls
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -82,3 +82,4 @@ MW-2026-125,Desktop notifications new emails,User reçoit un nouvel email,Permis
 MW-2026-126,API auth gate regression P1,Requete non authentifiee sur /api/* routes retourne 307 au lieu de 401 + P1 bug testeur + regression auth gate,FAIL-ISSUE-1028,misfits-web,dev-web+dev-back
 MW-2026-137,API auth gate 401 for unauthenticated /api/* routes,Requete non authentifiee sur /api/emails+/api/hermes/runs+/api/external-accounts+/api/templates+/api/admin/users,All return 401 JSON (not 307 redirect) + no Location header + Content-Type application/json,PASS-REGRESSION-2026-09-25T01:00Z,misfits-web,dev-web
 MW-2026-120,Email follow-up reminders,User marque un email comme follow-up + voit reminder,Email marqué avec flag follow-up + reminder à date/heue choisie + vue dédiée follow-ups + snooze possible,FAIL-ISSUE-1043,misfits-web,dev-web
+MW-2026-062,OAuth2 IMAP authentication,User connects external IMAP account via OAuth2 flow,OAuth2 authorization code flow + token refresh + basic auth deprecated + external account sync works,FAIL,reimagined-guide,dev-back

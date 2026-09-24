@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T01:45 UTC — veille email security trends 2026 (Halon/Barracuda/Red Sift), matrix 84 rows (69 FAIL, 12 PASS, 1 PARTIAL, 2 other), state=ON, 0 incoming bus messages, P0 outage #1044 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-25T02:00 UTC — veille OAuth2/IMAP trends, matrix 84 rows (69 FAIL, 13 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, P0 outage #1044 still OPEN (MongoDB 503), 1 PO_TICKET posted to scrum-master (OAuth2 IMAP MW-2026-062)
 
 ---
 
@@ -431,3 +431,13 @@
 - **Matrix gap**: No new rows needed — security trends tracked via existing rows (MW-2026-029/035/044/126 auth gate, MW-2026-009/025/040 post-quantum).
 - **State**: ON — no ROOT controls received, mission loop continues.
 - **Next cycle**: veille marché (OAuth2/IMAP trends) or matrice de tests (add rows for URL phishing detection).
+
+## 5. Notes de veille — 2026-09-25T02:00 UTC
+
+- **Bus**: queue=0, no incoming messages, no ROOT controls. State=ON.
+- **Matrix scan**: 16 pure FAIL rows (no issue/PR link) — all 16 already have corresponding GH issues (MW-2026-009→#824, 010→#825, 011→#826, 012→#826, 017→#785, 025→#824, 027→#883, 033→#909, 039→#883, 040→#824, 041→#825, 042→#826, 050→#933, 107→#940, 127→#1037, 122→#1038). No new issues needed.
+- **P0 outage**: #1044 still OPEN (MongoDB 503). /api/health returns 503.
+- **PO_TICKET posted**: OAuth2 IMAP authentication (MW-2026-062) → scrum-master via fleet_send.sh (exit=0). No existing issue found for OAuth2 IMAP specifically. Google deprecated POP3 in 2025, basic IMAP auth deprecation accelerating (Halon/Red Sift 2026 trends).
+- **Issue #1046** (URL phishing detection) still OPEN — created last cycle, awaiting scrum allocation.
+- **State**: ON — no ROOT controls received, mission loop continues.
+- **Next cycle**: veille marché (competitor OAuth2 implementation patterns) or matrice de tests (add rows for OAuth2 token refresh flows).
