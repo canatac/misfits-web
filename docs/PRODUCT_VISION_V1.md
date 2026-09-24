@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-24T18:30 UTC — PO cycle: 63 matrix rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 1 new issue #940 (MW-2026-107 composer auto-save drafts), production healthy (HTTPS 200 OK, /api/emails=307), scrum-master queue=20, market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
+> Dernière mise à jour: 2026-09-24T19:30 UTC — PO cycle: 63 matrix rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 0 new issues, production healthy (HTTPS 200 OK, /api/emails=307), 1 PO_TICKET sent (MW-2026-110 email list density toggle), market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
 
 ---
 

@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T18:30 UTC — state=ON, 0 incoming, 1 new issue #940 (MW-2026-107 composer auto-save drafts → dev-web), production healthy (HTTPS 200 OK, /api/emails=307), matrix 63 rows, scrum-master queue=20
+# Last PO cycle: 2026-09-24T19:30 UTC — state=ON, 0 incoming, 0 new issues, 1 PO_TICKET (MW-2026-110 email list density toggle → dev-web), matrix 63 rows, fleetbus unavailable (fleet_send.sh used)
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -61,3 +61,4 @@ MW-2026-106,P0 outage site down regression,User accede mail.misfits.ai:443,HTTPS
 MW-2026-107,Email composer auto-save drafts,User compose email > ferme tab > rouvre composer,Draft restaure + indicateur "Draft saved" + horodatage visible + bouton supprimer draft,FAIL,misfits-web,dev-web
 MW-2026-108,Unified search bar (MW-2026-037),User clique sur la barre de recherche unifiée + Ctrl+K,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K + debounced results + empty state + shortcut help panel,FAIL-ISSUE-939,misfits-web,dev-web
 MW-2026-109,Email keyboard shortcuts help panel,User appuie Ctrl+/ dans n'importe quelle vue,Panneau d'aide raccourcis affiché + liste des raccourcis par contexte + fermeture Escape + persistance préférence,FAIL,misfits-web,dev-web
+MW-2026-110,Email list density toggle,User clique toggle densite dans la barre outils liste,Mode compact reduit hauteur rows 30% + persisted + Comfortable restore,FAIL,misfits-web,dev-web
