@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T09:56 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 61 rows (24 pure FAIL), state=ON, 0 incoming bus messages, 0 new GH issues since #938, all 24 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T14:35 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 62 rows (25 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #939 (testeur MW-2026-037 unified search bar FAIL — backend down), all 25 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
 
 ---
 
@@ -219,7 +219,15 @@
 - **Testeur #777** (MW-2026-036 DKIM SMTP 587 unreachable) → PO_TICKET posted to scrum-master (task_id: po_dkim_smtp_20260922, owner: dev-back+dev-int, P0)
 - **Matrix gaps**: 12 FAIL rows still lack GH issues (MW-009, 017, 019, 022, 025, 026, 027, 039, 040, 041, 042, 045). Most are backend/security features already tracked in reimagined-guide or studious-octo-rotary-phone.
 - **State**: ON — no ROOT controls received, mission loop continues
-- **Next cycle**: veille marché (Fastmail pricing deep-dive) or matrice de tests (add MW-2026-056 for bulk selection regression)
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T14:35Z — Testeur issue #939 routed + matrix update
+- **New testeur issue**: #939 (MW-2026-037 unified search bar — FAIL: backend down, routes exist). Routes registered but MongoDB unhealthy (issue #698). Feature cannot be verified until DB restored.
+- **Action**: PO_TICKET posted to scrum-master via Redis LPUSH (queue:scrum-master, position 19, msg_id: 3ce8f9a6d67f8f24)
+- **Matrix updated**: 62 rows total (25 pure FAIL, all have GH issues). New row MW-2026-108 added.
+- **Production**: HTTPS 200 OK, /api/emails=307 (auth gate OK)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
 * Fichier maintenu par le PO. Cycle suivant: explorer les offres Fastmail en détail, arbitrer sur le modèle freemium.*
 
