@@ -119,9 +119,10 @@ describe("compose-send proxy contract", () => {
 
     const headers = buildForwardHeaders(request, {
       "X-Custom": "custom-value",
-      "X-Request-ID:": "req-456",
+      "X-Request-ID": "req-456",
     } as HeadersInit);
     expect(headers.get("X-Custom")).toBe("custom-value");
+    expect(headers.get("X-Request-ID")).toBe("req-456");
   });
 });
 
