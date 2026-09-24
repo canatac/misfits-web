@@ -10,10 +10,13 @@
  * /api/* Caddy handle which proxies directly to email-api:8000 — bypassing
  * Next.js auth middleware (the same class of bug as issue #723/#722).
  *
- * Issue: #780 (MW-2026-054), #866 (502 regression after PR#860 deploy)
+ * Issue: #780 (MW-2026-054), #866 (502 regression after PR#860 deploy),
+ *         #1025 (10s+ hang — missing auth gate + no fast-fail on backend timeout)
  *
  * Retry logic: transient backend failures (container restart, network blip)
  * are retried with exponential backoff to avoid 502s during deploy windows.
+ * Fetch timeout: AbortSignal.timeout(5000) ensures fast-fail instead of
+ * indefinite hangs when the backend connection pool is exhausted.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +25,7 @@ import { buildForwardHeaders, resolveBackendBaseUrlCandidates } from "@/lib/prox
 
 const MAX_RETRIES = 2;
 const RETRY_BASE_MS = 200;
+const FETCH_TIMEOUT_MS = 5000; // AbortSignal timeout — fail fast instead of hanging (issue #1025)
 
 function buildBackendUrl(baseUrl: string, request: Request): string {
   const url = new URL(request.url);
@@ -37,7 +41,11 @@ async function fetchWithRetry(
   let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(targetUrl, { ...init, cache: "no-store" });
+      const res = await fetch(targetUrl, {
+        ...init,
+        cache: "no-store",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
       // Only retry on 5xx or network error, not 4xx client errors
       if (res.status < 500) return res;
       lastErr = new Error(`backend returned ${res.status}`);

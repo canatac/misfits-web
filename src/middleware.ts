@@ -70,6 +70,11 @@ function isProtected(pathname: string): boolean {
   if (pathname.startsWith("/api/hermes")) return true;
   // External accounts API requires session.
   if (pathname.startsWith("/api/external-accounts")) return true;
+  // Compose API routes require session (P1 auth gate bypass — issue #1025).
+  // /api/compose/* (send, draft, attachments) must always be authenticated.
+  // Without this, unauthenticated requests bypass the auth gate and hang
+  // waiting for the backend proxy (no fast-fail).
+  if (pathname.startsWith("/api/compose")) return true;
   // Email API routes require session (P0 auth bypass regression — issue #730, #729).
   // /api/emails and /api/emails/* (list, get, send, delete, attachments) must
   // always be authenticated. The proxy handler forwards to the backend only
