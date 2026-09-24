@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T15:10 UTC — veille thread-bundle UI 2026 (Shortwave/Superhuman conversation grouping pattern), matrix 64 rows (27 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #962 (MW-2026-121 thread-bundle UI), all 27 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T15:25 UTC — veille swipe gestures mobile (Gmail/Superhuman pattern), matrix 64 rows (27 pure FAIL), state=ON, 0 incoming bus messages, 1 PO_TICKET sent (swipe gestures mobile UX, routed to scrum-master), all 27 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
 
 ---
 
