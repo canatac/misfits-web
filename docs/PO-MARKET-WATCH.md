@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T00:05 UTC — veille sécurité email 2026 (phishing detection, 2FA), matrix 84 rows (70 FAIL, 12 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, FleetBus MCP unavailable this cycle, 2 new GH issues (#1040 phishing detection, #1041 2FA TOTP+FIDO2)
+> Dernière mise à jour: 2026-09-25T00:11 UTC — veille productivité email 2026 (follow-up reminders), matrix 87 rows (73 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 1 new GH issue (#1043 email follow-up reminders)
 
 ---
 
@@ -424,3 +424,16 @@
 - **Matrix updated**: 84 rows total (70 FAIL, 12 PASS, 2 PARTIAL). New rows MW-2026-141 and MW-2026-142 added.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for security features)
+
+### Cycle 2026-09-25T00:11Z — Veille productivité email 2026 (follow-up reminders) + 1 issue created
+- **Productivité email 2026** (sources: herothemes.com, trustradius.com, slashdot.org, getmailbird.com):
+  - **Snooze + Schedule Send**: Features de base en 2026. Mailbird, Mailspring Pro, Mailbutler offrent tous le snooze et le send later. misfits.ai a MW-2026-002 (scheduled send) mais pas de snooze dédié.
+  - **Follow-up reminders**: Différentiation clé en 2026. Mailbutler suit les emails envoyés et relance automatiquement si pas de réponse. Mailspring Pro offre des rappels de suivi. C'est un gap majeur pour misfits.ai.
+  - **Custom snooze timings**: Les utilisateurs veulent des horaires de snooze personnalisés (pas juste "demain matin"). Mailbird offre cette flexibilité.
+  - **Key trend**: Les clients email modernes ne se contentent plus de snooze — ils offrent un suivi complet avec rappels automatiques et vues dédiées.
+- **Implication misfits.ai**: MW-2026-126 (hover toolbar) inclut le snooze dans les actions rapides, mais il n'y a pas de vue Suivis dédiée ni de rappel automatique. C'est un gap de productivité.
+- **Arbitrage 2026-09-25**: Follow-up reminder scope → Choice: Vue Suivis + rappel auto configurable (24h/48h/7j) + badge compteur / Rejected: Full email tracking (open/click tracking = privacy risk), AI-powered follow-up suggestions (not mature enough) / Rationale: Les utilisateurs ont besoin de simplicité et de contrôle. La vue Suivis est un ajout UX simple qui comble un gap majeur.
+- **Action**: Issue #1043 created — [ux] feature: Email follow-up reminders — mark as follow-up + auto-reminder + dedicated view (MW-2026-143). Owner hint: dev-web. P1 priority.
+- **Matrix updated**: 87 rows total (73 FAIL, 13 PASS, 3 PARTIAL). New row MW-2026-143 added.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for follow-up workflows)
