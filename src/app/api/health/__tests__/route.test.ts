@@ -14,12 +14,12 @@ describe("Issue #929: GET /api/health mongo-health regression", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...originalEnv };
-    process.env.NODE_ENV = "production";
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
     process.env.BACKEND_URL = "http://email-api:8000";
   });
 
   afterEach(() => {
-    process.env = { originalEnv };
+    process.env = originalEnv;
   });
 
   it("returns 200 when backend mongo-health is healthy", async () => {

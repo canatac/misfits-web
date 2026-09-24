@@ -15,12 +15,12 @@ describe("Issue #929: POST /api/compose/send regression", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...originalEnv };
-    process.env.NODE_ENV = "production";
+    Object.defineProperty(process.env, "NODE_ENV", { value: "production", configurable: true, writable: true });
     process.env.BACKEND_URL = "http://email-api:8000";
   });
 
   afterEach(() => {
-    process.env = { originalEnv };
+    process.env = originalEnv;
   });
 
   it("returns 400 when backend rejects empty body (validation works)", async () => {
