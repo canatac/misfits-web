@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T08:30 UTC — veille email security trends 2026 (DMARC enforcement, DKIM2 rollout, POP3 deprecation, OAuth 2.0 IMAP, AI phishing), matrix 55 rows (45 FAIL), state=ON, bus=UNAVAILABLE (Redis timeout), 2 new FAIL rows added (MW-2026-105, MW-2026-106), scrum-master session=DEAD
+> Dernière mise à jour: 2026-09-24T09:37 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 61 rows (24 pure FAIL), state=ON, 1 PO_TICKET sent (MW-2026-107 composer auto-save drafts #937 → scrum-master), production healthy
 
 ---
 
@@ -138,6 +138,14 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-24T09:37 UTC — AI privacy divergence: Proton Lumo vs Tuta no-AI stance
+- **Proton** launched Lumo AI (cloud-based AI assistant) → significant privacy community backlash; users concerned about data training and privacy erosion
+- **Tuta** publicly committed to NEVER implementing cloud AI in encrypted mail — strong differentiation as "privacy purist" provider
+- **Fastmail** remains policy-based privacy (no E2E, but no ads/data selling, independently audited, transparency reports)
+- **Opportunity for misfits.ai**: position as the "privacy-first WITH optional on-device AI" — best of both worlds (Tuta's privacy stance + Proton's AI ambition but executed locally)
+- **Action**: MW-2026-031/103 (on-device AI privacy mode) becomes P1 differentiator — accelerate dev-web implementation
+- Source: https://tuta.com/blog/protonmail-vs-gmail, https://guptadeepak.com/tools/top-5-secure-email-providers-2026
 
 ### 2026-09-22T22:15 UTC — Email privacy trends 2026 (DMARC, BIMI, AMP, AI filtering)
 - **DMARC enforcement**: Google/Yahoo durcissent les exigences d'authentification. DKIM2 rollout en cours. Les legacy systems sans DMARC vont commencer à casser visiblement.
