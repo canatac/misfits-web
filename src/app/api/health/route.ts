@@ -4,39 +4,38 @@ import { resolveBackendBaseUrl } from "@/lib/proxy-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const LIVENESS_TIMEOUT_MS = 2000;
+const DEEP_TIMEOUT_MS = 5000;
+
 /**
- * Liveness probe — verifies the web container can reach the backend.
+ * Lightweight liveness probe — verifies the backend process is reachable.
  *
- * Used by Docker healthcheck. If the backend is unreachable (DNS failure,
- * network partition, container restart), this endpoint returns 503 so
- * Docker marks the container unhealthy and restarts it (restart: unless-stopped).
+ * Used by Docker healthcheck. Only checks that the backend HTTP server
+ * responds, NOT that MongoDB is connected. This prevents container restart
+ * loops when MongoDB is temporarily slow (issue #999, MW-2026-101).
  *
- * This prevents the persistent 502 condition seen in issue #866 where
- * the web container loses connectivity to email-api:8000 but keeps running.
+ * For full MongoDB connectivity check, use GET /api/health/deep.
  */
 export async function GET() {
   try {
     const backendUrl = resolveBackendBaseUrl();
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => controller.abort(), LIVENESS_TIMEOUT_MS);
 
-    const res = await fetch(`${backendUrl}/api/monitoring/mongo-health`, {
-      method: "GET",
-      headers: { Accept: "application/json" },
+    // Lightweight: just hit the backend root — any HTTP response means alive
+    const res = await fetch(`${backendUrl}/`, {
+      method: "HEAD",
       cache: "no-store",
       signal: controller.signal,
     });
 
     clearTimeout(timeout);
 
-    if (!res.ok) {
-      return NextResponse.json(
-        { status: "unhealthy", reason: `backend returned ${res.status}` },
-        { status: 503 }
-      );
-    }
-
-    return NextResponse.json({ status: "healthy", backend: backendUrl });
+    return NextResponse.json({
+      status: "healthy",
+      backend: backendUrl,
+      backend_status: res.status,
+    });
   } catch (err) {
     return NextResponse.json(
       {
