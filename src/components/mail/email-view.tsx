@@ -144,6 +144,8 @@ export function EmailView({ className }: EmailViewProps) {
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
         onFindInPage={() => setFindOpen(true)}
+        isReadingActive={isReadingActive}
+        onToggleReadingMode={toggleReadingMode}
       />
 
       <ImmersiveReadingProvider contentRef={contentRef}>
