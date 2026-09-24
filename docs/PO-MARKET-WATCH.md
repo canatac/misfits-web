@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T18:30 UTC — cycle 18:30Z: 0 incoming bus messages, 1 new issue created (#940 MW-2026-107 composer auto-save drafts), production healthy, matrix 63 rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
+> Dernière mise à jour: 2026-09-24T20:42 UTC — cycle 20:42Z: 0 incoming bus messages, 0 new issues (all FAIL rows have existing issues), matrix 67 rows (55 FAIL, 9 PASS, 2 PARTIAL), state=ON, market watch: dark mode accessibility 2026 best practices, EAA compliance deadline June 2025
 
 ---
 
@@ -194,6 +194,14 @@
 - **Implication misfits.ai**: MW-2026-095 (on-device AI local mode), MW-2026-020 (on-device AI processing) sont la bonne voie
 
 ---
+
+### Cycle 2026-09-24T20:42Z — Dark mode accessibility & EAA compliance
+- **EAA (European Accessibility Act)** deadline June 2025: all email providers must comply with WCAG 2.1 AA. Dark mode is now a standard accessibility feature, not a nice-to-have.
+- **Dark mode best practices 2026**: contrast ratio 4.5:1 minimum, avoid pure #000 on #FFF, use off-tones, test hierarchy in grayscale, transparent backgrounds for images, 44px+ tap targets.
+- **Proton/Tuta**: both ship dark mode as default. Proton Lumo 2.0 includes dark mode AI. Tuta's dark mode is privacy-preserving.
+- **misfits.ai gap**: MW-2026-111 (dark mode) is FAIL — no theme toggle, no system preference detection. This is an EAA compliance risk.
+- **Action**: MW-2026-111 dark mode becomes P1 for EAA compliance, not just UX preference.
+- Source: https://www.enchantagency.com/blog/dark-mode-email-design-best-practices-css-guide-2026, https://www.dyspatch.io/blog/email-accessibility-ultimate-guide
 
 ### Cycle 2026-09-22 — DMARC enforcement mandatory
 - DMARC adoption 30.4% (5.5M domains, Feb 2026), enforcement 12.8% — Google/Yahoo/Microsoft require SPF+DKIM+DMARC for >5K msg/day

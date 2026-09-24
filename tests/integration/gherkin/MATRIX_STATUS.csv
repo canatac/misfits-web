@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T20:42 UTC — state=ON, 0 incoming, 1 new issue (#941 keyboard shortcuts), 1 PO_TICKET (MW-2026-109 → scrum-master), matrix 65 rows
+# Last PO cycle: 2026-09-24T20:42 UTC — state=ON, 0 incoming, 0 new issues (all FAIL rows have existing issues), matrix 67 rows, market watch: dark mode accessibility + EAA compliance, 1 PO_TICKET (MW-2026-114 dark mode EAA compliance → scrum-master)
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -29,8 +29,8 @@ MW-2026-026,JMAP server,Client JMAP se connecte via /.well-known/jmap,Authentifi
 MW-2026-027,Zero-access encryption,User active le mode zero-access,Emails chiffrés côté client + serveur ne peut pas lire + backup clé possible,FAIL,reimagined-guide,dev-back
 MW-2026-028,Notion Mail migration,User importe emails depuis Notion Mail (Gmail sync),Emails importés via import wizard + snippets/templates migrés + auto-labels recréés,FAIL,misfits-web,dev-web
 MW-2026-029,Auth bypass /api/emails + /api/hermes/runs + /api/admin,Requete non authentifiee sur /api/emails retourne 200 + inbox complet,/api/emails retourne 401 + proxy Next.js + Caddy auth routes restaurés + Origin non reflété,FAIL-FIX-PR-741,misfits-web+reimagined-guide,dev-web+dev-back
-MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL,misfits-web,dev-web
-MW-2026-033,Frontend feature batch,User utilise une feature frontend du batch P1,Feature implémentée + tests Gherkin PASS + API fonctionnelle,FAIL,misfits-web,dev-web
+MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture activé + contenu HTML assainisé + barre de désactivation visible,FAIL-ISSUE-888,misfits-web,dev-web
+MW-2026-033,Frontend feature batch,User utilise une feature frontend du batch P1,Feature implémentée + tests Gherkin PASS + API fonctionnelle,FAIL-ISSUE-909,misfits-web,dev-web
 MW-2026-034,Production reachability,User accède à mail.misfits.ai:443,Connexion HTTPS 200 OK + SMTP 587 CLOSED(external, port filtered) + SMTP 8465 OPEN(internal relay) + IMAP 993 CLOSED(external),PARTIAL-2026-09-23T19:05Z,misfits-web+reimagined-guide,dev-back+dev-int
 MW-2026-035,Auth bypass /api/emails regression,Requete non authentifiee sur /api/emails retourne 200,/api/emails retourne 401 + proxy Next.js restauré + CORS non réfléchi,FAIL-FIX-PR-741,misfits-web+reimagined-guide,dev-web+dev-back
 MW-2026-036,DKIM service operationnel,User envoie un email via SMTP 587,Email envoyé + DKIM signature présente + service non en crash loop,FAIL,reimagined-guide+studious-octo-rotary-phone,dev-back+dev-int
@@ -64,3 +64,4 @@ MW-2026-109,Email keyboard shortcuts help panel,User appuie Ctrl+/ dans n'import
 MW-2026-110,Email list density toggle,User clique toggle densite dans la barre outils liste,Mode compact reduit hauteur rows 30% + persisted + Comfortable restore,FAIL,misfits-web,dev-web
 MW-2026-111,Dark mode + theme customization,User bascule dark mode dans settings,Theme sombre appliqué partout + préférence persistée + détection préférence système + pas de flash de thème,FAIL,misfits-web,dev-web
 MW-2026-112,Email metadata retention policy,User verifie retention metadata dans settings,Retention period configurable + auto-purge + audit log + conforme ePrivacy Regulation Art.5(1)c + GDPR Art.5(1)e,FAIL,reimagined-guide,dev-back
+MW-2026-113,Email snooze presets,User clique Snooze dans la toolbar + selectionne preset,Dropdown 4 presets (1h, 4h, Tomorrow, Next week) + Custom → email disparait + reapparait au temps choisi + badge Snoozed,FAIL-PO-TICKET-MW-2026-113,misfits-web,dev-web
