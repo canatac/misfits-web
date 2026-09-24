@@ -1,0 +1,27 @@
+=== testeur tick 2026-09-24T17:33:01Z ===
+Non-regression production suite — 13 PASS / 1 FAIL
+Action: Full regression sweep against mail.misfits.ai
+Result: All auth/security/composition gates PASS. MongoDB still DOWN (33h+).
+
+Evidence:
+- HTTPS=200 OK
+- /api/emails=307 (auth gate PASS)
+- /api/external-accounts=307 (auth gate PASS)
+- /api/hermes/runs=307 (auth gate PASS)
+- CORS: evil.com NOT reflected (PASS)
+- Security headers: HSTS, X-Frame-Options DENY, X-Content-Type-Options nosniff, CSP (all PASS)
+- Attachment endpoint=307 (auth gate PASS, #421 closed)
+- POST /api/compose/send=400 (validation PASS)
+- POST /api/auth/login=503 (MongoDB down — expected, issue #698)
+- /api/health=503 unhealthy ping_ms=5001
+- Login page=200 OK
+- /mail/compose=307 (auth gate PASS)
+
+Issues tracked:
+- #984 P0 OUTAGE: production recovered (frontend UP), mongo still DOWN
+- #698 MongoDB 33h+ down, no fix PR open
+- #985 MW-2026-127 Gherkin created, feature not implemented
+- #981-982 testeur Gherkin tickets for new PO UX features
+
+No new deployment detected since last tick (HEAD=97985f4, origin/master=7296008).
+Bus: fleetbus MCP not available in cron session context.
