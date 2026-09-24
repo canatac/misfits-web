@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T14:35 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 62 rows (25 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #939 (testeur MW-2026-037 unified search bar FAIL — backend down), all 25 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T15:00 UTC — veille email follow-up reminders 2026 (Mailbird snooze patterns + Superhuman follow-up best practices), matrix 63 rows (26 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #961 (MW-2026-120 follow-up reminders), all 26 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
 
 ---
 
@@ -226,6 +226,14 @@
 - **Action**: PO_TICKET posted to scrum-master via Redis LPUSH (queue:scrum-master, position 19, msg_id: 3ce8f9a6d67f8f24)
 - **Matrix updated**: 62 rows total (25 pure FAIL, all have GH issues). New row MW-2026-108 added.
 - **Production**: HTTPS 200 OK, /api/emails=307 (auth gate OK)
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T15:00Z — Follow-up reminders market watch + issue #961 created
+- **Market insight**: Email follow-up reminders are a standard feature in modern email clients (Mailbird, Superhuman, Gmail nudges). Users need to schedule follow-ups on sent emails to maintain conversation momentum. Mailbird's snooze pattern (Z key, right-click menu, clock icon) is the most common UX. Superhuman recommends 2-3 day spacing for follow-ups.
+- **misfits.ai gap**: MW-2026-120 (Email follow-up reminders) is a pure FAIL — no GH issue existed. Users cannot set follow-up reminders on emails, forcing them to use external task management systems.
+- **Action**: GH issue #961 created — [po] feature: Email follow-up reminders — badge + notification + snooze (MW-2026-120). Owner hint: dev-web. Priority: P1.
+- **Matrix updated**: 63 rows total (26 pure FAIL, all have GH issues)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
