@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T00:05 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-25T01:30 UTC — veille follow-up reminders 2026 (Snooze/FollowUp.cc/Mailbird), matrix 84 rows (68 FAIL, 12 PASS, 1 PARTIAL, 3 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -134,10 +134,21 @@
 | MW-2026-007 | User clique "Create event" depuis un email | Événement créé dans le calendrier avec lien vers l'email source, visible dans /calendar | ❌ (feature à implémenter) |
 | MW-2026-008 | User ouvre un thread d'emails | Emails groupés par conversation, possibilité de supprimer/archiver en bloc | ❌ (feature à implémenter) |
 | MW-2026-055 | Reading pane split-view | User clique sur un email dans la liste | Contenu email visible dans panneau droit (50%) + liste visible à gauche + Escape ferme + mobile overlay | ❌ (feature à implémenter) |
+| MW-2026-120 | Email follow-up reminders | User marque un email comme follow-up + voit reminder | Email marqué avec flag follow-up + reminder à date/heure choisie + vue dédiée follow-ups + snooze possible | ❌ (feature à implémenter) |
 
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-25T01:30 UTC — Follow-up reminders: competitive necessity in 2026
+- **SaneBox** reports 1.2M snoozed messages in 2025, with Monday peak usage (1.6x other weekdays) — "fresh-start effect" drives follow-up behavior
+- **Mailbird** offers FollowUp.cc integration + Snooze as core productivity features (calendar icon → BCC address → auto-reminder)
+- **Boomerang for Gmail** provides conditional follow-ups (if no reply in N days), open/click tracking, inbox pause, autoresponder
+- **FollowupThen** supports SMS reminders + recurring schedules (everyTuesday3pm format) — any email system, not just Gmail
+- **Microsoft Outlook** has native follow-up flags + reminder popups for both sent and received messages
+- **Opportunity for misfits.ai**: follow-up reminders are now table stakes for any productivity-focused email client. Current gap: MW-2026-120 (issue #1043) covers basic follow-up, but no snooze, no conditional reminders, no dedicated follow-up view
+- **Action**: MW-2026-120 (follow-up reminders) becomes P1 — accelerate dev-web implementation. Consider adding snooze + conditional follow-up in next sprint
+- Source: https://blog.sanebox.com, https://www.getmailbird.com/how-many-follow-up-emails-to-send, https://site.rebump.cc/top-5-software-for-effective-follow-ups
 
 ### 2026-09-24T09:37 UTC — AI privacy divergence: Proton Lumo vs Tuta no-AI stance
 - **Proton** launched Lumo AI (cloud-based AI assistant) → significant privacy community backlash; users concerned about data training and privacy erosion
