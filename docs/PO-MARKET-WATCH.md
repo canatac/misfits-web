@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T14:35 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 62 rows (25 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #939 (testeur MW-2026-037 unified search bar FAIL — backend down), all 25 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T16:10 UTC — veille marché (Proton Lumo 2.0 launch July 2026, zero-access encrypted AI, no-logs, no training), matrix 64 rows (45 pure FAIL), state=ON, 0 bus messages, no new GH issues since last cycle, all FAIL rows have existing GH issues, production MongoDB still down (26h+), frontend HTTPS 200 OK
 
 ---
 
@@ -354,3 +354,13 @@
 - **Matrix gap**: No new rows needed — pricing/billing tracked via MW-2026-021 (Pro plan subscription).
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T16:10Z — Veille marché (Proton Lumo 2.0) + matrix audit
+- **Market watch**: Proton launched Lumo 2.0 (July 2026) — privacy-focused AI assistant with zero-access encryption, no-logs, no AI training, optional web search (off by default), file analysis with E2EE. Positions against OpenAI/ChatGPT, Meta AI, Google Gemini, Microsoft Copilot. Proton Foundation nonprofit ownership. Lumo 2.0 adds image understanding/generation, improved factual accuracy, faster responses.
+- **Competitive implication**: Proton Lumo validates the "privacy-first AI" category. misfits.ai differentiator: native SMTP/IMAP + DKIM/SPF/DMARC + self-hosted option. Lumo is email-only AI (drafting, summarization) — misfits.ai can compete on infrastructure-level privacy (E2EE at rest, zero-access) vs Lumo's transport-level privacy.
+- **Matrix audit**: 64 rows total, 45 pure FAIL, 13 PASS, 5 PARTIAL. All 45 FAIL rows have existing GH issues. No new actionable FAIL rows without issues.
+- **Bus status**: Redis reachable (queue=0, inbox=0, processing=0). No incoming messages.
+- **New GH issues since last cycle**: None. Latest: #979 (MW-2026-066 newsletter tracking pixel consent), #978 (MW-2026-033 frontend feature batch), #977 (MW-2026-009/025/040 post-quantum encryption badge).
+- **Production status**: MongoDB still down (26h+), frontend HTTPS 200 OK, auth gates intact, SMTP 8465 OPEN. Issue #698 OPEN.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: matrice de tests (add rows for billing flows) or compétiteurs (Hey/Fastmail feature comparison)
