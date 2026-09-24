@@ -140,8 +140,13 @@ export function middleware(request: NextRequest): NextResponse {
 
   const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
 
-  // No cookie → redirect to login, preserving the intended destination.
+  // No cookie → redirect to login (UI) or 401 JSON (API).
   if (!sessionToken) {
+    // API routes must return 401 JSON, not 307 redirect (issue #1028).
+    // RFC 7235: programmatic clients need a proper 401 to detect auth failure.
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     const redirectTarget = `${pathname}${request.nextUrl.search}`;
