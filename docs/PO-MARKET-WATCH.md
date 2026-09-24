@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T14:35 UTC — veille email privacy AI 2026 (Proton Lumo AI backlash + Tuta no-AI stance + Fastmail policy-based privacy), matrix 62 rows (25 pure FAIL), state=ON, 0 incoming bus messages, 1 new GH issue #939 (testeur MW-2026-037 unified search bar FAIL — backend down), all 25 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T18:15 UTC — veille email privacy AI 2026 (on-device AI market $2.2B→$20.5B by 2033, confidential computing standard, personal AI agents need email access), matrix 62 rows (23 pure FAIL, all have GH issues), state=ON, 0 incoming bus messages, P0 outage #984 still OPEN (production DOWN since 16:51Z), bus Redis reachable (queue=0), scrum-master qlen=141
 
 ---
 
@@ -220,6 +220,15 @@
 - **Matrix gaps**: 12 FAIL rows still lack GH issues (MW-009, 017, 019, 022, 025, 026, 027, 039, 040, 041, 042, 045). Most are backend/security features already tracked in reimagined-guide or studious-octo-rotary-phone.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T18:15Z — Veille on-device AI market + P0 outage #984 still OPEN
+- **On-device AI market**: $2.2B (2026) → $20.5B (2033), CAGR 37.8% (Grand View Research). Confidential computing (Apple PCC, Nvidia confidential GPUs, AWS Nitro Enclaves) moving from niche to default. Personal AI agents need email/calendar/banking access — vendor trust becomes critical privacy decision.
+- **Implication misfits.ai**: On-device AI processing (MW-2026-020, MW-2026-095, MW-2026-103) is the correct strategy — privacy-first AI that doesn't send data to cloud. Issue #916 already tracks this.
+- **P0 outage #984**: Still OPEN — production DOWN since 16:51Z (connection refused on 80/443). MongoDB unhealthy (issue #698). All dev sessions idle. Scrum queue backlog=141.
+- **Matrix**: 62 rows, 23 pure FAIL, all have GH issues. No new actionable FAIL rows without issues.
+- **Bus**: Redis reachable, 0 messages in product-owner queue. Scrum-master qlen=141 (backlog).
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor AI features deep-dive) or matrice de tests (add rows for AI agent email access patterns)
 
 ### Cycle 2026-09-24T14:35Z — Testeur issue #939 routed + matrix update
 - **New testeur issue**: #939 (MW-2026-037 unified search bar — FAIL: backend down, routes exist). Routes registered but MongoDB unhealthy (issue #698). Feature cannot be verified until DB restored.
