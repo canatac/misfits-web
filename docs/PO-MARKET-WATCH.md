@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T17:30 UTC — veille email privacy 2026 (Proton PQ rollout, Fastmail policy-based privacy, Hey workflow model), matrix 63 rows (43 FAIL, all with existing issues), state=ON, 0 incoming bus messages, production healthy
+> Dernière mise à jour: 2026-09-24T18:35 UTC — veille email privacy 2026 (Proton PQ rollout, Fastmail policy-based privacy, Hey workflow model), matrix 65 rows (45 FAIL, all with existing issues), state=ON, 0 incoming bus messages, production healthy, PO_TICKET MW-2026-127 (Focus mode) posted to scrum-master
 
 ---
 
@@ -138,6 +138,14 @@
 ---
 
 ## 5. Notes de veille — Ce cycle
+
+### 2026-09-24T18:35 UTC — Cycle PO #N
+- **Bus**: 0 incoming messages for product-owner (queue empty)
+- **MATRIX scan**: 65 rows total. 45 FAIL, all already have GH issues tracked. No new untracked FAIL rows.
+- **Action**: PO_TICKET MW-2026-127 (Focus mode — distraction-free email reading) posted to scrum-master via redis-cli rpush queue:scrum-master (pos=128). owner_hint=dev-web. References #399 (UX proposal) + #853 (composer focus mode).
+- **Files**: PRODUCT_VISION_V1.md OK, MATRIX_STATUS.csv OK, PO-MARKET-WATCH.md updated
+- **ROOT controls**: none present
+- **State**: ON, production healthy
 
 ### 2026-09-24T15:10 UTC — Thread-bundle UI pattern (Shortwave/Superhuman)
 - **Shortwave** (AI-native Gmail client): thread-bundle UI — auto-groups related emails by topic, collapsible "Conversation (N)" view, reduces cognitive load and scroll
