@@ -1,4 +1,4 @@
-# Last PO cycle: 2026-09-24T21:45Z UTC — state=ON, 0 incoming bus messages, 1 PO_TICKET posted to scrum-master (auto-save drafts #1005, pos=214), 69 matrix rows (52 FAIL, 10 PASS, 1 PARTIAL, 6 other), no ROOT controls
+# Last PO cycle: 2026-09-24T22:00Z UTC — state=ON, 0 incoming bus messages, 1 PO_TICKET posted to scrum-master (cheat sheet #1026), 70 matrix rows (60 FAIL, 10 PASS, 1 PARTIAL, 6 other), no ROOT controls
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
