@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T01:30 UTC — veille follow-up reminders 2026 (Snooze/FollowUp.cc/Mailbird), matrix 84 rows (68 FAIL, 12 PASS, 1 PARTIAL, 3 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-25T01:45 UTC — veille email security trends 2026 (Halon/Barracuda/Red Sift), matrix 84 rows (69 FAIL, 12 PASS, 1 PARTIAL, 2 other), state=ON, 0 incoming bus messages, P0 outage #1044 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -416,3 +416,18 @@
 - **P0 outage**: #698 still OPEN (MongoDB down). MW-2026-101 FAIL-UNHEALTHY.
 - **Competitor watch**: Canary Mail on-device AI model, Superhuman speed claims, Shortwave AI search — all reinforce the AI agent + unified search priority (MW-2026-127, MW-2026-037/108).
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
+
+## 5. Notes de veille — 2026-09-25T01:45 UTC
+
+- **Bus**: queue=0, no incoming messages, no ROOT controls. State=ON.
+- **Matrix scan**: 14 FAIL rows without existing issues detected. 12 are duplicates of existing row_ids (MW-2026-009/040, 010/041, 011/042, 012/042, 025/009, 027/039, 039/027, 040/009, 041/010, 042/011). 2 truly new (MW-2026-017 email export, MW-2026-033 frontend batch) — both already have existing GH issues and are in forwarded_ids cache. No new issues created.
+- **P0 outage**: #1044 still OPEN (MongoDB down). MW-2026-101 FAIL-UNHEALTHY.
+- **Email security trends 2026** (sources: halon.io, barracuda.com, redsift.com):
+  - **Halon**: Email security consolidation accelerating. EU increasingly prefers non-US software. DMARC enforcement increasing, legacy systems breaking. POP3 deprecation (Google led). Basic IMAP auth deprecation → OAuth2 migration. DKIM2 rollout beginning.
+  - **Barracuda**: 3.1B emails analyzed Jan 2026. AI-driven phishing + PhaaS scaling. Shift from file-based payloads to URL-based delivery. QR codes and account takeover (ATO) bypassing traditional defenses. Attachment sandboxing driving attackers to evade.
+  - **Red Sift**: Email remains #1 attack vector. Domain-level policy enforcement critical. DMARC enforcement (not just monitoring) is the standard. Brand trust/lookalike protection growing.
+- **Implication misfits.ai**: Our native DKIM/SPF/DMARC stack is directly aligned with 2026 enforcement trends. DKIM2 (next-gen) should be tracked. OAuth2 for IMAP is a gap (MW-2026-019/022 external accounts still use basic auth). URL-based phishing detection is a gap — no issue exists for link scanning/URL analysis.
+- **Arbitrage 2026-09-25**: URL phishing detection → Choice: Create issue for URL scanning + link preview safety / Reject: Attachment sandboxing (not core email provider concern) / Rationale: Barracuda data shows URL-based attacks now dominate; misfits.ai has no link scanning feature.
+- **Matrix gap**: No new rows needed — security trends tracked via existing rows (MW-2026-029/035/044/126 auth gate, MW-2026-009/025/040 post-quantum).
+- **State**: ON — no ROOT controls received, mission loop continues.
+- **Next cycle**: veille marché (OAuth2/IMAP trends) or matrice de tests (add rows for URL phishing detection).
