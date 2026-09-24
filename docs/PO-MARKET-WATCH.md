@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T18:15 UTC — veille email privacy AI 2026 (on-device AI market $2.2B→$20.5B by 2033, confidential computing standard, personal AI agents need email access), matrix 62 rows (23 pure FAIL, all have GH issues), state=ON, 0 incoming bus messages, P0 outage #984 still OPEN (production DOWN since 16:51Z), bus Redis reachable (queue=0), scrum-master qlen=141
+> Dernière mise à jour: 2026-09-24T22:30 UTC — veille on-device AI market 2026 ($33.21B→$156.59B by 2033, CAGR 24.8%), matrix 64 rows (49 FAIL, all have GH issues), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -321,6 +321,15 @@
 - **Action**: PO_TICKET posted to scrum-master for MW-2026-056 reading mode integration (owner: dev-web, P1)
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for remaining FAIL rows)
+
+### Cycle 2026-09-24T22:30Z — Veille on-device AI market 2026 + UX improvement proposal
+- **On-device AI market**: $33.21B (2026) → $156.59B (2033), CAGR 24.8% (Coherent Market Insights). Key drivers: privacy/security concerns, NPU advancement, 5G+AI edge computing. Smartphones lead with 47.2% share. North America dominates (38.5%), Asia Pacific fastest growing (34.6%).
+- **Implication misfits.ai**: On-device AI for email (summaries, triage, suggested replies) is a massive market opportunity. Our MW-2026-020 (on-device AI processing) and MW-2026-127 (AI agent email access) are aligned with this trend. Early adoption of on-device AI email features is a competitive differentiator vs cloud-only competitors.
+- **Matrix status**: 64 rows total, 49 FAIL, all have GH issues created. No new actionable FAIL rows without issues.
+- **P0 outage**: #698 still OPEN (MongoDB unhealthy, production DOWN). No new issues since #1005.
+- **UX improvement proposal**: Email composer auto-save drafts (MW-2026-107) — issue #1005 already created. Testeur issue #938 reports backend down, routes exist. P1 priority.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing deep-dive) or matrice de tests (add rows for billing flows)
 
 ### Cycle 2026-09-23T18:30Z — Veille email security trends 2026 + matrix gap analysis
 - **Email security trends 2026** (sources: Halon, Red Sift, Barracuda, VIPRE):
