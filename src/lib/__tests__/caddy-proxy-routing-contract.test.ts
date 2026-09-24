@@ -60,7 +60,7 @@ describe("Caddy proxy routing contract", () => {
         !route.match(
           /^\/api\/(admin|hermes|emails|external-accounts|compose|templates)/
         );
-      expect(isProxiedToBackend, `${route} should go to Next.js`).toBe(false);
+      expect(isProxiedToBackend, route + " should go to Next.js").toBe(false);
     }
   });
 
@@ -70,7 +70,7 @@ describe("Caddy proxy routing contract", () => {
         !route.match(
           /^\/api\/(admin|hermes|emails|external-accounts|compose|templates)/
         );
-      expect(isProxiedToBackend, `${route} should go to backend`).toBe(true);
+      expect(isProxiedToBackend, route + " should go to backend").toBe(true);
     }
   });
 
@@ -105,9 +105,8 @@ describe("CORS header contract", () => {
 
     for (const { origin, allowed } of testOrigins) {
       const isAllowed = origin === ALLOWED_ORIGIN;
-      expect(isAllowed, `${origin} should ${allowed ? "" : "NOT "}be allowed").toBe(
-        allowed
-      );
+      const msg = origin + " should " + (allowed ? "" : "NOT ") + "be allowed";
+      expect(isAllowed, msg).toBe(allowed);
     }
   });
 

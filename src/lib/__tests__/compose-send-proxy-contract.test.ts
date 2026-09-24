@@ -131,7 +131,7 @@ describe("compose-send proxy route URL transformation", () => {
     const BACKEND_URL = "http://email-api:8000";
     const requestUrl = "http://localhost/api/compose/send";
     const url = new URL(requestUrl);
-    const backendUrl = `${BACKEND_URL}/api/send${url.search}`;
+    const backendUrl = BACKEND_URL + "/api/send" + url.search;
 
     expect(backendUrl).toBe("http://email-api:8000/api/send");
   });
@@ -140,7 +140,7 @@ describe("compose-send proxy route URL transformation", () => {
     const BACKEND_URL = "http://email-api:8000";
     const requestUrl = "http://localhost/api/compose/send?draft_id=dr-123";
     const url = new URL(requestUrl);
-    const backendUrl = `${BACKEND_URL}/api/send${url.search}`;
+    const backendUrl = BACKEND_URL + "/api/send" + url.search;
 
     expect(backendUrl).toBe("http://email-api:8000/api/send?draft_id=dr-123");
   });
@@ -169,7 +169,7 @@ describe("compose-send retry contract", () => {
     const status = 400;
     expect(status).toBeGreaterThanOrEqual(400);
     expect(status).toBeLessThan(500);
-    // In the route: `if (res.status < 500) return res;`
+    // In the route: if (res.status < 500) return res;
   });
 
   it("retries on 5xx server errors", () => {
