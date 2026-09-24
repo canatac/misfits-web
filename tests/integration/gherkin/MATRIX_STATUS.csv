@@ -65,3 +65,8 @@ MW-2026-119,Email list inline preview expansion,User clique sur un email dans la
 MW-2026-120,Email follow-up reminders,User définit un rappel de suivi sur un email + choisit l'heure,Rappel affiché avec badge + notification au temps choisi + option snooze + email marqué comme suivi,FAIL,misfits-web,dev-web
 MW-2026-121,Thread-bundle UI conversation grouping,User ouvre inbox avec emails lies par conversation,Emails groupes par conversation avec badge compteur + toggle collapse/expand + indicateur non-lu + raccourci B + etat persiste localStorage,FAIL-ISSUE-962,misfits-web,dev-web
 MW-2026-032,Reading mode,User active le mode lecture sur un email,Mode lecture active + contenu HTML assaini + barre de desactivation visible,FAIL-ISSUE-965,misfits-web,dev-web
+MW-2026-109,Keyboard shortcuts help panel,User appuie Ctrl+/ ou ouvre settings > shortcuts,Panneau d'aide avec liste raccourcis + recherche + ESC pour fermer,FAIL,misfits-web,dev-web
+MW-2026-110,Email list density toggle,User change densité dans settings/toolbar,Compact = plus d'emails/écran + Confortable = plus d'espacement + persistance,FAIL,misfits-web,dev-web
+MW-2026-111,Dark mode + theme customization,User toggle dark mode,Background/text inversent + persistance localStorage + tous éléments lisibles,FAIL,misfits-web,dev-web
+MW-2026-116,Email print view,User clique Print sur un email,Vue sans chrome UI + métadonnées visibles + print dialog déclenché,FAIL,misfits-web,dev-web
+MW-2026-117,Morning Briefing daily digest,User ouvre inbox matin,Card visible avec unread count + événements calendrier + mise à jour temps réel + on-device,FAIL,misfits-web,dev-web
