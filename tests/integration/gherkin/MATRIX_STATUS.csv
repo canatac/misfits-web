@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T20:42 UTC — state=ON, 0 incoming, 0 new issues (all FAIL rows have existing issues), matrix 67 rows, market watch: dark mode accessibility + EAA compliance, 1 PO_TICKET (MW-2026-114 dark mode EAA compliance → scrum-master)
+# Last PO cycle: 2026-09-24T11:53 UTC — state=ON, 0 incoming bus messages (MCP fleetbus unavailable), 1 new issue (#947 Morning Briefing MW-2026-117), matrix 69 rows, market watch: on-device AI morning briefing gap identified
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -65,3 +65,5 @@ MW-2026-110,Email list density toggle,User clique toggle densite dans la barre o
 MW-2026-111,Dark mode + theme customization,User bascule dark mode dans settings,Theme sombre appliqué partout + préférence persistée + détection préférence système + pas de flash de thème,FAIL,misfits-web,dev-web
 MW-2026-112,Email metadata retention policy,User verifie retention metadata dans settings,Retention period configurable + auto-purge + audit log + conforme ePrivacy Regulation Art.5(1)c + GDPR Art.5(1)e,FAIL,reimagined-guide,dev-back
 MW-2026-113,Email snooze presets,User clique Snooze dans la toolbar + selectionne preset,Dropdown 4 presets (1h, 4h, Tomorrow, Next week) + Custom → email disparait + reapparait au temps choisi + badge Snoozed,FAIL-PO-TICKET-MW-2026-113,misfits-web,dev-web
+MW-2026-115,Email hover quick-actions toolbar,Survol d'un email dans la liste,Toolbar flottante [Archive, Delete, Mark read, Snooze, Forward] + actions fonctionnelles en 1 clic + masquée hors survol + mobile long-press,FAIL-ISSUE-945,misfits-web,dev-web
+MW-2026-117,Morning Briefing on-device,User clique Morning Briefing ou Ctrl+Shift+B,Briefing généré localement via Web Worker (WASM) + top 3 emails prioritaires + résumés 1 phrase + événements calendrier + aucune donnée envoyée au serveur + toggle Settings > Privacy,FAIL-ISSUE-947,misfits-web,dev-web

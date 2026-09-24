@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T20:42 UTC — cycle 20:42Z: 0 incoming bus messages, 0 new issues (all FAIL rows have existing issues), matrix 67 rows (55 FAIL, 9 PASS, 2 PARTIAL), state=ON, market watch: dark mode accessibility 2026 best practices, EAA compliance deadline June 2025
+> Dernière mise à jour: 2026-09-24T11:53 UTC — cycle 11:53Z: 0 incoming bus messages (MCP fleetbus unavailable), 1 new issue (#947 Morning Briefing on-device, MW-2026-117), matrix 69 rows (58 FAIL, 9 PASS, 2 PARTIAL), state=ON, market watch: on-device AI morning briefing gap identified
 
 ---
 
@@ -377,6 +377,17 @@
 - **MATRIX scan**: 62 rows, no new FAIL rows without existing issues. All pure FAIL rows already have GH issues.
 - **Production health**: HTTPS 200 OK, /api/emails=307 (auth gate working), scrum-master queue=19
 - **UX improvement proposal**: MW-2026-108 — Unified search bar with Ctrl+K shortcut, natural language support, debounced results, empty state, and shortcut help panel. Issue #939 already exists (testeur). PO_TICKET sent to scrum-master for routing to dev-web.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T11:53Z — Morning Briefing on-device gap identified
+- **Market insight**: Canary Mail offers on-device AI prioritization and summaries, but no structured morning briefing. Superhuman offers a morning briefing but is not privacy-first. Tuta has no AI features. misfits.ai can differentiate with an on-device Morning Briefing — a local daily digest that prioritizes emails without sending data to the server.
+- **Arbitrage 2026-09-24: Morning Briefing scope**
+  - Choix: On-device briefing via Web Worker (WASM) + top 3 priority emails + calendar events + Ctrl+Shift+B shortcut + Settings toggle
+  - Rejeté: Cloud-based briefing (privacy risk), No briefing (missed differentiation opportunity)
+  - Rationale: Privacy-first users need a daily digest without server-side AI processing. Web Worker keeps data on device.
+- **Action**: Issue #947 created — [po] feature: Morning Briefing — on-device daily digest (MW-2026-117). Routed to scrum-master via fleet_send.sh.
+- **Matrix updated**: MW-2026-117 added (69 rows total).
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
