@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T22:30 UTC — veille on-device AI market 2026 ($33.21B→$156.59B by 2033, CAGR 24.8%), matrix 64 rows (49 FAIL, all have GH issues), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-24T23:30 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -372,3 +372,28 @@
 - **Matrix gap**: No new rows needed — pricing/billing tracked via MW-2026-021 (Pro plan subscription).
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+## 5. Notes de veille — Ce cycle (2026-09-24T23:30 UTC)
+
+### AI Email Clients 2026 — Competitive Intelligence
+- **Canary Mail**: On-device AI model for drafting/summarizing/reply prioritization. Privacy-first: personalization runs locally, only text sent to cloud models (opted out of training). Growth $36/year, Pro+ $100/year (PGP, SecureSend, HIPAA).
+- **Superhuman**: Best for high-volume professionals prioritizing speed. AI-powered triage and instant search.
+- **Shortwave**: Best for Gmail users wanting powerful AI search at lower price.
+- **Spark Mail**: Strongest collaboration features for teams.
+- **Notion Mail**: AI email client for Notion users, beyond privacy focus.
+- **Thunderbird**: Open source, AI via third-party add-ons, free.
+
+### Key Trends
+- **On-device AI** is the #1 differentiator (Canary proves it) — users want privacy without sacrificing AI features
+- **AI search** (Shortwave, Superhuman) is becoming table stakes — unified search with natural language is expected
+- **Speed** (Superhuman) — sub-200ms search, instant triage
+- **Collaboration** (Spark) — team features, shared inboxes, comments
+- **Compliance** (Canary Pro+ HIPAA) — regulated industries need email compliance built-in
+
+### Implication misfits.ai
+> misfits.ai already has MW-2026-013/014/015 (AI summary, smart triage, suggested replies) and MW-2026-020/103/127 (on-device AI). The competitive gap is **AI search** (MW-2026-037/108 unified search bar) and **speed** (sub-200ms). The on-device AI agent (MW-2026-127, issue #985) directly competes with Canary's model. Priority: implement unified search + on-device AI agent to match Canary/Superhuman.
+
+- **Arbitrage 2026-09-24**: AI feature priority → Choice: Unified search (MW-2026-037/108) + On-device AI agent (MW-2026-127) / Rejected: AI email marketing tools (not core product), AI calendar scheduling (lower priority) / Rationale: Search and on-device AI are the two most requested features by email users in 2026 (Canary, Superhuman, Shortwave all lead with these).
+- **Matrix gap**: Added MW-2026-122 (cheat sheet), MW-2026-126 (hover quick-actions), MW-2026-128 (focus visible keyboard nav) — all have Gherkin features but were missing from matrix.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
