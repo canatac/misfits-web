@@ -1,0 +1,14 @@
+testeur non-regression tick 2026-09-24T21:51Z
+All checks PASS.
+
+Health: /api/health/live -> 200 {"status":"live","service":"email-api"}
+Public routes (6/6): all 200
+Protected routes (8/8): all 307
+Auth gates (5/5): 307/401 (no bypass)
+CORS: 403 on spoofed origin (no reflection)
+Security headers: 7/7 present
+Compose send: 400 in 0.062s (no timeout)
+
+Issue #1016 CLOSED — MongoDB health fix verified in production.
+Gherkin tests created for MW-2026-122, MW-2026-1013, MW-2026-1011, MW-2026-133, MW-2026-134.
+Pushed to fix/issue-1007-caddy-liveness-probe branch.
