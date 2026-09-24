@@ -1,5 +1,6 @@
-row_id,feature,input,expected,status,repo,owner_hint
 # Last PO cycle: 2026-09-24T15:10 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (MW-2026-028 Notion Mail migration, issue #964), queue scrum-master=82, matrix 63 rows
+# Last PO cycle: 2026-09-24T14:38 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (MW-2026-123 Email context menu right-click, issue #969), queue scrum-master=90, matrix 74 rows
+# Last PO cycle: 2026-09-24T14:26 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (batch ops confirm dialog, queue scrum-master=91, matrix 70 rows)
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -70,3 +71,4 @@ MW-2026-110,Email list density toggle,User change densité dans settings/toolbar
 MW-2026-111,Dark mode + theme customization,User toggle dark mode,Background/text inversent + persistance localStorage + tous éléments lisibles,FAIL,misfits-web,dev-web
 MW-2026-116,Email print view,User clique Print sur un email,Vue sans chrome UI + métadonnées visibles + print dialog déclenché,FAIL,misfits-web,dev-web
 MW-2026-117,Morning Briefing daily digest,User ouvre inbox matin,Card visible avec unread count + événements calendrier + mise à jour temps réel + on-device,FAIL,misfits-web,dev-web
+MW-2026-123,Email context menu (right-click),User clic droit sur un email dans la liste,Menu contextuel affiché en <200ms avec actions Archiver/Marquer lu/Supprimer/Déplacer/Étiqueter/Répondre/Transférer + ESC ferme + long-press mobile + accessible clavier,FAIL-ISSUE-969,misfits-web,dev-web
