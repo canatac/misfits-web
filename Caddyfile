@@ -58,9 +58,32 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    # /api/health* — proxy directly to backend mongo-health endpoint (issue #891).
-    # Rewrite /api/health → /api/monitoring/mongo-health on backend:8000.
-    handle /api/health* {
+    # /api/health/live — lightweight liveness probe (no DB dependency).
+    # Returns 200 if backend process is alive. Used by Caddy health_uri
+    # to avoid marking the entire upstream down during MongoDB outages (issue #1007).
+    handle /api/health/live {
+        reverse_proxy http://localhost:8000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            health_uri /api/health/live
+            health_interval 5s
+            health_timeout 2s
+            health_status 2xx
+        }
+    }
+    # /api/health/deep — deep MongoDB connectivity check (issue #1007).
+    # Proxies to backend mongo-health endpoint. Returns 503 if MongoDB unreachable.
+    handle /api/health/deep {
+        rewrite * /api/monitoring/mongo-health
+        reverse_proxy http://localhost:8000 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    # /api/health — backward-compatible alias to deep MongoDB health (issue #891).
+    handle /api/health {
         rewrite * /api/monitoring/mongo-health
         reverse_proxy http://localhost:8000 {
             header_up X-Real-IP {remote_host}
@@ -83,13 +106,6 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
-
-            # Health check — detect backend failure fast instead of waiting for timeout (issue #755)
-            # Caddy polls /health every 5s; marks upstream down after 3 consecutive failures.
-            health_uri /api/monitoring/mongo-health
-            health_interval 5s
-            health_timeout 3s
-            health_status 2xx
 
             # CORS — strip backend headers, enforce whitelist at Caddy layer (issue #704)
             # Remove any CORS headers sent by the upstream Rust backend
