@@ -2,10 +2,17 @@
  * Next.js Edge middleware — route protection for misfits.ai Mail.
  *
  * Protected routes (/inbox, /mail, /compose, /settings and nested paths) require a
- * valid session cookie (`mfa_session`). Public routes (/, /login, /reset-password
- * and /api/*) are always allowed. The middleware runs on the Edge runtime so it
- * cannot read localStorage — it relies on the httpOnly cookie set by the backend
- * (and mirrored client-side by `src/lib/session.ts`).
+ * valid session cookie (`mfa_session`). Public routes (/, /login, /reset-password)
+ * are always allowed. Sensitive API routes (/api/admin/*, /api/hermes/*,
+ * /api/emails/*, /api/external-accounts/*, /api/compose/*, /api/templates/*,
+ * /api/mail/*) also require session. The middleware runs on the Edge runtime so
+ * it cannot read localStorage — it relies on the httpOnly cookie set by the
+ * backend (and mirrored client-side by `src/lib/session.ts`).
+ *
+ * Auth response contract (issue #1028):
+ * - UI routes without session → 307 redirect to /login (browser navigation)
+ * - API routes without session → 401 JSON {error: "Unauthorized"} (RFC 7235)
+ * - Routes with valid session → pass through (200)
  *
  * /api/auth/callback is intentionally public — it is the OAuth redirect target
  * that sets the session before the user reaches any protected route.
@@ -140,8 +147,14 @@ export function middleware(request: NextRequest): NextResponse {
 
   const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
 
-  // No cookie → redirect to login, preserving the intended destination.
+  // No cookie → return 401 for API routes, redirect to login for UI routes.
   if (!sessionToken) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     const redirectTarget = `${pathname}${request.nextUrl.search}`;

@@ -114,10 +114,10 @@ describe("Issue #411: External accounts API auth enforcement", () => {
 });
 
 describe("Issue #411: Non-sensitive APIs remain accessible", () => {
-  it("allows /api/emails without session (backend-protected)", () => {
+  it("returns 401 for /api/emails without session (middleware-protected, issue #1028)", () => {
     const req = createRequest("/api/emails");
     const res = middleware(req);
-    expect(res.status).not.toBe(401);
+    expect(res.status).toBe(401);
   });
 
   it("allows /api/monitoring/live without session (backend-protected)", () => {
