@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-23T18:30 UTC — veille email security trends 2026 (DMARC enforcement, DKIM2 rollout, POP3 deprecation, OAuth 2.0 IMAP, AI phishing), matrix 53 rows (44 FAIL), state=ON, bus=UNAVAILABLE (Redis timeout), 13 new FAIL rows identified, scrum-master session=DEAD
+> Dernière mise à jour: 2026-09-24T08:30 UTC — veille email security trends 2026 (DMARC enforcement, DKIM2 rollout, POP3 deprecation, OAuth 2.0 IMAP, AI phishing), matrix 55 rows (45 FAIL), state=ON, bus=UNAVAILABLE (Redis timeout), 2 new FAIL rows added (MW-2026-105, MW-2026-106), scrum-master session=DEAD
 
 ---
 
@@ -308,4 +308,12 @@
 - **Matrix gap analysis**: 13 FAIL rows without GH issues identified (MW-2026-012, 019, 021, 022, 026, 027, 028, 036, 039, 045, 050, 063, 066). Bus unavailable — tickets cannot be posted this cycle.
 - **Bus status**: Redis (172.16.12.2:6379) unreachable — TLS timeout. MCP fleetbus server file missing (/tmp/mcp-fleetbus/server.mjs). Scrum-master tmux session (agentdeck_scrum-master_503cf37e) is dead (no pane).
 - **State**: ON — no ROOT controls received, mission loop continues, bus outage blocks ticket routing
-- **Next cycle**: retry bus connection, route 13 pending FAIL rows to scrum-master, veille marché (Fastmail pricing deep-dive)",
+- **Next cycle**: retry bus connection, route 13 pending FAIL rows to scrum-master, veille marché (Fastmail pricing deep-dive)
+
+### Cycle 2026-09-24T08:30Z — Testeur issues #933/#934 + matrix update
+- **New testeur issues**: #933 (MW-2026-050 attachment preview endpoints FAIL), #934 (P0 outage site DOWN regression)
+- **Matrix updated**: 2 new FAIL rows added (MW-2026-105 attachment preview endpoints, MW-2026-106 P0 outage regression)
+- **Matrix total**: 55 rows (45 FAIL, 8 PASS, 2 PARTIAL)
+- **Bus status**: Redis unreachable — tickets cannot be posted this cycle
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: retry bus connection, route pending FAIL rows to scrum-master, veille marché",
