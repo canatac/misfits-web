@@ -50,15 +50,16 @@ describe("Issue #929: MW-2026-054 regression suite", () => {
     });
   });
 
-  describe("POST /api/compose/send — middleware allows /api (public)", () => {
-    it("does not redirect /api/compose/send without session", () => {
+  describe("POST /api/compose/send — protected API route returns 401 (issue #1028)", () => {
+    it("returns 401 JSON for /api/compose/send without session (protected)", () => {
       const req = createRequest("/api/compose/send", { method: "POST" });
       const res = middleware(req);
-      // /api/* routes that are not explicitly protected pass through
-      expect(res.status).not.toBe(401);
+      // /api/compose/* is explicitly protected → 401 JSON (issue #1028)
+      expect(res.status).toBe(401);
+      expect(res.headers.get("content-type")).toContain("application/json");
     });
 
-    it("does not redirect /api/compose/send with session", () => {
+    it("allows /api/compose/send with valid session (200)", () => {
       const req = createRequest("/api/compose/send", {
         method: "POST",
         cookies: { mfa_session: "valid-token" },
