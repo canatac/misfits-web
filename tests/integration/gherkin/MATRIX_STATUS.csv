@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T14:35 UTC — state=ON, 0 incoming, 1 PO_TICKET sent (MW-2026-037 unified search bar → scrum-master, issue #939), production healthy (HTTPS 200 OK, /api/emails=307), new GH issue #939 from testeur, queue scrum-master=19, matrix 62 rows
+# Last PO cycle: 2026-09-24T18:15 UTC — state=ON, 0 incoming, P0 outage #984 still OPEN (production DOWN since 16:51Z), matrix 63 rows, 24 pure FAIL, all have GH issues, bus Redis reachable (queue=0), scrum-master qlen=141
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -60,3 +60,4 @@ MW-2026-105,Email attachment preview endpoints,User clique sur une piece jointe 
 MW-2026-106,P0 outage site down regression,User accede mail.misfits.ai:443,HTTPS 200 OK + /api/emails=401 + /api/admin=307 + site fully reachable + no connection refused,PASS-REGRESSION-2026-09-24T14:00Z,misfits-web,dev-int
 MW-2026-107,Email composer auto-save drafts,User compose email > ferme tab > rouvre composer,Draft restaure + indicateur "Draft saved" + horodatage visible + bouton supprimer draft,FAIL,misfits-web,dev-web
 MW-2026-108,Unified search bar (MW-2026-037),User clique sur la barre de recherche unifiée + Ctrl+K,Recherche unifiée avec support langage naturel + filtres + raccourci Ctrl+K + debounced results + empty state + shortcut help panel,FAIL-ISSUE-939,misfits-web,dev-web
+MW-2026-127,On-device AI agent email access,User active AI agent mode + agent accède aux emails locaux,AI agent reads emails on-device + no cloud upload + privacy settings show agent status + agent can suggest replies/summaries locally,FAIL,misfits-web,dev-web

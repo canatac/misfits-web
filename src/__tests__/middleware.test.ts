@@ -208,5 +208,11 @@ describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () =
       const res = middleware(req);
       expect(res.status).toBe(200);
     });
+
+    it("allows /api/compose/send without session (public proxy route, issue #929)", () => {
+      const req = makeRequest("/api/compose/send");
+      const res = middleware(req);
+      expect(res.status).toBe(200);
+    });
   });
 });
