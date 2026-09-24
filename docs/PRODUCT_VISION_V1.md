@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-24T10:14 UTC — PO cycle: 63 matrix rows (50 FAIL, 10 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 0 new actionable items, all 18 untracked FAIL rows have existing GH issues, bus Redis reachable (queue=0), market watch: Proton Lumo 2.0 privacy-first AI
+> Dernière mise à jour: 2026-09-24T18:30 UTC — PO cycle: 63 matrix rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, 1 new issue #940 (MW-2026-107 composer auto-save drafts), production healthy (HTTPS 200 OK, /api/emails=307), scrum-master queue=20, market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
 
 ---
 

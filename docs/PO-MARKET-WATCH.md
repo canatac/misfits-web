@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T10:14 UTC — cycle 10:14Z: 0 incoming bus messages, 0 new actionable items, production healthy, matrix 63 rows (50 FAIL, 10 PASS, 2 PARTIAL), state=ON, market watch: Proton Lumo 2.0 privacy-first AI, on-device AI confirmed as differentiator
+> Dernière mise à jour: 2026-09-24T18:30 UTC — cycle 18:30Z: 0 incoming bus messages, 1 new issue created (#940 MW-2026-107 composer auto-save drafts), production healthy, matrix 63 rows (51 FAIL, 10 PASS, 2 PARTIAL), state=ON, market watch: EU Digital Omnibus GDPR/ePrivacy update, EDPB email tracking crackdown
 
 ---
 
@@ -348,6 +348,19 @@
 - **Bus status**: Redis (172.16.12.2:6379) reachable, 0 messages in all queues. Fleetbus MCP server file missing (/tmp/mcp-fleetbus/server.mjs) — bus_post/bus_pull via Redis direct.
 - **New GH issues since last cycle**: #938 (testeur MW-2026-107 composer auto-save drafts FAIL), #937 (PO MW-2026-107), #936 (PO MW-2026-066 newsletter tracking pixel consent), #935 (PO MW-2026-063 bulk email selection floating action bar)
 - **UX improvement proposal**: Email composer auto-save drafts (MW-2026-107) — issue #937 already created. Testeur issue #938 reports backend down, routes exist. P1 priority.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T18:30Z — EU Digital Omnibus GDPR/ePrivacy update + EDPB tracking crackdown
+- **EU Digital Omnibus** (Nov 2025 proposal): amendes GDPR + ePrivacy, harmonisation, consent requirements renforcés, DPIAs mis à jour. Source: https://www.aigovhub.io/guides/digital-omnibus-2026-gdpr-eprivacy-updates-guide
+- **EDPB crackdown** (June 2026): consent requirements doubled — ePrivacy covers device access (tracking pixels), GDPR covers data processing. Source: https://www.gblock.app/articles/edpb-cef-2026-gdpr-email-transparency
+- **GDPR enforcement**: 20% rise in 2024, email marketing violations top-3 causes of fines. Fines up to €20M or 4% global turnover. Source: https://www.mailforge.ai/blog/checklist-for-email-privacy-compliance
+- **CAN-SPAM fines**: $51,744 per email. Source: https://www.mailforge.ai/blog/checklist-for-email-privacy-compliance
+- **Arbitrage 2026-09-24: Tracking pixel consent UX**
+  - Choix: Consent gate explicite + blocage par défaut + opt-out dans privacy settings
+  - Rejeté: Consentement implicite (insuffisant EDPB), Pas de tracking (déjà le cas)
+  - Rationale: EDPB exige consentement explicite pour tracking pixels. MW-2026-066 (newsletter tracking pixel consent) est la bonne voie.
+- **Action**: MW-2026-066 (newsletter tracking pixel consent) confirmé P1 — implémentation consent gate + privacy settings opt-out
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
