@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T14:38 UTC — veille context menu right-click (Gmail/Outlook pattern), matrix 73 rows (59 FAIL, all with existing issues), state=ON, 0 incoming bus messages, 1 PO_TICKET sent (email context menu right-click UX, issue #969, routed to scrum-master), production healthy
+> Dernière mise à jour: 2026-09-24T15:09 UTC — veille AI email features 2026 (Tuta/Proton/Fastmail), matrix 73 rows (59 FAIL, all with existing issues), state=ON, 0 incoming bus messages, 1 PO_TICKET sent (MW-2026-123 context menu #969 routed to scrum-master), production healthy
 
 ---
 
@@ -358,6 +358,16 @@
 - **UX improvement proposal**: Email composer auto-save drafts (MW-2026-107) — issue #937 already created. Testeur issue #938 reports backend down, routes exist. P1 priority.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T15:09Z — Veille AI email features 2026 (Tuta/Proton/Fastmail)
+- **Tuta**: No cloud-based AI assistants in encrypted mailbox. Privacy-first stance — AI email writer "defies the purpose of a private, secure email service." Post-quantum focus via TutaCrypt.
+- **Proton Mail**: Introduced Proton Scribe (AI email writer) — faced significant backlash from privacy-focused user base. Swiss jurisdiction, broader ecosystem (VPN, Drive, Pass).
+- **Fastmail**: No E2E encryption (TLS only). Privacy model is policy-based, not technically enforced. Australian jurisdiction (Telecommunications Act 2018 allows compelled access). Strong third-party client support (Outlook, Apple Mail).
+- **misfits.ai differentiation**: Native SMTP/IMAP + E2E (DKIM/SPF/DMARC) + PWA + multi-surface. Unique position: open-source 3-repo stack with native IMAP/SMTP. AI features (on-device) without cloud dependency — privacy-preserving AI triage/summaries.
+- **Arbitrage 2026-09-24**: AI email features → Choice: On-device AI (local processing, no cloud calls) / Rejected: Cloud AI assistant (Proton Scribe pattern — privacy backlash risk) / Rationale: Tuta proves privacy-first users reject cloud AI; misfits.ai can differentiate with on-device AI that respects zero-access encryption.
+- **Matrix gap**: No new rows needed — AI features tracked via MW-2026-103 (on-device AI privacy mode).
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: compétiteurs (Fastmail pricing deep-dive) or matrice de tests (add rows for billing flows)
 
 ### Cycle 2026-09-24T09:56Z — Competitor pricing update + market positioning
 - **Pricing comparison 2026** (sources: guptadeepak.com, usecarly.com, tuta.com, forwardemail.net):

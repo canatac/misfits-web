@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-24T15:56 UTC — PO cycle: 64 matrix rows (27 pure FAIL, 11 FAIL-ISSUE, 9 PASS, 2 PARTIAL, 2 FAIL-FIX-PR, 1 FAIL-UNHEALTHY), state=ON, 0 incoming bus messages, 1 new GH issue #965 (MW-2026-032 Reading mode), all 27 pure FAIL rows have existing GH issues, bus Redis reachable (queue=0), production healthy
+> Dernière mise à jour: 2026-09-24T15:09 UTC — PO cycle: 73 matrix rows (31 pure FAIL, 13 FAIL-ISSUE, 6 PASS, 1 PARTIAL, 2 FAIL-FIX-PR, 1 FAIL-UNHEALTHY, 12 FAIL-GHERKIN-ISSUE), state=ON, 0 incoming bus messages, 1 PO_TICKET sent (MW-2026-123 context menu #969 routed to scrum-master), all pure FAIL rows have existing GH issues, bus Redis NOAUTH, scrum-master queue=98
 
 ---
 
