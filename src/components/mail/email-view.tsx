@@ -29,6 +29,10 @@ import { useEmailActions } from "@/hooks/useEmailActions";
 import { useEmailBody } from "./hooks/useEmailBody";
 import { EmailToolbar } from "./email-view/email-toolbar";
 import { EmailLabelsBar } from "./email-view/email-labels-bar";
+import {
+  useImmersiveReading,
+  ImmersiveReadingProvider,
+} from "./immersive-reading";
 import { FindInPage } from "./email-view/find-in-page";
 
 interface EmailViewProps {
@@ -44,6 +48,9 @@ export function EmailView({ className }: EmailViewProps) {
   const assignLabelToEmail = useLabelStore((s) => s.assignLabelToEmail);
   const removeLabelFromEmail = useLabelStore((s) => s.removeLabelFromEmail);
   const [labelManagerOpen, setLabelManagerOpen] = useState(false);
+  const { isActive: isReadingActive, toggleImmersive: toggleReadingMode } =
+    useImmersiveReading();
+  const contentRef = useRef<HTMLDivElement>(null);
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -137,10 +144,13 @@ export function EmailView({ className }: EmailViewProps) {
         onHermesTranslate={handleHermesTranslate}
         onHermesTodos={handleHermesTodos}
         onFindInPage={() => setFindOpen(true)}
+        isReadingActive={isReadingActive}
+        onToggleReadingMode={toggleReadingMode}
       />
 
+      <ImmersiveReadingProvider contentRef={contentRef}>
       <ScrollArea className="flex-1">
-        <div className="mx-auto max-w-3xl p-6">
+        <div ref={contentRef} className="mx-auto max-w-3xl p-6">
           <EmailLabelsBar
             emailId={email.id}
             subject={email.subject}
@@ -248,6 +258,7 @@ export function EmailView({ className }: EmailViewProps) {
           )}
         </div>
       </ScrollArea>
+      </ImmersiveReadingProvider>
 
       <FindInPage
         bodyRef={bodyRef}
