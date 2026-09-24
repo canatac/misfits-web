@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T18:10 UTC — cycle 18:10Z: 0 incoming bus messages, 0 new actionable items, production healthy (HTTPS 200, /api/emails=307), scrum-master queue=19, matrix 62 rows, state=ON, 1 PO_TICKET sent (MW-2026-108 unified search bar → scrum-master)
+> Dernière mise à jour: 2026-09-24T10:14 UTC — cycle 10:14Z: 0 incoming bus messages, 0 new actionable items, production healthy, matrix 63 rows (50 FAIL, 10 PASS, 2 PARTIAL), state=ON, market watch: Proton Lumo 2.0 privacy-first AI, on-device AI confirmed as differentiator
 
 ---
 
@@ -183,6 +183,15 @@
 - **Choix**: 8 langues prioritaires (FR, EN, DE, ES, IT, PT, NL, PL) avec fallback FR
 - **Rejeté**: 30+ langues (coût de maintenance trop élevé), FR uniquement (marché trop limité)
 - **Rationale**: 8 langues couvrent ~80% du marché email privacy. Fallback FR garantit la cohérence.
+
+### Cycle 2026-09-24T10:14Z — Proton Lumo 2.0 privacy-first AI
+- Proton a lancé Lumo 2.0, assistant AI privacy-first (zero data training, zero-access encryption, Swiss law)
+- Backlash communauté privacy après Proton Scribe (cloud AI) — Lumo est la réponse
+- Tuta maintient sa position: pas d'AI cloud dans les emails chiffrés
+- **Arbitrage**: on-device AI (traitement local) vs cloud AI vs pas d'IA
+  - Choix: on-device AI / Rejeté: cloud AI (contredit privacy-by-design), pas d'IA (pas de différenciation)
+  - Rationale: Les utilisateurs 2026 exigent les deux — IA et privacy. Le traitement local est le seul moyen de concilier les deux.
+- **Implication misfits.ai**: MW-2026-095 (on-device AI local mode), MW-2026-020 (on-device AI processing) sont la bonne voie
 
 ---
 
