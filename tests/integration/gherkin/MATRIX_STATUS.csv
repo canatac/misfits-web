@@ -47,3 +47,8 @@ MW-2026-047,CI deploy log permissions,CI deploy en tant que debian + ecriture lo
 MW-2026-048,Email forward button,User clique Forward sur un email + sélectionne destinataire,Composer pré-rempli avec sujet + body + bouton envoyer + envoi confirmé,FAIL-ISSUE-747,misfits-web,dev-web
 MW-2026-049,Email export PDF + print,User clique Export PDF sur un email,PDF généré avec contenu HTML + métadonnées + liens cliquables + print optimisé + export .eml/.html,FAIL-ISSUE-751,misfits-web,dev-web
 MW-2026-107,Composer auto-save drafts,User compose email > ferme tab > rouvre composer,Brouillon restauré automatiquement + indicateur "Draft saved" + horodatage,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
+MW-2026-109,Keyboard shortcuts help panel,User presse Ctrl+/ ou clique icône aide,Panneau aide affiche raccourcis disponibles + recherche de raccourcis + fermeture ESC,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
+MW-2026-110,Email list density toggle,User sélectionne densité Compact/Confortable depuis paramètres,Liste emails change d'espacement + préférence sauvegardée + persiste après refresh,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
+MW-2026-111,Dark mode + theme customization,User active dark mode depuis paramètres,Interface passe en sombre + texte lisible + préférence persiste,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
+MW-2026-116,Email print view,User clique Print sur un email,Vue print optimisée sans chrome UI + métadonnées visibles + dialog print déclenché,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
+MW-2026-117,Morning Briefing daily digest,User ouvre l'inbox le matin,Digest emails importants + événements calendrier + compteur non lus + processing local,FAIL-GHERKIN-ISSUE-PENDING,misfits-web,dev-web
