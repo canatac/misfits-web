@@ -1,5 +1,5 @@
 row_id,feature,input,expected,status,repo,owner_hint
-# Last PO cycle: 2026-09-24T11:53 UTC — state=ON, 0 incoming bus messages (MCP fleetbus unavailable), 1 new issue (#947 Morning Briefing MW-2026-117), matrix 69 rows, market watch: on-device AI morning briefing gap identified
+# Last PO cycle: 2026-09-24T15:05 UTC — state=ON, 0 incoming bus messages, 0 new FAIL rows (all 28 bare FAIL already have GH issues), matrix 69 rows, no new issues, fleetbus MCP unavailable (fleet_send.sh used)
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web

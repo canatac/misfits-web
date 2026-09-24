@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T11:53 UTC — cycle 11:53Z: 0 incoming bus messages (MCP fleetbus unavailable), 1 new issue (#947 Morning Briefing on-device, MW-2026-117), matrix 69 rows (58 FAIL, 9 PASS, 2 PARTIAL), state=ON, market watch: on-device AI morning briefing gap identified
+> Dernière mise à jour: 2026-09-24T15:05 UTC — cycle 15:05Z: 0 incoming bus messages (fleetbus MCP unavailable), 0 new issues, 28 bare FAIL rows all have existing GH issues, matrix 69 rows, state=ON, market watch: TLS enforcement + HIPAA email encryption trends
 
 ---
 
@@ -377,6 +377,19 @@
 - **MATRIX scan**: 62 rows, no new FAIL rows without existing issues. All pure FAIL rows already have GH issues.
 - **Production health**: HTTPS 200 OK, /api/emails=307 (auth gate working), scrum-master queue=19
 - **UX improvement proposal**: MW-2026-108 — Unified search bar with Ctrl+K shortcut, natural language support, debounced results, empty state, and shortcut help panel. Issue #939 already exists (testeur). PO_TICKET sent to scrum-master for routing to dev-web.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
+
+### Cycle 2026-09-24T15:05Z — TLS enforcement + HIPAA email encryption trends
+- **TLS enforcement 2026**: DANE + MTA-STS becomes baseline for email security. Simplelists 2026 guide: "Most organizations have TLS. Far fewer can demonstrate they enforce it." misfits.ai MW-2026-011/012/042 (MTA-STS + DANE) aligned with market direction.
+- **HIPAA email encryption**: Paubox 2026 guide — proposed HIPAA Security Rule modifications making "addressable" standards "required". All emails containing PHI likely required to be encrypted. misfits.ai zero-access encryption (MW-2026-027/039) positioned to address this.
+- **CAN-SPAM fines**: $51,744 per email. GDPR fines up to €20M or 4% global turnover. Source: https://www.mailforge.ai/blog/checklist-for-email-privacy-compliance
+- **Market insight**: 30+ email/data privacy regulations worldwide in 2026 (vs ~100 countries in 2020). Privacy software market $5.37B → $45.13B (2032), CAGR 35.5%.
+- **Arbitrage 2026-09-24: TLS enforcement scope**
+  - Choix: Enforced TLS (DANE + MTA-STS) + zero-access encryption for content protection
+  - Rejeté: TLS opportunistic only (no enforcement), no encryption (HIPAA non-compliant)
+  - Rationale: 2026 baseline is enforced TLS. HIPAA proposed rules require encryption for PHI. misfits.ai stack covers both.
+- **Matrix**: No new rows needed — TLS enforcement tracked via MW-2026-011/012/042, HIPAA via MW-2026-027/039.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (AI email features 2026) or matrice de tests (add rows for billing flows)
 
