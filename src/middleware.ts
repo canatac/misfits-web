@@ -140,8 +140,14 @@ export function middleware(request: NextRequest): NextResponse {
 
   const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
 
-  // No cookie → redirect to login, preserving the intended destination.
+  // No cookie → return 401 for API routes, redirect to login for UI routes.
   if (!sessionToken) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     const redirectTarget = `${pathname}${request.nextUrl.search}`;

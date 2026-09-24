@@ -58,18 +58,17 @@ describe("middleware /inbox redirect (issue-383)", () => {
 
 describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () => {
   describe("P0: /api/emails requires authentication", () => {
-    it("redirects unauthenticated GET /api/emails to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/emails", () => {
       const req = makeRequest("/api/emails");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
+      expect(res.headers.get("content-type")).toContain("application/json");
     });
 
-    it("redirects unauthenticated GET /api/emails/some-id to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/emails/some-id", () => {
       const req = makeRequest("/api/emails/some-uuid");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
     it("allows /api/emails with valid session cookie", () => {
@@ -80,18 +79,16 @@ describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () =
   });
 
   describe("P0: /api/hermes/runs requires authentication", () => {
-    it("redirects unauthenticated GET /api/hermes/runs to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/hermes/runs", () => {
       const req = makeRequest("/api/hermes/runs");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
-    it("redirects unauthenticated GET /api/hermes/runs/task-123 to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/hermes/runs/task-123", () => {
       const req = makeRequest("/api/hermes/runs/task-123");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
     it("allows /api/hermes/runs with valid session cookie", () => {
@@ -102,25 +99,22 @@ describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () =
   });
 
   describe("P0: /api/admin/* requires authentication", () => {
-    it("redirects unauthenticated GET /api/admin/ai-activity to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/admin/ai-activity", () => {
       const req = makeRequest("/api/admin/ai-activity");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
-    it("redirects unauthenticated GET /api/admin/audit-log to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/admin/audit-log", () => {
       const req = makeRequest("/api/admin/audit-log");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
-    it("redirects unauthenticated GET /api/admin/users to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/admin/users", () => {
       const req = makeRequest("/api/admin/users");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
     it("allows /api/admin/ai-activity with valid session cookie", () => {
@@ -170,17 +164,16 @@ describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () =
   });
 
   describe("P1: /api/external-accounts requires authentication", () => {
-    it("redirects unauthenticated GET /api/external-accounts to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/external-accounts", () => {
       const req = makeRequest("/api/external-accounts");
       const res = middleware(req);
-      expect(res.status).toBe(307);
-      expect(res.headers.get("location")).toContain("/login");
+      expect(res.status).toBe(401);
     });
 
-    it("redirects unauthenticated GET /api/external-accounts/123 to login (307)", () => {
+    it("returns 401 JSON for unauthenticated GET /api/external-accounts/123", () => {
       const req = makeRequest("/api/external-accounts/123");
       const res = middleware(req);
-      expect(res.status).toBe(307);
+      expect(res.status).toBe(401);
     });
 
     it("allows /api/external-accounts with valid session cookie", () => {
@@ -209,10 +202,10 @@ describe("middleware API auth bypass regression (issue #767, MW-2026-029)", () =
       expect(res.status).toBe(200);
     });
 
-    it("redirects /api/compose/send without session (protected route, issue #1025)", () => {
+    it("returns 401 JSON for /api/compose/send without session (protected API route, issue #1025/#1028)", () => {
       const req = makeRequest("/api/compose/send");
       const res = middleware(req);
-      expect(res.status).toBe(307);
+      expect(res.status).toBe(401);
     });
   });
 });
