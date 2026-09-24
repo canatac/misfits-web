@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T23:30 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-24T23:45 UTC — veille AI email agents 2026 (Carly autonomous agent, Read AI Ada proxy, Gmelius Meli), matrix 83 rows (69 FAIL, 12 PASS, 2 PARTIAL), state=ON, 0 incoming bus messages, FleetBus MCP unavailable this cycle, 1 new GH issue (#1032 AI agent email delegation MW-2026-140), 1 PO_TICKET posted to scrum-master
 
 ---
 
@@ -397,3 +397,17 @@
 - **Matrix gap**: Added MW-2026-122 (cheat sheet), MW-2026-126 (hover quick-actions), MW-2026-128 (focus visible keyboard nav) — all have Gherkin features but were missing from matrix.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
+
+### Cycle 2026-09-24T23:45Z — Veille AI email agents 2026 + issue #1033 created
+- **AI email agents 2026** (sources: usecarly.com, read.ai, gmelius.com, unifuncs.com):
+  - **Carly**: Autonomous agent with its own email address — triages, drafts, sends, schedules, executes multi-step workflows. $9/mo Professional, $14/mo Smart. Key: agent has own identity, inbound mail triggers it.
+  - **Read AI Ada**: AI proxy — CC ada@read.ai on any thread, Ada drafts responses, schedules meetings, handles follow-ups. ~10,000 documents of context per user. Always checks before sending.
+  - **Gmelius Meli**: Embedded in Gmail — autonomous personal secretary handling coordination overhead. Drafts personalized replies with knowledge base, suggests time slots, attaches case studies, sends emails, logs to CRM, creates follow-up tasks.
+  - **Reclaim.ai**: AI scheduling agent — defends focus time, reschedules lower-priority events, auto-schedules tasks based on deadlines and energy levels.
+  - **Key trend**: AI agents are moving from "assistant" (suggests, user acts) to "agent" (acts autonomously, user confirms). This is the #1 differentiator in 2026 email clients.
+- **Implication misfits.ai**: Our MW-2026-127 (AI agent email access) is the foundation. The next step is agent delegation — user delegates an email to the AI agent, which proposes and executes actions. This is the gap between us and Carly/Ada/Meli.
+- **Arbitrage 2026-09-24**: AI agent delegation scope → Choice: Delegate button + 3+ proposed actions + activity journal + auto-mode rules / Rejected: Full autonomous sending without confirmation (privacy risk), AI assistant only (no differentiator) / Rationale: Privacy-first agents must keep user in control. The agent proposes, the user confirms. Auto-mode is opt-in for trusted actions (archiving newsletters).
+- **Action**: Issue #1033 created — [po] feature: AI agent email delegation — autonomous triage, reply, schedule (MW-2026-140). Owner hint: dev-web. P1 priority.
+- **Matrix updated**: 84 rows total (70 FAIL, 12 PASS, 2 PARTIAL). New row MW-2026-140 added.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI agent workflows)

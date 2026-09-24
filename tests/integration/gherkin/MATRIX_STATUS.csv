@@ -1,4 +1,4 @@
-# Last PO cycle: 2026-09-24T22:20Z UTC — state=ON, 0 incoming bus messages, 1 new matrix row added (MW-2026-126 issue #1028 P1 auth gate regression), 81 matrix rows, 1 TASK ticket posted to scrum-master, no ROOT controls
+# Last PO cycle: 2026-09-24T23:00Z UTC — state=ON, 0 incoming bus messages, FleetBus unavailable, 2 new GH issues (#1030 bulk selection MW-2026-138, #1031 dark mode MW-2026-139), 82 matrix rows (69 FAIL, 12 PASS, 2 PARTIAL), no ROOT controls
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -81,3 +81,4 @@ MW-2026-124,Reading progress indicator,User scroll dans la liste emails,Barre de
 MW-2026-125,Desktop notifications new emails,User reçoit un nouvel email,Permission notification requise + notification desktop avec sender+subject + clic ouvre email + settings dans Privacy panel,FAIL-ISSUE-988,misfits-web,dev-web
 MW-2026-126,API auth gate regression P1,Requete non authentifiee sur /api/* routes retourne 307 au lieu de 401 + P1 bug testeur + regression auth gate,FAIL-ISSUE-1028,misfits-web,dev-web+dev-back
 MW-2026-137,API auth gate 401 for unauthenticated /api/* routes,Requete non authentifiee sur /api/emails+/api/hermes/runs+/api/external-accounts+/api/templates+/api/admin/users,All return 401 JSON (not 307 redirect) + no Location header + Content-Type application/json,FAIL-ISSUE-1028,misfits-web,dev-web
+MW-2026-140,AI agent email delegation,User delegue un email a un IA agent + agent propose actions + user confirme + agent execute,Agent propose 3+ actions (repondre/planifier/archiver) + reponse personnalisable + journal activite + revocation 5s + mode auto + on-device privacy,FAIL-ISSUE-1033,misfits-web,dev-web
