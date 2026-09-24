@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-24T23:30 UTC — veille AI email clients 2026 (Canary Mail on-device AI model, Superhuman speed, Shortwave AI search), matrix 72 rows (55 FAIL, 12 PASS, 1 PARTIAL, 4 other), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
+> Dernière mise à jour: 2026-09-24T23:45 UTC — veille AI email clients 2026 (Canary Mail on-device AI, Superhuman speed, Shortwave AI search), competitor pricing 2026 (Proton $4/mo, Tuta €3/mo, Fastmail $3/mo), matrix 75 rows (62 FAIL, 13 PASS), state=ON, 0 incoming bus messages, P0 outage #698 still OPEN (MongoDB down), bus Redis reachable (queue=0)
 
 ---
 
@@ -397,3 +397,27 @@
 - **Matrix gap**: Added MW-2026-122 (cheat sheet), MW-2026-126 (hover quick-actions), MW-2026-128 (focus visible keyboard nav) — all have Gherkin features but were missing from matrix.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for AI search performance)
+
+## 5. Notes de veille — Ce cycle (2026-09-24T23:45 UTC)
+
+### Competitor Pricing 2026 — Secure Email Providers
+- **Proton Mail**: $4/mo (Switzerland, E2E PGP, 500MB free, IMAP via paid Bridge)
+- **Tuta**: €3/mo (Germany, E2E AES/RSA incl. subjects, 1GB free, no IMAP)
+- **Fastmail**: $3/mo (Australia, TLS only no E2E, no free tier, native IMAP)
+- **Canary Mail**: Free basic, $20/year Pro (on-device AI, PGP, SecureSend)
+- **Mailfence**: $2.50/mo (Belgium, PGP/S-MIME, IMAP)
+- **StartMail**: $2.50/mo annual (Netherlands, E2E, IMAP)
+
+### Key Pricing Insights
+- **Tuta at €3/mo** remains the cheapest E2E option — misfits.ai can match with native IMAP (Tuta lacks IMAP entirely)
+- **Proton $4/mo** is the benchmark for full-featured encrypted email — misfits.ai can undercut at €3/mo with native IMAP + PWA
+- **Fastmail $3/mo** offers no E2E — misfits.ai differentiates with E2E at same price point
+- **Canary $20/year** ($1.67/mo) for on-device AI — misfits.ai on-device AI (MW-2026-127) can match this pricing tier
+
+### Arbitrage 2026-09-24: Pricing positioning → Choice: Match Tuta at €3/mo with native IMAP as differentiator / Rejected: $4/mo (Proton parity — no differentiation), $25/mo (Superhuman — different segment) / Rationale: Tuta proves €3/mo viable for E2E; misfits.ai adds native IMAP + PWA + on-device AI at same price — clear value advantage over Tuta (no IMAP) and Proton (paid Bridge for IMAP).
+
+### Implication misfits.ai
+> misfits.ai pricing strategy: Free tier 1GB (match Tuta), Pro €3/mo with native IMAP + E2E + on-device AI + PWA. This undercuts Proton ($4/mo) while offering features Tuta lacks (IMAP, larger free tier). The on-device AI agent (MW-2026-127, issue #985) is the key differentiator vs all competitors at this price point.
+
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (AI email feature gap analysis) or matrice de tests (add rows for pricing/billing flows)
