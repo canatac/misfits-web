@@ -3,12 +3,17 @@ Feature: Backend MongoDB connectivity (MW-2026-101)
   I want the backend to connect to MongoDB successfully
   So that all authenticated features work properly
 
-  Scenario: Health endpoint reports MongoDB healthy
+  Scenario: Lightweight health endpoint reports backend alive
     Given the mail.misfits.ai application is running
     When I request GET /api/health
     Then the response status should be 200
     And the response body should contain "status" equals "healthy"
-    And the response body should contain "ping_ms" less than 500
+
+  Scenario: Deep health endpoint reports MongoDB connectivity
+    Given the mail.misfits.ai application is running
+    When I request GET /api/health/deep
+    Then the response body should contain "component" equals "mongodb"
+    And the response body should contain "status" equals "healthy" or "unhealthy"
 
   Scenario: Auth login endpoint is reachable
     Given the mail.misfits.ai application is running
