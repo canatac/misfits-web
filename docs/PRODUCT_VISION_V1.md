@@ -1,6 +1,6 @@
 # Product Vision V1 — misfits.ai Mail
 
-> Dernière mise à jour: 2026-09-24T19:30 UTC — PO cycle: 63 matrix rows (24 pure FAIL, all have GH issues), state=ON, 0 incoming bus messages, P0 outage #984 still OPEN, scrum-master qlen=151, 1 PO_TICKET sent (email pin/star MW-2026-128)
+> Dernière mise à jour: 2026-09-24T19:45 UTC — PO cycle: 64 matrix rows (25 pure FAIL), state=ON, 0 incoming bus messages, P0 outage #984 OPEN (web recovered HTTP 200, MongoDB still down), scrum-master qlen=151, 1 PO_TICKET sent (focus visible MW-2026-128)
 
 ---
 
@@ -137,6 +137,12 @@ misfits.ai Mail est un service de messagerie email natif (SMTP/IMAP) avec une UX
 - mw-int, rg-back, testeur: sessions down (conductor-ops confirmed 2026-09-23)
 - Scrum a des tickets en file mais personne pour les recevoir
 - PR#906 (Caddyfile fix) CI green mais non merged — bloqué par session down
+
+### 7.4 WCAG 2.2 Focus Appearance (2026-09-24)
+- WCAG 2.2 SC 2.4.13 (Focus Appearance, AAA) exige un indicateur de focus visible avec contraste minimum
+- SC 2.4.7 (Focus Visible, AA) déjà applicable — misfits.ai Mail doit garantir un focus ring visible sur tous les éléments interactifs
+- Référence: https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance.html
+- **Implication misfits.ai**: MW-2026-128 — focus ring visible sur tous les boutons, liens, inputs, et éléments navigables au clavier
 
 ---
 
