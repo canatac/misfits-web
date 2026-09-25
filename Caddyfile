@@ -82,9 +82,12 @@ mail.misfits.ai, www.mail.misfits.ai {
             header_up X-Forwarded-Proto {scheme}
         }
     }
-    # /api/health — backward-compatible alias to deep MongoDB health (issue #891).
+    # /api/health — lightweight liveness probe (no DB dependency).
+    # Returns 200 if backend process is alive, even during MongoDB outages.
+    # This prevents false alarms when MongoDB is temporarily slow (issue #1044).
+    # For full MongoDB connectivity check, use /api/health/deep instead.
     handle /api/health {
-        rewrite * /api/monitoring/mongo-health
+        rewrite * /api/health/live
         reverse_proxy http://localhost:8000 {
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
