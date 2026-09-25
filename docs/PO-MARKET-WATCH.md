@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T00:11 UTC — veille productivité email 2026 (follow-up reminders), matrix 87 rows (73 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 1 new GH issue (#1043 email follow-up reminders)
+> Dernière mise à jour: 2026-09-25T00:20 UTC — veille privacy-first AI email 2026 (on-device AI + E2EE), matrix 88 rows (74 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 0 new GH issues (all FAIL rows already have issues)
 
 ---
 
@@ -437,3 +437,18 @@
 - **Matrix updated**: 87 rows total (73 FAIL, 13 PASS, 3 PARTIAL). New row MW-2026-143 added.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for follow-up workflows)
+
+### Cycle 2026-09-25T00:20Z — Veille privacy-first AI email 2026 (on-device AI + E2EE) + 0 issues created
+- **Privacy-first AI email 2026** (sources: get-alfred.ai, mailmeteor.com, aiemaily.com, getmailbird.com, filomail.com):
+  - **Canary Mail**: On-device AI processing — summaries, categorization, drafting happen locally. PGP built-in. $3-10/mo. Key differentiator: AI without cloud exposure. Supports HIPAA/GDPR compliance.
+  - **Tuta**: No AI features whatsoever. Quantum-safe E2E encryption (TutaCrypt). Privacy-first but no AI assistant. Key: zero-knowledge architecture.
+  - **Proton Mail**: Zero-access E2E encryption. Even Proton cannot read emails. No AI features (privacy over convenience).
+  - **Apple Mail**: Apple Intelligence runs on-device or via Private Cloud Compute. Opt-in AI. Genuinely different threat model from cloud LLMs.
+  - **Superhuman**: SOC 2 compliant. Standard encryption. AI features for speed (not privacy-first).
+  - **Key trend**: The market splits into two camps: (1) privacy-first with no AI (Tuta, Proton), (2) AI-powered with cloud processing (Superhuman, Notion Mail). The gap: privacy-first WITH on-device AI. Canary Mail is the only one attempting this.
+- **Implication misfits.ai**: MW-2026-127 (AI agent email access) and MW-2026-0140 (AI agent delegation) position us uniquely — privacy-first AI that processes locally. This is the gap between Canary (on-device but limited AI) and Tuta (privacy but no AI). Our differentiator: on-device AI agent that drafts, summarizes, and triages without cloud exposure.
+- **Arbitrage 2026-09-25**: AI privacy architecture → Choice: On-device AI agent (local processing, no cloud upload, privacy settings show agent status) / Rejected: Cloud-based AI (privacy risk, data exposure), No AI at all (no differentiator vs Tuta/Proton) / Rationale: The 2026 market gap is privacy-first AI. misfits.ai can own this space by combining on-device AI with zero-access encryption. Canary Mail proves the demand exists.
+- **Action**: No new issue created — MW-2026-127 already covers on-device AI agent (#1037). Market watch updated to track competitive landscape.
+- **Matrix updated**: 88 rows total (74 FAIL, 13 PASS, 3 PARTIAL). No new row needed — MW-2026-127 covers this feature.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for on-device AI workflows)
