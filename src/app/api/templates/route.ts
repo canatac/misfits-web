@@ -10,22 +10,33 @@
  * Caddy handle which proxies directly to email-api:8000 — bypassing
  * Next.js auth middleware (issue #852).
  *
- * Issue: #852 (MW-2026-004), #857 (MW-2026-085)
+ * The route handler also calls requireAuth for defense-in-depth: if the
+ * Edge middleware is bypassed (e.g. internal fetch, caching edge case),
+ * unauthenticated requests receive 401 here instead of being forwarded
+ * to the backend where they trigger a 500 (issue #1048).
+ *
+ * Issue: #852 (MW-2026-004), #857 (MW-2026-085), #1048 (regression 500→401)
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { buildForwardHeaders } from "@/lib/proxy-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { buildForwardHeaders, resolveBackendBaseUrl } from "@/lib/proxy-auth";
+import { requireAuth } from "@/lib/api-guard";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://email-api:8000";
-
-function buildBackendUrl(request: Request): string {
+function buildBackendUrl(request: NextRequest): string {
   const url = new URL(request.url);
   // /api/templates → ${BACKEND_URL}/api/templates
-  return `${BACKEND_URL}/api/templates${url.search}`;
+  return `${resolveBackendBaseUrl()}/api/templates${url.search}`;
 }
 
-async function proxy(request: Request): Promise<Response> {
+async function proxy(request: NextRequest): Promise<Response> {
+  // Defense-in-depth: reject unauthenticated requests at route level.
+  // Edge middleware already enforces this at the Caddy→Next.js boundary,
+  // but this guard ensures 401 even if middleware is bypassed (issue #1048).
+  const auth = requireAuth(request);
+  if ("response" in auth) return auth.response;
+
   const targetUrl = buildBackendUrl(request);
   const headers = buildForwardHeaders(request);
 
@@ -64,9 +75,9 @@ async function proxy(request: Request): Promise<Response> {
       headers: resHeaders,
     });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: "backend_unavailable", message: String(err) }),
-      { status: 502, headers: { "Content-Type": "application/json" } }
+    return NextResponse.json(
+      { error: "backend_unavailable", message: String(err) },
+      { status: 502 }
     );
   }
 }
