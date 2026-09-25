@@ -36,3 +36,14 @@ Feature: MW-2026-035 — Auth bypass /api/emails regression (post-fix verificati
     When I send GET /api/emails/123 without credentials
     Then the response status should be 401 or 307
     And no email content should be returned
+
+  Scenario: /api/templates requires authentication (regression #1048)
+    When I send GET /api/templates without credentials
+    Then the response status should be 401
+    And the response body should not contain any template data
+    And the response should not be 500
+
+  Scenario: /api/templates POST requires authentication
+    When I send POST /api/templates without credentials
+    Then the response status should be 401 or 403
+    And no template should be created
