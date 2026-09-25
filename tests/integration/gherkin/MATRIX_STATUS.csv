@@ -1,4 +1,4 @@
-# Last PO cycle: 2026-09-25T00:45Z UTC — state=ON, 0 incoming bus messages, 1 PO_TICKET posted to scrum-master (UX proposal: composer character/word counter), 90 matrix rows (76 FAIL, 13 PASS, 3 PARTIAL), no ROOT controls
+# Last PO cycle: 2026-09-25T01:14Z UTC — state=ON, 0 bus msgs, 90 matrix rows (77 FAIL, 11 PASS, 2 PARTIAL), 1 new ticket (reimagined-guide #729 /api/templates 500 regression), no ROOT controls, scrum_qlen=268, issue #1044 MongoDB health still OPEN (testeur-owned)
 MW-2026-001,SMTP send,User envoie email via SMTP 587,DKIM signature présente dans headers + DMARC pass,PASS,reimagined-guide,dev-back
 MW-2026-002,Scheduled send,User clique Scheduled send + sélectionne date future,Email envoyé à l'heure prévue + visible dans Envoyés avec badge programmé,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
 MW-2026-003,Undo send,User clique Undo send dans les 5s après envoi,Email retiré de la file d'envoi + visible dans brouillons,FAIL-GHERKIN-ISSUE-705,misfits-web,dev-web
@@ -89,3 +89,4 @@ MW-2026-144,URL phishing detection,User recoit un email avec URL suspecte + cliq
 MW-2026-139,Dark mode toggle,User bascule dark mode dans settings,Thème sombre appliqué partout + préférence persistée + détection prefers-color-scheme + pas de flash thème incorrect,FAIL-ISSUE-1031,misfits-web,dev-web
 MW-2026-139,Dark mode toggle,User bascule dark mode dans settings,Thème sombre appliqué partout + préférence persistée + détection prefers-color-scheme + pas de flash thème incorrect,FAIL-ISSUE-1031,misfits-web,dev-web
 MW-2026-138,Email list bulk selection toolbar,User sélectionne multiples emails + toolbar d actions rapides,Toolbar avec Archive/Marquer lu/Supprimer/Déplacer/Label/Snooze + compteur + select all + undo toast,FAIL-ISSUE-1030,misfits-web,dev-web
+MW-2026-145,AI agent delegation UX,User délégue un email à l'agent IA + confirme les actions proposées,Bouton Déléguer visible + 3+ actions proposées (répondre/planifier/archiver) + confirmation utilisateur + journal d'activité + révocation 5s,FAIL-ISSUE-1033,misfits-web,dev-web

@@ -1,7 +1,7 @@
 # PO Market Watch — misfits.ai Mail
 
 > Veille marché, compétiteurs, vision produit. Maintenu par le Product Owner.
-> Dernière mise à jour: 2026-09-25T00:20 UTC — veille privacy-first AI email 2026 (on-device AI + E2EE), matrix 88 rows (74 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 0 new GH issues (all FAIL rows already have issues)
+> Dernière mise à jour: 2026-09-25T03:00 UTC — arbitrage AI agent delegation vs assistant, matrix 89 rows (75 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 bus messages, 0 new issues (all FAIL rows covered)
 
 ---
 
@@ -452,3 +452,17 @@
 - **Matrix updated**: 88 rows total (74 FAIL, 13 PASS, 3 PARTIAL). No new row needed — MW-2026-127 covers this feature.
 - **State**: ON — no ROOT controls received, mission loop continues
 - **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for on-device AI workflows)
+
+### Cycle 2026-09-25T03:00Z — Arbitrage AI agent delegation vs assistant + matrix update
+- **AI agent delegation market 2026** (sources: robotomail.com, securityboulevard.com, get-alfred.ai):
+  - **Carly**: Autonomous agent with own email address — triages, drafts, sends, schedules. $9-14/mo. Agent has own identity.
+  - **Read AI Ada**: AI proxy — CC ada@read.ai, drafts responses, schedules meetings. ~10K documents context per user.
+  - **Gmelius Meli**: Embedded in Gmail — autonomous secretary. Drafts replies, suggests time slots, sends emails, logs to CRM.
+  - **Reclaim.ai**: AI scheduling agent — defends focus time, reschedules events, auto-schedules tasks.
+  - **Key trend**: AI agents moving from "assistant" (suggests, user acts) to "agent" (acts autonomously, user confirms). #1 differentiator in 2026.
+- **Implication misfits.ai**: MW-2026-127 (AI agent email access) + MW-2026-140 (AI agent delegation) position us uniquely. Next step: agent delegation with user confirmation — privacy-first autonomy.
+- **Arbitrage 2026-09-25T03:00Z**: AI agent autonomy level → Choice: Delegate button + 3+ proposed actions + user confirmation + activity journal + revocation 5s / Rejected: Full autonomous sending without confirmation (privacy risk), AI assistant only (no differentiator vs Canary) / Rationale: Privacy-first agents must keep user in control. The agent proposes, the user confirms. Revocation window for safety.
+- **Action**: No new issue created — MW-2026-140 (#1033) already covers AI agent delegation. Market watch updated.
+- **Matrix updated**: 89 rows total (75 FAIL, 13 PASS, 3 PARTIAL). New row MW-2026-145 added for agent delegation UX.
+- **State**: ON — no ROOT controls received, mission loop continues
+- **Next cycle**: veille marché (competitor pricing update) or matrice de tests (add rows for agent delegation workflows)
