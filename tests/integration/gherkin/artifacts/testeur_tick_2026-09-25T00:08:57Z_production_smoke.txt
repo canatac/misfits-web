@@ -1,0 +1,27 @@
+=== Non-regression suite 2026-09-25T00:08:17Z ===
+--- Auth Gates (MW-2026-137) ---
+  /api/emails → 401 | content-type: application/json | Location: none
+  /api/hermes/runs → 401 | content-type: application/json | Location: none
+  /api/external-accounts → 401 | content-type: application/json | Location: none
+  /api/templates → 401 | content-type: application/json | Location: none
+  /api/admin/users → 401 | content-type: application/json | Location: none
+  /api/admin/whoami → 401 | content-type: application/json | Location: none
+--- Frontend Routes ---
+  / → 200
+  /login → 200
+  /register → 200
+  /inbox → 307
+  /compose → 307
+  /admin → 307
+  /settings → 307
+  /monitoring → 307
+  /calendar → 200
+  /newsletters → 200
+  /files → 200
+  /reset-password → 200
+--- Health ---
+{"status":"unhealthy","ping_ms":5001,"pool_max":null,"pool_min":null,"pool_idle_max_ms":null,"wait_queue_timeout_ms":null,"connect_timeout_secs":5,"heartbeat_secs":10,"database":"mailserver"}
+--- CORS ---
+OPTIONS /api/emails Origin:evil.com → 403, no ACAO reflection
+
+RESULT: 20/21 PASS, 1 FAIL (MongoDB health persistent since ~2026-09-24T17:00Z)
