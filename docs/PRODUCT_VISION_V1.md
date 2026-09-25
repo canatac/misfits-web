@@ -1,6 +1,7 @@
+> Dernière mise à jour: 2026-09-25T00:45Z UTC — PO cycle: 90 matrix rows (76 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 0 new matrix rows, 1 PO_TICKET posted to scrum-master (UX proposal: composer character/word counter), no ROOT controls
 > Dernière mise à jour: 2026-09-25T00:30Z UTC — PO cycle: 89 matrix rows (75 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 2 new matrix rows added (MW-2026-138 bulk selection #1030, MW-2026-139 dark mode #1031), 1 PO_TICKET posted to scrum-master (MW-2026-138/139), no ROOT controls
 >
-> Dernière mise à jour: 2026-09-24T23:20Z UTC — PO cycle: 84 matrix rows (71 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, FleetBus unavailable, 5 new GH issues (#1035 attachment preview MW-2026-050, #1036 auto-save drafts MW-2026-107, #1037 on-device AI agent MW-2026-127, #1038 cheat sheet MW-2026-122, #1039 hover quick-actions MW-2026-126), 1 PO_TICKET batch posted to scrum-master, no ROOT controls
+> Dernière mise à jour: 2026-09-25T00:05Z UTC — PO cycle: 87 matrix rows (73 FAIL, 13 PASS, 3 PARTIAL), state=ON, 0 incoming bus messages, 1 PO_TICKET posted to scrum-master (#1046 URL phishing detection), no ROOT controls
 >
 > Dernière mise à jour: 2026-09-24T23:20Z UTC — Market watch: AI email clients (Icebox, Superhuman) now offer on-device AI processing, smart triage, and inline attachment preview as standard features. misfits.ai gaps: attachment preview (#1035), auto-save drafts (#1036), on-device AI agent (#1037). Source: icebox.cool/tr/blog/ai-email-client-the-complete-guide-for-2026
 >
