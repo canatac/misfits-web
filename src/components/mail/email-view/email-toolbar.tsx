@@ -118,6 +118,7 @@ export function EmailToolbar({
       <ImmersiveReadingButton
         onClick={onToggleReadingMode}
         isActive={isReadingActive}
+        data-testid="reading-mode-toggle"
       />
       <Button
         variant="ghost"

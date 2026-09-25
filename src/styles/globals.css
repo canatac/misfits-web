@@ -590,3 +590,64 @@ select:focus-visible,
   animation-duration: var(--duration-normal);
   animation-fill-mode: both;
 }
+
+/* ─────────────────────────────────────────────
+ * Immersive Reading Mode — MW-2026-056
+ * Distraction-free reading with sanitized HTML
+ * ───────────────────────────────────────────── */
+.immersive-reading .prose-mail {
+  max-width: 65ch;
+  margin: 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #E8E8E0;
+}
+
+.immersive-reading .prose-mail p {
+  margin-bottom: 1.5rem;
+}
+
+.immersive-reading .prose-mail h1,
+.immersive-reading .prose-mail h2,
+.immersive-reading .prose-mail h3 {
+  color: #FFFFFF;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.immersive-reading .prose-mail img {
+  border-radius: 8px;
+  margin: 1.5rem auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.immersive-reading .prose-mail a {
+  color: #C49B66;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.immersive-reading .prose-mail blockquote {
+  border-left: 3px solid #C49B66;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #B0B0A8;
+  font-style: italic;
+}
+
+.immersive-reading .prose-mail table {
+  font-size: 0.9rem;
+}
+
+/* Hide non-essential UI in immersive mode */
+.immersive-reading [data-testid="email-attachments"],
+.immersive-reading [data-testid="email-labels-bar"] {
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.immersive-reading [data-testid="email-attachments"]:hover,
+.immersive-reading [data-testid="email-labels-bar"]:hover {
+  opacity: 1;
+}
