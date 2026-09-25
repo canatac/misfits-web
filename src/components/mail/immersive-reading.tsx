@@ -63,13 +63,17 @@ export function ImmersiveReadingBanner({ onExit }: { onExit: () => void }) {
   if (!isActive) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0B] border-b border-[#242427] px-4 py-2 flex items-center justify-center gap-2">
+    <div
+      className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0B] border-b border-[#242427] px-4 py-2 flex items-center justify-center gap-2"
+      data-testid="reading-mode-banner"
+    >
       <BookOpen className="h-4 w-4 text-[#C49B66]" />
       <span className="text-sm font-medium text-white">Mode lecture immersive</span>
       <button
         onClick={onExit}
         className="absolute right-4 p-1 rounded hover:bg-[#1D1D20] text-[#71717A] hover:text-white"
         aria-label="Quitter le mode lecture"
+        data-testid="reading-mode-exit"
       >
         <X className="h-4 w-4" />
       </button>
@@ -77,7 +81,15 @@ export function ImmersiveReadingBanner({ onExit }: { onExit: () => void }) {
   );
 }
 
-export function ImmersiveReadingButton({ onClick, isActive }: { onClick: () => void; isActive: boolean }) {
+export function ImmersiveReadingButton({
+  onClick,
+  isActive,
+  ...props
+}: {
+  onClick: () => void;
+  isActive: boolean;
+  "data-testid"?: string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -89,6 +101,7 @@ export function ImmersiveReadingButton({ onClick, isActive }: { onClick: () => v
       )}
       aria-label="Mode lecture immersive"
       title="Mode lecture (Ctrl+Shift+R)"
+      data-testid={props["data-testid"]}
     >
       <BookOpen className="h-4 w-4" />
     </button>

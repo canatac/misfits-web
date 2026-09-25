@@ -6,7 +6,7 @@ import { QUOTE_PATTERNS } from "@/components/mail/email-view-utils";
 import type { Email } from "@/types/email";
 
 /** Sanitize + process body: block/allow images, collapse quoted replies. */
-export function useEmailBody(email: Email | null) {
+export function useEmailBody(email: Email | null, immersiveMode = false) {
   const [loadImages, setLoadImages] = useState(false);
   const [showQuoted, setShowQuoted] = useState(false);
   const [hasQuoted, setHasQuoted] = useState(false);
@@ -30,6 +30,22 @@ export function useEmailBody(email: Email | null) {
         .replace(/>/g, "&gt;");
       return escaped.replace(/\n/g, "<br>");
     }
+    // Immersive mode: stricter sanitization — strip all external resources,
+    // scripts, iframes, styles, and non-essential attributes (MW-2026-056)
+    if (immersiveMode) {
+      return DOMPurify.sanitize(email.body, {
+        ALLOWED_TAGS: [
+          "p", "br", "div", "span", "a", "ul", "ol", "li",
+          "b", "strong", "i", "em", "u", "s", "del", "blockquote",
+          "pre", "code", "h1", "h2", "h3", "h4", "h5", "h6",
+          "table", "thead", "tbody", "tr", "th", "td", "hr", "sub", "sup",
+        ],
+        ALLOWED_ATTR: ["href", "alt", "title"],
+        ALLOW_DATA_ATTR: false,
+        SANITIZE_DOM: true,
+      });
+    }
+
     return DOMPurify.sanitize(email.body, {
       ALLOWED_TAGS: [
         "p", "br", "div", "span", "a", "img", "ul", "ol", "li",

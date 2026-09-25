@@ -87,7 +87,7 @@ export function EmailView({ className }: EmailViewProps) {
     setShowQuoted,
     hasQuoted,
     processedBody,
-  } = useEmailBody(email);
+  } = useEmailBody(email, isReadingActive);
 
   const {
     handleReply,
