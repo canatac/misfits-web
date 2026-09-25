@@ -59,7 +59,7 @@ export function useEmailBody(email: Email | null, immersiveMode = false) {
       ],
       ALLOW_DATA_ATTR: false,
     });
-  }, [email]);
+  }, [email, immersiveMode]);
 
   const processedBody = useMemo(() => {
     let body = sanitizedBody;
