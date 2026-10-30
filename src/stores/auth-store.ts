@@ -43,6 +43,16 @@ const limiter: RateLimiter = {
   blockedUntil: 0,
 };
 
+function sessionHasTwoFactor(session: unknown): boolean {
+  if (!session || typeof session !== "object") return false;
+  const s = session as Record<string, unknown>;
+  if (s.user && typeof s.user === "object") {
+    const u = s.user as Record<string, unknown>;
+    return u.two_factor_enabled === true || u.twoFactorEnabled === true;
+  }
+  return s.two_factor_enabled === true || s.twoFactorEnabled === true;
+}
+
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   session: null,
@@ -255,3 +265,5 @@ export const selectIsAuthenticated = (s: AuthStore): boolean =>
   s.isAuthenticated;
 export const selectAuthError = (s: AuthStore): AuthError | null => s.error;
 export const selectAuthLoading = (s: AuthStore): boolean => s.isLoading;
+export const selectTwoFactorEnabled = (s: AuthStore): boolean =>
+  s.user?.twoFactorEnabled ?? false;
