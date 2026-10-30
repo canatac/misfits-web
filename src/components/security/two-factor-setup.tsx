@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Copy, ShieldCheck, KeyRound } from "lucide-react";
+import { Copy, ShieldCheck } from "lucide-react";
 
 type Props = {
   onComplete: () => void;
@@ -21,13 +21,33 @@ export function TwoFactorSetup({ onComplete }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    async function fetchQr() {
+      try {
+        const res = await fetch("/api/auth/2fa/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSecret(data.secret);
+          setOtpAuthUrl(data.otpAuthUrl);
+        }
+      } catch {
+        // ignore — QR will show placeholder
+      }
+    }
+    if (step === "qr") {
+      fetchQr();
+    }
+  }, [step]);
+
   async function handleVerify() {
     setError(null);
     if (code.length !== 6) {
       setError("Enter the 6-digit code.");
       return;
     }
-    // Verify TOTP code via backend
     const res = await fetch("/api/auth/2fa/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -38,7 +58,7 @@ export function TwoFactorSetup({ onComplete }: Props) {
       return;
     }
     const data = await res.json();
-    setRecoveryCodes(data.recoveryCodes);
+    setRecoveryCodes(data.recoveryCodes || []);
     setStep("recovery");
   }
 
