@@ -18,10 +18,6 @@ interface UrlSafeLinkProps {
   className?: string;
 }
 
-/**
- * Safe link component that intercepts clicks on suspicious URLs
- * and shows a confirmation dialog before navigating.
- */
 export function UrlSafeLink({ href, children, className }: UrlSafeLinkProps) {
   const [showWarning, setShowWarning] = useState(false);
   const reputation = checkUrlReputation(href);

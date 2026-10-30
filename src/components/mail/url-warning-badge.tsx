@@ -3,12 +3,12 @@
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface UrlWarningBadge {
+interface UrlWarningBadgeProps {
   suspiciousCount: number;
   className?: string;
 }
 
-export function UrlWarningBadge({ suspiciousCount, className }: UrlWarningBadge) {
+export function UrlWarningBadge({ suspiciousCount, className }: UrlWarningBadgeProps) {
   if (suspiciousCount === 0) return null;
   return (
     <span

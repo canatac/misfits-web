@@ -8,13 +8,13 @@ import {
   type UrlReputation,
 } from "@/lib/url-scanner";
 
-interface UrlPhishingBanner {
+interface UrlPhishingBannerProps {
   body: string;
   bodyType: "html" | "text";
   className?: string;
 }
 
-export function UrlPhishingBanner({ body, bodyType, className }: UrlPhishingBanner) {
+export function UrlPhishingBanner({ body, bodyType, className }: UrlPhishingBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
   const results = useMemo(

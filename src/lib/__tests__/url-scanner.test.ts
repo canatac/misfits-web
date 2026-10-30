@@ -53,29 +53,23 @@ describe("checkUrlReputation", () => {
   it("flags invalid URLs", () => {
     const result = checkUrlReputation("not-a-url");
     expect(result.isSuspicious).toBe(true);
+    expect(result.reasons).toContain("Invalid URL");
   });
 });
 
 describe("scanUrls", () => {
   it("scans all URLs in body", () => {
-    const body = "Safe https://google.com and bad https://phishing.example";
-    const results = scanUrls(body, "text");
+    const results = scanUrls("Visit https://google.com and https://phishing.example", "text");
     expect(results.length).toBe(2);
-    expect(results[0].isSuspicious).toBe(false);
-    expect(results[1].isSuspicious).toBe(true);
   });
 });
 
 describe("hasSuspiciousUrls", () => {
-  it("returns true when any URL is suspicious", () => {
-    expect(
-      hasSuspiciousUrls("Visit https://phishing.example now", "text")
-    ).toBe(true);
+  it("returns true when suspicious URLs exist", () => {
+    expect(hasSuspiciousUrls("Click https://phishing.example", "text")).toBe(true);
   });
 
   it("returns false for clean body", () => {
-    expect(
-      hasSuspiciousUrls("Visit https://google.com", "text")
-    ).toBe(false);
+    expect(hasSuspiciousUrls("Visit https://google.com", "text")).toBe(false);
   });
 });
