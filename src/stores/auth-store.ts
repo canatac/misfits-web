@@ -60,7 +60,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isLoading: false,
   error: null,
   pendingTwoFactorChallengeId: null,
-  twoFactorEnabled: false,
 
   login: async (credentials) => {
     set({ isLoading: true, error: null });
@@ -96,9 +95,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
         return;
       }
-      const normalized = normalizeSession(res.session as unknown as Record<string, unknown>);
-      applySession(set, normalized, credentials.remember ?? false);
-      set({ twoFactorEnabled: sessionHasTwoFactor(res.session) });
+      applySession(
+        set,
+        normalizeSession(res.session as unknown as Record<string, unknown>),
+        credentials.remember ?? false
+      );
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
       if (
@@ -147,7 +148,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const res = await apiVerify2FA(challenge.challengeId, challenge.code);
       applySession(set, res.session, true);
-      set({ twoFactorEnabled: true, pendingTwoFactorChallengeId: null });
       audit("2fa_success", `2FA verified for ${res.session.user.email}`);
     } catch (err) {
       audit("2fa_fail", "2FA verification failed.");
@@ -169,7 +169,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         error: null,
         pendingTwoFactorChallengeId: null,
-        twoFactorEnabled: false,
       });
       audit("logout", "User signed out.");
     }
@@ -213,7 +212,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         user: null,
         isAuthenticated: false,
         error: toAuthError(err),
-        twoFactorEnabled: false,
       });
     }
   },
@@ -257,7 +255,6 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         error: null,
         pendingTwoFactorChallengeId: null,
         isLoading: false,
-        twoFactorEnabled: false,
       });
     }
   },
@@ -269,4 +266,4 @@ export const selectIsAuthenticated = (s: AuthStore): boolean =>
 export const selectAuthError = (s: AuthStore): AuthError | null => s.error;
 export const selectAuthLoading = (s: AuthStore): boolean => s.isLoading;
 export const selectTwoFactorEnabled = (s: AuthStore): boolean =>
-  s.twoFactorEnabled;
+  s.user?.twoFactorEnabled ?? false;
