@@ -5,7 +5,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const LIVENESS_TIMEOUT_MS = 2000;
-const DEEP_TIMEOUT_MS = 5000;
 
 /**
  * Lightweight liveness probe — verifies the backend process is reachable.
