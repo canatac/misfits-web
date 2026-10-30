@@ -97,10 +97,10 @@ export function TwoFactorSetup({ onComplete }: Props) {
             id="totp-code"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="\\d{6}"
+            pattern="\d{6}"
             maxLength={6}
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\\D/g, ""))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             aria-label="TOTP verification code"
           />
           {error && (

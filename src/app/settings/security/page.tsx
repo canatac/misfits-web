@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthStore } from "@/stores/auth-store";
+import { useAuthStore, selectTwoFactorEnabled } from "@/stores/auth-store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TwoFactorSetup } from "@/components/security/two-factor-setup";
@@ -9,7 +9,7 @@ import { TwoFactorStatus } from "@/components/security/two-factor-status";
 
 export default function SecuritySettingsPage() {
   const [showSetup, setShowSetup] = useState(false);
-  const twoFactorEnabled = useAuthStore((s) => s.twoFactorEnabled);
+  const twoFactorEnabled = useAuthStore(selectTwoFactorEnabled);
 
   return (
     <div className="space-y-6">

@@ -43,6 +43,16 @@ const limiter: RateLimiter = {
   blockedUntil: 0,
 };
 
+function sessionHasTwoFactor(session: unknown): boolean {
+  if (!session || typeof session !== "object") return false;
+  const s = session as Record<string, unknown>;
+  if (s.user && typeof s.user === "object") {
+    const u = s.user as Record<string, unknown>;
+    return u.two_factor_enabled === true || u.twoFactorEnabled === true;
+  }
+  return s.two_factor_enabled === true || s.twoFactorEnabled === true;
+}
+
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   session: null,
@@ -50,6 +60,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isLoading: false,
   error: null,
   pendingTwoFactorChallengeId: null,
+  twoFactorEnabled: false,
 
   login: async (credentials) => {
     set({ isLoading: true, error: null });
@@ -85,11 +96,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
         return;
       }
-      applySession(
-        set,
-        normalizeSession(res.session as unknown as Record<string, unknown>),
-        credentials.remember ?? false
-      );
+      const normalized = normalizeSession(res.session as unknown as Record<string, unknown>);
+      applySession(set, normalized, credentials.remember ?? false);
+      set({ twoFactorEnabled: sessionHasTwoFactor(res.session) });
       audit("login", `Signed in as ${res.session.user.email}`);
     } catch (err) {
       if (
@@ -138,6 +147,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const res = await apiVerify2FA(challenge.challengeId, challenge.code);
       applySession(set, res.session, true);
+      set({ twoFactorEnabled: true, pendingTwoFactorChallengeId: null });
       audit("2fa_success", `2FA verified for ${res.session.user.email}`);
     } catch (err) {
       audit("2fa_fail", "2FA verification failed.");
@@ -159,6 +169,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         isLoading: false,
         error: null,
         pendingTwoFactorChallengeId: null,
+        twoFactorEnabled: false,
       });
       audit("logout", "User signed out.");
     }
@@ -202,6 +213,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         user: null,
         isAuthenticated: false,
         error: toAuthError(err),
+        twoFactorEnabled: false,
       });
     }
   },
@@ -245,6 +257,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         error: null,
         pendingTwoFactorChallengeId: null,
         isLoading: false,
+        twoFactorEnabled: false,
       });
     }
   },
@@ -255,3 +268,5 @@ export const selectIsAuthenticated = (s: AuthStore): boolean =>
   s.isAuthenticated;
 export const selectAuthError = (s: AuthStore): AuthError | null => s.error;
 export const selectAuthLoading = (s: AuthStore): boolean => s.isLoading;
+export const selectTwoFactorEnabled = (s: AuthStore): boolean =>
+  s.twoFactorEnabled;
