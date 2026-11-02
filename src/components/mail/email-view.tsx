@@ -34,6 +34,7 @@ import {
   ImmersiveReadingProvider,
 } from "./immersive-reading";
 import { FindInPage } from "./email-view/find-in-page";
+import { useFollowUps, useToggleFollowUp } from "@/hooks/use-follow-ups";
 
 interface EmailViewProps {
   className?: string;
@@ -54,6 +55,9 @@ export function EmailView({ className }: EmailViewProps) {
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
 
+  const { followUps } = useFollowUps();
+  const toggleFollowUp = useToggleFollowUp();
+
   // Cmd+F / Ctrl+F opens find bar
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -69,6 +73,11 @@ export function EmailView({ className }: EmailViewProps) {
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId]
+  );
+
+  const isFollowUp = useMemo(
+    () => !!email && followUps.some((fu) => fu.emailId === email.id),
+    [followUps, email]
   );
 
   useEmailBodyHydration(email);
@@ -132,6 +141,7 @@ export function EmailView({ className }: EmailViewProps) {
     >
       <EmailToolbar
         isStarred={email.isStarred}
+        isFollowUp={isFollowUp}
         onArchive={handleArchive}
         onDelete={handleDelete}
         onMarkUnread={handleMarkUnread}
@@ -139,6 +149,7 @@ export function EmailView({ className }: EmailViewProps) {
         onReplyAll={handleReplyAll}
         onForward={handleForward}
         onToggleStar={handleToggleStar}
+        onToggleFollowUp={() => toggleFollowUp.mutate(email.id)}
         onHermesSummarize={handleHermesSummarize}
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}

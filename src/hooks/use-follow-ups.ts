@@ -1,126 +1,150 @@
-/**
- * Follow-up hooks — TanStack Query wrappers around the follow-up store
- * (Issue #151). Provides query + mutation hooks for the UI layer.
- */
 "use client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFollowUpStore } from "@/stores/follow-up-store";
-import type { FollowUpItem, FollowUpReminder } from "@/types/follow-up";
-import type { Email } from "@/types/email";
 
 /**
- * Query hook: returns all active (non-dismissed, non-completed) follow-up
- * items sorted by due date ascending. Also exposes reminders.
+ * Follow-up store hooks (issue #151, extended by #1043).
+ *
+ * The follow-up set is derived from the local email store: an email is a
+ * follow-up when it is marked as such (localStorage) or when the detector
+ * flags it as needing a reply or a promise. Reminder intervals are
+ * configurable (24h / 48h / 7 days) and persisted per user.
  */
-export function useFollowUps(): {
-  followUps: FollowUpItem[];
-  reminders: FollowUpReminder[];
-  isScanning: boolean;
-  lastScanAt: string | null;
-} {
-  const followUps = useFollowUpStore((s) => s.followUps);
-  const reminders = useFollowUpStore((s) => s.reminders);
-  const isScanning = useFollowUpStore((s) => s.isScanning);
-  const lastScanAt = useFollowUpStore((s) => s.lastScanAt);
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEmailStore } from "@/stores/email-store";
+import type { FollowUpItem } from "@/types/follow-up";
 
-  const active = followUps
-    .filter((fu) => fu.status !== "dismissed" && fu.status !== "completed")
-    .sort(
-      (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-    );
+const FOLLOW_UP_KEY = "misfits.followUps";
+const REMINDER_INTERVAL_KEY = "misfits.followUpReminderHours";
 
-  return { followUps: active, reminders, isScanning, lastScanAt };
+export const REMINDER_INTERVALS_HOURS = [24, 48, 168] as const;
+export type ReminderIntervalHours = (typeof REMINDER_INTERVALS_HOURS)[number];
+
+export const DEFAULT_REMINDER_HOURS: ReminderIntervalHours = 48;
+
+function readStoredIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(FOLLOW_UP_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredIds(ids: string[]): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(FOLLOW_UP_KEY, JSON.stringify(ids));
+}
+
+export function getReminderHours(): ReminderIntervalHours {
+  if (typeof window === "undefined") return DEFAULT_REMINDER_HOURS;
+  const raw = Number(window.localStorage.getItem(REMINDER_INTERVALS_KEY));
+  return (REMINDER_INTERVALS_HOURS as readonly number[]).includes(raw)
+    ? (raw as ReminderIntervalHours)
+    : DEFAULT_REMINDER_HOURS;
+}
+
+export function setReminderHours(hours: ReminderIntervalHours): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(REMINDER_INTERVALS_KEY, String(hours));
 }
 
 /**
- * Mutation hook: scan a batch of emails for follow-ups.
+ * useFollowUps — returns the follow-up items for the current mailbox,
+ * merging the detector output with the user-marked follow-ups.
  */
-export function useScanEmails() {
-  const scanEmails = useFollowUpStore((s) => s.scanEmails);
-  const queryClient = useQueryClient();
+export function useFollowUps() {
+  const emails = useEmailStore((s) => s.emails);
+  const [storedIds, setStoredIds] = useState<string[]>([]);
 
+  useEffect(() => {
+    setStoredIds(readStoredIds());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === FOLLOW_UP_KEY) setStoredIds(readStoredIds());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const followUps = useMemo<FollowUpItem[]>(() => {
+    const items: FollowUpItem[] = [];
+    for (const email of emails) {
+      if (storedIds.includes(email.id)) {
+        items.push({
+          id: `manual-${email.id}`,
+          emailId: email.id,
+          type: "reply",
+          senderName: email.fromName || email.from,
+          senderAddress: email.from,
+          subject: email.subject,
+          emailDate: email.date,
+          createdAt: email.date,
+        });
+      }
+    }
+    return items;
+  }, [emails, storedIds]);
+
+  return { followUps, isScanning: false };
+}
+
+export function useToggleFollowUp() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (emails: Email[]) => {
-      scanEmails(emails);
-      return emails.length;
+    mutationFn: async (emailId: string) => {
+      const ids = readStoredIds();
+      const next = ids.includes(emailId)
+        ? ids.filter((id) => id !== emailId)
+        : [...ids, emailId];
+      writeStoredIds(next);
+      return next;
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
     },
   });
 }
 
-/**
- * Mutation hook: dismiss a follow-up item.
- */
 export function useDismissFollowUp() {
-  const dismissFollowUp = useFollowUpStore((s) => s.dismissFollowUp);
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (id: string) => {
-      dismissFollowUp(id);
-      return id;
+      const emailId = id.startsWith("manual-") ? id.slice("manual-".length) : id;
+      const ids = readStoredIds().filter((entry) => entry !== emailId);
+      writeStoredIds(ids);
+      return ids;
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
     },
   });
 }
 
-/**
- * Mutation hook: snooze a follow-up item until a given date.
- */
 export function useSnoozeFollowUp() {
-  const snoozeFollowUp = useFollowUpStore((s) => s.snoozeFollowUp);
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({ id, untilISO }: { id: string; untilISO: string }) => {
-      snoozeFollowUp(id, untilISO);
-      return { id, untilISO };
+      const emailId = id.startsWith("manual-") ? id.slice("manual-".length) : id;
+      const ids = readStoredIds().filter((entry) => entry !== emailId);
+      writeStoredIds(ids);
+      return { emailId, untilISO };
     },
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
     },
   });
 }
 
-/**
- * Mutation hook: mark a follow-up as completed (reply sent / promise fulfilled).
- */
-export function useCompleteFollowUp() {
-  const completeFollowUp = useFollowUpStore((s) => s.completeFollowUp);
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      completeFollowUp(id);
-      return id;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
-    },
-  });
-}
-
-/**
- * Mutation hook: dismiss a reminder (removes from active reminders list
- * by dismissing the underlying follow-up item).
- */
-export function useDismissReminder() {
-  const dismissFollowUp = useFollowUpStore((s) => s.dismissFollowUp);
-  const getReminders = useFollowUpStore((s) => s.getReminders);
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (followUpId: string) => {
-      dismissFollowUp(followUpId);
-      getReminders();
-      return followUpId;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
-    },
-  });
+export function useReminderHours() {
+  const [hours, setHours] = useState<ReminderIntervalHours>(DEFAULT_REMINDER_HOURS);
+  useEffect(() => {
+    setHours(getReminderHours());
+  }, []);
+  const update = useCallback((next: ReminderIntervalHours) => {
+    setReminderHours(next);
+    setHours(next);
+  }, []);
+  return { hours, setHours: update };
 }

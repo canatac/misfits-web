@@ -12,7 +12,6 @@ import {
   Sparkles,
   Search,
   BellPlus,
-  BellOff,
 } from "lucide-react";
 import { ImmersiveReadingButton } from "../immersive-reading";
 import { cn } from "@/lib/utils";
@@ -85,22 +84,18 @@ export function EmailToolbar({
       >
         <MailOpen className="h-4 w-4" />
       </Button>
+      <Separator orientation="vertical" className="mx-1 h-6" />
       <Button
         variant="ghost"
-        size="icon"
+        size="sm"
+        className={cn("gap-1.5", isFollowUp && "text-[var(--color-warning-500)]")}
         onClick={onToggleFollowUp}
-        aria-label={isFollowUp ? "Remove follow-up" : "Follow up"}
-        aria-pressed={isFollowUp}
-        data-testid="email-toolbar-follow-up"
-        className={cn(isFollowUp && "text-[var(--color-warning-500)]")}
+        aria-label={isFollowUp ? "Remove follow-up" : "Mark as follow-up"}
+        data-testid="email-followup-toggle"
       >
-        {isFollowUp ? (
-          <BellOff className="h-4 w-4" />
-        ) : (
-          <BellPlus className="h-4 w-4" />
-        )}
+        <BellPlus className="h-4 w-4" />
+        {isFollowUp ? "Following" : "Follow"}
       </Button>
-      <Separator orientation="vertical" className="mx-1 h-6" />
       <Button variant="ghost" size="sm" onClick={onReply} className="gap-1.5">
         <Reply className="h-4 w-4" />
         Reply
@@ -173,12 +168,8 @@ export function EmailToolbar({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onToggleFollowUp}>
-            {isFollowUp ? (
-              <BellOff className="mr-2 h-4 w-4" />
-            ) : (
-              <BellPlus className="mr-2 h-4 w-4" />
-            )}
-            {isFollowUp ? "Remove follow-up" : "Follow up"}
+            <BellPlus className="mr-2 h-4 w-4" />
+            {isFollowUp ? "Remove follow-up" : "Mark as follow-up"}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onMarkUnread}>
             <MailOpen className="mr-2 h-4 w-4" />
