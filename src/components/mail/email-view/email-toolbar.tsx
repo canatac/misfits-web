@@ -11,6 +11,8 @@ import {
   MailOpen,
   Sparkles,
   Search,
+  BellPlus,
+  BellOff,
 } from "lucide-react";
 import { ImmersiveReadingButton } from "../immersive-reading";
 import { cn } from "@/lib/utils";
@@ -27,6 +29,7 @@ import {
 
 interface EmailToolbarProps {
   isStarred: boolean;
+  isFollowUp: boolean;
   onArchive: () => void;
   onDelete: () => void;
   onMarkUnread: () => void;
@@ -34,6 +37,7 @@ interface EmailToolbarProps {
   onReplyAll: () => void;
   onForward: () => void;
   onToggleStar: () => void;
+  onToggleFollowUp: () => void;
   onHermesSummarize: () => void;
   onHermesReplyDraft: () => void;
   onHermesTranslate: () => void;
@@ -45,6 +49,7 @@ interface EmailToolbarProps {
 
 export function EmailToolbar({
   isStarred,
+  isFollowUp,
   onArchive,
   onDelete,
   onMarkUnread,
@@ -52,6 +57,7 @@ export function EmailToolbar({
   onReplyAll,
   onForward,
   onToggleStar,
+  onToggleFollowUp,
   onHermesSummarize,
   onHermesReplyDraft,
   onHermesTranslate,
@@ -78,6 +84,21 @@ export function EmailToolbar({
         aria-label="Mark as unread"
       >
         <MailOpen className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggleFollowUp}
+        aria-label={isFollowUp ? "Remove follow-up" : "Follow up"}
+        aria-pressed={isFollowUp}
+        data-testid="email-toolbar-follow-up"
+        className={cn(isFollowUp && "text-[var(--color-warning-500)]")}
+      >
+        {isFollowUp ? (
+          <BellOff className="h-4 w-4" />
+        ) : (
+          <BellPlus className="h-4 w-4" />
+        )}
       </Button>
       <Separator orientation="vertical" className="mx-1 h-6" />
       <Button variant="ghost" size="sm" onClick={onReply} className="gap-1.5">
@@ -151,6 +172,14 @@ export function EmailToolbar({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onToggleFollowUp}>
+            {isFollowUp ? (
+              <BellOff className="mr-2 h-4 w-4" />
+            ) : (
+              <BellPlus className="mr-2 h-4 w-4" />
+            )}
+            {isFollowUp ? "Remove follow-up" : "Follow up"}
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onMarkUnread}>
             <MailOpen className="mr-2 h-4 w-4" />
             Mark as unread
