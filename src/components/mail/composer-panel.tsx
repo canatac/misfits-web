@@ -25,6 +25,12 @@ import { ComposerToolbar } from "./composer/composer-toolbar";
 import { ComposerFooter } from "./composer/composer-footer";
 import { ComposerWarnings } from "./composer/composer-warnings";
 import { useComposerSend } from "./hooks/useComposerSend";
+import {
+  SendConfirmModal,
+  getRecipientThreshold,
+  setSkipSendConfirm,
+  shouldSkipSendConfirm,
+} from "./composer/send-confirm-modal";
 
 interface ComposerPanelProps {
   variant?: "panel" | "page";
@@ -69,6 +75,7 @@ export function ComposerPanel({
   const [sendLaterDate, setSendLaterDate] = useState<string>("");
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [aiEditor, setAiEditor] = useState<Editor | null>(null);
+  const [sendConfirmOpen, setSendConfirmOpen] = useState(false);
   const attachmentsSectionRef = useRef<HTMLDivElement>(null);
   const aiGenerating = useAIStore((s) => s.isGenerating);
 
@@ -138,6 +145,22 @@ export function ComposerPanel({
       behavior: "smooth",
       block: "start",
     });
+  };
+
+  const recipientCount = to.length + cc.length + bcc.length;
+
+  const requestSend = () => {
+    if (recipientCount > getRecipientThreshold() && !shouldSkipSendConfirm()) {
+      setSendConfirmOpen(true);
+      return;
+    }
+    handleSend();
+  };
+
+  const handleSendConfirm = (skipForSession: boolean) => {
+    if (skipForSession) setSkipSendConfirm(true);
+    setSendConfirmOpen(false);
+    handleSend();
   };
 
   return (
@@ -266,11 +289,21 @@ export function ComposerPanel({
         canSend={canSend}
         attachments={attachments}
         isComposerEmpty={subject.trim() === "" && body.trim() === ""}
+        recipientCount={recipientCount}
         onJumpToAttachments={jumpToAttachments}
-        onSend={() => handleSend()}
+        onSend={requestSend}
         onSendLater={(iso) => handleSend({ sendLater: iso })}
         onSaveDraft={handleSaveDraft}
         onDiscard={handleDiscard}
+      />
+
+      <SendConfirmModal
+        open={sendConfirmOpen}
+        to={to}
+        cc={cc}
+        bcc={bcc}
+        onConfirm={handleSendConfirm}
+        onCancel={() => setSendConfirmOpen(false)}
       />
 
       <AIComposerPanel

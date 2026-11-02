@@ -25,6 +25,7 @@ describe("ComposerFooter", () => {
           canSend
           attachments={[mkAttachment(), mkAttachment({ id: "att-2" })]}
           isComposerEmpty={false}
+          recipientCount={0}
           onJumpToAttachments={vi.fn()}
           onSend={vi.fn()}
           onSendLater={vi.fn()}
@@ -47,6 +48,7 @@ describe("ComposerFooter", () => {
           canSend
           attachments={[mkAttachment({ status: "uploading", progress: 40 })]}
           isComposerEmpty={false}
+          recipientCount={0}
           onJumpToAttachments={onJumpToAttachments}
           onSend={vi.fn()}
           onSendLater={vi.fn()}
@@ -69,6 +71,7 @@ describe("ComposerFooter", () => {
           canSend
           attachments={[]}
           isComposerEmpty={false}
+          recipientCount={0}
           onJumpToAttachments={vi.fn()}
           onSend={vi.fn()}
           onSendLater={vi.fn()}
@@ -95,6 +98,7 @@ describe("ComposerFooter", () => {
           canSend
           attachments={[]}
           isComposerEmpty={false}
+          recipientCount={0}
           onJumpToAttachments={vi.fn()}
           onSend={vi.fn()}
           onSendLater={vi.fn()}
@@ -118,6 +122,7 @@ describe("ComposerFooter", () => {
           canSend
           attachments={[]}
           isComposerEmpty={true}
+          recipientCount={0}
           onJumpToAttachments={vi.fn()}
           onSend={vi.fn()}
           onSendLater={vi.fn()}
@@ -135,5 +140,52 @@ describe("ComposerFooter", () => {
     });
     expect((brouillonBtn as HTMLButtonElement).disabled).toBe(true);
     expect((sendLaterBtn as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("shows the recipient count in the footer", () => {
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={false}
+          recipientCount={15}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    expect(screen.getByTestId("recipient-count").textContent).toContain("15");
+    expect(screen.getByTestId("recipient-count").textContent).toContain(
+      "recipients"
+    );
+  });
+
+  it("calls onSend with the current recipient count when Envoyer is clicked", () => {
+    const onSend = vi.fn();
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={false}
+          recipientCount={12}
+          onJumpToAttachments={vi.fn()}
+          onSend={onSend}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /envoyer/i }));
+    expect(onSend).toHaveBeenCalledTimes(1);
   });
 });
