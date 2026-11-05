@@ -19,12 +19,7 @@ export default function InboxPage() {
     try {
       router.replace("/mail");
     } catch {
-      // The navigation error is surfaced on the next tick so the loading
-      // state is painted first and the error state is a real transition.
-      const handle = setTimeout(() => {
-        setError("We could not open your inbox. Please try again.");
-      }, 0);
-      return () => clearTimeout(handle);
+      setError("We could not open your inbox. Please try again.");
     }
   }, [router]);
 
