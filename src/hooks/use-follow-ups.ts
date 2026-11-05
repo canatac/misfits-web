@@ -7,11 +7,14 @@
  * follow-up when it is marked as such (localStorage) or when the detector
  * flags it as needing a reply or a promise. Reminder intervals are
  * configurable (24h / 48h / 7 days) and persisted per user.
+ *
+ * The `reminders` API is kept for the reminder banner (issue #151): it is
+ * derived from the active follow-ups whose due date has passed.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEmailStore } from "@/stores/email-store";
-import type { FollowUpItem } from "@/types/follow-up";
+import type { FollowUpItem, FollowUpReminder } from "@/types/follow-up";
 
 const FOLLOW_UP_KEY = "misfits.followUps";
 const REMINDER_INTERVAL_KEY = "misfits.followUpReminderHours";
@@ -53,9 +56,15 @@ export function setReminderHours(hours: ReminderIntervalHours): void {
 
 /**
  * useFollowUps — returns the follow-up items for the current mailbox,
- * merging the detector output with the user-marked follow-ups.
+ * merging the detector output with the user-marked follow-ups, plus the
+ * derived reminders for the reminder banner.
  */
-export function useFollowUps() {
+export function useFollowUps(): {
+  followUps: FollowUpItem[];
+  reminders: FollowUpReminder[];
+  isScanning: boolean;
+  lastScanAt: string | null;
+} {
   const emails = useEmailStore((s) => s.emails);
   const [storedIds, setStoredIds] = useState<string[]>([]);
 
@@ -98,7 +107,41 @@ export function useFollowUps() {
     return items;
   }, [emails, storedIds]);
 
-  return { followUps, isScanning: false };
+  const reminders = useMemo<FollowUpReminder[]>(() => {
+    const now = Date.now();
+    return followUps
+      .filter((fu) => new Date(fu.dueDate).getTime() <= now)
+      .map((fu) => {
+        const daysWaiting = Math.max(
+          0,
+          Math.floor(
+            (now - new Date(fu.emailDate).getTime()) / (24 * 60 * 60 * 1000)
+          )
+        );
+        const overdueDays = Math.max(
+          0,
+          Math.floor(
+            (now - new Date(fu.dueDate).getTime()) / (24 * 60 * 60 * 1000)
+          )
+        );
+        return {
+          id: `reminder-${fu.id}`,
+          followUpId: fu.id,
+          emailId: fu.emailId,
+          message:
+            overdueDays > 0
+              ? `You have not replied to ${fu.senderName} in ${daysWaiting} day${daysWaiting === 1 ? "" : "s"}.`
+              : `Follow up with ${fu.senderName} today.`,
+          urgency: overdueDays >= 2 ? "urgent" : overdueDays >= 1 ? "warning" : "info",
+          senderName: fu.senderName,
+          subject: fu.subject,
+          daysWaiting,
+          createdAt: new Date().toISOString(),
+        };
+      });
+  }, [followUps]);
+
+  return { followUps, reminders, isScanning: false, lastScanAt: null };
 }
 
 export function useToggleFollowUp() {
@@ -141,6 +184,27 @@ export function useSnoozeFollowUp() {
       const ids = readStoredIds().filter((entry) => entry !== emailId);
       writeStoredIds(ids);
       return { emailId, untilISO };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["follow-ups"] });
+    },
+  });
+}
+
+/**
+ * Mutation hook: dismiss a reminder (removes it from the active reminders
+ * list by dismissing the underlying follow-up item).
+ */
+export function useDismissReminder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (followUpId: string) => {
+      const emailId = followUpId.startsWith("manual-")
+        ? followUpId.slice("manual-".length)
+        : followUpId;
+      const ids = readStoredIds().filter((entry) => entry !== emailId);
+      writeStoredIds(ids);
+      return followUpId;
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["follow-ups"] });

@@ -6,7 +6,8 @@
  * 3 days" or "You promised to send the report today".
  *
  * Renders a dismissible card per active reminder, stacked at the bottom-right.
- * Uses the follow-up store + reminder dismissal mutation. (Issue #151)
+ * Uses the follow-up hooks + reminder dismissal mutation. (Issue #151,
+ * extended by #1043: reminders derived from the localStorage follow-ups.)
  */
 import { useEffect, useState } from "react";
 import { Bell, X, AlertTriangle, Info, Clock } from "lucide-react";
