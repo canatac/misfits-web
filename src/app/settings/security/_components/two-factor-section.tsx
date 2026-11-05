@@ -13,7 +13,7 @@ function normalizeCode(value: string): string {
 }
 
 export function TwoFactorSection() {
-  const { status, setup, activate, deactivate, busy, error } = useTwoFactor();
+  const { status, setup, setup2fa, activate, deactivate, busy, error } = useTwoFactor();
   const [code, setCode] = React.useState("");
   const [copied, setCopied] = React.useState(false);
 
