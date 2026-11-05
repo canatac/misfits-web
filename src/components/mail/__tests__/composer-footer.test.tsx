@@ -1,18 +1,18 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ComposerFooter } from "@/components/mail/composer/composer-footer";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ComposerFooter } from "../composer/composer-footer";
 import type { Attachment } from "@/types/composer";
 
-function mkAttachment(overrides: Partial<Attachment> = {}): Attachment {
+function mkAttachment(partial: Partial<Attachment> = {}): Attachment {
   return {
-    id: "att-1",
-    filename: "facture.pdf",
-    contentType: "application/pdf",
-    size: 1024,
-    progress: 100,
-    status: "done",
-    ...overrides,
+    id: partial.id ?? "att-1",
+    filename: partial.filename ?? "facture.pdf",
+    contentType: partial.contentType ?? "application/pdf",
+    size: partial.size ?? 1024,
+    progress: partial.progress ?? 100,
+    status: partial.status ?? "done",
+    ...partial,
   };
 }
 
@@ -142,75 +142,6 @@ describe("ComposerFooter", () => {
     expect((sendLaterBtn as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("renders the send and send-later buttons", () => {
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={false}
-          canSend
-          attachments={[mkAttachment(), mkAttachment({ id: "att-2" })]}
-          isComposerEmpty={false}
-          recipientCount={0}
-          onJumpToAttachments={vi.fn()}
-          onSend={vi.fn()}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    expect(screen.getByRole("button", { name: "Envoyer" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /envoyer plus tard/i })).toBeTruthy();
-  });
-
-  it("calls onSend when the send button is clicked", () => {
-    const onSend = vi.fn();
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={false}
-          canSend
-          attachments={[mkAttachment({ status: "uploading", progress: 40 })]}
-          isComposerEmpty={false}
-          recipientCount={0}
-          onJumpToAttachments={vi.fn()}
-          onSend={onSend}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
-    expect(onSend).toHaveBeenCalledTimes(1);
-  });
-
-  it("disables send when the composer is empty", () => {
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={false}
-          canSend={false}
-          attachments={[]}
-          isComposerEmpty={true}
-          recipientCount={0}
-          onJumpToAttachments={vi.fn()}
-          onSend={vi.fn()}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    const sendBtn = screen.getByRole("button", { name: "Envoyer" }) as HTMLButtonElement;
-    const sendLaterBtn = screen.getByRole("button", { name: /envoyer plus tard/i }) as HTMLButtonElement;
-    expect(sendBtn.disabled).toBe(true);
-    expect(sendLaterBtn.disabled).toBe(true);
-  });
-
   it("shows the recipient count in the footer", () => {
     render(
       <TooltipProvider>
@@ -233,28 +164,5 @@ describe("ComposerFooter", () => {
     expect(screen.getByTestId("recipient-count").textContent).toContain(
       "recipients"
     );
-  });
-
-  it("calls onSend with the current recipient count when Envoyer is clicked", () => {
-    const onSend = vi.fn();
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={false}
-          canSend
-          attachments={[]}
-          isComposerEmpty={false}
-          recipientCount={12}
-          onJumpToAttachments={vi.fn()}
-          onSend={onSend}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
-    expect(onSend).toHaveBeenCalledTimes(1);
   });
 });

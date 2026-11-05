@@ -9,6 +9,27 @@ import {
 } from "../composer/send-confirm-modal";
 import type { Recipient } from "@/types/composer";
 
+const handleSend = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+vi.mock("../hooks/useComposerSend", () => ({
+  useComposerSend: () => ({
+    isSending: false,
+    canSend: true,
+    hasExternal: false,
+    attachmentMention: false,
+    invalidRecipients: [],
+    undoBanner: null,
+    handleSend,
+    handleUndoSend: vi.fn(),
+    handleSaveDraft: vi.fn(),
+    handleDiscard: vi.fn(),
+  }),
+}));
+
 function mkRecipient(id: string): Recipient {
   return { id, email: `${id}@example.com`, type: "to" } as Recipient;
 }
@@ -24,6 +45,7 @@ function seedRecipients(count: number) {
 
 afterEach(() => {
   window.localStorage.clear();
+  handleSend.mockClear();
   useComposerStore.getState().setRecipients("to", []);
   useComposerStore.getState().setRecipients("cc", []);
   useComposerStore.getState().setRecipients("bcc", []);
@@ -44,6 +66,7 @@ describe("ComposerPanel recipient threshold gate", () => {
         new RegExp(`sending to ${DEFAULT_RECIPIENT_THRESHOLD + 1} recipients`, "i")
       )
     ).toBeTruthy();
+    expect(handleSend).not.toHaveBeenCalled();
   });
 
   it("sends directly when the recipient count is below the threshold", () => {
@@ -53,6 +76,7 @@ describe("ComposerPanel recipient threshold gate", () => {
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(handleSend).toHaveBeenCalledTimes(1);
   });
 
   it("sends directly when the skip preference is stored", () => {
@@ -63,6 +87,7 @@ describe("ComposerPanel recipient threshold gate", () => {
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(handleSend).toHaveBeenCalledTimes(1);
   });
 
   it("uses a stored threshold instead of the default", async () => {
@@ -84,5 +109,16 @@ describe("ComposerPanel recipient threshold gate", () => {
     fireEvent.click(await screen.findByRole("button", { name: /cancel/i }));
 
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(handleSend).not.toHaveBeenCalled();
+  });
+
+  it("confirms the modal and sends", async () => {
+    seedRecipients(DEFAULT_RECIPIENT_THRESHOLD + 1);
+    render(<ComposerPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
+    fireEvent.click(await screen.findByRole("button", { name: /confirm send/i }));
+
+    await waitFor(() => expect(handleSend).toHaveBeenCalledTimes(1));
   });
 });
