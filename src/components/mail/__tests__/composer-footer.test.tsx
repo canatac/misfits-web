@@ -7,16 +7,141 @@ import type { Attachment } from "@/types/composer";
 function mkAttachment(overrides: Partial<Attachment> = {}): Attachment {
   return {
     id: "att-1",
-    name: "file.txt",
-    size: 10,
-    mimeType: "text/plain",
-    status: "done",
+    filename: "facture.pdf",
+    contentType: "application/pdf",
+    size: 1024,
     progress: 100,
+    status: "done",
     ...overrides,
-  } as Attachment;
+  };
 }
 
 describe("ComposerFooter", () => {
+  it("shows attachment summary in compact composer", () => {
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[mkAttachment(), mkAttachment({ id: "att-2" })]}
+          isComposerEmpty={false}
+          recipientCount={0}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    expect(screen.getByText(/2 pièces jointes/i)).toBeTruthy();
+    expect(screen.getByText(/prête\(s\) à l'envoi/i)).toBeTruthy();
+  });
+
+  it("lets user jump to attachment zone", () => {
+    const onJumpToAttachments = vi.fn();
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[mkAttachment({ status: "uploading", progress: 40 })]}
+          isComposerEmpty={false}
+          recipientCount={0}
+          onJumpToAttachments={onJumpToAttachments}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /voir/i }));
+    expect(onJumpToAttachments).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/upload en cours/i)).toBeTruthy();
+  });
+
+  it("renders Brouillon and Envoyer plus tard buttons", () => {
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={false}
+          recipientCount={0}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    expect(
+      screen.getByRole("button", { name: /sauvegarder le brouillon/i })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /envoyer plus tard/i })
+    ).toBeTruthy();
+  });
+
+  it("calls onSaveDraft when Brouillon is clicked", () => {
+    const onSaveDraft = vi.fn();
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={false}
+          recipientCount={0}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={onSaveDraft}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /sauvegarder le brouillon/i })
+    );
+    expect(onSaveDraft).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables Brouillon and Envoyer plus tard when composer is empty", () => {
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={true}
+          recipientCount={0}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    const brouillonBtn = screen.getByRole("button", {
+      name: /sauvegarder le brouillon/i,
+    });
+    const sendLaterBtn = screen.getByRole("button", {
+      name: /envoyer plus tard/i,
+    });
+    expect((brouillonBtn as HTMLButtonElement).disabled).toBe(true);
+    expect((sendLaterBtn as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it("renders the send and send-later buttons", () => {
     render(
       <TooltipProvider>
@@ -60,28 +185,6 @@ describe("ComposerFooter", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
     expect(onSend).toHaveBeenCalledTimes(1);
-  });
-
-  it("shows the attachment count and jumps to attachments", () => {
-    const onJumpToAttachments = vi.fn();
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={false}
-          canSend
-          attachments={[]}
-          isComposerEmpty={false}
-          recipientCount={0}
-          onJumpToAttachments={onJumpToAttachments}
-          onSend={vi.fn()}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    expect(onJumpToAttachments).not.toHaveBeenCalled();
   });
 
   it("disables send when the composer is empty", () => {
