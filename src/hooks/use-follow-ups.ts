@@ -4,15 +4,14 @@
  * Follow-up store hooks (issue #151, extended by #1043).
  *
  * The follow-up set is derived from the local email store: an email is a
- * follow-up when it is marked as such (localStorage) or when the detector
- * flags it as needing a reply or a promise. Reminder intervals are
+ * follow-up when it is marked as such (localStorage). Reminder intervals are
  * configurable (24h / 48h / 7 days) and persisted per user.
  *
  * The `reminders` API is kept for the reminder banner (issue #151): it is
  * derived from the active follow-ups whose due date has passed.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEmailStore } from "@/stores/email-store";
 import type { FollowUpItem, FollowUpReminder } from "@/types/follow-up";
 
@@ -67,11 +66,16 @@ export function useFollowUps(): {
 } {
   const emails = useEmailStore((s) => s.emails);
   const [storedIds, setStoredIds] = useState<string[]>([]);
+  const [reminderHours, setReminderHoursState] = useState<ReminderIntervalHours>(
+    DEFAULT_REMINDER_HOURS
+  );
 
   useEffect(() => {
     setStoredIds(readStoredIds());
+    setReminderHoursState(getReminderHours());
     const onStorage = (e: StorageEvent) => {
       if (e.key === FOLLOW_UP_KEY) setStoredIds(readStoredIds());
+      if (e.key === REMINDER_INTERVAL_KEY) setReminderHoursState(getReminderHours());
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -83,7 +87,7 @@ export function useFollowUps(): {
       if (storedIds.includes(email.id)) {
         const detectedAt = email.date;
         const dueDate = new Date(
-          new Date(email.date).getTime() + getReminderHours() * 60 * 60 * 1000
+          new Date(email.date).getTime() + reminderHours * 60 * 60 * 1000
         ).toISOString();
         items.push({
           id: `manual-${email.id}`,
@@ -105,7 +109,7 @@ export function useFollowUps(): {
       }
     }
     return items;
-  }, [emails, storedIds]);
+  }, [emails, storedIds, reminderHours]);
 
   const reminders = useMemo<FollowUpReminder[]>(() => {
     const now = Date.now();
@@ -146,6 +150,7 @@ export function useFollowUps(): {
 
 export function useToggleFollowUp() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (emailId: string) => {
       const ids = readStoredIds();
@@ -163,6 +168,7 @@ export function useToggleFollowUp() {
 
 export function useDismissFollowUp() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (id: string) => {
       const emailId = id.startsWith("manual-") ? id.slice("manual-".length) : id;
@@ -178,6 +184,7 @@ export function useDismissFollowUp() {
 
 export function useSnoozeFollowUp() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async ({ id, untilISO }: { id: string; untilISO: string }) => {
       const emailId = id.startsWith("manual-") ? id.slice("manual-".length) : id;
@@ -197,6 +204,7 @@ export function useSnoozeFollowUp() {
  */
 export function useDismissReminder() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (followUpId: string) => {
       const emailId = followUpId.startsWith("manual-")

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { useRouter } from "next/navigation";
 import InboxPage from "../page";
 
@@ -28,12 +28,12 @@ describe("InboxPage", () => {
     expect(screen.getByRole("status").textContent).toContain("Opening your inbox");
   });
 
-  it("shows an error state with retry when navigation fails", async () => {
+  it("shows an error state with retry when navigation fails", () => {
     replace.mockImplementation(() => {
       throw new Error("navigation failed");
     });
     render(<InboxPage />);
-    await waitFor(() => expect(screen.getByTestId("inbox-error")).toBeTruthy());
+    expect(screen.getByTestId("inbox-error")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toContain("could not open your inbox");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(replace).toHaveBeenCalledTimes(2);
