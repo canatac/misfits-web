@@ -2,6 +2,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FollowUpList } from "../follow-up-list";
 import { EmailToolbar } from "../email-view/email-toolbar";
 import {
@@ -10,6 +11,13 @@ import {
   getReminderHours,
   setReminderHours,
 } from "@/hooks/use-follow-ups";
+
+function renderWithProviders(ui: React.ReactNode) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
 
 describe("follow-up reminders (issue #1043)", () => {
   beforeEach(() => {
@@ -34,12 +42,12 @@ describe("follow-up reminders (issue #1043)", () => {
   });
 
   it("shows the reminder interval selector in the follow-up list", () => {
-    render(<FollowUpList />);
+    renderWithProviders(<FollowUpList />);
     expect(screen.getByTestId("followup-reminder-interval")).toBeTruthy();
   });
 
   it("renders the follow-up toggle in the email toolbar", () => {
-    render(
+    renderWithProviders(
       <EmailToolbar
         isStarred={false}
         isFollowUp={false}
@@ -65,7 +73,7 @@ describe("follow-up reminders (issue #1043)", () => {
 
   it("calls onToggleFollowUp when the toolbar action is clicked", () => {
     let clicked = 0;
-    render(
+    renderWithProviders(
       <EmailToolbar
         isStarred={false}
         isFollowUp={false}
