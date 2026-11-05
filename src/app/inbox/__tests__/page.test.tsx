@@ -35,7 +35,9 @@ describe("InboxPage", () => {
     render(<InboxPage />);
     expect(screen.getByTestId("inbox-error")).toBeTruthy();
     expect(screen.getByRole("alert").textContent).toContain("could not open your inbox");
+    replace.mockReset();
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(replace).toHaveBeenCalledTimes(2);
+    expect(replace).toHaveBeenCalledTimes(1);
+    expect(replace).toHaveBeenCalledWith("/mail");
   });
 });
