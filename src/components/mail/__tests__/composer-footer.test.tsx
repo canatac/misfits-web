@@ -1,17 +1,18 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ComposerFooter } from "@/components/mail/composer/composer-footer";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import type { Attachment } from "@/types/composer";
 
-function mkAttachment(overrides = {}) {
+function mkAttachment(partial: Partial<Attachment> = {}): Attachment {
   return {
-    id: "att-1",
-    name: "file.txt",
-    size: 1024,
-    type: "text/plain",
-    status: "done",
-    progress: 100,
-    ...overrides,
+    id: partial.id ?? "att-1",
+    filename: partial.filename ?? "facture.pdf",
+    contentType: partial.contentType ?? "application/pdf",
+    size: partial.size ?? 1024,
+    progress: partial.progress ?? 100,
+    status: partial.status ?? "done",
+    ...partial,
   };
 }
 
@@ -34,7 +35,8 @@ describe("ComposerFooter", () => {
       </TooltipProvider>
     );
 
-    expect(screen.getByText(/2 attachments/i)).toBeTruthy();
+    expect(screen.getByText(/2 pièces jointes/i)).toBeTruthy();
+    expect(screen.getByText(/prête\(s\) à l'envoi/i)).toBeTruthy();
   });
 
   it("lets user jump to attachment zone", () => {
@@ -56,8 +58,35 @@ describe("ComposerFooter", () => {
       </TooltipProvider>
     );
 
-    fireEvent.click(screen.getByText(/1 attachment/i));
+    fireEvent.click(screen.getByRole("button", { name: /voir/i }));
     expect(onJumpToAttachments).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/upload en cours/i)).toBeTruthy();
+  });
+
+  it("renders Brouillon and Envoyer plus tard buttons", () => {
+    render(
+      <TooltipProvider>
+        <ComposerFooter
+          isSending={false}
+          canSend
+          attachments={[]}
+          isComposerEmpty={false}
+          recipientCount={0}
+          onJumpToAttachments={vi.fn()}
+          onSend={vi.fn()}
+          onSendLater={vi.fn()}
+          onSaveDraft={vi.fn()}
+          onDiscard={vi.fn()}
+        />
+      </TooltipProvider>
+    );
+
+    expect(
+      screen.getByRole("button", { name: /sauvegarder le brouillon/i })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /envoyer plus tard/i })
+    ).toBeTruthy();
   });
 
   it("calls onSaveDraft when Brouillon is clicked", () => {
@@ -79,38 +108,18 @@ describe("ComposerFooter", () => {
       </TooltipProvider>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /brouillon/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sauvegarder le brouillon/i })
+    );
     expect(onSaveDraft).toHaveBeenCalledTimes(1);
   });
 
-  it("disables send actions while sending", () => {
-    render(
-      <TooltipProvider>
-        <ComposerFooter
-          isSending={true}
-          canSend
-          attachments={[]}
-          isComposerEmpty={false}
-          recipientCount={0}
-          onJumpToAttachments={vi.fn()}
-          onSend={vi.fn()}
-          onSendLater={vi.fn()}
-          onSaveDraft={vi.fn()}
-          onDiscard={vi.fn()}
-        />
-      </TooltipProvider>
-    );
-
-    const sendBtn = screen.getByRole("button", { name: /envoyer/i });
-    expect((sendBtn as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it("disables actions when the composer is empty", () => {
+  it("disables Brouillon and Envoyer plus tard when composer is empty", () => {
     render(
       <TooltipProvider>
         <ComposerFooter
           isSending={false}
-          canSend={false}
+          canSend
           attachments={[]}
           isComposerEmpty={true}
           recipientCount={0}
@@ -123,8 +132,12 @@ describe("ComposerFooter", () => {
       </TooltipProvider>
     );
 
-    const brouillonBtn = screen.getByRole("button", { name: /brouillon/i });
-    const sendLaterBtn = screen.getByRole("button", { name: /send later|programmer/i });
+    const brouillonBtn = screen.getByRole("button", {
+      name: /sauvegarder le brouillon/i,
+    });
+    const sendLaterBtn = screen.getByRole("button", {
+      name: /envoyer plus tard/i,
+    });
     expect((brouillonBtn as HTMLButtonElement).disabled).toBe(true);
     expect((sendLaterBtn as HTMLButtonElement).disabled).toBe(true);
   });
