@@ -1,14 +1,33 @@
+"use client";
+
 import { useState } from "react";
+import {
+  Check,
+  Clock,
+  Keyboard,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  PanelTop,
+  PanelBottom,
+  Save,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
+import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 import { relativeTime } from "@/stores/composer-store-helpers";
 import type { SaveStatus } from "@/stores/composer-store-helpers";
-import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 
 interface ComposerToolbarProps {
   isDirty: boolean;
@@ -19,10 +38,10 @@ interface ComposerToolbarProps {
   aiGenerating: boolean;
   sendLaterDate: string;
   saveStatus: SaveStatus;
-  lastSavedAt: Date | null;
+  lastSavedAt: string | null;
   onToggleAI: () => void;
-  onSetSendLaterDate: (date: string) => void;
-  onSendLater: () => void;
+  onSetSendLaterDate: (v: string) => void;
+  onSendLater: (iso: string) => void;
   onSaveDraft: () => void;
   onToggleCompact: () => void;
   onToggleFullScreen: () => void;
@@ -52,117 +71,155 @@ export function ComposerToolbar({
   const saveIndicator = (() => {
     switch (saveStatus) {
       case "saving":
-        return "Enregistrement...";
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#A1A1AA]">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Sauvegarde...
+          </span>
+        );
       case "saved":
-        return lastSavedAt
-          ? `Enregistré ${relativeTime(lastSavedAt)}`
-          : "Brouillon enregistré";
-      case "error":
-        return "Erreur d'enregistrement";
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#22C55E]">
+            <Check className="h-3 w-3" />
+            {lastSavedAt ? `Sauvegardé ${relativeTime(lastSavedAt)}` : "Sauvegardé"}
+          </span>
+        );
       default:
-        return null;
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-[#A1A1AA]">
+            <Save className="h-3 w-3" />
+            {isDirty ? "Brouillon non sauvegardé" : "Brouillon sauvegardé"}
+          </span>
+        );
     }
   })();
 
   return (
-    <div
-      className={
-        "flex items-center gap-1 border-b px-2 py-1" +
-        (isFullScreen ? " hidden" : "")
-      }
-    >
-      <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 border-b border-[#242427] bg-[#121214] px-3 py-2">
+      {saveIndicator}
+      <div className="ml-auto flex items-center gap-1">
         <AIToolbarButton
-          showAIPanel={showAIPanel}
-          aiGenerating={aiGenerating}
-          onToggleAI={onToggleAI}
+          active={showAIPanel}
+          loading={aiGenerating}
+          onClick={onToggleAI}
         />
 
-        {saveIndicator && (
-          <span className="text-xs text-muted-foreground">{saveIndicator}</span>
-        )}
-
-        <div className="ml-auto flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 border border-[#242427] bg-[#1D1D20] text-[#E0E0E0] hover:border-[#C49B66]/50 hover:bg-[#242427]"
+            >
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">Programmer</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-72">
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-medium">Schedule send</label>
+              <input
+                type="datetime-local"
+                value={sendLaterDate}
+                onChange={(e) => onSetSendLaterDate(e.target.value)}
+                className="rounded-[var(--radius-md)] border border-[var(--color-input-border)] bg-[var(--color-input)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none"
+              />
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggleCompact}
-                aria-label="Mode compact"
+                size="sm"
+                disabled={!sendLaterDate || isSending}
+                onClick={() =>
+                  onSendLater(new Date(sendLaterDate).toISOString())
+                }
               >
-                <span aria-hidden="true">{isCompact ? "⤢" : "⤡"}</span>
+                Schedule
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {isCompact ? "Agrandir" : "Réduire"}
-            </TooltipContent>
-          </Tooltip>
+            </div>
+          </PopoverContent>
+        </Popover>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggleFullScreen}
-                aria-label="Plein écran"
-              >
-                <span aria-hidden="true">{isFullScreen ? "⤡" : "⤢"}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Plein écran</TooltipContent>
-          </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSaveDraft}
+              className="gap-1.5"
+            >
+              <Save className="h-4 w-4" />
+              <span className="hidden sm:inline">Save</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Save draft</TooltipContent>
+        </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowShortcuts(true)}
-                aria-label="Keyboard shortcuts"
-              >
-                <KeyboardIcon className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Keyboard shortcuts</TooltipContent>
-          </Tooltip>
-
-          {onClose && (
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              onClick={onClose}
-              aria-label="Fermer"
+              onClick={onToggleCompact}
+              aria-label="Toggle compact"
             >
-              <span aria-hidden="true">✕</span>
+              {isCompact ? (
+                <PanelTop className="h-4 w-4" />
+              ) : (
+                <PanelBottom className="h-4 w-4" />
+              )}
             </Button>
-          )}
-        </div>
+          </TooltipTrigger>
+          <TooltipContent>{isCompact ? "Expand" : "Compact"}</TooltipContent>
+        </Tooltip>
 
-        <KeyboardShortcutsHelp
-          open={showShortcuts}
-          onClose={() => setShowShortcuts(false)}
-        />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFullScreen}
+              aria-label="Toggle full screen"
+            >
+              {isFullScreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isFullScreen ? "Exit full screen" : "Full screen"}
+          </TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Keyboard shortcuts"
+            >
+              <Keyboard className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Keyboard shortcuts</TooltipContent>
+        </Tooltip>
+
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close composer"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
-    </div>
-  );
-}
 
-function KeyboardIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
-    </svg>
+      <KeyboardShortcutsHelp
+        open={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
+    </div>
   );
 }

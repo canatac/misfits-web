@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ComposerToolbar } from "@/components/mail/composer/composer-toolbar";
 
 describe("ComposerToolbar keyboard shortcuts entry point", () => {
-  it("opens the cheat sheet modal when the toolbar button is clicked", () => {
+  const renderToolbar = () =>
     render(
       <ComposerToolbar
         isDirty={false}
@@ -23,6 +23,9 @@ describe("ComposerToolbar keyboard shortcuts entry point", () => {
         onToggleFullScreen={() => {}}
       />,
     );
+
+  it("opens the cheat sheet modal when the toolbar button is clicked", () => {
+    renderToolbar();
 
     expect(screen.queryByText("Raccourcis clavier")).toBeNull();
 
@@ -32,25 +35,7 @@ describe("ComposerToolbar keyboard shortcuts entry point", () => {
   });
 
   it("closes the cheat sheet modal via the close button", () => {
-    render(
-      <ComposerToolbar
-        isDirty={false}
-        isSending={false}
-        isCompact={false}
-        isFullScreen={false}
-        showAIPanel={false}
-        aiGenerating={false}
-        sendLaterDate=""
-        saveStatus="saved"
-        lastSavedAt={null}
-        onToggleAI={() => {}}
-        onSetSendLaterDate={() => {}}
-        onSendLater={() => {}}
-        onSaveDraft={() => {}}
-        onToggleCompact={() => {}}
-        onToggleFullScreen={() => {}}
-      />,
-    );
+    renderToolbar();
 
     fireEvent.click(screen.getByLabelText("Keyboard shortcuts"));
     fireEvent.click(screen.getByLabelText("Fermer"));
