@@ -1,13 +1,14 @@
 import * as React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { TwoFactorSection } from "../two-factor-section";
 
-const setup2fa = jest.fn();
-const activate = jest.fn();
-const deactivate = jest.fn();
+const setup2fa = vi.fn();
+const activate = vi.fn();
+const deactivate = vi.fn();
 
-jest.mock("@/hooks/use-two-factor", () => ({
+vi.mock("@/hooks/use-two-factor", () => ({
   useTwoFactor: () => ({
     status: { enabled: false, qrCode: null, secret: null, recoveryCodes: [] },
     setup: { qrCode: "data:image/png;base64,AA", secret: "JBSWY3DPEHPK3PXP", recoveryCodes: ["aaaa-bbbb", "cccc-dddd"] },
@@ -18,6 +19,10 @@ jest.mock("@/hooks/use-two-factor", () => ({
     deactivate,
   }),
 }));
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("TwoFactorSection", () => {
   it("shows the QR code and the manual setup key", () => {
