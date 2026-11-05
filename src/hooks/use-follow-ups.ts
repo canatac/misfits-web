@@ -40,7 +40,7 @@ function writeStoredIds(ids: string[]): void {
 
 export function getReminderHours(): ReminderIntervalHours {
   if (typeof window === "undefined") return DEFAULT_REMINDER_HOURS;
-  const raw = Number(window.localStorage.getItem(REMINDER_INTERVALS_KEY));
+  const raw = Number(window.localStorage.getItem(REMINDER_INTERVAL_KEY));
   return (REMINDER_INTERVALS_HOURS as readonly number[]).includes(raw)
     ? (raw as ReminderIntervalHours)
     : DEFAULT_REMINDER_HOURS;
@@ -48,7 +48,7 @@ export function getReminderHours(): ReminderIntervalHours {
 
 export function setReminderHours(hours: ReminderIntervalHours): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(REMINDER_INTERVALS_KEY, String(hours));
+  window.localStorage.setItem(REMINDER_INTERVAL_KEY, String(hours));
 }
 
 /**
@@ -72,15 +72,26 @@ export function useFollowUps() {
     const items: FollowUpItem[] = [];
     for (const email of emails) {
       if (storedIds.includes(email.id)) {
+        const detectedAt = email.date;
+        const dueDate = new Date(
+          new Date(email.date).getTime() + getReminderHours() * 60 * 60 * 1000
+        ).toISOString();
         items.push({
           id: `manual-${email.id}`,
           emailId: email.id,
-          type: "reply",
-          senderName: email.fromName || email.from,
-          senderAddress: email.from,
+          threadId: email.threadId,
+          type: "needs_reply",
+          status: "pending",
+          senderName: email.from.name || email.from.address,
+          senderAddress: email.from.address,
           subject: email.subject,
           emailDate: email.date,
-          createdAt: email.date,
+          dueDate,
+          detectedAt,
+          updatedAt: detectedAt,
+          confidence: 0.7,
+          source: "rules",
+          reasoning: "Marked as follow-up by the user.",
         });
       }
     }
