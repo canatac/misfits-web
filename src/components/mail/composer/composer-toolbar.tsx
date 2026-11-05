@@ -25,6 +25,7 @@ import {
 import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
 import { relativeTime } from "@/stores/composer-store-helpers";
 import type { SaveStatus } from "@/stores/composer-store-helpers";
+import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 
 interface ComposerToolbarProps {
   isDirty: boolean;
@@ -63,6 +64,8 @@ export function ComposerToolbar({
   onToggleFullScreen,
   onClose,
 }: ComposerToolbarProps) {
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
   const saveIndicator = (() => {
     switch (saveStatus) {
       case "saving":
@@ -185,6 +188,20 @@ export function ComposerToolbar({
           </TooltipContent>
         </Tooltip>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Keyboard shortcuts"
+            >
+              <KeyboardIcon className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Keyboard shortcuts</TooltipContent>
+        </Tooltip>
+
         {onClose && (
           <Button
             variant="ghost"
@@ -196,6 +213,30 @@ export function ComposerToolbar({
           </Button>
         )}
       </div>
+
+      <KeyboardShortcutsHelp
+        open={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
     </div>
+  );
+}
+
+function KeyboardIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6" />
+    </svg>
   );
 }
