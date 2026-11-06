@@ -6,7 +6,6 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
 
 describe("OAuth2ProviderPicker", () => {
@@ -93,8 +92,7 @@ describe("OAuth2ProviderPicker", () => {
     ).toBe("true");
   });
 
-  it("reaches every option by keyboard", async () => {
-    const user = userEvent.setup();
+  it("reaches every option by keyboard", () => {
     const onSelect = vi.fn();
     render(
       <OAuth2ProviderPicker
@@ -114,12 +112,21 @@ describe("OAuth2ProviderPicker", () => {
 
     gmail.focus();
     expect(document.activeElement).toBe(gmail);
-    await user.tab();
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: "Tab",
+      code: "Tab",
+    });
     expect(document.activeElement).toBe(outlook);
-    await user.tab();
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: "Tab",
+      code: "Tab",
+    });
     expect(document.activeElement).toBe(other);
 
-    await user.keyboard("{Enter}");
+    fireEvent.keyDown(document.activeElement as HTMLElement, {
+      key: "Enter",
+      code: "Enter",
+    });
     expect(onSelect).toHaveBeenCalledWith("other");
   });
 });
