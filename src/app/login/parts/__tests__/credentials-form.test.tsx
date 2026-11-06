@@ -39,15 +39,12 @@ describe("CredentialsForm password error announcement", () => {
 
     const passwordField = screen.getByLabelText("Password");
 
-    expect(passwordField).toHaveAttribute("aria-invalid", "true");
-    expect(passwordField).toHaveAttribute(
-      "aria-describedby",
+    expect(passwordField.getAttribute("aria-invalid")).toBe("true");
+    expect(passwordField.getAttribute("aria-describedby")).toBe(
       "password-error"
     );
-    expect(screen.getByText(/Incorrect password/)).toHaveAttribute(
-      "role",
-      "alert"
-    );
+    const alert = screen.getByText(/Incorrect password/);
+    expect(alert.getAttribute("role")).toBe("alert");
   });
 
   it("does not reference the error message when credentials are valid", () => {
@@ -55,20 +52,15 @@ describe("CredentialsForm password error announcement", () => {
 
     const passwordField = screen.getByLabelText("Password");
 
-    expect(passwordField).toHaveAttribute("aria-invalid", "false");
-    expect(passwordField).toHaveAttribute(
-      "aria-describedby",
-      "password-help"
-    );
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(passwordField.getAttribute("aria-invalid")).toBe("false");
+    expect(passwordField.getAttribute("aria-describedby")).toBe("password-help");
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("keeps the character count in the live region, not in the error message", () => {
     renderForm({ invalidCredentials: false, password: "secret" });
 
-    expect(screen.getByText("6 characters entered.")).toHaveAttribute(
-      "aria-live",
-      "polite"
-    );
+    const counter = screen.getByText("6 characters entered.");
+    expect(counter.getAttribute("aria-live")).toBe("polite");
   });
 });
