@@ -6,10 +6,11 @@ import { CredentialsForm } from "../credentials-form";
 type RenderOptions = {
   invalidCredentials?: boolean;
   password?: string;
+  oauthPending?: "github" | null;
 };
 
 function renderForm(options: RenderOptions = {}) {
-  const { invalidCredentials = false, password = "" } = options;
+  const { invalidCredentials = false, password = "", oauthPending = null } = options;
 
   return render(
     <CredentialsForm
@@ -27,7 +28,7 @@ function renderForm(options: RenderOptions = {}) {
       rateLimited={false}
       retryAfter={undefined}
       invalidCredentials={invalidCredentials}
-      oauthPending={null}
+      oauthPending={oauthPending}
       onGithub={() => {}}
     />
   );
@@ -62,5 +63,28 @@ describe("CredentialsForm password error announcement", () => {
 
     const counter = screen.getByText("6 characters entered.");
     expect(counter.getAttribute("aria-live")).toBe("polite");
+  });
+});
+
+describe("CredentialsForm GitHub sign-in button", () => {
+  it("shows the label in English, matching the rest of the login card", () => {
+    renderForm();
+
+    const button = screen.getByRole("button", { name: /Continue with GitHub/ });
+
+    expect(button).toBeTruthy();
+    expect(screen.queryByText(/Continuer avec GitHub/)).toBeNull();
+  });
+
+  it("shows a visible loading label while the GitHub redirect is pending", () => {
+    renderForm({ oauthPending: "github" });
+
+    const button = screen.getByRole("button", {
+      name: /Connecting to GitHub/,
+    });
+
+    expect(button).toBeTruthy();
+    expect(button.hasAttribute("disabled")).toBe(true);
+    expect(screen.queryByText("Continue with GitHub")).toBeNull();
   });
 });
