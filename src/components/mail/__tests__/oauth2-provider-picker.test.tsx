@@ -1,9 +1,11 @@
 /**
  * Tests for the OAuth2 provider picker states and keyboard operability.
+ *
+ * Uses only packages present in package.json (@testing-library/react,
+ * vitest) and native DOM assertions, so typecheck and lint stay green.
  */
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
 
 describe("OAuth2ProviderPicker", () => {
@@ -17,7 +19,7 @@ describe("OAuth2ProviderPicker", () => {
         onSelect={() => {}}
       />
     );
-    expect(screen.getByTestId("oauth2-provider-loading")).toHaveTextContent(
+    expect(screen.getByTestId("oauth2-provider-loading").textContent).toMatch(
       /loading providers/i
     );
   });
@@ -32,12 +34,12 @@ describe("OAuth2ProviderPicker", () => {
         onSelect={() => {}}
       />
     );
-    expect(screen.getByTestId("oauth2-provider-empty")).toHaveTextContent(
+    expect(screen.getByTestId("oauth2-provider-empty").textContent).toMatch(
       /no oauth2 provider is available/i
     );
   });
 
-  it("shows an error state with a retry action", async () => {
+  it("shows an error state with a retry action", () => {
     const onRetry = vi.fn();
     render(
       <OAuth2ProviderPicker
@@ -49,14 +51,14 @@ describe("OAuth2ProviderPicker", () => {
         onRetry={onRetry}
       />
     );
-    expect(screen.getByTestId("oauth2-provider-error")).toHaveTextContent(
+    expect(screen.getByTestId("oauth2-provider-error").textContent).toMatch(
       /http 500/i
     );
-    await userEvent.click(screen.getByRole("button", { name: /retry/i }));
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(onRetry).toHaveBeenCalledOnce();
   });
 
-  it("renders the catalogue options and selects one on click", async () => {
+  it("renders the catalogue options and selects one on click", () => {
     const onSelect = vi.fn();
     render(
       <OAuth2ProviderPicker
@@ -71,7 +73,7 @@ describe("OAuth2ProviderPicker", () => {
         onSelect={onSelect}
       />
     );
-    await userEvent.click(screen.getByTestId("oauth2-provider-gmail"));
+    fireEvent.click(screen.getByTestId("oauth2-provider-gmail"));
     expect(onSelect).toHaveBeenCalledWith("gmail");
   });
 
@@ -85,13 +87,12 @@ describe("OAuth2ProviderPicker", () => {
         onSelect={() => {}}
       />
     );
-    expect(screen.getByRole("radio", { name: /gmail/i })).toHaveAttribute(
-      "aria-checked",
-      "true"
-    );
+    expect(
+      screen.getByRole("radio", { name: /gmail/i }).getAttribute("aria-checked")
+    ).toBe("true");
   });
 
-  it("reaches every option by keyboard", async () => {
+  it("reaches every option by keyboard", () => {
     const onSelect = vi.fn();
     render(
       <OAuth2ProviderPicker
@@ -110,13 +111,13 @@ describe("OAuth2ProviderPicker", () => {
     const other = screen.getByTestId("oauth2-provider-other");
 
     gmail.focus();
-    expect(gmail).toHaveFocus();
-    await userEvent.tab();
-    expect(outlook).toHaveFocus();
-    await userEvent.tab();
-    expect(other).toHaveFocus();
+    expect(document.activeElement).toBe(gmail);
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Tab" });
+    expect(document.activeElement).toBe(outlook);
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Tab" });
+    expect(document.activeElement).toBe(other);
 
-    await userEvent.keyboard("{Enter}");
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: "Enter" });
     expect(onSelect).toHaveBeenCalledWith("other");
   });
 });
