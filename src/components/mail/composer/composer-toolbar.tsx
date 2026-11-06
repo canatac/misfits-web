@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import {
   Check,
   Clock,
+  Keyboard,
   Loader2,
   Maximize2,
   Minimize2,
@@ -23,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AIToolbarButton } from "@/components/mail/ai-toolbar-button";
+import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 import { relativeTime } from "@/stores/composer-store-helpers";
 import type { SaveStatus } from "@/stores/composer-store-helpers";
 
@@ -63,6 +66,8 @@ export function ComposerToolbar({
   onToggleFullScreen,
   onClose,
 }: ComposerToolbarProps) {
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
   const saveIndicator = (() => {
     switch (saveStatus) {
       case "saving":
@@ -185,6 +190,20 @@ export function ComposerToolbar({
           </TooltipContent>
         </Tooltip>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Keyboard shortcuts"
+            >
+              <Keyboard className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Keyboard shortcuts</TooltipContent>
+        </Tooltip>
+
         {onClose && (
           <Button
             variant="ghost"
@@ -196,6 +215,11 @@ export function ComposerToolbar({
           </Button>
         )}
       </div>
+
+      <KeyboardShortcutsHelp
+        open={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
     </div>
   );
 }
