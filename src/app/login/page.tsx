@@ -83,8 +83,7 @@ function LoginInner() {
   const rateLimited = isRateLimited(authError?.retryAfter);
   const showFormError = authError && !is2FAStep;
 
-  function handleLoginSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function handleLoginSubmit() {
     if (!emailValid) {
       setEmailTouched(true);
       return;
@@ -199,7 +198,7 @@ function LoginInner() {
                 email={email}
                 setEmail={setEmail}
                 emailError={emailError}
-                setEmailTouched={setEmailTouched}
+                setEmailTouched={() => setEmailTouched(true)}
                 password={password}
                 setPassword={setPassword}
                 remember={remember}
