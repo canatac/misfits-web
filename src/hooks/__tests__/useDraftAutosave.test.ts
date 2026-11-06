@@ -14,7 +14,11 @@ afterEach(() => {
 
 describe("useDraftAutosave", () => {
   it("saves draft to localStorage on interval when dirty", () => {
-    act(() => useComposerStore.getState().setState({ subject: "Hello", isDirty: true }));
+    act(() => {
+      const store = useComposerStore.getState();
+      store.setSubject("Hello");
+      store.setBody("Body");
+    });
     const { result } = renderHook(() => useDraftAutosave());
     act(() => result.current.startAutosave());
     act(() => vi.advanceTimersByTime(11_000));
@@ -22,7 +26,14 @@ describe("useDraftAutosave", () => {
   });
 
   it("does not save when the composer is not dirty", () => {
-    act(() => useComposerStore.getState().setState({ subject: "", isDirty: false }));
+    act(() => {
+      const store = useComposerStore.getState();
+      store.setSubject("");
+      store.setBody("");
+    });
+    act(() => {
+      useComposerStore.setState({ isDirty: false });
+    });
     const { result } = renderHook(() => useDraftAutosave());
     act(() => result.current.startAutosave());
     act(() => vi.advanceTimersByTime(11_000));
@@ -37,13 +48,19 @@ describe("useDraftAutosave", () => {
   });
 
   it("restores the draft into the composer store", () => {
-    localStorage.setItem("composer.draft", JSON.stringify({ subject: "Restored", body: "Body text" }));
+    localStorage.setItem(
+      "composer.draft",
+      JSON.stringify({ subject: "Restored", body: "Body text" }),
+    );
     const { result } = renderHook(() => useDraftAutosave());
-    let restored: { subject?: string } | null = null;
+    let restored: { subject?: string; body?: string } | null = null;
     act(() => {
       restored = result.current.loadDraft();
       if (restored) {
-        useComposerStore.getState().setState({ subject: restored.subject, body: restored.body, isDirty: false });
+        const store = useComposerStore.getState();
+        store.setSubject(restored.subject ?? "");
+        store.setBody(restored.body ?? "");
+        useComposerStore.setState({ isDirty: false });
       }
     });
     expect(useComposerStore.getState().subject).toBe("Restored");
@@ -58,7 +75,11 @@ describe("useDraftAutosave", () => {
   });
 
   it("debounces a save after an edit", () => {
-    act(() => useComposerStore.getState().setState({ subject: "Typed", isDirty: true }));
+    act(() => {
+      const store = useComposerStore.getState();
+      store.setSubject("Typed");
+      store.setBody("Typed body");
+    });
     const { result } = renderHook(() => useDraftAutosave());
     act(() => result.current.scheduleDebouncedSave());
     expect(localStorage.getItem("composer.draft")).toBeNull();
