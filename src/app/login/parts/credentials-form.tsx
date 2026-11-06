@@ -122,7 +122,9 @@ export function CredentialsForm(props: CredentialsFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             aria-invalid={invalidCredentials ? "true" : "false"}
-            aria-describedby="password-help"
+            aria-describedby={
+              invalidCredentials ? "password-error" : "password-help"
+            }
             required
           />
           <PasswordStrengthIndicator password={password} />
@@ -131,6 +133,15 @@ export function CredentialsForm(props: CredentialsFormProps) {
               ? "Password is empty."
               : `${password.length} characters entered.`}
           </p>
+          {invalidCredentials ? (
+            <p
+              id="password-error"
+              className="text-xs text-[var(--color-danger-500)]"
+              role="alert"
+            >
+              Incorrect password. Check the password and try again.
+            </p>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2">
