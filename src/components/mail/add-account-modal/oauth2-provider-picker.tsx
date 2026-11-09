@@ -7,7 +7,7 @@
  * Outlook, Yahoo) plus a static "Other" option for providers without an
  * OAuth2 catalogue entry. The picker has a loading, an empty and an error
  * state; every option is a real <button>, so the list is reachable and
- * operable by keyboard.
+ * operable by keyboard (Enter and Space select).
  */
 import * as React from "react";
 import { AlertCircle, Loader2, Mail } from "lucide-react";
@@ -95,6 +95,13 @@ export function OAuth2ProviderPicker({
     );
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, value: string) {
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      onSelect(value);
+    }
+  }
+
   return (
     <div className="grid gap-2">
       <span className="text-sm font-medium" id="oauth2-provider-label">
@@ -115,6 +122,7 @@ export function OAuth2ProviderPicker({
               role="radio"
               aria-checked={active}
               onClick={() => onSelect(option.value)}
+              onKeyDown={(event) => handleKeyDown(event, option.value)}
               className={cn(
                 "flex items-center gap-2 rounded-[var(--radius-md)] border p-3 text-left text-sm transition-colors",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand-500)]",
@@ -135,6 +143,7 @@ export function OAuth2ProviderPicker({
             role="radio"
             aria-checked={selected === "other"}
             onClick={() => onSelect("other")}
+            onKeyDown={(event) => handleKeyDown(event, "other")}
             className={cn(
               "flex items-center gap-2 rounded-[var(--radius-md)] border border-dashed p-3 text-left text-sm transition-colors",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand-500)]",
