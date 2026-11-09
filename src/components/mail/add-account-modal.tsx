@@ -140,6 +140,18 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
               onRetry={oauth2.reload}
             />
 
+            {oauth2Start.pending && (
+              <div
+                className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3 text-sm text-[var(--color-muted-fg)]"
+                role="status"
+                aria-live="polite"
+                data-testid="oauth2-start-pending"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                Opening the provider consent screen…
+              </div>
+            )}
+
             {oauth2Start.error && (
               <div
                 role="alert"
