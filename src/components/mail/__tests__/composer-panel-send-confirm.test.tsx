@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ComposerPanel } from "../composer-panel";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { useComposerStore } from "@/stores/composer-store";
 import {
   DEFAULT_RECIPIENT_THRESHOLD,
@@ -43,6 +44,14 @@ function seedRecipients(count: number) {
   useComposerStore.getState().setBody("<p>Body</p>");
 }
 
+function renderPanel() {
+  return render(
+    <TooltipProvider>
+      <ComposerPanel />
+    </TooltipProvider>
+  );
+}
+
 afterEach(() => {
   window.localStorage.clear();
   handleSend.mockClear();
@@ -56,7 +65,7 @@ afterEach(() => {
 describe("ComposerPanel recipient threshold gate", () => {
   it("opens the confirmation modal when Envoyer is clicked above the threshold", async () => {
     seedRecipients(DEFAULT_RECIPIENT_THRESHOLD + 1);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
@@ -71,7 +80,7 @@ describe("ComposerPanel recipient threshold gate", () => {
 
   it("sends directly when the recipient count is below the threshold", () => {
     seedRecipients(1);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
@@ -82,7 +91,7 @@ describe("ComposerPanel recipient threshold gate", () => {
   it("sends directly when the skip preference is stored", () => {
     window.localStorage.setItem(SKIP_SEND_CONFIRM_KEY, "true");
     seedRecipients(DEFAULT_RECIPIENT_THRESHOLD + 1);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
@@ -93,7 +102,7 @@ describe("ComposerPanel recipient threshold gate", () => {
   it("uses a stored threshold instead of the default", async () => {
     window.localStorage.setItem(RECIPIENT_THRESHOLD_KEY, "2");
     seedRecipients(3);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
 
@@ -103,7 +112,7 @@ describe("ComposerPanel recipient threshold gate", () => {
 
   it("closes the modal on cancel without sending", async () => {
     seedRecipients(DEFAULT_RECIPIENT_THRESHOLD + 1);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
     fireEvent.click(await screen.findByRole("button", { name: /cancel/i }));
@@ -114,7 +123,7 @@ describe("ComposerPanel recipient threshold gate", () => {
 
   it("confirms the modal and sends", async () => {
     seedRecipients(DEFAULT_RECIPIENT_THRESHOLD + 1);
-    render(<ComposerPanel />);
+    renderPanel();
 
     fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
     fireEvent.click(await screen.findByRole("button", { name: /confirm send/i }));
