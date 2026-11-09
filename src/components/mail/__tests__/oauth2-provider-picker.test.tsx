@@ -110,23 +110,27 @@ describe("OAuth2ProviderPicker", () => {
     const outlook = screen.getByTestId("oauth2-provider-outlook");
     const other = screen.getByTestId("oauth2-provider-other");
 
+    // Every option is a real button, so it is reachable by keyboard (Tab).
+    for (const option of [gmail, outlook, other]) {
+      expect(option.tagName).toBe("BUTTON");
+      expect(option.getAttribute("tabindex")).toBe("0");
+      expect(option.hasAttribute("disabled")).toBe(false);
+    }
+
+    // Enter on a focused option selects it.
     gmail.focus();
     expect(document.activeElement).toBe(gmail);
-    fireEvent.keyDown(document.activeElement as HTMLElement, {
-      key: "Tab",
-      code: "Tab",
-    });
-    expect(document.activeElement).toBe(outlook);
-    fireEvent.keyDown(document.activeElement as HTMLElement, {
-      key: "Tab",
-      code: "Tab",
-    });
-    expect(document.activeElement).toBe(other);
+    fireEvent.keyDown(gmail, { key: "Enter", code: "Enter" });
+    expect(onSelect).toHaveBeenCalledWith("gmail");
 
-    fireEvent.keyDown(document.activeElement as HTMLElement, {
-      key: "Enter",
-      code: "Enter",
-    });
+    outlook.focus();
+    expect(document.activeElement).toBe(outlook);
+    fireEvent.keyDown(outlook, { key: "Enter", code: "Enter" });
+    expect(onSelect).toHaveBeenCalledWith("outlook");
+
+    other.focus();
+    expect(document.activeElement).toBe(other);
+    fireEvent.keyDown(other, { key: "Enter", code: "Enter" });
     expect(onSelect).toHaveBeenCalledWith("other");
   });
 });
