@@ -1,8 +1,6 @@
 import * as React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import "@testing-library/jest-dom/vitest";
 import { TwoFactorSection } from "../two-factor-section";
 
 const setup2fa = vi.fn();
@@ -28,32 +26,31 @@ afterEach(() => {
 describe("TwoFactorSection", () => {
   it("shows the QR code and the manual setup key", () => {
     render(<TwoFactorSection />);
-    expect(screen.getByAltText(/QR code/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue("JBSWY3DPEHPK3PXP")).toBeInTheDocument();
+    expect(screen.getByAltText(/QR code/i)).not.toBeNull();
+    expect(screen.getByDisplayValue("JBSWY3DPEHPK3PXP")).not.toBeNull();
   });
 
   it("activates with a 6-digit code", async () => {
-    const user = userEvent.setup();
     render(<TwoFactorSection />);
     const input = screen.getByLabelText(/Verification code/i);
-    await user.type(input, "123456");
-    await user.click(screen.getByRole("button", { name: /Enable two-factor/i }));
+    fireEvent.change(input, { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: /Enable two-factor/i }));
     await waitFor(() => expect(activate).toHaveBeenCalledWith("123456"));
   });
 
-  it("rejects a code shorter than 6 digits", async () => {
-    const user = userEvent.setup();
+  it("rejects a code shorter than 6 digits", () => {
     render(<TwoFactorSection />);
     const input = screen.getByLabelText(/Verification code/i);
-    await user.type(input, "123");
-    expect(screen.getByRole("button", { name: /Enable two-factor/i })).toBeDisabled();
+    fireEvent.change(input, { target: { value: "123" } });
+    expect(
+      (screen.getByRole("button", { name: /Enable two-factor/i }) as HTMLButtonElement).disabled
+    ).toBe(true);
   });
 
-  it("strips non-digit characters from the code", async () => {
-    const user = userEvent.setup();
+  it("strips non-digit characters from the code", () => {
     render(<TwoFactorSection />);
     const input = screen.getByLabelText(/Verification code/i);
-    await user.type(input, "1a2b3c");
-    expect(input).toHaveValue("123");
+    fireEvent.change(input, { target: { value: "1a2b3c" } });
+    expect((input as HTMLInputElement).value).toBe("123");
   });
 });
