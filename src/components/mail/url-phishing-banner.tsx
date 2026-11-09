@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { AlertTriangle, ExternalLink, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  scanUrls,
-  type UrlReputation,
-} from "@/lib/url-scanner";
+import { scanUrls } from "@/lib/url-scanner";
 
 interface UrlPhishingBannerProps {
   body: string;

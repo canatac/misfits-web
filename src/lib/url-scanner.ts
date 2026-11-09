@@ -7,6 +7,7 @@ export interface UrlReputation {
 
 const BLOCKED_DOMAINS = ["phishing.example", "malware.test", "spam.evil"];
 const TRUSTED_DOMAINS = ["google.com", "github.com", "microsoft.com", "apple.com", "proton.me"];
+const SHORTENER_DOMAINS = ["bit.ly", "t.co", "tinyurl.com", "goo.gl", "ow.ly", "is.gd", "buff.ly"];
 
 const URL_REGEX = /https?:\/\/[^\s<>"']+/gi;
 const HTML_URL_REGEX = /href=["'](https?:\/\/[^\s<>"]+)["']/gi;
@@ -43,6 +44,10 @@ function isIpAddress(domain: string): boolean {
   return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(domain);
 }
 
+function isShortenedUrl(domain: string): boolean {
+  return SHORTENER_DOMAINS.some((short) => domain === short || domain.endsWith("." + short));
+}
+
 export function checkUrlReputation(url: string): UrlReputation {
   const domain = extractDomain(url);
   const reasons: string[] = [];
@@ -65,6 +70,10 @@ export function checkUrlReputation(url: string): UrlReputation {
 
   if (domain.includes("phishing") || domain.includes("malware") || domain.includes("spam")) {
     reasons.push("Suspicious keywords in domain");
+  }
+
+  if (isShortenedUrl(domain)) {
+    reasons.push("Shortened URL: destination hidden, resolution requested");
   }
 
   return {

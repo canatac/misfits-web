@@ -26,19 +26,16 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
         }
         "the URLs are extracted and scanned" => {
             let body = ctx.get("email_body").cloned().unwrap_or_default();
-            // The scanner must extract the URL from the body.
             assert!(
                 body.contains("https://"),
                 "body must contain an https URL: {body}"
             );
-            // The scanner must flag phishing.example as suspicious.
             if body.contains("phishing.example") {
                 assert!(
                     body.contains("phishing.example"),
                     "scanner must detect phishing.example"
                 );
             }
-            // Shortened URLs must be flagged.
             if body.contains("bit.ly") {
                 assert!(
                     body.contains("bit.ly"),
@@ -68,7 +65,6 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
             );
         }
         "the resolution of the shortened URL is requested" => {
-            // The scanner marks shortened domains as suspicious pending resolution.
             let body = ctx.get("email_body").cloned().unwrap_or_default();
             assert!(
                 body.contains("bit.ly"),
@@ -76,7 +72,6 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
             );
         }
         "the warning badge is shown in the email view" => {
-            // The email view renders UrlWarningBadge when suspiciousCount > 0.
             assert!(true, "badge integration is covered by url-warning-badge.test.tsx");
         }
         "the warning badge is not shown" => {

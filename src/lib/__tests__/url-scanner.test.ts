@@ -55,6 +55,12 @@ describe("checkUrlReputation", () => {
     expect(result.isSuspicious).toBe(true);
     expect(result.reasons).toContain("Invalid URL");
   });
+
+  it("flags shortened URLs", () => {
+    const result = checkUrlReputation("https://bit.ly/abc123");
+    expect(result.isSuspicious).toBe(true);
+    expect(result.reasons.some((r) => r.includes("Shortened"))).toBe(true);
+  });
 });
 
 describe("scanUrls", () => {
