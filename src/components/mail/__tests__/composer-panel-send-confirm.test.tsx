@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ComposerPanel } from "../composer-panel";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useComposerStore } from "@/stores/composer-store";
@@ -45,10 +46,15 @@ function seedRecipients(count: number) {
 }
 
 function renderPanel() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <TooltipProvider>
-      <ComposerPanel />
-    </TooltipProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ComposerPanel />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
