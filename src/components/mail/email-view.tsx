@@ -34,6 +34,10 @@ import {
   ImmersiveReadingProvider,
 } from "./immersive-reading";
 import { FindInPage } from "./email-view/find-in-page";
+import { UrlWarningBadge } from "./url-warning-badge";
+import { UrlPhishingBanner } from "./url-phishing-banner";
+import { useUrlScanSetting } from "@/hooks/useUrlScanSetting";
+import { scanUrls } from "@/lib/url-scanner";
 
 interface EmailViewProps {
   className?: string;
@@ -53,6 +57,7 @@ export function EmailView({ className }: EmailViewProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const { urlScanEnabled } = useUrlScanSetting();
 
   // Cmd+F / Ctrl+F opens find bar
   useEffect(() => {
@@ -102,6 +107,13 @@ export function EmailView({ className }: EmailViewProps) {
     handleHermesTranslate,
     handleHermesTodos,
   } = useEmailActions(email);
+
+  // URL reputation scan (AC2/AC3/AC5): only when the user setting is enabled.
+  const suspiciousUrlCount = useMemo(() => {
+    if (!email || !urlScanEnabled) return 0;
+    return scanUrls(email.body, email.bodyType).filter((r) => r.isSuspicious)
+      .length;
+  }, [email, urlScanEnabled]);
 
   if (!email) {
     return (
@@ -184,6 +196,21 @@ export function EmailView({ className }: EmailViewProps) {
             }}
             emailId={email.id}
           />
+
+          {/* AC3: badge visible in the email view when suspicious URLs are found */}
+          {urlScanEnabled && suspiciousUrlCount > 0 && (
+            <div className="mb-3">
+              <UrlWarningBadge suspiciousCount={suspiciousUrlCount} />
+            </div>
+          )}
+
+          {/* AC4: warning banner with dismiss; click interception handled below */}
+          {urlScanEnabled && (
+            <UrlPhishingBanner
+              body={email.body}
+              bodyType={email.bodyType}
+            />
+          )}
 
           {!loadImages && email.bodyType === "html" && (
             <div className="mb-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2">
