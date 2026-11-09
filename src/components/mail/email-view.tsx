@@ -59,6 +59,7 @@ export function EmailView({ className }: EmailViewProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+
   const { urlScanEnabled, toggleUrlScan } = useUrlScanSetting();
 
   const { followUps } = useFollowUps();
