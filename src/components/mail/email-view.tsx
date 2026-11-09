@@ -13,6 +13,7 @@ import {
   ChevronDown,
   MailOpen,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailSenderHeader } from "./email-sender-header";
@@ -34,6 +35,7 @@ import {
   ImmersiveReadingProvider,
 } from "./immersive-reading";
 import { FindInPage } from "./email-view/find-in-page";
+import { useFollowUps, useToggleFollowUp } from "@/hooks/use-follow-ups";
 import { UrlWarningBadge } from "./url-warning-badge";
 import { UrlPhishingBanner } from "./url-phishing-banner";
 import { useUrlScanSetting } from "@/hooks/useUrlScanSetting";
@@ -57,7 +59,10 @@ export function EmailView({ className }: EmailViewProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const { urlScanEnabled } = useUrlScanSetting();
+  const { urlScanEnabled, toggleUrlScan } = useUrlScanSetting();
+
+  const { followUps } = useFollowUps();
+  const toggleFollowUp = useToggleFollowUp();
 
   // Cmd+F / Ctrl+F opens find bar
   useEffect(() => {
@@ -74,6 +79,11 @@ export function EmailView({ className }: EmailViewProps) {
   const email = useMemo(
     () => emails.find((e) => e.id === selectedEmailId) ?? null,
     [emails, selectedEmailId]
+  );
+
+  const isFollowUp = useMemo(
+    () => !!email && followUps.some((fu) => fu.emailId === email.id),
+    [followUps, email]
   );
 
   useEmailBodyHydration(email);
@@ -144,6 +154,7 @@ export function EmailView({ className }: EmailViewProps) {
     >
       <EmailToolbar
         isStarred={email.isStarred}
+        isFollowUp={isFollowUp}
         onArchive={handleArchive}
         onDelete={handleDelete}
         onMarkUnread={handleMarkUnread}
@@ -151,6 +162,7 @@ export function EmailView({ className }: EmailViewProps) {
         onReplyAll={handleReplyAll}
         onForward={handleForward}
         onToggleStar={handleToggleStar}
+        onToggleFollowUp={() => toggleFollowUp.mutate(email.id)}
         onHermesSummarize={handleHermesSummarize}
         onHermesReplyDraft={handleHermesReplyDraft}
         onHermesTranslate={handleHermesTranslate}
@@ -196,6 +208,21 @@ export function EmailView({ className }: EmailViewProps) {
             }}
             emailId={email.id}
           />
+
+          {/* AC5: user setting to enable/disable the URL scan */}
+          <div className="mb-3 flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
+            <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+            <span>URL scan</span>
+            <Button
+              size="sm"
+              variant={urlScanEnabled ? "outline" : "ghost"}
+              onClick={toggleUrlScan}
+              aria-pressed={urlScanEnabled}
+              className="ml-auto"
+            >
+              {urlScanEnabled ? "Enabled" : "Disabled"}
+            </Button>
+          </div>
 
           {/* AC3: badge visible in the email view when suspicious URLs are found */}
           {urlScanEnabled && suspiciousUrlCount > 0 && (
