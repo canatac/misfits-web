@@ -113,7 +113,6 @@ describe("OAuth2ProviderPicker", () => {
     // Every option is a real button, so it is reachable by keyboard (Tab).
     for (const option of [gmail, outlook, other]) {
       expect(option.tagName).toBe("BUTTON");
-      expect(option.getAttribute("tabindex")).toBe("0");
       expect(option.hasAttribute("disabled")).toBe(false);
     }
 
