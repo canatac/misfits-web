@@ -183,7 +183,7 @@ function SecurityKeyRegistration() {
       });
       if (!optionsRes.ok) throw new Error("Could not start security key registration");
       const options = await optionsRes.json();
-      const assertion = await navigator.credentials.create({
+      const assertion = (await navigator.credentials.create({
         publicKey: {
           ...options,
           challenge: base64UrlToBuffer(options.challenge),
@@ -196,7 +196,7 @@ function SecurityKeyRegistration() {
             id: base64UrlToBuffer(c.id),
           })),
         },
-      });
+      })) as PublicKeyCredential | null;
       if (!assertion) throw new Error("No credential returned");
       const body = JSON.stringify({
         id: assertion.id,
