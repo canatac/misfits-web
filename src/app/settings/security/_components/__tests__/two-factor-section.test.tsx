@@ -9,7 +9,7 @@ const deactivate = vi.fn();
 
 vi.mock("@/hooks/use-two-factor", () => ({
   useTwoFactor: () => ({
-    status: { enabled: false, qrCode: null, secret: null, recoveryCodes: [] },
+    status: { enabled: false, qrCode: null, secret: null, recoveryCodes: [], webauthnEnabled: false },
     setup: { qrCode: "data:image/png;base64,AA", secret: "JBSWY3DPEHPK3PXP", recoveryCodes: ["aaaa-bbbb", "cccc-dddd"] },
     busy: false,
     error: null,
@@ -52,5 +52,11 @@ describe("TwoFactorSection", () => {
     const input = screen.getByLabelText(/Verification code/i);
     fireEvent.change(input, { target: { value: "1a2b3c" } });
     expect((input as HTMLInputElement).value).toBe("123");
+  });
+
+  it("shows the security key registration section", () => {
+    render(<TwoFactorSection />);
+    expect(screen.getByText(/Security key \(FIDO2\/WebAuthn\)/i)).not.toBeNull();
+    expect(screen.getByRole("button", { name: /Register security key/i })).not.toBeNull();
   });
 });

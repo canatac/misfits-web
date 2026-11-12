@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ShieldCheck, KeyRound, Copy, Check, Loader2 } from "lucide-react";
+import { ShieldCheck, KeyRound, Copy, Check, Loader2, Fingerprint } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +42,7 @@ export function TwoFactorSection() {
         <p className="text-sm text-[var(--color-muted-fg)]">
           {status?.enabled
             ? "Two-factor authentication is enabled. Each sign-in requires a 6-digit code from your authenticator app."
-            : "Add a second layer of security with a TOTP authenticator app."}
+            : "Add a second layer of security with a TOTP authenticator app or a security key."}
         </p>
 
         {error ? (
@@ -135,9 +135,133 @@ export function TwoFactorSection() {
                 Enable two-factor authentication
               </Button>
             </form>
+
+            <div className="border-t border-[var(--color-border)] pt-4">
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-medium">
+                <Fingerprint className="h-4 w-4" aria-hidden="true" />
+                Security key (FIDO2/WebAuthn)
+              </p>
+              <p className="mb-3 text-xs text-[var(--color-muted-fg)]">
+                Register a hardware security key for phishing-resistant sign-in.
+              </p>
+              <SecurityKeyRegistration />
+            </div>
           </div>
         )}
       </CardContent>
     </Card>
   );
+}
+
+function SecurityKeyRegistration() {
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [keys, setKeys] = React.useState<Array<{ id: string; name: string }>>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/webauthn/credentials")
+      .then((r) => (r.ok ? r.json() : { credentials: [] }))
+      .then((d) => {
+        if (!cancelled) setKeys(d.credentials ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setKeys([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const register = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const optionsRes = await fetch("/api/auth/webauthn/register/options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!optionsRes.ok) throw new Error("Could not start security key registration");
+      const options = await optionsRes.json();
+      const assertion = await navigator.credentials.create({
+        publicKey: {
+          ...options,
+          challenge: base64UrlToBuffer(options.challenge),
+          user: {
+            ...options.user,
+            id: base64UrlToBuffer(options.user.id),
+          },
+          excludeCredentials: (options.excludeCredentials ?? []).map((c: { id: string; type: string }) => ({
+            ...c,
+            id: base64UrlToBuffer(c.id),
+          })),
+        },
+      });
+      if (!assertion) throw new Error("No credential returned");
+      const body = JSON.stringify({
+        id: assertion.id,
+        rawId: bufferToBase64Url(assertion.rawId),
+        type: assertion.type,
+        response: {
+          clientDataJSON: bufferToBase64Url(assertion.response.clientDataJSON),
+          attestationObject: bufferToBase64Url(assertion.response.attestationObject),
+        },
+      });
+      const finishRes = await fetch("/api/auth/webauthn/register/finish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      if (!finishRes.ok) throw new Error("Security key registration failed");
+      const d = await finishRes.json().catch(() => ({}));
+      setKeys((prev) => [...prev, { id: assertion.id, name: d.name ?? "Security key" }]);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {keys.length > 0 ? (
+        <ul className="space-y-1 text-xs text-[var(--color-muted-fg)]">
+          {keys.map((k) => (
+            <li key={k.id} className="flex items-center gap-1.5">
+              <Fingerprint className="h-3 w-3" aria-hidden="true" />
+              {k.name}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {error ? (
+        <p role="alert" className="text-xs text-[var(--color-danger-500)]">{error}</p>
+      ) : null}
+      <Button type="button" variant="outline" size="sm" loading={busy} onClick={register}>
+        <Fingerprint className="h-4 w-4" aria-hidden="true" />
+        Register security key
+      </Button>
+    </div>
+  );
+}
+
+function base64UrlToBuffer(value: string): ArrayBuffer {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+  const binary = atob(padded);
+  const buffer = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i += 1) {
+    view[i] = binary.charCodeAt(i);
+  }
+  return buffer;
+}
+
+function bufferToBase64Url(buffer: ArrayBuffer): string {
+  const view = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < view.length; i += 1) {
+    binary += String.fromCharCode(view[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }

@@ -7,6 +7,7 @@ export type TwoFactorStatus = {
   qrCode?: string | null;
   secret?: string | null;
   recoveryCodes?: string[];
+  webauthnEnabled?: boolean;
 };
 
 export type TwoFactorSetup = {
@@ -19,6 +20,8 @@ export type TwoFactorSetup = {
  * Frontend state for the 2FA settings section (MW-2026-142).
  * The backend contract is POST /api/auth/2fa/setup, POST /api/auth/2fa/activate
  * and POST /api/auth/2fa/disable; each returns { enabled, qrCode?, secret?, recoveryCodes? }.
+ * WebAuthn uses POST /api/auth/webauthn/register/options,
+ * POST /api/auth/webauthn/register/finish and GET /api/auth/webauthn/credentials.
  */
 export function useTwoFactor() {
   const [status, setStatus] = React.useState<TwoFactorStatus | null>(null);
@@ -44,6 +47,7 @@ export function useTwoFactor() {
         qrCode: data.qrCode ?? null,
         secret: data.secret ?? null,
         recoveryCodes: data.recoveryCodes ?? [],
+        webauthnEnabled: Boolean(data.webauthnEnabled),
       };
     },
     []
