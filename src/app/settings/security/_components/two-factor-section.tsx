@@ -183,7 +183,7 @@ function SecurityKeyRegistration() {
       });
       if (!optionsRes.ok) throw new Error("Could not start security key registration");
       const options = await optionsRes.json();
-      const assertion = (await navigator.credentials.create({
+      const credential = (await navigator.credentials.create({
         publicKey: {
           ...options,
           challenge: base64UrlToBuffer(options.challenge),
@@ -197,14 +197,15 @@ function SecurityKeyRegistration() {
           })),
         },
       })) as PublicKeyCredential | null;
-      if (!assertion) throw new Error("No credential returned");
+      if (!credential) throw new Error("No credential returned");
+      const response = credential.response as AuthenticatorAttestationResponse;
       const body = JSON.stringify({
-        id: assertion.id,
-        rawId: bufferToBase64Url(assertion.rawId),
-        type: assertion.type,
+        id: credential.id,
+        rawId: bufferToBase64Url(credential.rawId),
+        type: credential.type,
         response: {
-          clientDataJSON: bufferToBase64Url(assertion.response.clientDataJSON),
-          attestationObject: bufferToBase64Url(assertion.response.attestationObject),
+          clientDataJSON: bufferToBase64Url(response.clientDataJSON),
+          attestationObject: bufferToBase64Url(response.attestationObject),
         },
       });
       const finishRes = await fetch("/api/auth/webauthn/register/finish", {
@@ -214,7 +215,7 @@ function SecurityKeyRegistration() {
       });
       if (!finishRes.ok) throw new Error("Security key registration failed");
       const d = await finishRes.json().catch(() => ({}));
-      setKeys((prev) => [...prev, { id: assertion.id, name: d.name ?? "Security key" }]);
+      setKeys((prev) => [...prev, { id: credential.id, name: d.name ?? "Security key" }]);
     } catch (e) {
       setError((e as Error).message);
     } finally {
