@@ -51,6 +51,113 @@ fn read_source(rel: &str) -> String {
     panic!("could not read source file: {rel}");
 }
 
+/// Steps for the send confirmation feature (issue #1059).
+/// The behaviour lives in the Next.js client; these steps assert on the source.
+fn execute_send_confirmation_step(step: &str, ctx: &mut Context) {
+    if let Some(rel) = step.strip_prefix("the source file \"") {
+        if let Some(rel) = rel.strip_suffix("\" is loaded") {
+            let content = read_source(rel);
+            ctx.values.insert(rel.to_string(), content);
+        }
+        return;
+    }
+
+    match step {
+        "the composer asks for confirmation when the recipient count exceeds the threshold" => {
+            let panel = ctx
+                .values
+                .get("src/components/mail/composer-panel.tsx")
+                .expect("composer panel should be loaded");
+            assert!(
+                panel.contains("getRecipientThreshold()"),
+                "the composer must read the configured threshold"
+            );
+            assert!(
+                panel.contains("shouldSkipSendConfirm()"),
+                "the composer must honour the skip preference"
+            );
+            assert!(
+                panel.contains("setSendConfirmOpen(true)"),
+                "the composer must open the confirmation modal above the threshold"
+            );
+            let modal = ctx
+                .values
+                .get("src/components/mail/composer/send-confirm-modal.tsx")
+                .expect("send confirm modal should be loaded");
+            assert!(
+                modal.contains("DEFAULT_RECIPIENT_THRESHOLD"),
+                "the default threshold must be defined"
+            );
+        }
+
+        "the modal shows the To, Cc and Bcc recipients with the total count" => {
+            let modal = ctx
+                .values
+                .get("src/components/mail/composer/send-confirm-modal.tsx")
+                .expect("send confirm modal should be loaded");
+            assert!(modal.contains("role=\"dialog\""), "the modal must be a dialog");
+            assert!(modal.contains("To"), "the modal must list the To recipients");
+            assert!(modal.contains("Cc"), "the modal must list the Cc recipients");
+            assert!(modal.contains("Bcc"), "the modal must list the Bcc recipients");
+            assert!(
+                modal.contains("to.length + cc.length + bcc.length"),
+                "the modal must compute the total recipient count"
+            );
+        }
+
+        "the \"Don't ask again\" preference is persisted in localStorage" => {
+            let modal = ctx
+                .values
+                .get("src/components/mail/composer/send-confirm-modal.tsx")
+                .expect("send confirm modal should be loaded");
+            assert!(
+                modal.contains("SKIP_SEND_CONFIRM_KEY"),
+                "the skip preference must have a localStorage key"
+            );
+            assert!(
+                modal.contains("localStorage.setItem(SKIP_SEND_CONFIRM_KEY"),
+                "the skip preference must be persisted in localStorage"
+            );
+            assert!(
+                modal.contains("shouldSkipSendConfirm"),
+                "the skip preference must be readable"
+            );
+        }
+
+        "the footer shows the recipient count" => {
+            let footer = ctx
+                .values
+                .get("src/components/mail/composer/composer-footer.tsx")
+                .expect("composer footer should be loaded");
+            assert!(
+                footer.contains("recipientCount"),
+                "the footer must receive the recipient count"
+            );
+            assert!(
+                footer.contains("recipient-count"),
+                "the footer must render the recipient count"
+            );
+        }
+
+        "the Settings panel reads and writes the recipient threshold" => {
+            let settings = ctx
+                .values
+                .get("src/components/mail/composer/send-confirm-settings.tsx")
+                .expect("send confirm settings should be loaded");
+            assert!(
+                settings.contains("getRecipientThreshold()"),
+                "the Settings panel must read the threshold"
+            );
+            assert!(
+                settings.contains("setRecipientThreshold("),
+                "the Settings panel must write the threshold"
+            );
+        }
+
+        _ => {}
+    }
+}
+
 pub fn execute_step(step: &str, ctx: &mut Context) {
     if let Some(rel) = step
         .strip_prefix("the source file \"")
@@ -143,6 +250,15 @@ pub fn execute_step(step: &str, ctx: &mut Context) {
         "the recovery codes are shown with the warning that each code can be used once" => {
             let src = ctx.source("src/app/settings/security/_components/two-factor-section.tsx");
             assert!(src.contains("Each code can be used once"), "the recovery codes must carry the single-use warning");
+        }
+
+        // --- Issue #1059: send confirmation for large recipient lists ---
+        "the composer asks for confirmation when the recipient count exceeds the threshold"
+        | "the modal shows the To, Cc and Bcc recipients with the total count"
+        | "the \"Don't ask again\" preference is persisted in localStorage"
+        | "the footer shows the recipient count"
+        | "the Settings panel reads and writes the recipient threshold" => {
+            execute_send_confirmation_step(step, ctx);
         }
 
         // Steps of the other features are out of scope for this change.
