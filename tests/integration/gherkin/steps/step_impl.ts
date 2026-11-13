@@ -26,6 +26,17 @@ function assert(condition: boolean, message: string): void {
   }
 }
 
+/** Extract the host of the first URL found in a body, or "" when none. */
+function firstUrlHost(body: string): string {
+  const match = body.match(/https?:\/\/[^\s<>"']+/i);
+  if (!match) return "";
+  try {
+    return new URL(match[0]).hostname;
+  } catch {
+    return "";
+  }
+}
+
 export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void {
   switch (step) {
     case 'the source file "src/lib/url-scanner.ts" is loaded':
@@ -63,8 +74,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     case "the URLs are extracted and scanned": {
       const body = ctx.values.get("email_body") ?? "";
       assert(body.includes("https://"), `body must contain an https URL: ${body}`);
-      const scanner = ctx.values.get("src/lib/url-scanner.ts");
-      assert(scanner, "url-scanner.ts must be loaded");
+      const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("extractUrls") && scanner.includes("checkUrlReputation"),
         "the scanner must extract URLs and check their reputation"
@@ -73,9 +83,8 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "no URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(body.includes("google.com"), `legitimate URL must not be flagged: ${body}`);
-      const scanner = ctx.values.get("src/lib/url-scanner.ts");
-      assert(scanner, "url-scanner.ts must be loaded");
+      assert(firstUrlHost(body) === "google.com", `legitimate URL must not be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("TRUSTED_DOMAINS") && scanner.includes("google.com"),
         "google.com must be in the trusted domains"
@@ -84,9 +93,8 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "the URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(body.includes("phishing.example"), `suspicious URL must be flagged: ${body}`);
-      const scanner = ctx.values.get("src/lib/url-scanner.ts");
-      assert(scanner, "url-scanner.ts must be loaded");
+      assert(firstUrlHost(body) === "phishing.example", `suspicious URL must be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("BLOCKED_DOMAINS") && scanner.includes("phishing.example"),
         "phishing.example must be on the blocklist"
@@ -95,9 +103,8 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "the shortened URL is flagged as suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(body.includes("bit.ly"), `shortened URL must be flagged: ${body}`);
-      const scanner = ctx.values.get("src/lib/url-scanner.ts");
-      assert(scanner, "url-scanner.ts must be loaded");
+      assert(firstUrlHost(body) === "bit.ly", `shortened URL must be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("SHORTENER_DOMAINS") && scanner.includes("bit.ly"),
         "bit.ly must be in the shortener list"
@@ -105,8 +112,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "the resolution of the shortened URL is requested": {
-      const scanner = ctx.values.get("src/lib/url-scanner.ts");
-      assert(scanner, "url-scanner.ts must be loaded");
+      const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("Shortened URL: destination hidden, resolution requested"),
         "the scanner must request the resolution of a shortened URL"
@@ -114,8 +120,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "the warning badge is shown in the email view": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx");
-      assert(view, "email-view.tsx must be loaded");
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
       assert(view.includes("UrlWarningBadge"), "the email view must render UrlWarningBadge");
       assert(
         view.includes("suspiciousUrlCount"),
@@ -128,8 +133,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "the warning badge is not shown": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx");
-      assert(view, "email-view.tsx must be loaded");
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
       assert(
         view.includes("suspiciousUrlCount > 0"),
         "the badge must be conditional on a non-zero suspicious count"
@@ -143,8 +147,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     case "no URL is scanned": {
       const enabled = ctx.values.get("urlScanEnabled") ?? "true";
       assert(enabled === "false", "scan must be skipped when disabled");
-      const view = ctx.values.get("src/components/mail/email-view.tsx");
-      assert(view, "email-view.tsx must be loaded");
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
       assert(
         view.includes("!urlScanEnabled"),
         "the email view must skip the scan when the setting is disabled"
@@ -152,14 +155,12 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "a click on a suspicious link in the email view is intercepted": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx");
-      assert(view, "email-view.tsx must be loaded");
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
       assert(
         view.includes("UrlSafeLink"),
         "the email view must render UrlSafeLink for the links of the body"
       );
-      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx");
-      assert(safeLink, "url-safe-link.tsx must be loaded");
+      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
       assert(
         safeLink.includes("preventDefault") && safeLink.includes("Proceed anyway"),
         "UrlSafeLink must prevent the navigation and offer to proceed anyway"
