@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useComposerStore } from "@/stores/composer-store";
+import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
 
 /**
  * Thin facade over the composer store's draft persistence.
@@ -26,6 +27,7 @@ export function useDraftAutosave() {
     const s = store.getState();
     s.stopAutosave();
     s.reset();
+    clearPersistedSnapshot();
   }, [store]);
 
   const startAutosave = useCallback(() => {
