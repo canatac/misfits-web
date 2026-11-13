@@ -13,34 +13,32 @@ import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
  * drive the periodic autosave timer.
  */
 export function useDraftAutosave() {
-  const store = useComposerStore;
-
   const saveDraft = useCallback(() => {
-    store.getState().saveDraft();
-  }, [store]);
+    useComposerStore.getState().saveDraft();
+  }, []);
 
   const loadDraft = useCallback(() => {
-    return store.getState().loadPersistedDraft();
-  }, [store]);
+    return useComposerStore.getState().loadPersistedDraft();
+  }, []);
 
   const clearDraft = useCallback(() => {
-    const s = store.getState();
+    const s = useComposerStore.getState();
     s.stopAutosave();
     s.reset();
     clearPersistedSnapshot();
-  }, [store]);
+  }, []);
 
   const startAutosave = useCallback(() => {
-    store.getState().startAutosave();
-  }, [store]);
+    useComposerStore.getState().startAutosave();
+  }, []);
 
   const stopAutosave = useCallback(() => {
-    store.getState().stopAutosave();
-  }, [store]);
+    useComposerStore.getState().stopAutosave();
+  }, []);
 
   const scheduleDebouncedSave = useCallback(() => {
-    store.getState().saveDraft();
-  }, [store]);
+    useComposerStore.getState().saveDraft();
+  }, []);
 
   return { saveDraft, loadDraft, clearDraft, startAutosave, stopAutosave, scheduleDebouncedSave };
 }
