@@ -17,11 +17,19 @@ afterEach(() => {
 });
 
 describe("useDraftAutosave", () => {
-  it("saves the draft to localStorage on the autosave interval when dirty", () => {
+  it("saves the full draft snapshot to localStorage on the autosave interval when dirty", () => {
     act(() => {
       const store = useComposerStore.getState();
       store.setSubject("Hello");
       store.setBody("<p>Body</p>");
+      store.addAttachment({
+        id: "att-1",
+        filename: "file.txt",
+        contentType: "text/plain",
+        size: 4,
+        progress: 100,
+        status: "done",
+      });
     });
     const { result } = renderHook(() => useDraftAutosave());
     act(() => result.current.startAutosave());
@@ -31,6 +39,8 @@ describe("useDraftAutosave", () => {
     const snap = JSON.parse(raw as string);
     expect(snap.subject).toBe("Hello");
     expect(snap.body).toBe("<p>Body</p>");
+    expect(snap.attachments).toHaveLength(1);
+    expect(snap.attachments[0].filename).toBe("file.txt");
   });
 
   it("does not save when the composer is not dirty", () => {
@@ -50,7 +60,16 @@ describe("useDraftAutosave", () => {
         bcc: [],
         subject: "Restored",
         body: "<p>Body text</p>",
-        attachments: [],
+        attachments: [
+          {
+            id: "att-2",
+            filename: "note.txt",
+            contentType: "text/plain",
+            size: 9,
+            progress: 100,
+            status: "done",
+          },
+        ],
         signature: null,
         updatedAt: new Date().toISOString(),
       }),
@@ -63,6 +82,8 @@ describe("useDraftAutosave", () => {
     expect(restored).toBe(true);
     expect(useComposerStore.getState().subject).toBe("Restored");
     expect(useComposerStore.getState().body).toBe("<p>Body text</p>");
+    expect(useComposerStore.getState().attachments).toHaveLength(1);
+    expect(useComposerStore.getState().attachments[0].filename).toBe("note.txt");
     expect(useComposerStore.getState().lastSavedAt).toBeTruthy();
   });
 
