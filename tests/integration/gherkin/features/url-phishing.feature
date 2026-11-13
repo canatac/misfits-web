@@ -6,6 +6,8 @@ Feature: URL phishing detection (issue #1046)
   Background:
     Given the source file "src/lib/url-scanner.ts" is loaded
     And the source file "src/hooks/useUrlScanSetting.ts" is loaded
+    And the source file "src/components/mail/email-view.tsx" is loaded
+    And the source file "src/components/mail/url-safe-link.tsx" is loaded
 
   Scenario: Email with a legitimate URL
     Given an email body with the URL "https://google.com/search"
@@ -24,6 +26,11 @@ Feature: URL phishing detection (issue #1046)
     When the URLs are extracted and scanned
     Then the shortened URL is flagged as suspicious
     And the resolution of the shortened URL is requested
+
+  Scenario: Click on a suspicious link in the email view
+    Given an email body with the URL "https://phishing.example/steal"
+    When the URLs are extracted and scanned
+    Then a click on a suspicious link in the email view is intercepted
 
   Scenario: User disables URL scanning
     Given the user setting "urlScanEnabled" is false

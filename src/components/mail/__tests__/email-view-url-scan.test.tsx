@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { EmailView } from "../email-view";
 import { useEmailStore } from "@/stores/email-store";
 import { useLabelStore } from "@/stores/label-store";
@@ -31,6 +31,11 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     window.localStorage.setItem("misfits:url-scan-enabled", "true");
   });
 
+  afterEach(() => {
+    cleanup();
+    window.localStorage.clear();
+  });
+
   it("AC3: shows the warning badge in the email view for a suspicious URL", () => {
     seedEmail("Click https://phishing.example/steal", "text");
     render(<EmailView />);
@@ -50,6 +55,15 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     const link = screen.getByText("https://phishing.example/steal");
     fireEvent.click(link);
     expect(screen.getByText(/suspicious link warning/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /proceed anyway/i })).toBeTruthy();
+  });
+
+  it("AC4: does not intercept a click on a legitimate link", () => {
+    seedEmail("See https://google.com/search", "text");
+    render(<EmailView />);
+    const link = screen.getByText("https://google.com/search");
+    fireEvent.click(link);
+    expect(screen.queryByText(/suspicious link warning/i)).toBeNull();
   });
 
   it("AC5: hides the badge when the URL scan is disabled", () => {

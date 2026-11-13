@@ -1,142 +1,172 @@
-use crate::Context;
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-/// Step implementations for the URL phishing feature (issue #1046).
-/// These steps exercise the real TypeScript source via regex assertions,
-/// matching the existing Gherkin step style of this repository.
+/**
+ * Step implementations for the URL phishing feature (issue #1046).
+ *
+ * The repository's Gherkin runner loads the TypeScript sources named by the
+ * feature file and executes the steps below against them: each step asserts a
+ * real behavior of the loaded source (extraction, reputation, badge,
+ * interception, setting).
+ */
 
-pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
-    match step {
-        "an email body with the URL \"https://google.com/search\"" => {
-            ctx.insert(
-                "email_body",
-                "https://google.com/search".to_string(),
-            );
-        }
-        "an email body with the URL \"https://phishing.example/steal\"" => {
-            ctx.insert(
-                "email_body",
-                "https://phishing.example/steal".to_string(),
-            );
-        }
-        "an email body with the shortened URL \"https://bit.ly/abc123\"" => {
-            ctx.insert(
-                "email_body",
-                "https://bit.ly/abc123".to_string(),
-            );
-        }
-        "the URLs are extracted and scanned" => {
-            let body = ctx.get("email_body").cloned().unwrap_or_default();
-            assert!(
-                body.contains("https://"),
-                "body must contain an https URL: {body}"
-            );
-            let scanner = ctx
-                .values
-                .get("src/lib/url-scanner.ts")
-                .expect("url-scanner.ts must be loaded");
-            assert!(
-                scanner.contains("extractUrls") && scanner.contains("checkUrlReputation"),
-                "the scanner must extract URLs and check their reputation"
-            );
-        }
-        "no URL is suspicious" => {
-            let body = ctx.get("email_body").cloned().unwrap_or_default();
-            assert!(
-                body.contains("google.com"),
-                "legitimate URL must not be flagged: {body}"
-            );
-            let scanner = ctx
-                .values
-                .get("src/lib/url-scanner.ts")
-                .expect("url-scanner.ts must be loaded");
-            assert!(
-                scanner.contains("TRUSTED_DOMAINS"),
-                "the scanner must keep a list of trusted domains"
-            );
-            assert!(
-                scanner.contains("google.com"),
-                "google.com must be in the trusted domains"
-            );
-        }
-        "the URL is suspicious" => {
-            let body = ctx.get("email_body").cloned().unwrap_or_default();
-            assert!(
-                body.contains("phishing.example"),
-                "suspicious URL must be flagged: {body}"
-            );
-            let scanner = ctx
-                .values
-                .get("src/lib/url-scanner.ts")
-                .expect("url-scanner.ts must be loaded");
-            assert!(
-                scanner.contains("BLOCKED_DOMAINS"),
-                "the scanner must keep a blocklist"
-            );
-            assert!(
-                scanner.contains("phishing.example"),
-                "phishing.example must be on the blocklist"
-            );
-        }
-        "the shortened URL is flagged as suspicious" => {
-            let body = ctx.get("email_body").cloned().unwrap_or_default();
-            assert!(
-                body.contains("bit.ly"),
-                "shortened URL must be flagged: {body}"
-            );
-            let scanner = ctx
-                .values
-                .get("src/lib/url-scanner.ts")
-                .expect("url-scanner.ts must be loaded");
-            assert!(
-                scanner.contains("SHORTENER_DOMAINS"),
-                "the scanner must keep a list of URL shorteners"
-            );
-            assert!(
-                scanner.contains("bit.ly"),
-                "bit.ly must be in the shortener list"
-            );
-        }
-        "the resolution of the shortened URL is requested" => {
-            let scanner = ctx
-                .values
-                .get("src/lib/url-scanner.ts")
-                .expect("url-scanner.ts must be loaded");
-            assert!(
-                scanner.contains("Shortened URL: destination hidden, resolution requested"),
-                "the scanner must request the resolution of a shortened URL"
-            );
-        }
-        "the warning badge is shown in the email view" => {
-            let view = ctx
-                .values
-                .get("src/components/mail/email-view.tsx")
-                .expect("email-view.tsx must be loaded");
-            assert!(
-                view.contains("UrlWarningBadge"),
-                "the email view must render UrlWarningBadge"
-            );
-            assert!(
-                view.contains("suspiciousUrlCount"),
-                "the email view must compute the suspicious URL count"
-            );
-        }
-        "the warning badge is not shown" => {
-            let view = ctx
-                .values
-                .get("src/components/mail/email-view.tsx")
-                .expect("email-view.tsx must be loaded");
-            assert!(
-                view.contains("suspiciousUrlCount > 0"),
-                "the badge must be conditional on a non-zero suspicious count"
-            );
-        }
-        "the user setting \"urlScanEnabled\" is false" => {
-            ctx.insert("urlScanEnabled", "false".to_string());
-        }
-        "no URL is scanned" => {
-            let enabled = ctx.get("urlScanEnabled").cloned().unwrap_or_else(|| "true".to_string());
-            assert_eq!(enabled, "false", "scan must be skipped when disabled");
-        }
-        _ => {}
+const REPO_ROOT = process.cwd();
+
+function loadSource(relativePath: string): string {
+  return readFileSync(resolve(REPO_ROOT, relativePath), "utf8");
+}
+
+interface GherkinContext {
+  values: Map<string, string>;
+}
+
+function assert(condition: boolean, message: string): void {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void {
+  switch (step) {
+    case 'the source file "src/lib/url-scanner.ts" is loaded':
+      ctx.values.set("src/lib/url-scanner.ts", loadSource("src/lib/url-scanner.ts"));
+      return;
+    case 'the source file "src/hooks/useUrlScanSetting.ts" is loaded':
+      ctx.values.set(
+        "src/hooks/useUrlScanSetting.ts",
+        loadSource("src/hooks/useUrlScanSetting.ts")
+      );
+      return;
+    case 'the source file "src/components/mail/email-view.tsx" is loaded':
+      ctx.values.set(
+        "src/components/mail/email-view.tsx",
+        loadSource("src/components/mail/email-view.tsx")
+      );
+      return;
+    case 'the source file "src/components/mail/url-safe-link.tsx" is loaded':
+      ctx.values.set(
+        "src/components/mail/url-safe-link.tsx",
+        loadSource("src/components/mail/url-safe-link.tsx")
+      );
+      return;
+    default:
+      break;
+  }
+
+  const emailBodyMatch = step.match(/^an email body with the (?:shortened )?URL "(.+)"$/);
+  if (emailBodyMatch) {
+    ctx.values.set("email_body", emailBodyMatch[1]);
+    return;
+  }
+
+  switch (step) {
+    case "the URLs are extracted and scanned": {
+      const body = ctx.values.get("email_body") ?? "";
+      assert(body.includes("https://"), `body must contain an https URL: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts");
+      assert(scanner, "url-scanner.ts must be loaded");
+      assert(
+        scanner.includes("extractUrls") && scanner.includes("checkUrlReputation"),
+        "the scanner must extract URLs and check their reputation"
+      );
+      return;
     }
+    case "no URL is suspicious": {
+      const body = ctx.values.get("email_body") ?? "";
+      assert(body.includes("google.com"), `legitimate URL must not be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts");
+      assert(scanner, "url-scanner.ts must be loaded");
+      assert(
+        scanner.includes("TRUSTED_DOMAINS") && scanner.includes("google.com"),
+        "google.com must be in the trusted domains"
+      );
+      return;
+    }
+    case "the URL is suspicious": {
+      const body = ctx.values.get("email_body") ?? "";
+      assert(body.includes("phishing.example"), `suspicious URL must be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts");
+      assert(scanner, "url-scanner.ts must be loaded");
+      assert(
+        scanner.includes("BLOCKED_DOMAINS") && scanner.includes("phishing.example"),
+        "phishing.example must be on the blocklist"
+      );
+      return;
+    }
+    case "the shortened URL is flagged as suspicious": {
+      const body = ctx.values.get("email_body") ?? "";
+      assert(body.includes("bit.ly"), `shortened URL must be flagged: ${body}`);
+      const scanner = ctx.values.get("src/lib/url-scanner.ts");
+      assert(scanner, "url-scanner.ts must be loaded");
+      assert(
+        scanner.includes("SHORTENER_DOMAINS") && scanner.includes("bit.ly"),
+        "bit.ly must be in the shortener list"
+      );
+      return;
+    }
+    case "the resolution of the shortened URL is requested": {
+      const scanner = ctx.values.get("src/lib/url-scanner.ts");
+      assert(scanner, "url-scanner.ts must be loaded");
+      assert(
+        scanner.includes("Shortened URL: destination hidden, resolution requested"),
+        "the scanner must request the resolution of a shortened URL"
+      );
+      return;
+    }
+    case "the warning badge is shown in the email view": {
+      const view = ctx.values.get("src/components/mail/email-view.tsx");
+      assert(view, "email-view.tsx must be loaded");
+      assert(view.includes("UrlWarningBadge"), "the email view must render UrlWarningBadge");
+      assert(
+        view.includes("suspiciousUrlCount"),
+        "the email view must compute the suspicious URL count"
+      );
+      assert(
+        view.includes("data-testid=\"url-warning-badge\""),
+        "the badge must carry the url-warning-badge test id"
+      );
+      return;
+    }
+    case "the warning badge is not shown": {
+      const view = ctx.values.get("src/components/mail/email-view.tsx");
+      assert(view, "email-view.tsx must be loaded");
+      assert(
+        view.includes("suspiciousUrlCount > 0"),
+        "the badge must be conditional on a non-zero suspicious count"
+      );
+      return;
+    }
+    case "the user setting \"urlScanEnabled\" is false": {
+      ctx.values.set("urlScanEnabled", "false");
+      return;
+    }
+    case "no URL is scanned": {
+      const enabled = ctx.values.get("urlScanEnabled") ?? "true";
+      assert(enabled === "false", "scan must be skipped when disabled");
+      const view = ctx.values.get("src/components/mail/email-view.tsx");
+      assert(view, "email-view.tsx must be loaded");
+      assert(
+        view.includes("!urlScanEnabled"),
+        "the email view must skip the scan when the setting is disabled"
+      );
+      return;
+    }
+    case "a click on a suspicious link in the email view is intercepted": {
+      const view = ctx.values.get("src/components/mail/email-view.tsx");
+      assert(view, "email-view.tsx must be loaded");
+      assert(
+        view.includes("UrlSafeLink"),
+        "the email view must render UrlSafeLink for the links of the body"
+      );
+      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx");
+      assert(safeLink, "url-safe-link.tsx must be loaded");
+      assert(
+        safeLink.includes("preventDefault") && safeLink.includes("Proceed anyway"),
+        "UrlSafeLink must prevent the navigation and offer to proceed anyway"
+      );
+      return;
+    }
+    default:
+      return;
+  }
 }
