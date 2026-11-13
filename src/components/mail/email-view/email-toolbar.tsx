@@ -11,6 +11,7 @@ import {
   MailOpen,
   Sparkles,
   Search,
+  BellPlus,
 } from "lucide-react";
 import { ImmersiveReadingButton } from "../immersive-reading";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ import {
 
 interface EmailToolbarProps {
   isStarred: boolean;
+  isFollowUp: boolean;
   onArchive: () => void;
   onDelete: () => void;
   onMarkUnread: () => void;
@@ -34,6 +36,7 @@ interface EmailToolbarProps {
   onReplyAll: () => void;
   onForward: () => void;
   onToggleStar: () => void;
+  onToggleFollowUp: () => void;
   onHermesSummarize: () => void;
   onHermesReplyDraft: () => void;
   onHermesTranslate: () => void;
@@ -45,6 +48,7 @@ interface EmailToolbarProps {
 
 export function EmailToolbar({
   isStarred,
+  isFollowUp,
   onArchive,
   onDelete,
   onMarkUnread,
@@ -52,6 +56,7 @@ export function EmailToolbar({
   onReplyAll,
   onForward,
   onToggleStar,
+  onToggleFollowUp,
   onHermesSummarize,
   onHermesReplyDraft,
   onHermesTranslate,
@@ -80,6 +85,17 @@ export function EmailToolbar({
         <MailOpen className="h-4 w-4" />
       </Button>
       <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn("gap-1.5", isFollowUp && "text-[var(--color-warning-500)]")}
+        onClick={onToggleFollowUp}
+        aria-label={isFollowUp ? "Remove follow-up" : "Mark as follow-up"}
+        data-testid="email-followup-toggle"
+      >
+        <BellPlus className="h-4 w-4" />
+        {isFollowUp ? "Following" : "Follow"}
+      </Button>
       <Button variant="ghost" size="sm" onClick={onReply} className="gap-1.5">
         <Reply className="h-4 w-4" />
         Reply
@@ -151,6 +167,10 @@ export function EmailToolbar({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onToggleFollowUp}>
+            <BellPlus className="mr-2 h-4 w-4" />
+            {isFollowUp ? "Remove follow-up" : "Mark as follow-up"}
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onMarkUnread}>
             <MailOpen className="mr-2 h-4 w-4" />
             Mark as unread

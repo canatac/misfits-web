@@ -1,158 +1,185 @@
 "use client";
 
-import Link from "next/link";
-import type { FormEvent } from "react";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { PasswordStrengthIndicator } from "@/components/password-strength-indicator";
-
-import { formatRetry } from "../helpers";
 import { GithubIcon } from "../parts";
 
 type CredentialsFormProps = {
   email: string;
-  setEmail: (v: string) => void;
+  setEmail: (value: string) => void;
   emailError: boolean;
-  setEmailTouched: (v: boolean) => void;
+  setEmailTouched: () => void;
   password: string;
-  setPassword: (v: string) => void;
+  setPassword: (value: string) => void;
   remember: boolean;
-  setRemember: (v: boolean) => void;
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  setRemember: (value: boolean) => void;
+  onSubmit: () => void;
   submitting: boolean;
   loginPending: boolean;
   rateLimited: boolean;
-  retryAfter: number | undefined;
+  retryAfter?: number;
   invalidCredentials: boolean;
   oauthPending: "github" | null;
   onGithub: () => void;
 };
 
-export function CredentialsForm(props: CredentialsFormProps) {
-  const {
-    email,
-    setEmail,
-    emailError,
-    setEmailTouched,
-    password,
-    setPassword,
-    remember,
-    setRemember,
-    onSubmit,
-    submitting,
-    loginPending,
-    rateLimited,
-    retryAfter,
-    invalidCredentials,
-    oauthPending,
-    onGithub,
-  } = props;
+export function CredentialsForm({
+  email,
+  setEmail,
+  emailError,
+  setEmailTouched,
+  password,
+  setPassword,
+  remember,
+  setRemember,
+  onSubmit,
+  submitting,
+  loginPending,
+  rateLimited,
+  retryAfter,
+  invalidCredentials,
+  oauthPending,
+  onGithub,
+}: CredentialsFormProps) {
+  const githubPending = oauthPending === "github";
 
   return (
-    <>
-      <div className="space-y-3">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full gap-2"
-          disabled={submitting || oauthPending !== null}
-          loading={oauthPending === "github"}
-          onClick={onGithub}
-        >
-          {oauthPending !== "github" && <GithubIcon />}
-          Continuer avec GitHub
-        </Button>
-      </div>
+    <div className="space-y-4">
+      <button
+        type="button"
+        onClick={onGithub}
+        disabled={githubPending || submitting}
+        className={cn(
+          "flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm font-medium text-[var(--color-fg)] transition-colors",
+          "hover:bg-[var(--color-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+        )}
+      >
+        {githubPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        ) : (
+          <GithubIcon />
+        )}
+        <span>{githubPending ? "Connecting to GitHub…" : "Continue with GitHub"}</span>
+      </button>
 
-      <div className="relative my-4">
+      <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-[var(--color-border)]" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[var(--color-bg)] px-2 text-[var(--color-muted-fg)]">
-            ou
-          </span>
+          <span className="bg-[var(--color-bg)] px-2 text-[var(--color-muted-fg)]">Or</span>
         </div>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email or username</Label>
-          <Input
-            id="email"
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+        className="space-y-4"
+      >
+        <div className="space-y-1.5">
+          <label
+            htmlFor="login-email"
+            className="text-sm font-medium text-[var(--color-fg)]"
+          >
+            Email or login
+          </label>
+          <input
+            id="login-email"
             type="text"
             autoComplete="username"
-            placeholder="admin or you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onBlur={() => setEmailTouched(true)}
+            onBlur={setEmailTouched}
             aria-invalid={emailError ? "true" : "false"}
             aria-describedby={emailError ? "email-error" : undefined}
-            required
+            className={cn(
+              "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-fg)] outline-none transition-colors",
+              "focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-200)]",
+              emailError && "border-[var(--color-danger-500)]"
+            )}
           />
           {emailError ? (
-            <p
-              id="email-error"
-              className="text-xs text-[var(--color-danger-500)]"
-              role="alert"
-            >
-              Enter a username (e.g. admin) or a valid email.
+            <p id="email-error" role="alert" className="text-xs text-[var(--color-danger-600)]">
+              Enter a valid email address or login.
             </p>
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link
-              href="/reset-password"
-              className="text-xs text-[var(--color-brand-500)] underline-offset-4 hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <Input
-            id="password"
+        <div className="space-y-1.5">
+          <label
+            htmlFor="login-password"
+            className="text-sm font-medium text-[var(--color-fg)]"
+          >
+            Password
+          </label>
+          <input
+            id="login-password"
             type="password"
             autoComplete="current-password"
-            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             aria-invalid={invalidCredentials ? "true" : "false"}
-            aria-describedby="password-help"
-            required
+            aria-describedby={
+              invalidCredentials ? "password-error" : "password-help"
+            }
+            className={cn(
+              "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2.5 text-sm text-[var(--color-fg)] outline-none transition-colors",
+              "focus:border-[var(--color-brand-500)] focus:ring-2 focus:ring-[var(--color-brand-200)]",
+              invalidCredentials && "border-[var(--color-danger-500)]"
+            )}
           />
-          <PasswordStrengthIndicator password={password} />
-          <p id="password-help" className="sr-only" aria-live="polite">
-            {password.length === 0
-              ? "Password is empty."
-              : `${password.length} characters entered.`}
-          </p>
+          {invalidCredentials ? (
+            <p id="password-error" role="alert" className="text-xs text-[var(--color-danger-600)]">
+              Incorrect password. Check your credentials and try again.
+            </p>
+          ) : (
+            <p id="password-help" aria-live="polite" className="text-xs text-[var(--color-muted-fg)]">
+              {password.length} characters entered.
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="remember"
-            checked={remember}
-            onCheckedChange={(v) => setRemember(v === true)}
-          />
-          <Label htmlFor="remember" className="text-sm font-normal">
-            Remember me on this device
-          </Label>
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="h-4 w-4 rounded border-[var(--color-border)]"
+            />
+            Remember me
+          </label>
+          <a
+            href="/reset-password"
+            className="text-sm text-[var(--color-brand-500)] hover:underline"
+          >
+            Forgot password?
+          </a>
         </div>
 
-        <Button
+        <button
           type="submit"
-          className="w-full"
-          loading={loginPending}
-          disabled={loginPending || rateLimited}
+          disabled={submitting}
+          className={cn(
+            "flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-brand-500)] px-4 py-2.5 text-sm font-medium text-white transition-colors",
+            "hover:bg-[var(--color-brand-600)] disabled:cursor-not-allowed disabled:opacity-60"
+          )}
         >
-          {rateLimited ? `Try again in ${formatRetry(retryAfter)}` : "Sign in"}
-        </Button>
+          {loginPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : null}
+          <span>{loginPending ? "Signing in…" : "Sign in"}</span>
+        </button>
+
+        {rateLimited ? (
+          <p className="text-center text-xs text-[var(--color-warning-600)]">
+            Too many attempts. Try again in {retryAfter ? "a moment" : "a few minutes"}.
+          </p>
+        ) : null}
       </form>
-    </>
+    </div>
   );
 }
