@@ -26,7 +26,11 @@ function assert(condition: boolean, message: string): void {
   }
 }
 
-/** Extract the host of the first URL found in a body, or "" when none. */
+/**
+ * Extract the host of the first URL found in a body, or "" when none.
+ * The host is parsed with the URL parser, never matched as a substring, so a
+ * host name cannot be smuggled inside another part of the URL.
+ */
 function firstUrlHost(body: string): string {
   const match = body.match(/https?:\/\/[^\s<>"']+/i);
   if (!match) return "";

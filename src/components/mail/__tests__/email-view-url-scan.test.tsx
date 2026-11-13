@@ -10,8 +10,8 @@ function seedEmail(body: string, bodyType: "html" | "text") {
       {
         id: "email-1",
         subject: "Phishing test",
-        from: "attacker@example.com",
-        to: "me@example.com",
+        from: { address: "attacker@example.com", name: "Attacker" },
+        to: [{ address: "me@example.com", name: "Me" }],
         body,
         bodyType,
         isStarred: false,
