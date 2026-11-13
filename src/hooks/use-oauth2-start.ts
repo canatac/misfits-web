@@ -4,7 +4,7 @@
  * Start the OAuth2 consent flow for a provider.
  *
  * Calls GET /api/external-accounts/oauth2/start?provider=... (proxied to the
- * backend) and redirects the browser to the returned authorization URL.
+ * backend) and navigates the browser to the returned authorization URL.
  */
 import * as React from "react";
 
@@ -36,7 +36,10 @@ export function useOAuth2Start(): UseOAuth2StartResult {
             `The provider consent screen could not be opened (HTTP ${response.status}).`
         );
       }
-      window.location.assign(payload.authorizationUrl);
+      // Navigate to the provider consent screen. This is a full-page
+      // navigation: the modal closes and the provider answers on the
+      // callback route.
+      window.location.href = payload.authorizationUrl;
     } catch (cause) {
       setError(
         cause instanceof Error

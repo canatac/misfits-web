@@ -10,29 +10,13 @@
  */
 import * as React from "react";
 import { Check, Loader2, Mail } from "lucide-react";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalBody, ModalFooter } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalBody,
-  ModalFooter,
-} from "@/components/ui/modal";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { useAccountMutations } from "@/hooks/use-accounts";
-import { useAccountStore } from "@/stores/account-store";
-import { ImapConsole } from "@/components/mail/imap-console";
-import type { AccountProvider, AccountServerConfig } from "@/types/account";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { AccountProvider, AccountServerConfig, ProbeInput } from "@/lib/types";
 import {
   AccountColorPicker,
   TestResultBanner,
@@ -48,42 +32,21 @@ import { useOAuth2Start } from "@/hooks/use-oauth2-start";
 import { formReducer, initialFormState } from "./parts/add-account-modal/form-reducer";
 import { useAddAccountHandlers } from "./add-account-modal/use-add-account-handlers";
 
-interface AddAccountModalProps {
+export interface AddAccountModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-type ProbeInput = {
-  host: string;
-  port: number;
-  tls: boolean;
-  username: string;
-  password: string;
-};
-
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
-  const { addAccount } = useAccountMutations();
-  const accounts = useAccountStore((s) => s.accounts);
-  const setActiveAccount = useAccountStore((s) => s.setActiveAccount);
-
   const [state, dispatch] = React.useReducer(formReducer, initialFormState);
-  const {
-    provider,
-    email,
-    name,
-    password,
-    color,
-    customColor,
-    serverConfig,
-    testing,
-    testResult,
-  } = state;
+  const { provider, email, name, password, serverConfig, activeColor, needsServerFields } =
+    state;
 
   const [probeInput, setProbeInput] = React.useState<ProbeInput | null>(null);
   const [oauth2Provider, setOauth2Provider] = React.useState<string | null>(null);
 
-  const activeColor = customColor || color;
-  const needsServerFields = PROVIDER_PRESETS[provider].needsServerFields;
+  const activeColorValue = state.customColor || state.color;
+  const needsServerFieldsValue = PROVIDER_PRESETS[provider].needsServerFields;
 
   const oauth2 = useOAuth2Providers(open);
   const oauth2Start = useOAuth2Start();
@@ -95,14 +58,10 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const oauth2Selected = oauth2Provider !== null && catalogueValues.has(oauth2Provider);
 
   const { reset, handleTestConnection, handleSave, handleClose } = useAddAccountHandlers({
-    state: { provider, email, name, password, serverConfig, activeColor, needsServerFields },
+    state: { provider, email, name, password, serverConfig, activeColor: activeColorValue, needsServerFields: needsServerFieldsValue },
     dispatch,
-    setProbeInput,
-    addAccountMutate: (input) => addAccount.mutateAsync(input),
-    setActiveAccount,
-    onOpenChange,
+    reset,
   });
-  void reset;
 
   const canSave =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
@@ -112,6 +71,9 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     if (value === "other" || !catalogueValues.has(value)) {
       return;
     }
+    // Selecting a provider starts the consent flow: the modal closes and the
+    // browser navigates to the provider consent screen (AC2).
+    onOpenChange(false);
     await oauth2Start.start(value);
   }
 
@@ -119,14 +81,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
     <Modal open={open} onOpenChange={handleClose}>
       <ModalContent className="max-w-xl">
         <ModalHeader>
-          <ModalTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5 text-[var(--color-brand-500)]" />
-            Add email account
-          </ModalTitle>
-          <ModalDescription>
-            Connect a new mailbox. Choose a provider or use custom IMAP/SMTP
-            settings.
-          </ModalDescription>
+          <ModalTitle>Add account</ModalTitle>
         </ModalHeader>
 
         <ModalBody className="max-h-[70vh] overflow-y-auto">
@@ -222,7 +177,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   </p>
                 </div>
 
-                {needsServerFields && (
+                {needsServerFieldsValue && (
                   <ServerSettingsFields
                     serverConfig={serverConfig}
                     setServerConfig={(update) =>
@@ -238,11 +193,11 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 )}
 
                 <AccountColorPicker
-                  color={color}
-                  customColor={customColor}
+                  color={state.color}
+                  customColor={state.customColor}
                   onSelectColor={(c) => dispatch({ type: "setColor", color: c })}
                   onCustomColorChange={(c) => dispatch({ type: "setCustomColor", customColor: c })}
-                  accountsCount={accounts.length}
+                  accountsCount={0}
                 />
 
                 <ImapConsole
@@ -259,35 +214,20 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   title="IMAP session"
                 />
 
-                <TestResultBanner testResult={testResult} />
+                <TestResultBanner testResult={state.testResult} />
               </div>
             )}
           </div>
         </ModalBody>
 
-        <ModalFooter className="gap-2">
-          <Button variant="ghost" onClick={() => handleClose(false)}>Cancel</Button>
-          {!oauth2Selected && (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleTestConnection}
-                disabled={testing || !canSave}
-                data-testid="test-connection-button"
-              >
-                {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                Test connection
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={!canSave || addAccount.isPending}
-                data-testid="save-account-button"
-              >
-                {addAccount.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Add account
-              </Button>
-            </>
-          )}
+        <ModalFooter className="flex items-center justify-end gap-2">
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button disabled={!canSave} onClick={handleSave}>
+            <Check className="h-4 w-4" aria-hidden="true" />
+            Add account
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
