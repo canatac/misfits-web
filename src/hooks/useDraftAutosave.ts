@@ -1,76 +1,44 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import { useComposerStore } from "@/stores/composer-store";
 
-const AUTOSAVE_INTERVAL_MS = 10_000;
-const AUTOSAVE_DEBOUNCE_MS = 10_000;
-
+/**
+ * Thin facade over the composer store's draft persistence.
+ *
+ * The store owns the snapshot shape (recipients, subject, body, attachments,
+ * signature) and the localStorage key; this hook only exposes the operations
+ * the composer UI needs: save now, restore the persisted draft, delete it and
+ * drive the periodic autosave timer.
+ */
 export function useDraftAutosave() {
   const store = useComposerStore;
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedRef = useRef<string>("");
 
   const saveDraft = useCallback(() => {
-    const state = store.getState();
-    if (!state.isDirty) return;
-    const snap = JSON.stringify({ to: state.to, cc: state.cc, bcc: state.bcc, subject: state.subject, body: state.body, attachments: state.attachments });
-    if (snap === lastSavedRef.current) return;
-    lastSavedRef.current = snap;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("composer.draft", snap);
-      localStorage.setItem("composer.draft.timestamp", new Date().toISOString());
-    }
-    store.setState({ lastSavedAt: new Date().toISOString() });
+    store.getState().saveDraft();
   }, [store]);
 
   const loadDraft = useCallback(() => {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem("composer.draft");
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }, []);
+    return store.getState().loadPersistedDraft();
+  }, [store]);
 
   const clearDraft = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("composer.draft");
-      localStorage.removeItem("composer.draft.timestamp");
-    }
-    lastSavedRef.current = "";
-    store.setState({ lastSavedAt: null });
+    const s = store.getState();
+    s.stopAutosave();
+    s.reset();
   }, [store]);
 
   const startAutosave = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(saveDraft, AUTOSAVE_INTERVAL_MS);
-  }, [saveDraft]);
+    store.getState().startAutosave();
+  }, [store]);
 
   const stopAutosave = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+    store.getState().stopAutosave();
+  }, [store]);
 
   const scheduleDebouncedSave = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      debounceRef.current = null;
-      saveDraft();
-    }, AUTOSAVE_DEBOUNCE_MS);
-  }, [saveDraft]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+    store.getState().saveDraft();
+  }, [store]);
 
   return { saveDraft, loadDraft, clearDraft, startAutosave, stopAutosave, scheduleDebouncedSave };
 }
