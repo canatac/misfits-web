@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { AccountProvider, AccountServerConfig, ProbeInput } from "@/lib/types";
+import type { AccountProvider, AccountServerConfig } from "@/types/account";
 import { ImapConsole } from "@/components/mail/imap-console";
 import {
   AccountColorPicker,
@@ -38,16 +38,24 @@ export interface AddAccountModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type ProbeInput = {
+  host: string;
+  port: number;
+  tls: boolean;
+  username: string;
+  password: string;
+};
+
 export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   const [state, dispatch] = React.useReducer(formReducer, initialFormState);
-  const { provider, email, name, password, serverConfig, activeColor, needsServerFields } =
-    state;
+  const { provider, email, name, password, color, customColor, serverConfig } = state;
 
   const [probeInput, setProbeInput] = React.useState<ProbeInput | null>(null);
   const [oauth2Provider, setOauth2Provider] = React.useState<string | null>(null);
 
-  const activeColorValue = state.customColor || state.color;
-  const needsServerFieldsValue = PROVIDER_PRESETS[provider].needsServerFields;
+  const activeColor = customColor || color;
+  const preset = PROVIDER_PRESETS[provider as keyof typeof PROVIDER_PRESETS] ?? PROVIDER_PRESETS.gmail;
+  const needsServerFields = preset.needsServerFields;
 
   const oauth2 = useOAuth2Providers(open);
   const oauth2Start = useOAuth2Start();
@@ -58,10 +66,16 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
   );
   const oauth2Selected = oauth2Provider !== null && catalogueValues.has(oauth2Provider);
 
-  const { reset, handleTestConnection, handleSave, handleClose } = useAddAccountHandlers({
-    state: { provider, email, name, password, serverConfig, activeColor: activeColorValue, needsServerFields: needsServerFieldsValue },
+  const { handleTestConnection, handleSave, handleClose } = useAddAccountHandlers({
+    state: { provider, email, name, password, serverConfig, activeColor, needsServerFields },
     dispatch,
-    reset,
+    setProbeInput,
+    addAccountMutate: (input) => {
+      void input;
+      return Promise.resolve({ id: "" });
+    },
+    setActiveAccount: () => {},
+    onOpenChange,
   });
 
   const canSave =
@@ -178,7 +192,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                   </p>
                 </div>
 
-                {needsServerFieldsValue && (
+                {needsServerFields && (
                   <ServerSettingsFields
                     serverConfig={serverConfig}
                     setServerConfig={(update) =>
@@ -194,8 +208,8 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
                 )}
 
                 <AccountColorPicker
-                  color={state.color}
-                  customColor={state.customColor}
+                  color={color}
+                  customColor={customColor}
                   onSelectColor={(c) => dispatch({ type: "setColor", color: c })}
                   onCustomColorChange={(c) => dispatch({ type: "setCustomColor", customColor: c })}
                   accountsCount={0}
@@ -222,7 +236,7 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
         </ModalBody>
 
         <ModalFooter className="flex items-center justify-end gap-2">
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={() => handleClose(false)}>
             Cancel
           </Button>
           <Button disabled={!canSave} onClick={handleSave}>
