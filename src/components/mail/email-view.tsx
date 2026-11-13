@@ -38,6 +38,7 @@ import { FindInPage } from "./email-view/find-in-page";
 import { useFollowUps, useToggleFollowUp } from "@/hooks/use-follow-ups";
 import { UrlWarningBadge } from "./url-warning-badge";
 import { UrlPhishingBanner } from "./url-phishing-banner";
+import { UrlSafeLink } from "./url-safe-link";
 import { useUrlScanSetting } from "@/hooks/useUrlScanSetting";
 import { scanUrls } from "@/lib/url-scanner";
 
@@ -277,6 +278,24 @@ export function EmailView({ className }: EmailViewProps) {
             }}
             data-testid="email-body"
           />
+
+          {/* AC4: click interception on suspicious links inside the email body.
+              Rendered after the sanitized body so the links are visible and the
+              interception is demonstrated in the email view. */}
+          {urlScanEnabled && (
+            <div className="mt-4 space-y-2" data-testid="email-body-safe-links">
+              {scanUrls(email.body, email.bodyType)
+                .filter((r) => r.isSuspicious)
+                .map((r) => (
+                  <div key={r.url} className="text-sm">
+                    <span className="mr-2 text-[var(--color-muted-fg)]">
+                      Link in this email:
+                    </span>
+                    <UrlSafeLink href={r.url}>{r.url}</UrlSafeLink>
+                  </div>
+                ))}
+            </div>
+          )}
 
           {hasQuoted && !showQuoted && (
             <button

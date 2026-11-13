@@ -21,6 +21,7 @@ interface ComposerFooterProps {
   canSend: boolean;
   attachments: Attachment[];
   isComposerEmpty: boolean;
+  recipientCount: number;
   onJumpToAttachments: () => void;
   onSend: () => void;
   onSendLater: (iso: string) => void;
@@ -33,6 +34,7 @@ export function ComposerFooter({
   canSend,
   attachments,
   isComposerEmpty,
+  recipientCount,
   onJumpToAttachments,
   onSend,
   onSendLater,
@@ -164,7 +166,13 @@ export function ComposerFooter({
           </PopoverContent>
         </Popover>
 
-        <span className="ml-auto hidden text-xs text-[var(--color-muted-fg)] sm:inline">
+        <span
+          className="ml-auto hidden text-xs text-[var(--color-muted-fg)] sm:inline"
+          data-testid="recipient-count"
+        >
+          {recipientCount} recipient{recipientCount === 1 ? "" : "s"}
+        </span>
+        <span className="hidden text-xs text-[var(--color-muted-fg)] sm:inline">
           ⌘/Ctrl + Enter to send
         </span>
       </div>

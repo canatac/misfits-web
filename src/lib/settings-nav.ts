@@ -19,6 +19,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: "filters", label: "Filters", href: "/settings/filters", description: "Inbox rules, blocked senders" },
   { id: "statistics", label: "Statistics", href: "/settings/statistics", description: "Usage analytics" },
   { id: "ai", label: "AI", href: "/settings/ai", description: "Hermes AI settings" },
+  { id: "composing", label: "Composing", href: "/settings/composing", description: "Send confirmation threshold" },
 ];
 
 /**

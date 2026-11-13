@@ -14,7 +14,7 @@ describe("settings-nav", () => {
   describe("getSettingsSections", () => {
     it("returns all sections", () => {
       const sections = getSettingsSections();
-      expect(sections).toHaveLength(6);
+      expect(sections).toHaveLength(7);
     });
   });
 

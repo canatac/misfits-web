@@ -30,24 +30,32 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
                 body.contains("https://"),
                 "body must contain an https URL: {body}"
             );
-            if body.contains("phishing.example") {
-                assert!(
-                    body.contains("phishing.example"),
-                    "scanner must detect phishing.example"
-                );
-            }
-            if body.contains("bit.ly") {
-                assert!(
-                    body.contains("bit.ly"),
-                    "scanner must detect shortened URL bit.ly"
-                );
-            }
+            let scanner = ctx
+                .values
+                .get("src/lib/url-scanner.ts")
+                .expect("url-scanner.ts must be loaded");
+            assert!(
+                scanner.contains("extractUrls") && scanner.contains("checkUrlReputation"),
+                "the scanner must extract URLs and check their reputation"
+            );
         }
         "no URL is suspicious" => {
             let body = ctx.get("email_body").cloned().unwrap_or_default();
             assert!(
                 body.contains("google.com"),
                 "legitimate URL must not be flagged: {body}"
+            );
+            let scanner = ctx
+                .values
+                .get("src/lib/url-scanner.ts")
+                .expect("url-scanner.ts must be loaded");
+            assert!(
+                scanner.contains("TRUSTED_DOMAINS"),
+                "the scanner must keep a list of trusted domains"
+            );
+            assert!(
+                scanner.contains("google.com"),
+                "google.com must be in the trusted domains"
             );
         }
         "the URL is suspicious" => {
@@ -56,6 +64,18 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
                 body.contains("phishing.example"),
                 "suspicious URL must be flagged: {body}"
             );
+            let scanner = ctx
+                .values
+                .get("src/lib/url-scanner.ts")
+                .expect("url-scanner.ts must be loaded");
+            assert!(
+                scanner.contains("BLOCKED_DOMAINS"),
+                "the scanner must keep a blocklist"
+            );
+            assert!(
+                scanner.contains("phishing.example"),
+                "phishing.example must be on the blocklist"
+            );
         }
         "the shortened URL is flagged as suspicious" => {
             let body = ctx.get("email_body").cloned().unwrap_or_default();
@@ -63,19 +83,52 @@ pub fn execute_url_phishing_step(step: &str, ctx: &mut Context) {
                 body.contains("bit.ly"),
                 "shortened URL must be flagged: {body}"
             );
+            let scanner = ctx
+                .values
+                .get("src/lib/url-scanner.ts")
+                .expect("url-scanner.ts must be loaded");
+            assert!(
+                scanner.contains("SHORTENER_DOMAINS"),
+                "the scanner must keep a list of URL shorteners"
+            );
+            assert!(
+                scanner.contains("bit.ly"),
+                "bit.ly must be in the shortener list"
+            );
         }
         "the resolution of the shortened URL is requested" => {
-            let body = ctx.get("email_body").cloned().unwrap_or_default();
+            let scanner = ctx
+                .values
+                .get("src/lib/url-scanner.ts")
+                .expect("url-scanner.ts must be loaded");
             assert!(
-                body.contains("bit.ly"),
-                "shortened URL resolution must be requested: {body}"
+                scanner.contains("Shortened URL: destination hidden, resolution requested"),
+                "the scanner must request the resolution of a shortened URL"
             );
         }
         "the warning badge is shown in the email view" => {
-            assert!(true, "badge integration is covered by url-warning-badge.test.tsx");
+            let view = ctx
+                .values
+                .get("src/components/mail/email-view.tsx")
+                .expect("email-view.tsx must be loaded");
+            assert!(
+                view.contains("UrlWarningBadge"),
+                "the email view must render UrlWarningBadge"
+            );
+            assert!(
+                view.contains("suspiciousUrlCount"),
+                "the email view must compute the suspicious URL count"
+            );
         }
         "the warning badge is not shown" => {
-            assert!(true, "badge hidden when count is 0 or scan disabled");
+            let view = ctx
+                .values
+                .get("src/components/mail/email-view.tsx")
+                .expect("email-view.tsx must be loaded");
+            assert!(
+                view.contains("suspiciousUrlCount > 0"),
+                "the badge must be conditional on a non-zero suspicious count"
+            );
         }
         "the user setting \"urlScanEnabled\" is false" => {
             ctx.insert("urlScanEnabled", "false".to_string());
