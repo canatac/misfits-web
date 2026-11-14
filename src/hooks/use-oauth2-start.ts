@@ -39,7 +39,7 @@ export function useOAuth2Start(): UseOAuth2StartResult {
       // Navigate to the provider consent screen. This is a full-page
       // navigation: the modal closes and the provider answers on the
       // callback route.
-      window.location.href = payload.authorizationUrl;
+      window.location.assign(payload.authorizationUrl);
     } catch (cause) {
       setError(
         cause instanceof Error
