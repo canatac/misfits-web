@@ -9,7 +9,10 @@ function seedEmail(body: string, bodyType: "html" | "text") {
     emails: [
       {
         id: "email-1",
+        threadId: "thread-1",
+        folder: "inbox",
         subject: "Phishing test",
+        preview: body.slice(0, 80),
         from: { address: "attacker@example.com", name: "Attacker" },
         to: [{ address: "me@example.com", name: "Me" }],
         body,
@@ -19,6 +22,7 @@ function seedEmail(body: string, bodyType: "html" | "text") {
         labels: ["inbox"],
         attachments: [],
         receivedAt: new Date().toISOString(),
+        date: new Date().toISOString(),
       },
     ],
     selectedEmailId: "email-1",
