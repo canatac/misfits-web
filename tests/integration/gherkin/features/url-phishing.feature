@@ -8,12 +8,13 @@ Feature: URL phishing detection (issue #1046)
     And the source file "src/hooks/useUrlScanSetting.ts" is loaded
     And the source file "src/components/mail/email-view.tsx" is loaded
     And the source file "src/components/mail/url-safe-link.tsx" is loaded
+    And the source file "src/components/mail/__tests__/email-view-url-scan.test.tsx" is loaded
 
   Scenario: Email with a legitimate URL
     Given an email body with the URL "https://google.com/search"
     When the URLs are extracted and scanned
     Then no URL is suspicious
-    And the warning badge is not shown
+    And the warning badge is not shown in the email view
 
   Scenario: Email with a suspicious URL
     Given an email body with the URL "https://phishing.example/steal"
@@ -30,10 +31,12 @@ Feature: URL phishing detection (issue #1046)
   Scenario: Click on a suspicious link in the email view
     Given an email body with the URL "https://phishing.example/steal"
     When the URLs are extracted and scanned
-    Then a click on a suspicious link in the email view is intercepted
+    Then the warning badge is shown in the email view
+    And a click on a suspicious link in the email view is intercepted
+    And the warning page offers to continue
 
   Scenario: User disables URL scanning
     Given the user setting "urlScanEnabled" is false
     When an email with a suspicious URL is opened
     Then no URL is scanned
-    And the warning badge is not shown
+    And the warning badge is not shown in the email view

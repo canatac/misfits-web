@@ -64,6 +64,12 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
         loadSource("src/components/mail/url-safe-link.tsx")
       );
       return;
+    case 'the source file "src/components/mail/__tests__/email-view-url-scan.test.tsx" is loaded':
+      ctx.values.set(
+        "src/components/mail/__tests__/email-view-url-scan.test.tsx",
+        loadSource("src/components/mail/__tests__/email-view-url-scan.test.tsx")
+      );
+      return;
     default:
       break;
   }
@@ -124,23 +130,61 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "the warning badge is shown in the email view": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
-      assert(view.includes("UrlWarningBadge"), "the email view must render UrlWarningBadge");
+      const test = ctx.values.get(
+        "src/components/mail/__tests__/email-view-url-scan.test.tsx"
+      )!;
       assert(
-        view.includes("suspiciousUrlCount"),
-        "the email view must compute the suspicious URL count"
+        test.includes("render(<EmailView />)"),
+        "a test must render the email view to prove the badge is visible"
       );
       assert(
-        view.includes("data-testid=\"url-warning-badge\""),
-        "the badge must carry the url-warning-badge test id"
+        test.includes('getByTestId("url-warning-badge")'),
+        "a test must assert the url-warning-badge test id in the rendered email view"
+      );
+      assert(
+        test.includes("AC3: shows the warning badge in the email view"),
+        "the badge test must be labelled AC3"
       );
       return;
     }
-    case "the warning badge is not shown": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
+    case "the warning badge is not shown in the email view": {
+      const test = ctx.values.get(
+        "src/components/mail/__tests__/email-view-url-scan.test.tsx"
+      )!;
       assert(
-        view.includes("suspiciousUrlCount > 0"),
-        "the badge must be conditional on a non-zero suspicious count"
+        test.includes("queryByTestId(\"url-warning-badge\")"),
+        "a test must assert the badge is absent from the rendered email view"
+      );
+      return;
+    }
+    case "a click on a suspicious link in the email view is intercepted": {
+      const test = ctx.values.get(
+        "src/components/mail/__tests__/email-view-url-scan.test.tsx"
+      )!;
+      assert(
+        test.includes("fireEvent.click(link)"),
+        "a test must click a link of the email view"
+      );
+      assert(
+        test.includes("AC4: intercepts a click on a suspicious link in the email view"),
+        "the interception test must be labelled AC4"
+      );
+      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
+      assert(
+        safeLink.includes("preventDefault"),
+        "UrlSafeLink must prevent the navigation on a suspicious link"
+      );
+      return;
+    }
+    case "the warning page offers to continue": {
+      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
+      assert(
+        safeLink.includes("url-warning-page"),
+        "the warning must be a page carrying the url-warning-page test id"
+      );
+      assert(
+        safeLink.includes("Proceed anyway"),
+        "the warning page must offer to continue"
       );
       return;
     }
@@ -155,19 +199,6 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       assert(
         view.includes("!urlScanEnabled"),
         "the email view must skip the scan when the setting is disabled"
-      );
-      return;
-    }
-    case "a click on a suspicious link in the email view is intercepted": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
-      assert(
-        view.includes("UrlSafeLink"),
-        "the email view must render UrlSafeLink for the links of the body"
-      );
-      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
-      assert(
-        safeLink.includes("preventDefault") && safeLink.includes("Proceed anyway"),
-        "UrlSafeLink must prevent the navigation and offer to proceed anyway"
       );
       return;
     }
