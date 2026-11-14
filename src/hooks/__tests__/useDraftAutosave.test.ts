@@ -50,7 +50,7 @@ describe("useDraftAutosave", () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  it("restores the persisted draft into the composer store", () => {
+  it("restores the persisted draft into the composer store through loadPersistedDraft", () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
