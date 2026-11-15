@@ -1,37 +1,42 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useComposerStore } from "@/stores/composer-store";
 
-/** Format a saved-at ISO timestamp as a short relative label in French. */
-function relativeLabel(iso: string, now: number): string {
-  const then = new Date(iso).getTime();
+/**
+ * Relative, human-readable timestamp of the last draft save.
+ * "à l'instant" for the first seconds, then minutes/hours/days.
+ */
+function formatRelative(savedAt: string, now: number): string {
+  const then = new Date(savedAt).getTime();
   if (Number.isNaN(then)) return "";
-  const seconds = Math.max(0, Math.round((now - then) / 1000));
-  if (seconds < 45) return "à l'instant";
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `il y a ${minutes} min`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
-  const days = Math.round(hours / 24);
-  return `il y a ${days} j`;
+  const diffSeconds = Math.max(0, Math.round((now - then) / 1000));
+  if (diffSeconds < 15) return "à l'instant";
+  if (diffSeconds < 60) return `il y a ${diffSeconds} s`;
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `il y a ${diffHours} h`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `il y a ${diffDays} j`;
 }
 
 /**
- * Shows "Brouillon enregistré" with the time of the last save.
- * Renders nothing when no draft has been saved yet.
+ * "Draft saved" indicator with the timestamp of the last autosave.
+ * Renders nothing when no draft has been saved yet (AC3).
  */
 export function DraftSavedIndicator() {
   const lastSavedAt = useComposerStore((s) => s.lastSavedAt);
-  const [now, setNow] = useState<number>(() => Date.now());
+  const saveStatus = useComposerStore((s) => s.saveStatus);
+  const [now, setNow] = useState(() => Date.now());
 
+  // Keep the relative timestamp fresh while the composer stays open.
   useEffect(() => {
-    if (!lastSavedAt) return;
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
-  }, [lastSavedAt]);
+  }, []);
 
   if (!lastSavedAt) return null;
+
+  const label = saveStatus === "saving" ? "Enregistrement…" : "Brouillon enregistré";
 
   return (
     <span
@@ -39,7 +44,7 @@ export function DraftSavedIndicator() {
       aria-live="polite"
       className="text-xs text-muted-foreground"
     >
-      Brouillon enregistré {relativeLabel(lastSavedAt, now)}
+      {label} · {formatRelative(lastSavedAt, now)}
     </span>
   );
 }

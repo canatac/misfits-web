@@ -1,51 +1,48 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useComposerStore } from "@/stores/composer-store";
 import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
 
-/** Auto-cancel delay of the delete confirmation (ms). */
-const CONFIRM_TIMEOUT_MS = 5_000;
-
 /**
- * "Supprimer le brouillon" button. The first click asks for confirmation,
- * the second clears the persisted draft and resets the composer.
+ * Delete the current draft (AC4).
+ *
+ * Two-step confirm: the first click arms the button ("Confirmer la
+ * suppression"), the second one clears the persisted snapshot, stops the
+ * autosave timer and resets the store. The confirm state disarms after a few
+ * seconds so a stray click cannot delete the draft.
  */
 export function DeleteDraftButton() {
-  const [confirming, setConfirming] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [armed, setArmed] = useState(false);
 
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!armed) return;
+    const timer = setTimeout(() => setArmed(false), 4_000);
+    return () => clearTimeout(timer);
+  }, [armed]);
 
-  const handleClick = () => {
-    if (!confirming) {
-      setConfirming(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setConfirming(false), CONFIRM_TIMEOUT_MS);
+  function handleClick() {
+    if (!armed) {
+      setArmed(true);
       return;
     }
-    if (timer.current) clearTimeout(timer.current);
     const s = useComposerStore.getState();
     s.stopAutosave();
     s.reset();
     clearPersistedSnapshot();
-    setConfirming(false);
-  };
+    setArmed(false);
+  }
 
   return (
     <button
       type="button"
       data-testid="delete-draft-button"
-      aria-pressed={confirming}
       onClick={handleClick}
-      className="text-xs text-destructive hover:underline"
+      className={
+        armed
+          ? "text-xs text-destructive hover:underline"
+          : "text-xs text-muted-foreground hover:underline"
+      }
     >
-      {confirming ? "Confirmer la suppression" : "Supprimer le brouillon"}
+      {armed ? "Confirmer la suppression" : "Supprimer le brouillon"}
     </button>
   );
 }
