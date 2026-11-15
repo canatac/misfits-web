@@ -2,52 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { useComposerStore } from "@/stores/composer-store";
-
-/** Relative timestamp in French, as the composer UI is French-first. */
-function formatRelative(iso: string, now: number): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "";
-  const seconds = Math.max(0, Math.round((now - then) / 1000));
-  if (seconds < 45) return "à l'instant";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 1) return "à l'instant";
-  if (minutes === 1) return "il y a 1 minute";
-  if (minutes < 60) return `il y a ${minutes} minutes`;
-  const hours = Math.floor(minutes / 60);
-  if (hours === 1) return "il y a 1 heure";
-  if (hours < 24) return `il y a ${hours} heures`;
-  const days = Math.floor(hours / 24);
-  return days === 1 ? "il y a 1 jour" : `il y a ${days} jours`;
-}
+import { relativeTime } from "@/stores/composer-store-helpers";
 
 /**
- * "Draft saved" indicator with a relative timestamp (AC3).
+ * "Draft saved" indicator with a relative timestamp.
  *
- * Renders nothing while no draft has been saved. The text is announced to
- * screen readers through a polite live region, so a save never interrupts
- * typing but remains perceivable.
+ * Renders nothing until a draft has been saved (lastSavedAt set). The
+ * timestamp refreshes every 30s so it stays meaningful while the composer is
+ * open. Announced politely to screen readers.
  */
 export function DraftSavedIndicator() {
   const lastSavedAt = useComposerStore((s) => s.lastSavedAt);
   const saveStatus = useComposerStore((s) => s.saveStatus);
-  const [now, setNow] = useState<number>(() => Date.now());
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     if (!lastSavedAt) return;
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setTick((n) => n + 1), 30_000);
+    return () => clearInterval(t);
   }, [lastSavedAt]);
 
   if (!lastSavedAt) return null;
 
+  const label = saveStatus === "saving" ? "Enregistrement…" : "Brouillon enregistré";
+
   return (
-    <p
+    <span
       data-testid="draft-saved-indicator"
       aria-live="polite"
-      className="text-xs text-muted-foreground"
+      className="text-xs text-gray-500"
     >
-      {saveStatus === "saving" ? "Enregistrement…" : "Brouillon enregistré"}
-      {saveStatus === "saved" ? ` · ${formatRelative(lastSavedAt, now)}` : ""}
-    </p>
+      {label} <span className="text-gray-400">· {relativeTime(lastSavedAt)}</span>
+    </span>
   );
 }

@@ -1,36 +1,47 @@
 /**
- * Composer store send helpers — extracted from composer-store.ts (cycle 57).
- * Builds the payload from a snapshot and delegates to composerRepository.
+ * Send/schedule helpers for the composer store.
+ *
+ * The store calls these after a successful send to reset the draft; they are
+ * kept separate so the store file stays readable.
  */
 import type { SendOptions } from "@/types/composer";
-import { composerRepository } from "@/lib/repositories";
-import { clearPersistedSnapshot, snapshot } from "./composer-store-helpers";
+import { sendEmailRequest } from "@/hooks/composer/send-email";
 
-type SnapState = Parameters<typeof snapshot>[0];
+type SendableState = {
+  draftId: string;
+  to: { email: string; name?: string }[];
+  cc: { email: string; name?: string }[];
+  bcc: { email: string; name?: string }[];
+  subject: string;
+  body: string;
+  attachments: { id: string; filename: string; contentType: string; size: number }[];
+  signature: { id: string; name: string; html: string } | null;
+  inReplyTo?: string;
+  references?: string[];
+};
 
-function buildPayload(snap: ReturnType<typeof snapshot>) {
-  return {
-    to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-    cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-    bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-    subject: snap.subject,
-    body: snap.body,
-  };
+/** Send the current draft now (or at sendLater when provided). */
+export async function sendComposer(state: SendableState, options?: SendOptions): Promise<void> {
+  await sendEmailRequest(
+    {
+      id: state.draftId,
+      to: state.to,
+      cc: state.cc,
+      bcc: state.bcc,
+      subject: state.subject,
+      body: state.body,
+      attachments: state.attachments,
+      signature: state.signature,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      inReplyTo: state.inReplyTo,
+      references: state.references,
+    },
+    options,
+  );
 }
 
-export async function sendComposer(
-  state: SnapState,
-  options?: SendOptions
-): Promise<void> {
-  const snap = snapshot(state);
-  await composerRepository.send(buildPayload(snap), options);
-  clearPersistedSnapshot();
-}
-
-export async function scheduleComposer(
-  state: SnapState,
-  date: string
-): Promise<void> {
-  const snap = snapshot(state);
-  await composerRepository.schedule(buildPayload(snap), date);
+/** Schedule the current draft for later delivery. */
+export async function scheduleComposer(state: SendableState, date: string): Promise<void> {
+  await sendComposer(state, { sendLater: date });
 }
