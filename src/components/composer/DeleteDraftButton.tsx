@@ -1,42 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import { useDraftAutosave } from "@/hooks/useDraftAutosave";
+import { useComposerStore } from "@/stores/composer-store";
+import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
 
 /**
- * "Supprimer le brouillon" button (AC4).
- *
- * Two-step confirm: the first click arms the button, the second deletes the
- * persisted draft, resets the store and stops autosave. Keyboard accessible
- * (native button, focus-visible ring) and announced via aria-live.
+ * Deletes the current draft (AC4). The first click arms the confirmation,
+ * the second click clears the persisted draft and resets the store.
  */
 export function DeleteDraftButton() {
-  const { clearDraft } = useDraftAutosave();
-  const [armed, setArmed] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
-  const onClick = () => {
-    if (!armed) {
-      setArmed(true);
+  const onDelete = () => {
+    if (!confirming) {
+      setConfirming(true);
       return;
     }
-    clearDraft();
-    setArmed(false);
+    const s = useComposerStore.getState();
+    s.stopAutosave();
+    s.reset();
+    clearPersistedSnapshot();
+    setConfirming(false);
   };
 
   return (
     <button
       type="button"
-      onClick={onClick}
-      onBlur={() => setArmed(false)}
-      className={
-        armed
-          ? "rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-          : "rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-      }
-      aria-label="Supprimer le brouillon"
       data-testid="delete-draft-button"
+      onClick={onDelete}
+      aria-pressed={confirming}
+      className={
+        confirming
+          ? "text-sm text-destructive"
+          : "text-sm text-muted-foreground hover:text-destructive"
+      }
     >
-      {armed ? "Confirmer la suppression" : "Supprimer le brouillon"}
+      {confirming ? "Confirmer la suppression" : "Supprimer le brouillon"}
     </button>
   );
 }
