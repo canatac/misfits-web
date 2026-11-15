@@ -1,39 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useDraftAutosave } from "@/hooks/useDraftAutosave";
-
-const CONFIRM_TIMEOUT_MS = 5_000;
+import { useState } from "react";
+import { useComposerStore } from "@/stores/composer-store";
+import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
 
 /**
- * Delete-draft button with a two-step confirmation.
+ * Delete-draft button of the composer (AC4).
  *
- * First click arms the confirmation ("Confirmer la suppression"); a second
- * click within 5s clears the persisted draft and resets the store. The
- * confirmation disarms itself after the timeout so a stray click cannot
- * delete the draft.
+ * Two-step action: the first click arms the confirmation, the second click
+ * stops the autosave, clears the persisted snapshot and resets the store.
  */
 export function DeleteDraftButton() {
-  const { clearDraft } = useDraftAutosave();
   const [confirming, setConfirming] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, []);
 
   const handleClick = () => {
     if (!confirming) {
       setConfirming(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setConfirming(false), CONFIRM_TIMEOUT_MS);
       return;
     }
-    if (timer.current) clearTimeout(timer.current);
+    const s = useComposerStore.getState();
+    s.stopAutosave();
+    s.reset();
+    clearPersistedSnapshot();
     setConfirming(false);
-    clearDraft();
   };
 
   return (
@@ -41,11 +30,11 @@ export function DeleteDraftButton() {
       type="button"
       data-testid="delete-draft-button"
       onClick={handleClick}
-      aria-pressed={confirming}
+      onBlur={() => setConfirming(false)}
       className={
         confirming
-          ? "rounded border border-red-600 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
-          : "rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          ? "text-sm text-destructive"
+          : "text-sm text-muted-foreground hover:text-foreground"
       }
     >
       {confirming ? "Confirmer la suppression" : "Supprimer le brouillon"}

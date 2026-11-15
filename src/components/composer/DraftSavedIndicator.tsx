@@ -2,37 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useComposerStore } from "@/stores/composer-store";
-import { relativeTime } from "@/stores/composer-store-helpers";
 
 /**
- * "Draft saved" indicator with a relative timestamp.
+ * Visual indicator of the draft save state (AC3).
  *
- * Renders nothing until a draft has been saved (lastSavedAt set). The
- * timestamp refreshes every 30s so it stays meaningful while the composer is
- * open. Announced politely to screen readers.
+ * Renders nothing when no draft was ever saved. Once a draft is saved, it
+ * shows "Brouillon enregistré" followed by a relative timestamp, and announces
+ * the change to screen readers through a polite live region.
  */
 export function DraftSavedIndicator() {
   const lastSavedAt = useComposerStore((s) => s.lastSavedAt);
   const saveStatus = useComposerStore((s) => s.saveStatus);
-  const [, setTick] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
 
+  // Keep the relative timestamp fresh while the composer stays open.
   useEffect(() => {
     if (!lastSavedAt) return;
-    const t = setInterval(() => setTick((n) => n + 1), 30_000);
+    const t = setInterval(() => setNow(Date.now()), 10_000);
     return () => clearInterval(t);
   }, [lastSavedAt]);
 
   if (!lastSavedAt) return null;
 
-  const label = saveStatus === "saving" ? "Enregistrement…" : "Brouillon enregistré";
+  const label =
+    saveStatus === "saving"
+      ? "Enregistrement…"
+      : `Brouillon enregistré ${relativeTime(lastSavedAt, now)}`;
 
   return (
     <span
       data-testid="draft-saved-indicator"
       aria-live="polite"
-      className="text-xs text-gray-500"
+      className="text-xs text-muted-foreground"
     >
-      {label} <span className="text-gray-400">· {relativeTime(lastSavedAt)}</span>
+      {label}
     </span>
   );
+}
+
+/** Human-readable relative time in French (e.g. "à l'instant", "il y a 2 min"). */
+function relativeTime(iso: string, nowMs: number): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "à l'instant";
+  const seconds = Math.max(0, Math.round((nowMs - then) / 1000));
+  if (seconds < 45) return "à l'instant";
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `il y a ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `il y a ${hours} h`;
+  const days = Math.round(hours / 24);
+  return `il y a ${days} j`;
 }
