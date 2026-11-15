@@ -1,27 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { useDraftAutosave } from "@/hooks/useDraftAutosave";
 
 /**
- * Delete-draft button for the composer (AC4 of misfits-web#1036).
+ * "Supprimer le brouillon" button (AC4).
  *
- * Clears the persisted draft and resets the composer to its initial state.
- * Asks for confirmation so a misclick cannot discard a draft silently.
+ * Two-step confirm: the first click arms the button, the second deletes the
+ * persisted draft, resets the store and stops autosave. Keyboard accessible
+ * (native button, focus-visible ring) and announced via aria-live.
  */
 export function DeleteDraftButton() {
   const { clearDraft } = useDraftAutosave();
+  const [armed, setArmed] = useState(false);
+
+  const onClick = () => {
+    if (!armed) {
+      setArmed(true);
+      return;
+    }
+    clearDraft();
+    setArmed(false);
+  };
 
   return (
     <button
       type="button"
-      onClick={() => {
-        if (window.confirm("Supprimer le brouillon ?")) {
-          clearDraft();
-        }
-      }}
-      className="rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      onClick={onClick}
+      onBlur={() => setArmed(false)}
+      className={
+        armed
+          ? "rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+          : "rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      }
+      aria-label="Supprimer le brouillon"
+      data-testid="delete-draft-button"
     >
-      Supprimer le brouillon
+      {armed ? "Confirmer la suppression" : "Supprimer le brouillon"}
     </button>
   );
 }
