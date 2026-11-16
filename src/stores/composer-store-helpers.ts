@@ -1,21 +1,28 @@
 /**
- * Helpers for the composer store: initial state, draft snapshot persistence
- * (localStorage) and small utilities.
+ * Pure helpers and shared types for the composer store.
+ *
+ * Kept free of any imports from `composer-store.ts` to avoid cycles.
  */
 import type {
-  Attachment, ComposeDraft, EmailSignature, Recipient, RecipientType,
+  Attachment,
+  EmailSignature,
+  Recipient,
 } from "@/types/composer";
 
-/** localStorage key of the persisted draft snapshot. */
-export const STORAGE_KEY = "misfits.composer.draft.v1";
-
-/** Autosave interval (ms) — the draft is persisted every 10s while dirty. */
+export const STORAGE_KEY = "misfits:composer-draft";
 export const AUTOSAVE_INTERVAL = 10_000;
 
-/** Save status shown by the composer indicator. */
 export type SaveStatus = "idle" | "saving" | "saved";
 
-/** Persisted draft snapshot (serialisable). */
+export function uid(prefix = "id"): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function nowISO(): string {
+  return new Date().toISOString();
+}
+
+/** Serialisable snapshot persisted to localStorage. */
 export interface DraftSnapshot {
   id: string;
   to: Recipient[];
@@ -25,55 +32,13 @@ export interface DraftSnapshot {
   body: string;
   attachments: Attachment[];
   signature: EmailSignature | null;
-  inReplyTo?: string;
-  references?: string[];
-  createdAt: string;
   updatedAt: string;
-}
-
-/** Prefill applied when the composer opens (reply/forward/template). */
-export interface ComposerPrefill {
-  to?: Recipient[];
-  cc?: Recipient[];
-  bcc?: Recipient[];
-  subject?: string;
-  body?: string;
   inReplyTo?: string;
   references?: string[];
 }
 
-/** Initial composer state (recipients empty, no signature). */
-export const initialComposerState = {
-  to: [] as Recipient[],
-  cc: [] as Recipient[],
-  bcc: [] as Recipient[],
-  subject: "",
-  body: "",
-  attachments: [] as Attachment[],
-  signature: null as EmailSignature | null,
-  isFullScreen: false,
-  isCompact: false,
-  lastSavedAt: null as string | null,
-  isDirty: false,
-  sending: false,
-  sendError: null as string | null,
-  saveStatus: "idle" as SaveStatus,
-  composerOpen: false,
-};
-
-/** Short unique id (no dependency). */
-export function uid(prefix: string): string {
-  const rand = Math.random().toString(36).slice(2, 10);
-  return `${prefix}-${Date.now().toString(36)}-${rand}`;
-}
-
-/** Current time as an ISO string. */
-export function nowISO(): string {
-  return new Date().toISOString();
-}
-
-/** Build the persisted snapshot of a composer state. */
-export function persistSnapshot(state: {
+/** Minimal state shape needed to build a snapshot. */
+export interface SnapshotSource {
   draftId: string;
   to: Recipient[];
   cc: Recipient[];
@@ -84,8 +49,9 @@ export function persistSnapshot(state: {
   signature: EmailSignature | null;
   inReplyTo?: string;
   references?: string[];
-}): DraftSnapshot {
-  const now = nowISO();
+}
+
+export function snapshot(state: SnapshotSource): DraftSnapshot {
   return {
     id: state.draftId,
     to: state.to,
@@ -95,33 +61,97 @@ export function persistSnapshot(state: {
     body: state.body,
     attachments: state.attachments,
     signature: state.signature,
+    updatedAt: nowISO(),
     inReplyTo: state.inReplyTo,
     references: state.references,
-    createdAt: now,
-    updatedAt: now,
   };
 }
 
-/** Read the persisted snapshot from localStorage; null when absent/invalid. */
-export function readPersistedSnapshot(): DraftSnapshot | null {
+/** Persist a draft snapshot to localStorage; returns the snapshot on success. */
+export function persistSnapshot(state: SnapshotSource): DraftSnapshot | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as DraftSnapshot;
-    if (!parsed || typeof parsed !== "object" || !parsed.id) return null;
-    return parsed;
+    const snap = snapshot(state);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+    return snap;
   } catch {
     return null;
   }
 }
 
-/** Remove the persisted snapshot from localStorage. */
+/** Read a persisted draft snapshot from localStorage. */
+export function readPersistedSnapshot(): DraftSnapshot | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DraftSnapshot;
+  } catch {
+    return null;
+  }
+}
+
 export function clearPersistedSnapshot(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
-    /* storage unavailable (private mode): nothing to clear */
+    // ignore
   }
+}
+
+/** Check whether a persisted draft exists in localStorage. */
+export function hasPersistedDraft(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** Human-readable relative time from an ISO timestamp (e.g. "il y a 5s"). */
+export function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 5) return "à l'instant";
+  if (seconds < 60) return `il y a ${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `il y a ${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  return `il y a ${hours}h`;
+}
+
+/** Initial state shared by reset/open/create. Callers must set a fresh draftId. */
+export const initialComposerState = {
+  to: [] as Recipient[],
+  cc: [] as Recipient[],
+  bcc: [] as Recipient[],
+  subject: "",
+  body: "",
+  attachments: [] as Attachment[],
+  signature: null as EmailSignature | null,
+  isFullScreen: false,
+  isCompact: false,
+  draftId: "",
+  lastSavedAt: null as string | null,
+  isDirty: false,
+  inReplyTo: undefined as string | undefined,
+  references: undefined as string[] | undefined,
+  sending: false,
+  sendError: null as string | null,
+  saveStatus: "idle" as SaveStatus,
+  _autosaveTimer: null as ReturnType<typeof setInterval> | null,
+  composerOpen: false,
+};
+
+/** Pre-fill payload used to open the composer for a reply/forward/template. */
+export interface ComposerPrefill {
+  to?: Recipient[];
+  cc?: Recipient[];
+  bcc?: Recipient[];
+  subject?: string;
+  body?: string;
+  inReplyTo?: string;
+  references?: string[];
 }
