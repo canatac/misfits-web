@@ -37,6 +37,15 @@ function renderWithProviders(ui: ReactNode) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
+/** The email body is sanitized HTML: a URL is rendered inside an anchor, so
+ * the test reads the anchor's href rather than its text node. */
+function bodyLinkHref(url: string): string | null {
+  const link = screen
+    .getByTestId("email-body")
+    .querySelector(`a[href="${url}"]`);
+  return link ? link.getAttribute("href") : null;
+}
+
 describe("EmailView URL scan integration (issue #1046)", () => {
   beforeEach(() => {
     window.localStorage.setItem("misfits:url-scan-enabled", "true");
@@ -88,8 +97,10 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     });
     useLabelStore.setState({ labels: [], assignments: {} });
     renderWithProviders(<EmailView />);
-    const link = screen.getByText("https://google.com/search");
-    fireEvent.click(link);
+    expect(bodyLinkHref("https://google.com/search")).toBe(
+      "https://google.com/search"
+    );
+    fireEvent.click(screen.getByTestId("email-body").querySelector("a")!);
     expect(screen.queryByText(/suspicious link warning/i)).toBeNull();
   });
 

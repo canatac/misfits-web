@@ -41,6 +41,15 @@ function firstUrlHost(body: string): string {
   }
 }
 
+/** The host of a URL, parsed, never a substring of the raw URL. */
+function urlHostOf(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "";
+  }
+}
+
 export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void {
   switch (step) {
     case 'the source file "src/lib/url-scanner.ts" is loaded':
