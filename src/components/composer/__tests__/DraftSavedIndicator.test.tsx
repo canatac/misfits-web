@@ -1,5 +1,3 @@
-"use client";
-
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import { DraftSavedIndicator } from "../DraftSavedIndicator";
@@ -20,7 +18,7 @@ describe("DraftSavedIndicator (AC3)", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("shows 'Draft saved' with a timestamp once a draft is saved", () => {
+  it("shows 'Brouillon enregistré' with a timestamp once a draft is saved", () => {
     act(() => {
       const s = useComposerStore.getState();
       s.setSubject("Hello");

@@ -1,26 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useComposerStore } from "@/stores/composer-store";
 import { clearPersistedSnapshot } from "@/stores/composer-store-helpers";
 
 /**
- * Deletes the current draft. The first click asks for confirmation, the
- * second one clears the persisted draft and resets the composer store.
+ * Deletes the current draft. The click asks for confirmation through
+ * window.confirm; on confirm it clears the persisted draft and resets the
+ * composer store.
  */
 export function DeleteDraftButton() {
-  const [confirming, setConfirming] = useState(false);
-
   const handleClick = () => {
-    if (!confirming) {
-      setConfirming(true);
-      return;
-    }
     const s = useComposerStore.getState();
+    if (s.subject || s.body || s.to.length > 0 || s.cc.length > 0 || s.bcc.length > 0 || s.attachments.length > 0) {
+      if (!window.confirm("Supprimer le brouillon ?")) return;
+    }
     s.stopAutosave();
     s.reset();
     clearPersistedSnapshot();
-    setConfirming(false);
   };
 
   return (
@@ -28,14 +24,9 @@ export function DeleteDraftButton() {
       type="button"
       data-testid="delete-draft-button"
       onClick={handleClick}
-      onBlur={() => setConfirming(false)}
-      className={
-        confirming
-          ? "text-xs text-red-600 hover:text-red-700"
-          : "text-xs text-gray-500 hover:text-gray-700"
-      }
+      className="text-xs text-gray-500 hover:text-gray-700"
     >
-      {confirming ? "Confirmer la suppression" : "Supprimer le brouillon"}
+      Supprimer le brouillon
     </button>
   );
 }

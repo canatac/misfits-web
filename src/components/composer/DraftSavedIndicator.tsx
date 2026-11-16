@@ -19,7 +19,8 @@ function relativeTime(iso: string, now: number): string {
 
 /**
  * Shows "Brouillon enregistré" with the time of the last save, once a draft
- * has been saved. Announced politely to screen readers.
+ * has been saved. The element has role="status" (aria-live="polite") so a
+ * screen reader announces the save state when it changes.
  */
 export function DraftSavedIndicator() {
   const lastSavedAt = useComposerStore((s) => s.lastSavedAt);
@@ -36,6 +37,7 @@ export function DraftSavedIndicator() {
 
   return (
     <span
+      role="status"
       data-testid="draft-saved-indicator"
       aria-live="polite"
       className="text-xs text-gray-500"
