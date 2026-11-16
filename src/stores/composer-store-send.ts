@@ -1,49 +1,56 @@
 /**
  * Send/schedule helpers for the composer store.
  *
- * The store calls these after a successful send to reset the draft; they are
- * kept separate so the store file stays readable.
+ * The store calls these to send the current draft; they are kept separate so
+ * the store file stays readable. The wire payload is built by sendEmailRequest,
+ * which expects a complete ComposeDraft.
  */
-import type { SendOptions } from "@/types/composer";
+import type { ComposeDraft, SendOptions } from "@/types/composer";
 import { sendEmailRequest } from "@/hooks/composer/send-email";
 
-type SendableState = {
+/** Minimal state shape needed to build a draft for sending. */
+export interface SendableState {
   draftId: string;
-  to: { email: string; name?: string }[];
-  cc: { email: string; name?: string }[];
-  bcc: { email: string; name?: string }[];
+  to: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
+  cc: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
+  bcc: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
   subject: string;
   body: string;
-  attachments: { id: string; filename: string; contentType: string; size: number }[];
+  attachments: {
+    id: string;
+    filename: string;
+    contentType: string;
+    size: number;
+    progress: number;
+    status: "pending" | "uploading" | "done" | "error";
+  }[];
   signature: { id: string; name: string; html: string } | null;
   inReplyTo?: string;
   references?: string[];
-};
+}
+
+/** Build a serialisable ComposeDraft from the current composer state. */
+function toDraft(state: SendableState): ComposeDraft {
+  const now = new Date().toISOString();
+  return {
+    id: state.draftId,
+    to: state.to,
+    cc: state.cc,
+    bcc: state.bcc,
+    subject: state.subject,
+    body: state.body,
+    attachments: state.attachments,
+    signature: state.signature,
+    createdAt: now,
+    updatedAt: now,
+    inReplyTo: state.inReplyTo,
+    references: state.references,
+  };
+}
 
 /** Send the current draft now (or at sendLater when provided). */
 export async function sendComposer(state: SendableState, options?: SendOptions): Promise<void> {
-  await sendEmailRequest(
-    {
-      id: state.draftId,
-      to: state.to.map((r) => ({ email: r.email, name: r.name })),
-      cc: state.cc.map((r) => ({ email: r.email, name: r.name })),
-      bcc: state.bcc.map((r) => ({ email: r.email, name: r.name })),
-      subject: state.subject,
-      body: state.body,
-      attachments: state.attachments.map((a) => ({
-        id: a.id,
-        filename: a.filename,
-        contentType: a.contentType,
-        size: a.size,
-      })),
-      signature: state.signature,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      inReplyTo: state.inReplyTo,
-      references: state.references,
-    },
-    options,
-  );
+  await sendEmailRequest(toDraft(state), options);
 }
 
 /** Schedule the current draft for later delivery. */
