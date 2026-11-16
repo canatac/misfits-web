@@ -28,7 +28,7 @@ describe("DraftSavedIndicator (AC3)", () => {
     });
     render(<DraftSavedIndicator />);
     const status = screen.getByRole("status");
-    expect(status).toHaveTextContent(/enregistré/i);
+    expect(status.textContent).toMatch(/enregistré/i);
   });
 
   it("shows the saving state while an autosave is in flight", () => {
@@ -42,7 +42,7 @@ describe("DraftSavedIndicator (AC3)", () => {
     // but not yet saving, so force the saving state the way the timer does.
     act(() => useComposerStore.setState({ saveStatus: "saving" }));
     render(<DraftSavedIndicator />);
-    expect(screen.getByRole("status")).toHaveTextContent(/Enregistrement/i);
+    expect(screen.getByRole("status").textContent).toMatch(/Enregistrement/i);
     act(() => useComposerStore.getState().stopAutosave());
   });
 });

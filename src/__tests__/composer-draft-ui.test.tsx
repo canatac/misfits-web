@@ -14,7 +14,7 @@ describe("DraftSavedIndicator (AC3)", () => {
 
   it("renders nothing when no draft was saved", () => {
     const { container } = render(<DraftSavedIndicator />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container.childElementCount).toBe(0);
   });
 
   it("shows \"Brouillon enregistré\" with a relative timestamp once saved", () => {

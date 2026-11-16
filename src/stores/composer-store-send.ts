@@ -25,12 +25,17 @@ export async function sendComposer(state: SendableState, options?: SendOptions):
   await sendEmailRequest(
     {
       id: state.draftId,
-      to: state.to,
-      cc: state.cc,
-      bcc: state.bcc,
+      to: state.to.map((r) => ({ email: r.email, name: r.name })),
+      cc: state.cc.map((r) => ({ email: r.email, name: r.name })),
+      bcc: state.bcc.map((r) => ({ email: r.email, name: r.name })),
       subject: state.subject,
       body: state.body,
-      attachments: state.attachments,
+      attachments: state.attachments.map((a) => ({
+        id: a.id,
+        filename: a.filename,
+        contentType: a.contentType,
+        size: a.size,
+      })),
       signature: state.signature,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
