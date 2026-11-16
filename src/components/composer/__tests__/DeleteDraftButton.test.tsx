@@ -20,24 +20,33 @@ describe("DeleteDraftButton (AC4)", () => {
     });
     expect(window.localStorage.getItem(STORAGE_KEY)).not.toBeNull();
 
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<DeleteDraftButton />);
-    fireEvent.click(screen.getByRole("button", { name: /supprimer le brouillon/i }));
+    const btn = screen.getByRole("button", { name: /supprimer le brouillon/i });
+    expect(btn.textContent).toBe("Supprimer le brouillon");
+
+    fireEvent.click(btn);
+    expect(btn.textContent).toBe("Confirmer la suppression");
+    expect(window.localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+    expect(useComposerStore.getState().subject).toBe("A draft");
+
+    fireEvent.click(screen.getByRole("button", { name: /confirmer la suppression/i }));
 
     expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(useComposerStore.getState().subject).toBe("");
     expect(useComposerStore.getState().body).toBe("");
   });
 
-  it("keeps the draft when the user cancels", () => {
+  it("keeps the draft when the confirmation is dismissed", () => {
     act(() => {
       const s = useComposerStore.getState();
       s.setSubject("A draft");
       s.saveDraft();
     });
-    vi.spyOn(window, "confirm").mockReturnValue(false);
+
     render(<DeleteDraftButton />);
-    fireEvent.click(screen.getByRole("button", { name: /supprimer le brouillon/i }));
+    const btn = screen.getByRole("button", { name: /supprimer le brouillon/i });
+    fireEvent.click(btn);
+    fireEvent.blur(btn);
 
     expect(window.localStorage.getItem(STORAGE_KEY)).not.toBeNull();
     expect(useComposerStore.getState().subject).toBe("A draft");
