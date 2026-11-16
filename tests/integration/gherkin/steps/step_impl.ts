@@ -134,7 +134,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
         "src/components/mail/__tests__/email-view-url-scan.test.tsx"
       )!;
       assert(
-        test.includes("render(<EmailView />)"),
+        test.includes("renderWithProviders(<EmailView />)"),
         "a test must render the email view to prove the badge is visible"
       );
       assert(

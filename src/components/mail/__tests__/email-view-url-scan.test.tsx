@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { EmailView } from "../email-view";
 import { useEmailStore } from "@/stores/email-store";
 import { useLabelStore } from "@/stores/label-store";
@@ -30,6 +32,11 @@ function seedEmail(body: string, bodyType: "html" | "text"): Email {
   };
 }
 
+function renderWithProviders(ui: ReactNode) {
+  const queryClient = new QueryClient();
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
 describe("EmailView URL scan integration (issue #1046)", () => {
   beforeEach(() => {
     window.localStorage.setItem("misfits:url-scan-enabled", "true");
@@ -46,7 +53,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
       selectedEmailId: "email-1",
     });
     useLabelStore.setState({ labels: [], assignments: {} });
-    render(<EmailView />);
+    renderWithProviders(<EmailView />);
     expect(screen.getByTestId("url-warning-badge")).toBeTruthy();
     expect(screen.getByText(/1 suspicious link/i)).toBeTruthy();
   });
@@ -57,7 +64,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
       selectedEmailId: "email-1",
     });
     useLabelStore.setState({ labels: [], assignments: {} });
-    render(<EmailView />);
+    renderWithProviders(<EmailView />);
     expect(screen.queryByTestId("url-warning-badge")).toBeNull();
   });
 
@@ -67,7 +74,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
       selectedEmailId: "email-1",
     });
     useLabelStore.setState({ labels: [], assignments: {} });
-    render(<EmailView />);
+    renderWithProviders(<EmailView />);
     const link = screen.getByText("https://phishing.example/steal");
     fireEvent.click(link);
     expect(screen.getByText(/suspicious link warning/i)).toBeTruthy();
@@ -80,7 +87,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
       selectedEmailId: "email-1",
     });
     useLabelStore.setState({ labels: [], assignments: {} });
-    render(<EmailView />);
+    renderWithProviders(<EmailView />);
     const link = screen.getByText("https://google.com/search");
     fireEvent.click(link);
     expect(screen.queryByText(/suspicious link warning/i)).toBeNull();
@@ -93,7 +100,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
       selectedEmailId: "email-1",
     });
     useLabelStore.setState({ labels: [], assignments: {} });
-    render(<EmailView />);
+    renderWithProviders(<EmailView />);
     expect(screen.queryByTestId("url-warning-badge")).toBeNull();
   });
 });
