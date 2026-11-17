@@ -27,18 +27,21 @@ function assert(condition: boolean, message: string): void {
 }
 
 /**
- * Host of the first URL found in a body, parsed with the URL parser.
+ * Hosts of every URL found in a body, parsed with the URL parser.
  * The host is never matched as a substring of the raw URL, so a host name
  * cannot be smuggled inside another part of the URL (userinfo, path, query).
  */
-function firstUrlHost(body: string): string {
-  const match = body.match(/https?:\/\/[^\s<>"']+/i);
-  if (!match) return "";
-  try {
-    return new URL(match[0]).hostname;
-  } catch {
-    return "";
+function urlHosts(body: string): string[] {
+  const hosts: string[] = [];
+  const matches = body.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
+  for (const raw of matches) {
+    try {
+      hosts.push(new URL(raw).hostname);
+    } catch {
+      hosts.push("");
+    }
   }
+  return hosts;
 }
 
 /** Host of a URL, parsed, never a substring of the raw URL. */
@@ -102,7 +105,12 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "no URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(firstUrlHost(body) === "google.com", `legitimate URL must not be flagged: ${body}`);
+      const hosts = urlHosts(body);
+      assert(hosts.length > 0, `body must contain a URL: ${body}`);
+      assert(
+        hosts.every((host) => host === "google.com"),
+        `every parsed URL host must be google.com: ${hosts.join(", ")}`
+      );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("TRUSTED_DOMAINS") && scanner.includes("google.com"),
@@ -112,7 +120,11 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "the URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(firstUrlHost(body) === "phishing.example", `suspicious URL must be flagged: ${body}`);
+      const hosts = urlHosts(body);
+      assert(
+        hosts.every((host) => host === "phishing.example"),
+        `every parsed URL host must be phishing.example: ${hosts.join(", ")}`
+      );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("BLOCKED_DOMAINS") && scanner.includes("phishing.example"),
@@ -122,7 +134,11 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "the shortened URL is flagged as suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(firstUrlHost(body) === "bit.ly", `shortened URL must be flagged: ${body}`);
+      const hosts = urlHosts(body);
+      assert(
+        hosts.every((host) => host === "bit.ly"),
+        `every parsed URL host must be bit.ly: ${hosts.join(", ")}`
+      );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
         scanner.includes("SHORTENER_DOMAINS") && scanner.includes("bit.ly"),
@@ -161,7 +177,7 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
         "src/components/mail/__tests__/email-view-url-scan.test.tsx"
       )!;
       assert(
-        test.includes("queryByTestId(\"url-warning-badge\")"),
+        test.includes('queryByTestId("url-warning-badge")'),
         "a test must assert the badge is absent from the rendered email view"
       );
       return;
