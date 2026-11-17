@@ -153,6 +153,10 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       return;
     }
     case "the warning badge is shown in the email view": {
+      // AC3: the criterion is proven by an executed test, not by matching the
+      // test source. The test renders EmailView and asserts the badge test id
+      // in the rendered output; the step asserts that executed test exists and
+      // is wired to the email view.
       const test = ctx.values.get(
         "src/components/mail/__tests__/email-view-url-scan.test.tsx"
       )!;
@@ -167,6 +171,17 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
       assert(
         test.includes("AC3: shows the warning badge in the email view"),
         "the badge test must be labelled AC3"
+      );
+      // The badge must be rendered by the email view itself, not only by a
+      // standalone component test.
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
+      assert(
+        view.includes("<UrlWarningBadge"),
+        "the email view must render the UrlWarningBadge"
+      );
+      assert(
+        view.includes("url-warning-badge"),
+        "the badge rendered by the email view must carry the url-warning-badge test id"
       );
       return;
     }
@@ -192,14 +207,19 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
         test.includes("AC4: intercepts a click on a suspicious link in the email view"),
         "the interception test must be labelled AC4"
       );
-      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
       assert(
-        safeLink.includes("preventDefault"),
-        "UrlSafeLink must prevent the navigation on a suspicious link"
+        view.includes("preventDefault"),
+        "the email view must prevent the navigation on a suspicious link"
       );
       return;
     }
     case "the warning page offers to continue": {
+      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
+      assert(
+        view.includes("Proceed anyway"),
+        "the warning shown in the email view must offer to continue"
+      );
       const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
       assert(
         safeLink.includes("url-warning-page"),
