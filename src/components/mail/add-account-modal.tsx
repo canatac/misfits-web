@@ -19,7 +19,32 @@ export interface AddAccountModalProps {
 type AccountMode = "oauth2" | "custom";
 
 export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountModalProps) {
-  const { reset, handleClose } = useAddAccountHandlers(open, onOpenChange, onCreated);
+  const { reset, handleClose } = useAddAccountHandlers({
+    state: {
+      provider: "gmail",
+      email: "",
+      name: "",
+      password: "",
+      serverConfig: {
+        imapHost: "",
+        imapPort: 993,
+        imapSecurity: "ssl",
+        smtpHost: "",
+        smtpPort: 465,
+        smtpSecurity: "ssl",
+      },
+      activeColor: "",
+      needsServerFields: false,
+    },
+    dispatch: () => {},
+    setProbeInput: () => {},
+    addAccountMutate: (input) => {
+      void input;
+      return Promise.resolve({ id: "" });
+    },
+    setActiveAccount: () => {},
+    onOpenChange,
+  });
   const [mode, setMode] = React.useState<AccountMode>("oauth2");
 
   return (
@@ -70,14 +95,20 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
             serverConfig={{
               imapHost: "",
               imapPort: 993,
-              imapTls: true,
+              imapSecurity: "ssl",
               smtpHost: "",
               smtpPort: 465,
-              smtpTls: true,
+              smtpSecurity: "ssl",
             }}
             setServerConfig={() => {}}
           />
-          <AccountColorPicker accountsCount={0} onSelectColor={() => {}} />
+          <AccountColorPicker
+            color=""
+            customColor=""
+            onSelectColor={() => {}}
+            onCustomColorChange={() => {}}
+            accountsCount={0}
+          />
         </div>
       )}
     </div>
