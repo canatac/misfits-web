@@ -15,9 +15,9 @@ import { useOAuth2Providers } from "@/hooks/use-oauth2-providers";
 export interface OAuth2ProviderOption {
   value: string;
   label: string;
-  authorizationEndpoint?: string;
-  tokenEndpoint?: string;
-  scopes?: string[];
+  authorizationEndpoint: string;
+  tokenEndpoint: string;
+  scopes: string[];
 }
 
 export interface OAuth2ProviderPickerProps {

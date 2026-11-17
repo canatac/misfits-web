@@ -4,11 +4,14 @@
  * AC1: loading state while the catalogue is fetched
  * AC2: empty state when no provider is available
  * AC3: error state with a retry action when the catalogue request fails
+ *
+ * Uses only packages present in package.json (@testing-library/react,
+ * vitest) and native DOM assertions, so typecheck and lint stay green.
  */
 import * as React from "react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { OAuth2ProviderPicker } from "@/components/mail/add-account-modal/oauth2-provider-picker";
+import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
 
 function catalogueResponse(providers: unknown[]) {
   return new Response(JSON.stringify({ providers }), {

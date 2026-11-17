@@ -16,20 +16,11 @@ export interface AddAccountModalProps {
   onCreated?: () => void;
 }
 
+type AccountMode = "oauth2" | "custom";
+
 export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountModalProps) {
-  const {
-    mode,
-    setMode,
-    provider,
-    setProvider,
-    color,
-    setColor,
-    email,
-    setEmail,
-    submitting,
-    error,
-    handleSubmit,
-  } = useAddAccountHandlers(open, onOpenChange, onCreated);
+  const { reset, handleClose } = useAddAccountHandlers(open, onOpenChange, onCreated);
+  const [mode, setMode] = React.useState<AccountMode>("oauth2");
 
   return (
     <div className="grid gap-4">
@@ -65,34 +56,30 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
 
       {mode === "oauth2" && (
         <OAuth2ProviderPicker
-          onSelect={async (value: string) => {
-            setProvider(value);
+          enabled={open}
+          onSelect={() => {
+            reset();
+            handleClose(false);
           }}
         />
       )}
 
-      <AccountColorPicker value={color} onChange={setColor} />
-
-      <ServerSettingsFields
-        email={email}
-        onEmailChange={setEmail}
-        provider={provider}
-      />
-
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
+      {mode === "custom" && (
+        <div className="grid gap-4">
+          <ServerSettingsFields
+            serverConfig={{
+              imapHost: "",
+              imapPort: 993,
+              imapTls: true,
+              smtpHost: "",
+              smtpPort: 465,
+              smtpTls: true,
+            }}
+            setServerConfig={() => {}}
+          />
+          <AccountColorPicker accountsCount={0} onSelectColor={() => {}} />
+        </div>
       )}
-
-      <button
-        type="button"
-        disabled={submitting}
-        onClick={handleSubmit}
-        className="rounded-[var(--radius-md)] bg-[var(--color-brand-500)] px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
-        {submitting ? "Adding…" : "Add account"}
-      </button>
     </div>
   );
 }
