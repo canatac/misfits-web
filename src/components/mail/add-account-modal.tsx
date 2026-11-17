@@ -87,9 +87,11 @@ export function AddAccountModal({ open, onOpenChange }: AddAccountModalProps) {
       return;
     }
     // Selecting a provider starts the consent flow: the modal closes and the
-    // browser navigates to the provider consent screen (AC2).
+    // browser navigates to the provider consent screen. The navigation is
+    // initiated here, before the start route answers (AC2); if the start route
+    // later fails, its error is shown after the navigation attempt.
     onOpenChange(false);
-    await oauth2Start.start(value);
+    void oauth2Start.start(value);
   }
 
   return (
