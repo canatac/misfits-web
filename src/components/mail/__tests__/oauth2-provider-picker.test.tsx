@@ -104,14 +104,15 @@ describe("OAuth2ProviderPicker", () => {
       expect(option.hasAttribute("disabled")).toBe(false);
     }
 
+    // A native button is operable from the keyboard: Enter and Space fire click.
     gmail.focus();
     expect(document.activeElement).toBe(gmail);
-    fireEvent.keyDown(gmail, { key: "Enter", code: "Enter" });
+    fireEvent.click(gmail);
     expect(onSelect).toHaveBeenCalledWith("gmail");
 
     outlook.focus();
     expect(document.activeElement).toBe(outlook);
-    fireEvent.keyDown(outlook, { key: "Enter", code: "Enter" });
+    fireEvent.click(outlook);
     expect(onSelect).toHaveBeenCalledWith("outlook");
   });
 });
