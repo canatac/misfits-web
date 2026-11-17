@@ -1,36 +1,59 @@
 /**
- * Composer store send helpers — extracted from composer-store.ts (cycle 57).
- * Builds the payload from a snapshot and delegates to composerRepository.
+ * Send/schedule helpers for the composer store.
+ *
+ * The store calls these to send the current draft; they are kept separate so
+ * the store file stays readable. The wire payload is built by sendEmailRequest,
+ * which expects a complete ComposeDraft.
  */
-import type { SendOptions } from "@/types/composer";
-import { composerRepository } from "@/lib/repositories";
-import { clearPersistedSnapshot, snapshot } from "./composer-store-helpers";
+import type { ComposeDraft, SendOptions } from "@/types/composer";
+import { sendEmailRequest } from "@/hooks/composer/send-email";
 
-type SnapState = Parameters<typeof snapshot>[0];
+/** Minimal state shape needed to build a draft for sending. */
+export interface SendableState {
+  draftId: string;
+  to: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
+  cc: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
+  bcc: { id: string; email: string; name?: string; type: "to" | "cc" | "bcc" }[];
+  subject: string;
+  body: string;
+  attachments: {
+    id: string;
+    filename: string;
+    contentType: string;
+    size: number;
+    progress: number;
+    status: "pending" | "uploading" | "done" | "error";
+  }[];
+  signature: { id: string; name: string; html: string } | null;
+  inReplyTo?: string;
+  references?: string[];
+}
 
-function buildPayload(snap: ReturnType<typeof snapshot>) {
+/** Build a serialisable ComposeDraft from the current composer state. */
+function toDraft(state: SendableState): ComposeDraft {
+  const now = new Date().toISOString();
   return {
-    to: snap.to.map((r) => ({ email: r.email, name: r.name })),
-    cc: snap.cc.map((r) => ({ email: r.email, name: r.name })),
-    bcc: snap.bcc.map((r) => ({ email: r.email, name: r.name })),
-    subject: snap.subject,
-    body: snap.body,
+    id: state.draftId,
+    to: state.to,
+    cc: state.cc,
+    bcc: state.bcc,
+    subject: state.subject,
+    body: state.body,
+    attachments: state.attachments,
+    signature: state.signature,
+    createdAt: now,
+    updatedAt: now,
+    inReplyTo: state.inReplyTo,
+    references: state.references,
   };
 }
 
-export async function sendComposer(
-  state: SnapState,
-  options?: SendOptions
-): Promise<void> {
-  const snap = snapshot(state);
-  await composerRepository.send(buildPayload(snap), options);
-  clearPersistedSnapshot();
+/** Send the current draft now (or at sendLater when provided). */
+export async function sendComposer(state: SendableState, options?: SendOptions): Promise<void> {
+  await sendEmailRequest(toDraft(state), options);
 }
 
-export async function scheduleComposer(
-  state: SnapState,
-  date: string
-): Promise<void> {
-  const snap = snapshot(state);
-  await composerRepository.schedule(buildPayload(snap), date);
+/** Schedule the current draft for later delivery. */
+export async function scheduleComposer(state: SendableState, date: string): Promise<void> {
+  await sendComposer(state, { sendLater: date });
 }
