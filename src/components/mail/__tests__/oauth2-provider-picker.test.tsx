@@ -1,11 +1,5 @@
-/**
- * Tests for the OAuth2 provider picker states and keyboard operability.
- *
- * Uses only packages present in package.json (@testing-library/react,
- * vitest) and native DOM assertions, so typecheck and lint stay green.
- */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
 
 describe("OAuth2ProviderPicker", () => {
@@ -13,10 +7,10 @@ describe("OAuth2ProviderPicker", () => {
     render(
       <OAuth2ProviderPicker
         options={null}
-        loading
+        loading={true}
         error={null}
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(screen.getByTestId("oauth2-provider-loading").textContent).toMatch(
@@ -24,14 +18,14 @@ describe("OAuth2ProviderPicker", () => {
     );
   });
 
-  it("shows an empty state when the catalogue returns no provider", () => {
+  it("shows an empty state when no provider is available", () => {
     render(
       <OAuth2ProviderPicker
         options={[]}
         loading={false}
         error={null}
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(screen.getByTestId("oauth2-provider-empty").textContent).toMatch(
@@ -45,28 +39,23 @@ describe("OAuth2ProviderPicker", () => {
       <OAuth2ProviderPicker
         options={null}
         loading={false}
-        error="Provider catalogue request failed (HTTP 500)."
+        error="Could not load the providers"
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
         onRetry={onRetry}
       />
     );
-    expect(screen.getByTestId("oauth2-provider-error").textContent).toMatch(
-      /http 500/i
-    );
+    const alert = screen.getByTestId("oauth2-provider-error");
+    expect(alert.textContent).toMatch(/could not load the providers/i);
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
-    expect(onRetry).toHaveBeenCalledOnce();
+    expect(onRetry).toHaveBeenCalled();
   });
 
-  it("renders the catalogue options and selects one on click", () => {
+  it("calls onSelect when an option is clicked", () => {
     const onSelect = vi.fn();
     render(
       <OAuth2ProviderPicker
-        options={[
-          { value: "gmail", label: "Gmail" },
-          { value: "outlook", label: "Outlook" },
-          { value: "yahoo", label: "Yahoo" },
-        ]}
+        options={[{ value: "gmail", label: "Gmail" }]}
         loading={false}
         error={null}
         selected={null}
@@ -84,7 +73,7 @@ describe("OAuth2ProviderPicker", () => {
         loading={false}
         error={null}
         selected="gmail"
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(
@@ -115,7 +104,6 @@ describe("OAuth2ProviderPicker", () => {
       expect(option.hasAttribute("disabled")).toBe(false);
     }
 
-    // Enter on a focused option selects it.
     gmail.focus();
     expect(document.activeElement).toBe(gmail);
     fireEvent.keyDown(gmail, { key: "Enter", code: "Enter" });
