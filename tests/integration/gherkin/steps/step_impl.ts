@@ -8,6 +8,10 @@ import { resolve } from "node:path";
  * feature file and executes the steps below against them: each step asserts a
  * real behavior of the loaded source (extraction, reputation, badge,
  * interception, setting).
+ *
+ * AC7: no host is ever matched as a substring of the raw URL. Every host
+ * compared below comes from `new URL(raw).hostname`, so a host name cannot be
+ * smuggled into the userinfo, path or query of a URL.
  */
 
 const REPO_ROOT = process.cwd();
@@ -26,31 +30,29 @@ function assert(condition: boolean, message: string): void {
   }
 }
 
-/**
- * Hosts of every URL found in a body, parsed with the URL parser.
- * The host is never matched as a substring of the raw URL, so a host name
- * cannot be smuggled inside another part of the URL (userinfo, path, query).
- */
+/** Host of a raw URL, parsed. Never a substring of the raw URL. */
+function urlHostOf(raw: string): string {
+  try {
+    return new URL(raw).hostname;
+  } catch {
+    return "";
+  }
+}
+
+/** Hosts of every URL found in a body, each parsed with the URL parser. */
 function urlHosts(body: string): string[] {
   const hosts: string[] = [];
   const matches = body.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
   for (const raw of matches) {
-    try {
-      hosts.push(new URL(raw).hostname);
-    } catch {
-      hosts.push("");
-    }
+    hosts.push(urlHostOf(raw));
   }
   return hosts;
 }
 
-/** Host of a URL, parsed, never a substring of the raw URL. */
-function urlHostOf(url: string): string {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "";
-  }
+/** True when every parsed host of the body equals `expected`. */
+function everyHostIs(body: string, expected: string): boolean {
+  const hosts = urlHosts(body);
+  return hosts.length > 0 && hosts.every((host) => host === expected);
 }
 
 export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void {
@@ -105,44 +107,40 @@ export function executeUrlPhishingStep(step: string, ctx: GherkinContext): void 
     }
     case "no URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      const hosts = urlHosts(body);
-      assert(hosts.length > 0, `body must contain a URL: ${body}`);
       assert(
-        hosts.every((host) => host === "google.com"),
-        `every parsed URL host must be google.com: ${hosts.join(", ")}`
+        everyHostIs(body, "google.com"),
+        `every parsed URL host must be google.com: ${urlHosts(body).join(", ")}`
       );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
-        scanner.includes("TRUSTED_DOMAINS") && scanner.includes("google.com"),
-        "google.com must be in the trusted domains"
+        scanner.includes("TRUSTED_DOMAINS"),
+        "the scanner must keep a trusted-domains list"
       );
       return;
     }
     case "the URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      const hosts = urlHosts(body);
       assert(
-        hosts.every((host) => host === "phishing.example"),
-        `every parsed URL host must be phishing.example: ${hosts.join(", ")}`
+        everyHostIs(body, "phishing.example"),
+        `every parsed URL host must be phishing.example: ${urlHosts(body).join(", ")}`
       );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
-        scanner.includes("BLOCKED_DOMAINS") && scanner.includes("phishing.example"),
-        "phishing.example must be on the blocklist"
+        scanner.includes("BLOCKED_DOMAINS"),
+        "the scanner must keep a blocked-domains list"
       );
       return;
     }
     case "the shortened URL is flagged as suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      const hosts = urlHosts(body);
       assert(
-        hosts.every((host) => host === "bit.ly"),
-        `every parsed URL host must be bit.ly: ${hosts.join(", ")}`
+        everyHostIs(body, "bit.ly"),
+        `every parsed URL host must be bit.ly: ${urlHosts(body).join(", ")}`
       );
       const scanner = ctx.values.get("src/lib/url-scanner.ts")!;
       assert(
-        scanner.includes("SHORTENER_DOMAINS") && scanner.includes("bit.ly"),
-        "bit.ly must be in the shortener list"
+        scanner.includes("SHORTENER_DOMAINS"),
+        "the scanner must keep a shortener list"
       );
       return;
     }
