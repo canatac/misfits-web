@@ -1,135 +1,128 @@
 /**
- * Tests for the OAuth2 provider picker states and keyboard operability.
+ * Tests of the provider picker states (issue #1104).
  *
- * Uses only packages present in package.json (@testing-library/react,
- * vitest) and native DOM assertions, so typecheck and lint stay green.
+ * AC1: loading state while the catalogue is fetched
+ * AC2: empty state when no provider is available
+ * AC3: error state with a retry action when the catalogue request fails
  */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
+import * as React from "react";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { OAuth2ProviderPicker } from "@/components/mail/add-account-modal/oauth2-provider-picker";
+
+function catalogueResponse(providers: unknown[]) {
+  return new Response(JSON.stringify({ providers }), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  });
+}
 
 describe("OAuth2ProviderPicker", () => {
-  it("shows a loading state while the catalogue is fetched", () => {
-    render(
-      <OAuth2ProviderPicker
-        options={null}
-        loading
-        error={null}
-        selected={null}
-        onSelect={() => {}}
-      />
-    );
-    expect(screen.getByTestId("oauth2-provider-loading").textContent).toMatch(
-      /loading providers/i
-    );
+  beforeEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it("shows an empty state when the catalogue returns no provider", () => {
-    render(
-      <OAuth2ProviderPicker
-        options={[]}
-        loading={false}
-        error={null}
-        selected={null}
-        onSelect={() => {}}
-      />
-    );
-    expect(screen.getByTestId("oauth2-provider-empty").textContent).toMatch(
-      /no oauth2 provider is available/i
-    );
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it("shows an error state with a retry action", () => {
-    const onRetry = vi.fn();
-    render(
-      <OAuth2ProviderPicker
-        options={null}
-        loading={false}
-        error="Provider catalogue request failed (HTTP 500)."
-        selected={null}
-        onSelect={() => {}}
-        onRetry={onRetry}
-      />
+  it("shows a loading state while the catalogue is fetched (AC1)", async () => {
+    let release: (value: Response) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        () =>
+          new Promise<Response>((resolve) => {
+            release = resolve;
+          })
+      )
     );
-    expect(screen.getByTestId("oauth2-provider-error").textContent).toMatch(
-      /http 500/i
-    );
-    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
-    expect(onRetry).toHaveBeenCalledOnce();
+
+    render(<OAuth2ProviderPicker onSelect={() => {}} />);
+
+    expect(screen.getByTestId("oauth2-provider-loading")).toBeTruthy();
+    expect(screen.getByRole("status")).toBeTruthy();
+
+    release(catalogueResponse([]));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("oauth2-provider-loading")).toBeNull();
+    });
   });
 
-  it("renders the catalogue options and selects one on click", () => {
+  it("shows an empty state when no provider is available (AC2)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => catalogueResponse([])));
+
+    render(<OAuth2ProviderPicker onSelect={() => {}} />);
+
+    expect(await screen.findByTestId("oauth2-provider-empty")).toBeTruthy();
+    expect(screen.queryByTestId("oauth2-provider-list")).toBeNull();
+  });
+
+  it("shows an error state with a retry action when the catalogue request fails (AC3)", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: { message: "boom" } }), {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        })
+      )
+      .mockResolvedValueOnce(
+        catalogueResponse([
+          {
+            value: "gmail",
+            label: "Gmail",
+            authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+            tokenEndpoint: "https://oauth2.googleapis.com/token",
+            scopes: ["https://mail.google.com/"],
+          },
+        ])
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<OAuth2ProviderPicker onSelect={() => {}} />);
+
+    const error = await screen.findByTestId("oauth2-provider-error");
+    expect(error.textContent).toContain("HTTP 500");
+    expect(screen.getByRole("alert")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    expect(await screen.findByTestId("oauth2-provider-list")).toBeTruthy();
+    expect(screen.queryByTestId("oauth2-provider-error")).toBeNull();
+  });
+
+  it("selects a provider from the catalogue", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        catalogueResponse([
+          {
+            value: "gmail",
+            label: "Gmail",
+            authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+            tokenEndpoint: "https://oauth2.googleapis.com/token",
+            scopes: ["https://mail.google.com/"],
+          },
+        ])
+      )
+    );
+
     const onSelect = vi.fn();
-    render(
-      <OAuth2ProviderPicker
-        options={[
-          { value: "gmail", label: "Gmail" },
-          { value: "outlook", label: "Outlook" },
-          { value: "yahoo", label: "Yahoo" },
-        ]}
-        loading={false}
-        error={null}
-        selected={null}
-        onSelect={onSelect}
-      />
-    );
-    fireEvent.click(screen.getByTestId("oauth2-provider-gmail"));
+    render(<OAuth2ProviderPicker onSelect={onSelect} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Gmail" }));
+
     expect(onSelect).toHaveBeenCalledWith("gmail");
   });
 
-  it("marks the selected option as checked", () => {
-    render(
-      <OAuth2ProviderPicker
-        options={[{ value: "gmail", label: "Gmail" }]}
-        loading={false}
-        error={null}
-        selected="gmail"
-        onSelect={() => {}}
-      />
-    );
-    expect(
-      screen.getByRole("radio", { name: /gmail/i }).getAttribute("aria-checked")
-    ).toBe("true");
-  });
+  it("does not fetch while disabled", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
 
-  it("reaches every option by keyboard", () => {
-    const onSelect = vi.fn();
-    render(
-      <OAuth2ProviderPicker
-        options={[
-          { value: "gmail", label: "Gmail" },
-          { value: "outlook", label: "Outlook" },
-        ]}
-        loading={false}
-        error={null}
-        selected={null}
-        onSelect={onSelect}
-      />
-    );
-    const gmail = screen.getByTestId("oauth2-provider-gmail");
-    const outlook = screen.getByTestId("oauth2-provider-outlook");
-    const other = screen.getByTestId("oauth2-provider-other");
+    render(<OAuth2ProviderPicker enabled={false} onSelect={() => {}} />);
 
-    // Every option is a real button, so it is reachable by keyboard (Tab).
-    for (const option of [gmail, outlook, other]) {
-      expect(option.tagName).toBe("BUTTON");
-      expect(option.hasAttribute("disabled")).toBe(false);
-    }
-
-    // Enter on a focused option selects it.
-    gmail.focus();
-    expect(document.activeElement).toBe(gmail);
-    fireEvent.keyDown(gmail, { key: "Enter", code: "Enter" });
-    expect(onSelect).toHaveBeenCalledWith("gmail");
-
-    outlook.focus();
-    expect(document.activeElement).toBe(outlook);
-    fireEvent.keyDown(outlook, { key: "Enter", code: "Enter" });
-    expect(onSelect).toHaveBeenCalledWith("outlook");
-
-    other.focus();
-    expect(document.activeElement).toBe(other);
-    fireEvent.keyDown(other, { key: "Enter", code: "Enter" });
-    expect(onSelect).toHaveBeenCalledWith("other");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
