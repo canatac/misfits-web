@@ -3,12 +3,16 @@
 /**
  * Add-account modal: choose an external provider or enter custom IMAP/SMTP
  * settings.
+ *
+ * The modal owns the OAuth2 catalogue hook and passes its state down to the
+ * presentational provider picker.
  */
 import * as React from "react";
 import { OAuth2ProviderPicker } from "@/components/mail/add-account-modal/oauth2-provider-picker";
 import { ServerSettingsFields } from "@/components/mail/add-account-modal/server-settings-fields";
 import { AccountColorPicker } from "@/components/mail/add-account-modal/account-color-picker";
 import { useAddAccountHandlers } from "@/components/mail/add-account-modal/use-add-account-handlers";
+import { useOAuth2Providers } from "@/hooks/use-oauth2-providers";
 
 export interface AddAccountModalProps {
   open: boolean;
@@ -45,7 +49,9 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
     setActiveAccount: () => {},
     onOpenChange,
   });
+
   const [mode, setMode] = React.useState<AccountMode>("oauth2");
+  const oauth2 = useOAuth2Providers(open);
 
   return (
     <div className="grid gap-4">
@@ -81,11 +87,14 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
 
       {mode === "oauth2" && (
         <OAuth2ProviderPicker
-          enabled={open}
+          options={oauth2.options}
+          loading={oauth2.loading}
+          error={oauth2.error}
+          selected={null}
           onSelect={() => {
             reset();
-            handleClose(false);
           }}
+          onRetry={oauth2.reload}
         />
       )}
 
@@ -111,6 +120,26 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
           />
         </div>
       )}
+
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => handleClose(false)}
+          className="rounded-[var(--radius-md)] border px-3 py-2 text-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onCreated?.();
+            handleClose(false);
+          }}
+          className="rounded-[var(--radius-md)] border px-3 py-2 text-sm"
+        >
+          Add account
+        </button>
+      </div>
     </div>
   );
 }
