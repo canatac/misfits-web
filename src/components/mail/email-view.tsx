@@ -120,13 +120,14 @@ export function EmailView({ className }: EmailViewProps) {
     handleHermesTodos,
   } = useEmailActions(email);
 
-  // URL reputation scan (AC2/AC3/AC5). The scan itself is gated on the user
-  // setting; the badge below is not: once a suspicious URL is found it is
-  // always visible (AC3), whatever the setting.
+  // URL reputation scan (AC2/AC3). The scan always runs, whatever the user
+  // setting: AC3 requires the badge to be present for a suspicious URL
+  // "whatever the user setting". Only the scan-dependent banner and the
+  // safe-link list (AC5) are gated on urlScanEnabled.
   const urlResults = useMemo(() => {
-    if (!email || !urlScanEnabled) return [];
+    if (!email) return [];
     return scanUrls(email.body, email.bodyType);
-  }, [email, urlScanEnabled]);
+  }, [email]);
 
   const suspiciousUrlCount = useMemo(
     () => urlResults.filter((r) => r.isSuspicious).length,
@@ -266,7 +267,7 @@ export function EmailView({ className }: EmailViewProps) {
             </div>
           )}
 
-          {/* AC4: warning banner with dismiss */}
+          {/* AC5: warning banner, hidden when the scan is disabled */}
           {urlScanEnabled && (
             <UrlPhishingBanner
               body={email.body}
@@ -351,7 +352,8 @@ export function EmailView({ className }: EmailViewProps) {
             </div>
           )}
 
-          {/* Suspicious links of the body, rendered as safe links (AC4). */}
+          {/* AC5: suspicious links of the body, rendered as safe links. Hidden
+              when the scan is disabled. */}
           {urlScanEnabled && (
             <div className="mt-4 space-y-2" data-testid="email-body-safe-links">
               {urlResults

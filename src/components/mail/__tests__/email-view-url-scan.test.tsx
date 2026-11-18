@@ -68,6 +68,17 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     expect(screen.queryByTestId("url-warning-badge")).toBeNull();
   });
 
+  it("AC3: shows the badge for a suspicious URL whatever the user setting", () => {
+    window.localStorage.setItem("misfits:url-scan-enabled", "false");
+    useEmailStore.setState({
+      emails: [seedEmail("Click https://phishing.example/steal", "text")],
+      selectedEmailId: "email-1",
+    });
+    useLabelStore.setState({ labels: [], assignments: {} });
+    renderWithProviders(<EmailView />);
+    expect(screen.getByTestId("url-warning-badge")).toBeTruthy();
+  });
+
   it("AC4: intercepts a click on a suspicious link in the email view", () => {
     useEmailStore.setState({
       emails: [seedEmail("Click https://phishing.example/steal", "text")],
@@ -97,7 +108,7 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     expect(screen.queryByTestId("url-warning-page")).toBeNull();
   });
 
-  it("AC5: hides the badge when the URL scan is disabled", () => {
+  it("AC5: hides the scan-dependent banner and safe-link list when the scan is disabled, and keeps the badge", () => {
     window.localStorage.setItem("misfits:url-scan-enabled", "false");
     useEmailStore.setState({
       emails: [seedEmail("Click https://phishing.example/steal", "text")],
@@ -105,6 +116,10 @@ describe("EmailView URL scan integration (issue #1046)", () => {
     });
     useLabelStore.setState({ labels: [], assignments: {} });
     renderWithProviders(<EmailView />);
-    expect(screen.queryByTestId("url-warning-badge")).toBeNull();
+    // AC5: the scan-dependent banner and safe-link list are hidden.
+    expect(screen.queryByTestId("url-phishing-banner")).toBeNull();
+    expect(screen.queryByTestId("email-body-safe-links")).toBeNull();
+    // AC3: the badge stays visible whatever the setting.
+    expect(screen.getByTestId("url-warning-badge")).toBeTruthy();
   });
 });
