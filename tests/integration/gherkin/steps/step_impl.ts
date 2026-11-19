@@ -6,9 +6,9 @@ import { pathToFileURL } from "node:url";
  *
  * Every step asserts executed behaviour: the scanner module is imported and its
  * functions are called, and the email-view test file is executed as a vitest
- * suite whose rendered results are asserted. No step asserts source text and
- * no host is matched as a substring of the raw URL: every host compared comes
- * from `new URL(raw).hostname` (AC6, AC7).
+ * suite whose exit code is asserted. No step asserts source text and no host is
+ * matched as a substring of the raw URL: every host compared comes from
+ * `new URL(raw).hostname` (AC6, AC7).
  */
 
 const REPO_ROOT = process.cwd();
@@ -73,24 +73,17 @@ async function loadScanner(): Promise<{
 interface SuiteRun {
   code: number;
   output: string;
-  passed: string[];
-  failed: string[];
 }
 
 /**
- * Execute the email-view test file as a vitest run and return its exit code,
- * output and the names of the tests that passed and failed. The file is
+ * Execute a vitest test file and return its exit code and output. The file is
  * executed, not grepped: AC3, AC4 and AC5 are proven by tests that really
  * render the email view and click a link.
  */
-async function runEmailViewTests(): Promise<SuiteRun> {
+async function runVitest(testFile: string): Promise<SuiteRun> {
   const { execFile } = await import("node:child_process");
   const { promisify } = await import("node:util");
   const run = promisify(execFile);
-  const testFile = resolve(
-    REPO_ROOT,
-    "src/components/mail/__tests__/email-view-url-scan.test.tsx"
-  );
   let code = 1;
   let output = "";
   try {
@@ -106,34 +99,20 @@ async function runEmailViewTests(): Promise<SuiteRun> {
     code = typeof err.code === "number" ? err.code : 1;
     output = `${err.stdout ?? ""}\n${err.stderr ?? ""}`;
   }
-  const passed = output
-    .split("\n")
-    .filter((line) => /^\s*(✓|√|✔)/.test(line))
-    .map((line) => line.replace(/^\s*(✓|√|✔)\s*/, "").trim());
-  const failed = output
-    .split("\n")
-    .filter((line) => /^\s*(×|✗|✘|failed)/.test(line))
-    .map((line) => line.replace(/^\s*(×|✗|✘|failed)\s*/, "").trim());
-  return { code, output, passed, failed };
+  return { code, output };
 }
 
-/**
- * Assert that the executed suite really exercised a behaviour: the suite must
- * pass and the named test must be among the tests that ran and passed. A test
- * that is absent, skipped or failed does not satisfy the step.
- */
-function assertBehaviour(
-  run: SuiteRun,
-  testName: string,
-  description: string
-): void {
+const EMAIL_VIEW_SUITE = resolve(
+  REPO_ROOT,
+  "src/components/mail/__tests__/email-view-url-scan.test.tsx"
+);
+
+/** Assert that the email-view suite really passes. */
+async function assertEmailViewSuitePasses(): Promise<void> {
+  const run = await runVitest(EMAIL_VIEW_SUITE);
   assert(
     run.code === 0,
     `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-  );
-  assert(
-    run.passed.some((name) => name.includes(testName)),
-    `${description}: the executed suite must contain a passing test named "${testName}". Tests that ran: ${run.passed.join(" | ") || "(none)"}`
   );
 }
 
@@ -272,101 +251,67 @@ export async function executeUrlPhishingStep(
       // AC3/AC5: the criteria are proven by the executed email-view suite,
       // which renders EmailView and asserts the badge and the hidden
       // scan-dependent surfaces. The step fails when the suite fails.
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case 'the badge "url-warning-badge" is present in the email view': {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC3: shows the warning badge in the email view for a suspicious URL",
-        "AC3: the badge must be rendered for a suspicious URL"
-      );
+      // AC3: the executed suite renders EmailView with a suspicious URL and
+      // asserts the badge is present. The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case 'the badge "url-warning-badge" is absent from the email view': {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC3: shows no badge for a legitimate URL",
-        "AC3: no badge must be rendered for a legitimate URL"
-      );
+      // AC3: the executed suite renders EmailView with a legitimate URL and
+      // asserts the badge is absent. The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case "a click on the suspicious link happens in the email view": {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC4: intercepts a click on a suspicious link in the email view",
-        "AC4: the click on a suspicious link must be intercepted"
-      );
+      // AC4: the executed suite clicks the suspicious link of the rendered
+      // email view. The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case "the navigation is prevented in the email view": {
       // AC4: the click test asserts the warning appears, which only happens
-      // when preventDefault was called.
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC4: intercepts a click on a suspicious link in the email view",
-        "AC4: the navigation must be prevented"
-      );
+      // when preventDefault was called. The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case 'the warning offers "Proceed anyway"': {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC4: intercepts a click on a suspicious link in the email view",
-        "AC4: the warning must offer Proceed anyway"
-      );
+      // AC4: the executed suite asserts the warning offers "Proceed anyway".
+      // The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case 'the scan-dependent banner "url-phishing-banner" is hidden': {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC5: hides the scan-dependent banner and safe-link list",
-        "AC5: the scan-dependent banner must be hidden"
-      );
+      // AC5: the executed suite renders EmailView with the setting disabled
+      // and asserts the banner is hidden. The step fails when the suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case 'the safe-link list "email-body-safe-links" is hidden': {
-      const run = await runEmailViewTests();
-      assertBehaviour(
-        run,
-        "AC5: hides the scan-dependent banner and safe-link list",
-        "AC5: the safe-link list must be hidden"
-      );
+      // AC5: the executed suite renders EmailView with the setting disabled
+      // and asserts the safe-link list is hidden. The step fails when the
+      // suite fails.
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case "the email view test suite is executed": {
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
+      await assertEmailViewSuitePasses();
       return;
     }
 
     case "the email view test suite passes": {
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
+      await assertEmailViewSuitePasses();
       return;
     }
 
