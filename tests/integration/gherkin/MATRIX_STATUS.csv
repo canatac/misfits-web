@@ -7,3 +7,10 @@ MW-1111-AC2,Command palette action commands,The result of an action command is a
 MW-1111-AC2,Command palette action commands,The result of the delete command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
 MW-1111-AC3,Command palette action commands,The action commands are disabled when no email is selected,FAIL,no implementation,commands always enabled
 MW-1111-AC3,Command palette action commands,The action commands are hidden when no email is selected,FAIL,no implementation,commands always listed
+MW-1101-AC1,Command palette actions apply to the open email,Selecting the archive command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1101-AC1,Command palette actions apply to the open email,Selecting the delete command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1101-AC1,Command palette actions apply to the open email,Selecting the star command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1101-AC1,Command palette actions apply to the open email,Selecting the mark-unread command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1101-AC2,Command palette actions apply to the open email,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
+MW-1101-AC3,Command palette actions apply to the open email,The action commands are disabled when no email is open,FAIL,no implementation,commands always enabled
+MW-1101-AC3,Command palette actions apply to the open email,The action commands are hidden when no email is open,FAIL,no implementation,commands always listed
