@@ -14,3 +14,7 @@ MW-1101-AC1,Command palette actions apply to the open email,Selecting the mark-u
 MW-1101-AC2,Command palette actions apply to the open email,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
 MW-1101-AC3,Command palette actions apply to the open email,The action commands are disabled when no email is open,FAIL,no implementation,commands always enabled
 MW-1101-AC3,Command palette actions apply to the open email,The action commands are hidden when no email is open,FAIL,no implementation,commands always listed
+MW-1120-AC1,External accounts revoked and expired token error state,A revoked or expired token shows a message stating the account must be reconnected,FAIL,no implementation,no dedicated client state for OAUTH2_TOKEN_REVOKED
+MW-1120-AC1,External accounts revoked and expired token error state,The Reconnect action restarts the OAuth2 flow,FAIL,no implementation,no Reconnect action
+MW-1120-AC2,External accounts revoked and expired token error state,The error message is announced to assistive technology,FAIL,no implementation,no aria-live announcement of the revoked or expired token error
+MW-1120-AC3,External accounts revoked and expired token error state,The account is marked as needing attention in the account switcher,FAIL,no implementation,no attention marker in the account switcher
