@@ -1,21 +1,17 @@
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 /**
  * Step implementations for the URL phishing feature (issue #1046).
  *
- * The steps below execute the real behaviour: the scanner module is imported
- * and its functions are called, and the email-view test file is executed as a
- * vitest suite. No step matches a host as a substring of the raw URL: every
- * host compared comes from `new URL(raw).hostname` (AC6, AC7).
+ * Every step asserts executed behaviour: the scanner module is imported and its
+ * functions are called, and the email-view test file is executed as a vitest
+ * suite. No step asserts source text and no host is matched as a substring of
+ * the raw URL: every host compared comes from `new URL(raw).hostname`
+ * (AC6, AC7).
  */
 
 const REPO_ROOT = process.cwd();
-
-function loadSource(relativePath: string): string {
-  return readFileSync(resolve(REPO_ROOT, relativePath), "utf8");
-}
 
 interface GherkinContext {
   values: Map<string, string>;
@@ -40,12 +36,6 @@ function urlHosts(body: string): string[] {
   const matches = body.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
   for (const raw of matches) hosts.push(urlHostOf(raw));
   return hosts;
-}
-
-/** True when every parsed host of the body equals `expected`. */
-function everyHostIs(body: string, expected: string): boolean {
-  const hosts = urlHosts(body);
-  return hosts.length > 0 && hosts.every((host) => host === expected);
 }
 
 interface UrlReputation {
@@ -113,45 +103,47 @@ export async function executeUrlPhishingStep(
   step: string,
   ctx: GherkinContext
 ): Promise<void> {
-  switch (step) {
-    case 'the source file "src/lib/url-scanner.ts" is loaded':
-      ctx.values.set("src/lib/url-scanner.ts", loadSource("src/lib/url-scanner.ts"));
-      return;
-    case 'the source file "src/hooks/useUrlScanSetting.ts" is loaded':
-      ctx.values.set(
-        "src/hooks/useUrlScanSetting.ts",
-        loadSource("src/hooks/useUrlScanSetting.ts")
-      );
-      return;
-    case 'the source file "src/components/mail/email-view.tsx" is loaded':
-      ctx.values.set(
-        "src/components/mail/email-view.tsx",
-        loadSource("src/components/mail/email-view.tsx")
-      );
-      return;
-    case 'the source file "src/components/mail/url-safe-link.tsx" is loaded':
-      ctx.values.set(
-        "src/components/mail/url-safe-link.tsx",
-        loadSource("src/components/mail/url-safe-link.tsx")
-      );
-      return;
-    case 'the source file "src/components/mail/__tests__/email-view-url-scan.test.tsx" is loaded':
-      ctx.values.set(
-        "src/components/mail/__tests__/email-view-url-scan.test.tsx",
-        loadSource("src/components/mail/__tests__/email-view-url-scan.test.tsx")
-      );
-      return;
-    default:
-      break;
-  }
-
-  const emailBodyMatch = step.match(/^an email body with the (?:shortened )?URL "(.+)"$/);
+  const emailBodyMatch = step.match(
+    /^an email body with the (shortened )?URL "(.+)"$/
+  );
   if (emailBodyMatch) {
-    ctx.values.set("email_body", emailBodyMatch[1]);
+    ctx.values.set("email_body", emailBodyMatch[2]);
     return;
   }
 
   switch (step) {
+    case 'the email view test suite "src/components/mail/__tests__/email-view-url-scan.test.tsx" is loaded':
+      // The suite is executed by the steps below; nothing to load here.
+      return;
+
+    case "the URLs are extracted from the body": {
+      const body = ctx.values.get("email_body") ?? "";
+      assert(body.includes("https://"), `body must contain an https URL: ${body}`);
+      const scanner = await loadScanner();
+      const extracted = scanner.extractUrls(body, "text");
+      assert(
+        extracted.length > 0,
+        "the scanner must extract at least one URL from the body"
+      );
+      return;
+    }
+
+    case "the extracted URL host is \"google.com\"": {
+      const body = ctx.values.get("email_body") ?? "";
+      const scanner = await loadScanner();
+      const extracted = scanner.extractUrls(body, "text");
+      assert(
+        extracted.length > 0,
+        "the scanner must extract at least one URL from the body"
+      );
+      const hosts = extracted.map(urlHostOf);
+      assert(
+        hosts.length > 0 && hosts.every((host) => host === "google.com"),
+        `every extracted URL host must be google.com: ${hosts.join(", ")}`
+      );
+      return;
+    }
+
     case "the URLs are extracted and scanned": {
       const body = ctx.values.get("email_body") ?? "";
       assert(body.includes("https://"), `body must contain an https URL: ${body}`);
@@ -168,12 +160,28 @@ export async function executeUrlPhishingStep(
       );
       return;
     }
+
+    case 'the reputation of the URL host "phishing.example" is checked': {
+      const body = ctx.values.get("email_body") ?? "";
+      const scanner = await loadScanner();
+      const extracted = scanner.extractUrls(body, "text");
+      const hosts = extracted.map(urlHostOf);
+      assert(
+        hosts.includes("phishing.example"),
+        `the extracted URL hosts must include phishing.example: ${hosts.join(", ")}`
+      );
+      const reputation = scanner.checkUrlReputation(
+        extracted[hosts.indexOf("phishing.example")]
+      );
+      assert(
+        reputation.domain === "phishing.example",
+        `checkUrlReputation must return the parsed host phishing.example, got ${reputation.domain}`
+      );
+      return;
+    }
+
     case "no URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(
-        everyHostIs(body, "google.com"),
-        `every parsed URL host must be google.com: ${urlHosts(body).join(", ")}`
-      );
       const scanner = await loadScanner();
       const results = scanner.scanUrls(body, "text");
       assert(
@@ -182,12 +190,9 @@ export async function executeUrlPhishingStep(
       );
       return;
     }
+
     case "the URL is suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(
-        everyHostIs(body, "phishing.example"),
-        `every parsed URL host must be phishing.example: ${urlHosts(body).join(", ")}`
-      );
       const scanner = await loadScanner();
       const results = scanner.scanUrls(body, "text");
       assert(
@@ -196,12 +201,9 @@ export async function executeUrlPhishingStep(
       );
       return;
     }
+
     case "the shortened URL is flagged as suspicious": {
       const body = ctx.values.get("email_body") ?? "";
-      assert(
-        everyHostIs(body, "bit.ly"),
-        `every parsed URL host must be bit.ly: ${urlHosts(body).join(", ")}`
-      );
       const scanner = await loadScanner();
       const results = scanner.scanUrls(body, "text");
       assert(
@@ -210,6 +212,7 @@ export async function executeUrlPhishingStep(
       );
       return;
     }
+
     case "the resolution of the shortened URL is requested": {
       const scanner = await loadScanner();
       const results = scanner.scanUrls("https://bit.ly/abc123", "text");
@@ -221,88 +224,160 @@ export async function executeUrlPhishingStep(
       );
       return;
     }
-    case "the warning badge is shown in the email view": {
-      // AC3: the criterion is proven by an executed test. The email-view test
-      // file is run; it renders EmailView and asserts the badge test id in the
-      // rendered output. The step fails when the suite fails.
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
-      assert(
-        /AC3: shows the warning badge in the email view/.test(run.output) ||
-          run.output.length > 0,
-        "the executed suite must include the AC3 badge test"
-      );
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
-      assert(
-        view.includes("<UrlWarningBadge"),
-        "the email view must render the UrlWarningBadge"
-      );
-      return;
-    }
-    case "the warning badge is not shown in the email view": {
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
-      const test = ctx.values.get(
-        "src/components/mail/__tests__/email-view-url-scan.test.tsx"
-      )!;
-      assert(
-        test.includes('queryByTestId("url-warning-badge")'),
-        "a test must assert the badge is absent from the rendered email view"
-      );
-      return;
-    }
-    case "a click on a suspicious link in the email view is intercepted": {
-      // AC4: the criterion is proven by an executed test. The email-view test
-      // file is run; it clicks a link of the body and asserts the warning.
-      const run = await runEmailViewTests();
-      assert(
-        run.code === 0,
-        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
-      );
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
-      assert(
-        view.includes("preventDefault"),
-        "the email view must prevent the navigation on a suspicious link"
-      );
-      return;
-    }
-    case "the warning page offers to continue": {
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
-      assert(
-        view.includes("Proceed anyway"),
-        "the warning shown in the email view must offer to continue"
-      );
-      const safeLink = ctx.values.get("src/components/mail/url-safe-link.tsx")!;
-      assert(
-        safeLink.includes("url-warning-page"),
-        "the warning must be a page carrying the url-warning-page test id"
-      );
-      assert(
-        safeLink.includes("Proceed anyway"),
-        "the warning page must offer to continue"
-      );
-      return;
-    }
-    case "the user setting \"urlScanEnabled\" is false": {
+
+    case 'the user setting "urlScanEnabled" is false': {
       ctx.values.set("urlScanEnabled", "false");
       return;
     }
-    case "no URL is scanned": {
-      const enabled = ctx.values.get("urlScanEnabled") ?? "true";
-      assert(enabled === "false", "scan must be skipped when disabled");
-      const view = ctx.values.get("src/components/mail/email-view.tsx")!;
+
+    case "the email view is rendered": {
+      // AC3/AC5: the criteria are proven by the executed email-view suite,
+      // which renders EmailView and asserts the badge and the hidden
+      // scan-dependent surfaces. The step fails when the suite fails.
+      const run = await runEmailViewTests();
       assert(
-        view.includes("!urlScanEnabled"),
-        "the email view must skip the scan when the setting is disabled"
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
       );
       return;
     }
+
+    case 'the badge "url-warning-badge" is present in the email view': {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /AC3: shows the warning badge in the email view/.test(run.output),
+        "the executed suite must contain the AC3 badge test"
+      );
+      return;
+    }
+
+    case 'the badge "url-warning-badge" is absent from the email view': {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /AC3: shows no badge for a legitimate URL/.test(run.output),
+        "the executed suite must contain the AC3 no-badge test"
+      );
+      return;
+    }
+
+    case "a click on the suspicious link happens in the email view": {
+      // AC4: the criterion is proven by the executed email-view suite, which
+      // clicks a link of the body and asserts the warning.
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /AC4: intercepts a click on a suspicious link in the email view/.test(
+          run.output
+        ),
+        "the executed suite must contain the AC4 click interception test"
+      );
+      return;
+    }
+
+    case "the navigation is prevented in the email view": {
+      // AC4: proven by the executed suite (the click test asserts the warning
+      // appears, which only happens when preventDefault was called).
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      return;
+    }
+
+    case 'the warning offers "Proceed anyway"': {
+      // AC4: proven by the executed suite, which asserts the button by role
+      // and accessible name.
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /proceed anyway/i.test(run.output),
+        "the executed suite must assert the Proceed anyway action"
+      );
+      return;
+    }
+
+    case 'the scan-dependent banner "url-phishing-banner" is hidden': {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /AC5: hides the scan-dependent banner and safe-link list/.test(run.output),
+        "the executed suite must contain the AC5 hidden-surfaces test"
+      );
+      return;
+    }
+
+    case 'the safe-link list "email-body-safe-links" is hidden': {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      assert(
+        /AC5: hides the scan-dependent banner and safe-link list/.test(run.output),
+        "the executed suite must contain the AC5 hidden-surfaces test"
+      );
+      return;
+    }
+
+    case "the email view test suite is executed": {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      return;
+    }
+
+    case "the email view test suite passes": {
+      const run = await runEmailViewTests();
+      assert(
+        run.code === 0,
+        `the email-view URL scan tests must pass (exit ${run.code}):\n${run.output}`
+      );
+      return;
+    }
+
+    case "every compared host is parsed from the raw URL": {
+      // AC6/AC7: the hosts this file compares are produced by urlHostOf,
+      // which parses the raw URL with the URL parser. Prove it on the hosts
+      // the scenarios use: a host that is only a substring of the raw URL
+      // (for example "phishing.example" inside "notphishing.example.evil")
+      // must not be produced.
+      assert(
+        urlHostOf("https://phishing.example/steal") === "phishing.example",
+        "the host of a raw URL must be parsed, not matched as a substring"
+      );
+      assert(
+        urlHostOf("https://notphishing.example.evil/steal") ===
+          "notphishing.example.evil",
+        "a host that only contains the blocklisted name must not be parsed as it"
+      );
+      assert(
+        urlHosts("https://phishing.example/steal").join(",") ===
+          "phishing.example",
+        "urlHosts must return parsed hosts only"
+      );
+      return;
+    }
+
     default:
       return;
   }
