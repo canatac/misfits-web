@@ -1,5 +1,9 @@
-feature,scenario,tags,status,evidence
-issue-1119-oauth2-provider-picker-and-consent-journey,A "Connect an external account" action opens a picker listing Gmail, Outlook, Yahoo and Other,@AC1,FAIL,no interface offers the picker yet
-issue-1119-oauth2-provider-picker-and-consent-journey,Choosing a provider starts the flow and navigates to the returned authorizationUrl,@AC2,FAIL,no consent journey in the client yet
-issue-1119-oauth2-provider-picker-and-consent-journey,After the callback the account is listed in the account switcher and its folders sync into the unified inbox,@AC3,FAIL,no confirmation after the callback yet
-issue-1119-oauth2-provider-picker-and-consent-journey,The picker and the flow are reachable by keyboard and expose their state to assistive technology,@AC4,FAIL,no accessible picker yet
+test_id,feature,scenario,status,evidence,notes
+MW-1111-AC1,Command palette action commands,Selecting the archive command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1111-AC1,Command palette action commands,Selecting the delete command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1111-AC1,Command palette action commands,Selecting the star command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1111-AC1,Command palette action commands,Selecting the mark-unread command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1111-AC2,Command palette action commands,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
+MW-1111-AC2,Command palette action commands,The result of the delete command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
+MW-1111-AC3,Command palette action commands,The action commands are disabled when no email is selected,FAIL,no implementation,commands always enabled
+MW-1111-AC3,Command palette action commands,The action commands are hidden when no email is selected,FAIL,no implementation,commands always listed
