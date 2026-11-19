@@ -255,3 +255,5 @@ export const selectIsAuthenticated = (s: AuthStore): boolean =>
   s.isAuthenticated;
 export const selectAuthError = (s: AuthStore): AuthError | null => s.error;
 export const selectAuthLoading = (s: AuthStore): boolean => s.isLoading;
+export const selectTwoFactorEnabled = (s: AuthStore): boolean =>
+  s.user?.twoFactorEnabled ?? false;
