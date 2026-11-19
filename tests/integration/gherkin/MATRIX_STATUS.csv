@@ -18,3 +18,6 @@ MW-1120-AC1,External accounts revoked and expired token error state,A revoked or
 MW-1120-AC1,External accounts revoked and expired token error state,The Reconnect action restarts the OAuth2 flow,FAIL,no implementation,no Reconnect action
 MW-1120-AC2,External accounts revoked and expired token error state,The error message is announced to assistive technology,FAIL,no implementation,no aria-live announcement of the revoked or expired token error
 MW-1120-AC3,External accounts revoked and expired token error state,The account is marked as needing attention in the account switcher,FAIL,no implementation,no attention marker in the account switcher
+MW-1114-AC1,Command palette labels follow the selected language,Palette labels, groups and empty state follow the selected language,FAIL,no implementation,palette labels, groups and empty state are hardcoded in French in src/components/command-palette.tsx
+MW-1114-AC2,Command palette labels follow the selected language,The same strings are used in the shortcuts help,FAIL,no implementation,shortcuts help does not use the palette strings
+MW-1114-AC3,Command palette labels follow the selected language,A test asserts the palette renders in the selected language,FAIL,no implementation,no test asserts the palette language
