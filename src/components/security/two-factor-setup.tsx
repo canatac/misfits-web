@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Copy, ShieldCheck } from "lucide-react";
+import { QrCodeSvg } from "./qr-svg";
 
 type Props = {
   onComplete: () => void;
@@ -74,7 +74,7 @@ export function TwoFactorSetup({ onComplete }: Props) {
           <p className="text-sm">Scan this QR code with your authenticator app:</p>
           <div className="flex justify-center">
             {otpAuthUrl ? (
-              <QRCodeSVG value={otpAuthUrl} size={200} />
+              <QrCodeSvg value={otpAuthUrl} size={200} />
             ) : (
               <div className="h-[200px] w-[200px] animate-pulse bg-[var(--color-border)]" />
             )}
