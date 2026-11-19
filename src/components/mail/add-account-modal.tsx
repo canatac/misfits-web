@@ -53,6 +53,7 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
   });
 
   const [mode, setMode] = React.useState<AccountMode>("oauth2");
+  const [chosenProvider, setChosenProvider] = React.useState<string | null>(null);
   const oauth2 = useOAuth2Providers(open);
   const oauth2Start = useOAuth2Start();
 
@@ -62,15 +63,23 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
       setMode("custom");
       return;
     }
+    setChosenProvider(value);
     // Selecting a provider starts the consent flow: the modal closes and the
     // browser navigates to the provider consent screen.
     onOpenChange(false);
     await oauth2Start.start(value);
   }
 
-  function handleRestartConsent() {
-    oauth2Start.error !== null && setMode("oauth2");
+  async function handleRestartConsent() {
+    if (oauth2Start.error !== null) {
+      setMode("oauth2");
+    }
     onOpenChange(true);
+    // AC5: restarting the connection calls the OAuth2 start again for the
+    // chosen provider; it does not only reopen the modal.
+    if (chosenProvider !== null) {
+      await oauth2Start.start(chosenProvider);
+    }
   }
 
   return (
@@ -110,7 +119,7 @@ export function AddAccountModal({ open, onOpenChange, onCreated }: AddAccountMod
           options={oauth2.options}
           loading={oauth2.loading}
           error={oauth2.error}
-          selected={null}
+          selected={chosenProvider}
           onSelect={handleOauth2Select}
           onRetry={oauth2.reload}
         />
