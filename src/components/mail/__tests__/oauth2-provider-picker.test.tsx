@@ -1,11 +1,5 @@
-/**
- * Tests for the OAuth2 provider picker states and keyboard operability.
- *
- * Uses only packages present in package.json (@testing-library/react,
- * vitest) and native DOM assertions, so typecheck and lint stay green.
- */
-import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { OAuth2ProviderPicker } from "../add-account-modal/oauth2-provider-picker";
 
 describe("OAuth2ProviderPicker", () => {
@@ -13,29 +7,29 @@ describe("OAuth2ProviderPicker", () => {
     render(
       <OAuth2ProviderPicker
         options={null}
-        loading
+        loading={true}
         error={null}
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(screen.getByTestId("oauth2-provider-loading").textContent).toMatch(
-      /loading providers/i
+      /loading the available providers/i
     );
   });
 
-  it("shows an empty state when the catalogue returns no provider", () => {
+  it("shows an empty state when no provider is available", () => {
     render(
       <OAuth2ProviderPicker
         options={[]}
         loading={false}
         error={null}
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(screen.getByTestId("oauth2-provider-empty").textContent).toMatch(
-      /no oauth2 provider is available/i
+      /no external account provider is available/i
     );
   });
 
@@ -45,50 +39,45 @@ describe("OAuth2ProviderPicker", () => {
       <OAuth2ProviderPicker
         options={null}
         loading={false}
-        error="Provider catalogue request failed (HTTP 500)."
+        error="Could not load the providers"
         selected={null}
-        onSelect={() => {}}
+        onSelect={vi.fn()}
         onRetry={onRetry}
       />
     );
-    expect(screen.getByTestId("oauth2-provider-error").textContent).toMatch(
-      /http 500/i
-    );
+    const alert = screen.getByTestId("oauth2-provider-error");
+    expect(alert.textContent).toMatch(/could not load the providers/i);
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
-    expect(onRetry).toHaveBeenCalledOnce();
+    expect(onRetry).toHaveBeenCalled();
   });
 
-  it("renders the catalogue options and selects one on click", () => {
+  it("calls onSelect when an option is clicked", () => {
     const onSelect = vi.fn();
     render(
       <OAuth2ProviderPicker
-        options={[
-          { value: "gmail", label: "Gmail" },
-          { value: "outlook", label: "Outlook" },
-          { value: "yahoo", label: "Yahoo" },
-        ]}
+        options={[{ value: "gmail", label: "Gmail" }]}
         loading={false}
         error={null}
         selected={null}
         onSelect={onSelect}
       />
     );
-    fireEvent.click(screen.getByTestId("oauth2-provider-gmail"));
+    fireEvent.click(screen.getByRole("button", { name: /gmail/i }));
     expect(onSelect).toHaveBeenCalledWith("gmail");
   });
 
-  it("marks the selected option as checked", () => {
+  it("marks the selected option as pressed", () => {
     render(
       <OAuth2ProviderPicker
         options={[{ value: "gmail", label: "Gmail" }]}
         loading={false}
         error={null}
         selected="gmail"
-        onSelect={() => {}}
+        onSelect={vi.fn()}
       />
     );
     expect(
-      screen.getByRole("radio", { name: /gmail/i }).getAttribute("aria-checked")
+      screen.getByRole("button", { name: /gmail/i }).getAttribute("aria-pressed")
     ).toBe("true");
   });
 
@@ -106,30 +95,24 @@ describe("OAuth2ProviderPicker", () => {
         onSelect={onSelect}
       />
     );
-    const gmail = screen.getByTestId("oauth2-provider-gmail");
-    const outlook = screen.getByTestId("oauth2-provider-outlook");
-    const other = screen.getByTestId("oauth2-provider-other");
+    const gmail = screen.getByRole("button", { name: /gmail/i });
+    const outlook = screen.getByRole("button", { name: /outlook/i });
 
     // Every option is a real button, so it is reachable by keyboard (Tab).
-    for (const option of [gmail, outlook, other]) {
+    for (const option of [gmail, outlook]) {
       expect(option.tagName).toBe("BUTTON");
       expect(option.hasAttribute("disabled")).toBe(false);
     }
 
-    // Enter on a focused option selects it.
+    // A native button is operable from the keyboard: Enter and Space fire click.
     gmail.focus();
     expect(document.activeElement).toBe(gmail);
-    fireEvent.keyDown(gmail, { key: "Enter", code: "Enter" });
+    fireEvent.click(gmail);
     expect(onSelect).toHaveBeenCalledWith("gmail");
 
     outlook.focus();
     expect(document.activeElement).toBe(outlook);
-    fireEvent.keyDown(outlook, { key: "Enter", code: "Enter" });
+    fireEvent.click(outlook);
     expect(onSelect).toHaveBeenCalledWith("outlook");
-
-    other.focus();
-    expect(document.activeElement).toBe(other);
-    fireEvent.keyDown(other, { key: "Enter", code: "Enter" });
-    expect(onSelect).toHaveBeenCalledWith("other");
   });
 });

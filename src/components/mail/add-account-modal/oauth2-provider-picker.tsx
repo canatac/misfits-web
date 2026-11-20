@@ -1,17 +1,19 @@
 "use client";
 
 /**
- * OAuth2 provider picker — fed by GET /api/external-accounts/oauth2/providers.
+ * Provider picker for the "Connect an external account" flow.
  *
- * Renders the provider options the backend catalogue returns (Gmail,
- * Outlook, Yahoo) plus a static "Other" option for providers without an
- * OAuth2 catalogue entry. The picker has a loading, an empty and an error
- * state; every option is a real <button>, so the list is reachable and
- * operable by keyboard (Enter and Space select).
+ * Presentational only: the catalogue state is owned by the caller (the
+ * add-account modal) and passed down as props, so this component does not
+ * import the data hook and no circular dependency remains.
+ *
+ * States (issue #1104):
+ *  - loading: the provider catalogue is being fetched;
+ *  - empty: the catalogue answered with no provider;
+ *  - error: the catalogue request failed, with a retry action;
+ *  - ready: the providers of the catalogue.
  */
 import * as React from "react";
-import { AlertCircle, Loader2, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 export interface OAuth2ProviderOption {
   value: string;
@@ -22,11 +24,17 @@ export interface OAuth2ProviderOption {
 }
 
 export interface OAuth2ProviderPickerProps {
+  /** Catalogue options, or null while the request has not answered. */
   options: OAuth2ProviderOption[] | null;
+  /** Whether the catalogue request runs. */
   loading: boolean;
+  /** Error message of a failed catalogue request. */
   error: string | null;
+  /** Currently selected provider key. */
   selected: string | null;
+  /** Called with the chosen provider key. */
   onSelect: (provider: string) => void;
+  /** Retry action of the error state. */
   onRetry?: () => void;
 }
 
@@ -41,123 +49,72 @@ export function OAuth2ProviderPicker({
   if (loading) {
     return (
       <div
-        className="grid gap-2"
+        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
         role="status"
         aria-live="polite"
         data-testid="oauth2-provider-loading"
       >
-        <span className="text-sm font-medium">Provider</span>
-        <div className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] p-3 text-sm text-[var(--color-muted-fg)]">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-          Loading providers…
-        </div>
+        <span
+          className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground"
+          aria-hidden="true"
+        />
+        Loading the available providers…
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="grid gap-2" data-testid="oauth2-provider-error">
-        <span className="text-sm font-medium">Provider</span>
-        <div
-          role="alert"
-          className="flex items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-danger-500)] bg-[var(--color-danger)] p-3 text-sm text-[var(--color-danger-fg)]"
+      <div
+        className="flex flex-col gap-2 px-3 py-2 text-sm"
+        role="alert"
+        data-testid="oauth2-provider-error"
+      >
+        <p className="text-destructive">{error}</p>
+        <button
+          type="button"
+          className="self-start rounded-md border border-border px-2 py-1 text-sm hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          onClick={onRetry}
         >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <div className="flex flex-col gap-2">
-            <span>{error}</span>
-            {onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="self-start rounded-[var(--radius-sm)] border border-current px-2 py-1 text-xs font-medium"
-              >
-                Retry
-              </button>
-            )}
-          </div>
-        </div>
+          Retry
+        </button>
       </div>
     );
   }
 
-  const providers = options ?? [];
-
-  if (providers.length === 0) {
+  if (options && options.length === 0) {
     return (
-      <div className="grid gap-2" data-testid="oauth2-provider-empty">
-        <span className="text-sm font-medium">Provider</span>
-        <p className="rounded-[var(--radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-muted)] p-3 text-sm text-[var(--color-muted-fg)]">
-          No OAuth2 provider is available from the server. Use custom IMAP/SMTP
-          settings below, or check the server configuration.
-        </p>
-      </div>
+      <p
+        className="px-3 py-2 text-sm text-muted-foreground"
+        data-testid="oauth2-provider-empty"
+      >
+        No external account provider is available.
+      </p>
     );
   }
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, value: string) {
-    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
-      event.preventDefault();
-      onSelect(value);
-    }
+  if (!options) {
+    return null;
   }
 
   return (
-    <div className="grid gap-2">
-      <span className="text-sm font-medium" id="oauth2-provider-label">
-        Provider
-      </span>
-      <div
-        role="radiogroup"
-        aria-labelledby="oauth2-provider-label"
-        className="grid grid-cols-2 gap-2"
-        data-testid="oauth2-provider-options"
-      >
-        {providers.map((option) => {
-          const active = selected === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onSelect(option.value)}
-              onKeyDown={(event) => handleKeyDown(event, option.value)}
-              className={cn(
-                "flex items-center gap-2 rounded-[var(--radius-md)] border p-3 text-left text-sm transition-colors",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand-500)]",
-                active
-                  ? "border-[var(--color-brand-500)] bg-[var(--color-brand-500)]/10 text-[var(--color-fg)]"
-                  : "border-[var(--color-border)] bg-[var(--color-muted)] text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]"
-              )}
-              data-testid={`oauth2-provider-${option.value}`}
-            >
-              <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {option.label}
-            </button>
-          );
-        })}
-        {selected !== "other" && (
+    <ul
+      className="flex flex-col gap-1"
+      data-testid="oauth2-provider-list"
+      aria-label="External account providers"
+    >
+      {options.map((option) => (
+        <li key={option.value}>
           <button
             type="button"
-            role="radio"
-            aria-checked={selected === "other"}
-            onClick={() => onSelect("other")}
-            onKeyDown={(event) => handleKeyDown(event, "other")}
-            className={cn(
-              "flex items-center gap-2 rounded-[var(--radius-md)] border border-dashed p-3 text-left text-sm transition-colors",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand-500)]",
-              selected === "other"
-                ? "border-[var(--color-brand-500)] bg-[var(--color-brand-500)]/10 text-[var(--color-fg)]"
-                : "border-[var(--color-border)] bg-[var(--color-muted)] text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]"
-            )}
-            data-testid="oauth2-provider-other"
+            aria-pressed={selected === option.value}
+            className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            onClick={() => onSelect(option.value)}
           >
-            <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-            Other
+            {option.label}
           </button>
-        )}
-      </div>
-    </div>
+        </li>
+      ))}
+    </ul>
   );
 }
