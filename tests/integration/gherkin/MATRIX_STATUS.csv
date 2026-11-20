@@ -1,45 +1,18 @@
 test_id,feature,scenario,status,evidence,notes
-MW-1111-AC1,Command palette action commands,Selecting the archive command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1111-AC1,Command palette action commands,Selecting the delete command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1111-AC1,Command palette action commands,Selecting the star command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1111-AC1,Command palette action commands,Selecting the mark-unread command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1111-AC2,Command palette action commands,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
-MW-1111-AC2,Command palette action commands,The result of the delete command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
-MW-1111-AC3,Command palette action commands,The action commands are disabled when no email is selected,FAIL,no implementation,commands always enabled
-MW-1111-AC3,Command palette action commands,The action commands are hidden when no email is selected,FAIL,no implementation,commands always listed
-MW-1101-AC1,Command palette actions apply to the open email,Selecting the archive command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1101-AC1,Command palette actions apply to the open email,Selecting the delete command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1101-AC1,Command palette actions apply to the open email,Selecting the star command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1101-AC1,Command palette actions apply to the open email,Selecting the mark-unread command applies the action to the open email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1101-AC2,Command palette actions apply to the open email,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
-MW-1101-AC3,Command palette actions apply to the open email,The action commands are disabled when no email is open,FAIL,no implementation,commands always enabled
-MW-1101-AC3,Command palette actions apply to the open email,The action commands are hidden when no email is open,FAIL,no implementation,commands always listed
-MW-1120-AC1,External accounts revoked and expired token error state,A revoked or expired token shows a message stating the account must be reconnected,FAIL,no implementation,no dedicated client state for OAUTH2_TOKEN_REVOKED
-MW-1120-AC1,External accounts revoked and expired token error state,The Reconnect action restarts the OAuth2 flow,FAIL,no implementation,no Reconnect action
-MW-1120-AC2,External accounts revoked and expired token error state,The error message is announced to assistive technology,FAIL,no implementation,no aria-live announcement of the revoked or expired token error
-MW-1120-AC3,External accounts revoked and expired token error state,The account is marked as needing attention in the account switcher,FAIL,no implementation,no attention marker in the account switcher
-MW-1114-AC1,Command palette labels follow the selected language,Palette labels, groups and empty state follow the selected language,FAIL,no implementation,palette labels, groups and empty state are hardcoded in French in src/components/command-palette.tsx
-MW-1114-AC2,Command palette labels follow the selected language,The same strings are used in the shortcuts help,FAIL,no implementation,shortcuts help does not use the palette strings
-MW-1114-AC3,Command palette labels follow the selected language,A test asserts the palette renders in the selected language,FAIL,no implementation,no test asserts the palette language
-MW-1117-AC1,CodeQL Analyze (rust) must not run on the JavaScript repository,The CodeQL workflow analyzes JavaScript/TypeScript only,FAIL,no implementation,CodeQL Analyze (rust) runs on the JavaScript repository
-MW-1117-AC2,CodeQL Analyze (rust) must not run on the JavaScript repository,The Analyze (rust) check no longer appears as a failure,FAIL,no implementation,Analyze (rust) fails on pull requests of misfits-web
-MW-1117-AC3,CodeQL Analyze (rust) must not run on the JavaScript repository,The workflow file is not changed in .github/ by the developer,FAIL,no implementation,the fix is a configuration change approved by the operator
-MW-1124-AC1,Command palette labels in the interface language,Every label, group heading and placeholder of the command palette is in the interface language selected by the user,FAIL,no implementation,palette labels, groups and placeholder are hardcoded in French in src/components/command-palette.tsx
-MW-1124-AC2,Command palette labels in the interface language,The default English wording is consistent with the landing page and the shortcut settings,FAIL,no implementation,no English wording defined for the palette
-MW-1124-AC3,Command palette labels in the interface language,The palette can be used with the keyboard alone, with visible focus on the active item,FAIL,no implementation,no focus indicator on the active palette item
-MW-1088-AC1,External accounts: provider picker and OAuth2 consent flow,A "Connect an external account" button opens a picker listing Gmail, Outlook, Yahoo and Other,FAIL,no implementation,no provider picker in the client
-MW-1088-AC2,External accounts: provider picker and OAuth2 consent flow,Choosing a provider redirects the user to the provider consent screen and returns to the app,FAIL,no implementation,no consent start in the client
-MW-1088-AC3,External accounts: provider picker and OAuth2 consent flow,The picker is reachable by keyboard and exposes its state to assistive technology,FAIL,no implementation,no picker in the client
-MW-1088-AC3,External accounts: provider picker and OAuth2 consent flow,The consent step exposes its state to assistive technology,FAIL,no implementation,no consent step in the client
-MW-1088-AC4,External accounts: provider picker and OAuth2 consent flow,A failed or revoked authorization shows a clear, non-technical error with a way to retry,FAIL,no implementation,no consent error state in the client
-MW-1088-AC5,External accounts: provider picker and OAuth2 consent flow,The account appears in the account list with its sync state once connected,FAIL,no implementation,no account sync state in the client
-MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the archive command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the delete command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the star command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the mark-unread command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
-MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the mark-unread change without a manual refresh,FAIL,no implementation,no list update on action
-MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the star change without a manual refresh,FAIL,no implementation,no list update on action
-MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the removal from the inbox without a manual refresh,FAIL,no implementation,no list update on action
-MW-1089-AC3,Command palette action commands apply to the selected email,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
-MW-1089-AC3,Command palette action commands apply to the selected email,The result of the delete command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
-MW-1089-AC4,Command palette action commands apply to the selected email,The delete command is undoable like its toolbar equivalent,FAIL,no implementation,no undo affordance on the palette delete
+MW-1113-AC1,Command palette message actions,Selecting the archive command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1113-AC1,Command palette message actions,Selecting the delete command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1113-AC1,Command palette message actions,Selecting the star command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1113-AC1,Command palette message actions,Selecting the mark-unread command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1113-AC2,Command palette message actions,The palette closes only after the archive action is applied,FAIL,no implementation,the palette closes before any action
+MW-1113-AC2,Command palette message actions,The palette closes only after the delete action is applied,FAIL,no implementation,the palette closes before any action
+MW-1113-AC2,Command palette message actions,The palette closes only after the star action is applied,FAIL,no implementation,the palette closes before any action
+MW-1113-AC2,Command palette message actions,The palette closes only after the mark-unread action is applied,FAIL,no implementation,the palette closes before any action
+MW-1113-AC3,Command palette message actions,The result of the archive action is announced to screen readers,FAIL,no implementation,no aria-live announcement on action
+MW-1113-AC3,Command palette message actions,The result of the delete action is announced to screen readers,FAIL,no implementation,no aria-live announcement on action
+MW-1113-AC3,Command palette message actions,The result of the star action is announced to screen readers,FAIL,no implementation,no aria-live announcement on action
+MW-1113-AC3,Command palette message actions,The result of the mark-unread action is announced to screen readers,FAIL,no implementation,no aria-live announcement on action
+MW-1113-AC3,Command palette message actions,The delete action of the palette is undoable like the delete of the list,FAIL,no implementation,no undo affordance on the palette delete
+MW-1113-AC4,Command palette message actions,A test covers the archive action from the palette,FAIL,no implementation,no test of the palette action
+MW-1113-AC4,Command palette message actions,A test covers the delete action from the palette,FAIL,no implementation,no test of the palette action
+MW-1113-AC4,Command palette message actions,A test covers the star action from the palette,FAIL,no implementation,no test of the palette action
+MW-1113-AC4,Command palette message actions,A test covers the mark-unread action from the palette,FAIL,no implementation,no test of the palette action
