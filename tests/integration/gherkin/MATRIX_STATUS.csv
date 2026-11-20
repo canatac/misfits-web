@@ -21,3 +21,6 @@ MW-1120-AC3,External accounts revoked and expired token error state,The account 
 MW-1114-AC1,Command palette labels follow the selected language,Palette labels, groups and empty state follow the selected language,FAIL,no implementation,palette labels, groups and empty state are hardcoded in French in src/components/command-palette.tsx
 MW-1114-AC2,Command palette labels follow the selected language,The same strings are used in the shortcuts help,FAIL,no implementation,shortcuts help does not use the palette strings
 MW-1114-AC3,Command palette labels follow the selected language,A test asserts the palette renders in the selected language,FAIL,no implementation,no test asserts the palette language
+MW-1117-AC1,CodeQL Analyze (rust) must not run on the JavaScript repository,The CodeQL workflow analyzes JavaScript/TypeScript only,FAIL,no implementation,CodeQL Analyze (rust) runs on the JavaScript repository
+MW-1117-AC2,CodeQL Analyze (rust) must not run on the JavaScript repository,The Analyze (rust) check no longer appears as a failure,FAIL,no implementation,Analyze (rust) fails on pull requests of misfits-web
+MW-1117-AC3,CodeQL Analyze (rust) must not run on the JavaScript repository,The workflow file is not changed in .github/ by the developer,FAIL,no implementation,the fix is a configuration change approved by the operator
