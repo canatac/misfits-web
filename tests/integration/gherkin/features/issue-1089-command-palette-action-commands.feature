@@ -1,9 +1,7 @@
 Feature: Command palette action commands apply to the selected email
-  In src/components/command-palette.tsx the commands "Archiver", "Supprimer",
-  "Favoris" and "Marquer comme non lu" only close the palette
-  (action: () => closePalette()). A keyboard-first user invokes them, sees the
-  palette disappear and nothing happen: the email is not archived, deleted,
-  starred or marked unread.
+  The command palette lists archive, delete, star and mark-unread commands.
+  A keyboard-first user who invokes them must act on the currently selected email,
+  see the list reflect the change, hear the result, and be able to undo a delete.
 
   Background:
     Given the command palette is open
@@ -13,82 +11,52 @@ Feature: Command palette action commands apply to the selected email
   Scenario: Selecting the archive command applies the action to the selected email
     When the user selects the "Archiver" command
     Then the archive action is applied to the selected email
+    And the command palette is closed
 
   @AC1
   Scenario: Selecting the delete command applies the action to the selected email
     When the user selects the "Supprimer" command
     Then the delete action is applied to the selected email
+    And the command palette is closed
 
   @AC1
   Scenario: Selecting the star command applies the action to the selected email
     When the user selects the "Favoris" command
     Then the star action is applied to the selected email
+    And the command palette is closed
 
   @AC1
   Scenario: Selecting the mark-unread command applies the action to the selected email
     When the user selects the "Marquer comme non lu" command
     Then the mark-unread action is applied to the selected email
-
-  @AC2
-  Scenario: The palette closes only after the archive action is applied
-    When the user selects the "Archiver" command
-    Then the archive action is applied to the selected email
     And the command palette is closed
 
   @AC2
-  Scenario: The palette closes only after the delete action is applied
-    When the user selects the "Supprimer" command
-    Then the delete action is applied to the selected email
-    And the command palette is closed
-
-  @AC2
-  Scenario: The palette closes only after the star action is applied
-    When the user selects the "Favoris" command
-    Then the star action is applied to the selected email
-    And the command palette is closed
-
-  @AC2
-  Scenario: The palette closes only after the mark-unread action is applied
+  Scenario: The list reflects the mark-unread change without a manual refresh
     When the user selects the "Marquer comme non lu" command
-    Then the mark-unread action is applied to the selected email
-    And the command palette is closed
+    Then the list reflects the unread state of the selected email without a manual refresh
 
-  @AC3
-  Scenario: The archive action is announced to assistive technology
+  @AC2
+  Scenario: The list reflects the star change without a manual refresh
+    When the user selects the "Favoris" command
+    Then the list reflects the star of the selected email without a manual refresh
+
+  @AC2
+  Scenario: The list reflects the removal from the inbox without a manual refresh
     When the user selects the "Archiver" command
-    Then the result is announced to assistive technology
+    Then the list reflects the removal of the selected email from the inbox without a manual refresh
 
   @AC3
-  Scenario: The delete action is announced to assistive technology
-    When the user selects the "Supprimer" command
-    Then the result is announced to assistive technology
-
-  @AC3
-  Scenario: The star action is announced to assistive technology
+  Scenario: The result of an action command is announced to assistive technology
     When the user selects the "Favoris" command
     Then the result is announced to assistive technology
 
   @AC3
-  Scenario: The mark-unread action is announced to assistive technology
-    When the user selects the "Marquer comme non lu" command
+  Scenario: The result of the delete command is announced to assistive technology
+    When the user selects the "Supprimer" command
     Then the result is announced to assistive technology
 
   @AC4
-  Scenario: A test asserts the archive action is applied
-    When the user selects the "Archiver" command
-    Then a test asserts the archive action is applied to the selected email
-
-  @AC4
-  Scenario: A test asserts the delete action is applied
+  Scenario: The delete command is undoable like its toolbar equivalent
     When the user selects the "Supprimer" command
-    Then a test asserts the delete action is applied to the selected email
-
-  @AC4
-  Scenario: A test asserts the star action is applied
-    When the user selects the "Favoris" command
-    Then a test asserts the star action is applied to the selected email
-
-  @AC4
-  Scenario: A test asserts the mark-unread action is applied
-    When the user selects the "Marquer comme non lu" command
-    Then a test asserts the mark-unread action is applied to the selected email
+    Then the destructive delete action is undoable like its toolbar equivalent
