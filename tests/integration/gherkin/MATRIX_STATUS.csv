@@ -49,3 +49,10 @@ MW-1099-AC2,Command palette labels follow the interface language,The language of
 MW-1099-AC2,Command palette labels follow the interface language,The language of the palette follows a locale other than the default,FAIL,no implementation,palette labels, groups and placeholder are hardcoded in French in src/components/command-palette.tsx
 MW-1099-AC3,Command palette labels follow the interface language,No mixed-language label remains in the palette,FAIL,no implementation,palette labels, groups and placeholder are hardcoded in French in src/components/command-palette.tsx
 MW-1099-AC3,Command palette labels follow the interface language,The empty state of the palette is in the interface language,FAIL,no implementation,"Aucun email trouvé pour cette recherche." is hardcoded in French
+MW-1113-AC1,Command palette message actions,Selecting the archive command archives the selected email,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC1,Command palette message actions,Selecting the delete command deletes the selected email,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC1,Command palette message actions,Selecting the star command stars the selected email,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC1,Command palette message actions,Selecting the mark-unread command marks the selected email as unread,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC2,Command palette message actions,The palette closes only after the action is applied,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC3,Command palette message actions,The result of an action command is announced to screen readers,FAIL,no implementation,scenario of issue #1113
+MW-1113-AC3,Command palette message actions,The delete command is undoable like the same action in the list,FAIL,no implementation,scenario of issue #1113
