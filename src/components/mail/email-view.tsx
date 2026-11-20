@@ -13,6 +13,7 @@ import {
   ChevronDown,
   MailOpen,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmailSenderHeader } from "./email-sender-header";
@@ -35,6 +36,11 @@ import {
 } from "./immersive-reading";
 import { FindInPage } from "./email-view/find-in-page";
 import { useFollowUps, useToggleFollowUp } from "@/hooks/use-follow-ups";
+import { UrlWarningBadge } from "./url-warning-badge";
+import { UrlPhishingBanner } from "./url-phishing-banner";
+import { UrlSafeLink } from "./url-safe-link";
+import { useUrlScanSetting } from "@/hooks/useUrlScanSetting";
+import { scanUrls, checkUrlReputation } from "@/lib/url-scanner";
 
 interface EmailViewProps {
   className?: string;
@@ -54,6 +60,8 @@ export function EmailView({ className }: EmailViewProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [findOpen, setFindOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  const { urlScanEnabled, toggleUrlScan } = useUrlScanSetting();
 
   const { followUps } = useFollowUps();
   const toggleFollowUp = useToggleFollowUp();
@@ -111,6 +119,45 @@ export function EmailView({ className }: EmailViewProps) {
     handleHermesTranslate,
     handleHermesTodos,
   } = useEmailActions(email);
+
+  // URL reputation scan (AC2/AC3). The scan always runs, whatever the user
+  // setting: AC3 requires the badge to be present for a suspicious URL
+  // "whatever the user setting". Only the scan-dependent banner and the
+  // safe-link list (AC5) are gated on urlScanEnabled.
+  const urlResults = useMemo(() => {
+    if (!email) return [];
+    return scanUrls(email.body, email.bodyType);
+  }, [email]);
+
+  const suspiciousUrlCount = useMemo(
+    () => urlResults.filter((r) => r.isSuspicious).length,
+    [urlResults]
+  );
+
+  // AC4: the warning shown after a click on a suspicious link of the body.
+  const [blockedUrl, setBlockedUrl] = useState<string | null>(null);
+  const blockedReputation = blockedUrl ? checkUrlReputation(blockedUrl) : null;
+
+  function handleBodyClick(e: React.MouseEvent) {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("quoted-collapsed")) {
+      setShowQuoted(true);
+    }
+    if (target.tagName === "A") {
+      const href = target.getAttribute("href");
+      if (href && href.startsWith("http")) {
+        const reputation = checkUrlReputation(href);
+        if (reputation.isSuspicious) {
+          // AC4: intercept the navigation and offer to continue.
+          e.preventDefault();
+          setBlockedUrl(href);
+          return;
+        }
+        e.preventDefault();
+        window.open(href, "_blank", "noopener,noreferrer");
+      }
+    }
+  }
 
   if (!email) {
     return (
@@ -196,6 +243,38 @@ export function EmailView({ className }: EmailViewProps) {
             emailId={email.id}
           />
 
+          {/* AC5: user setting to enable/disable the URL scan */}
+          <div className="mb-3 flex items-center gap-2 text-sm text-[var(--color-muted-fg)]">
+            <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+            <span>URL scan</span>
+            <Button
+              size="sm"
+              variant={urlScanEnabled ? "outline" : "ghost"}
+              onClick={toggleUrlScan}
+              aria-pressed={urlScanEnabled}
+              className="ml-auto"
+            >
+              {urlScanEnabled ? "Enabled" : "Disabled"}
+            </Button>
+          </div>
+
+          {/* AC3: badge visible in the email view when suspicious URLs are found.
+              Always rendered when a suspicious URL is found: the criterion does
+              not condition it on the user setting. */}
+          {suspiciousUrlCount > 0 && (
+            <div className="mb-3">
+              <UrlWarningBadge suspiciousCount={suspiciousUrlCount} />
+            </div>
+          )}
+
+          {/* AC5: warning banner, hidden when the scan is disabled */}
+          {urlScanEnabled && (
+            <UrlPhishingBanner
+              body={email.body}
+              bodyType={email.bodyType}
+            />
+          )}
+
           {!loadImages && email.bodyType === "html" && (
             <div className="mb-3 flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2">
               <ImageOff className="h-4 w-4 text-[var(--color-muted-fg)]" />
@@ -218,21 +297,77 @@ export function EmailView({ className }: EmailViewProps) {
             className="prose-mail text-[var(--color-fg)]"
             // biome-ignore lint: HTML is sanitized via DOMPurify above
             dangerouslySetInnerHTML={{ __html: processedBody }}
-            onClick={(e) => {
-              const target = e.target as HTMLElement;
-              if (target.classList.contains("quoted-collapsed")) {
-                setShowQuoted(true);
-              }
-              if (target.tagName === "A") {
-                e.preventDefault();
-                const href = target.getAttribute("href");
-                if (href && href.startsWith("http")) {
-                  window.open(href, "_blank", "noopener,noreferrer");
-                }
-              }
-            }}
+            onClick={handleBodyClick}
             data-testid="email-body"
           />
+
+          {/* AC4: warning shown after a click on a suspicious link of the body.
+              The navigation was prevented; the user may proceed anyway. */}
+          {blockedReputation && blockedUrl && (
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="email-view-warning-title"
+              aria-describedby="email-view-warning-description"
+              className="mt-4 rounded-[var(--radius-md)] border border-amber-500/50 bg-amber-500/10 p-4"
+              data-testid="email-view-warning"
+            >
+              <h2
+                id="email-view-warning-title"
+                className="text-base font-semibold text-amber-300"
+              >
+                Suspicious Link Warning
+              </h2>
+              <div
+                id="email-view-warning-description"
+                className="mt-2 text-sm text-amber-200"
+              >
+                <p>
+                  This link appears to be suspicious:{" "}
+                  <span className="font-mono text-xs">
+                    {blockedReputation.domain}
+                  </span>
+                </p>
+                <ul className="mt-2 list-disc pl-5">
+                  {blockedReputation.reasons.map((r) => (
+                    <li key={r}>{r}</li>
+                  ))}
+                </ul>
+                <p className="mt-2">Are you sure you want to continue?</p>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setBlockedUrl(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    setBlockedUrl(null);
+                    window.open(blockedUrl, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  Proceed anyway
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* AC5: suspicious links of the body, rendered as safe links. Hidden
+              when the scan is disabled. */}
+          {urlScanEnabled && (
+            <div className="mt-4 space-y-2" data-testid="email-body-safe-links">
+              {urlResults
+                .filter((r) => r.isSuspicious)
+                .map((r) => (
+                  <div key={r.url} className="text-sm">
+                    <span className="mr-2 text-[var(--color-muted-fg)]">
+                      Link in this email:
+                    </span>
+                    <UrlSafeLink href={r.url}>{r.url}</UrlSafeLink>
+                  </div>
+                ))}
+            </div>
+          )}
 
           {hasQuoted && !showQuoted && (
             <button
