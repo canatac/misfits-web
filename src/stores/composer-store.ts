@@ -3,7 +3,8 @@
  *
  * Holds recipients (to/cc/bcc), subject, body (HTML), attachments, signature,
  * layout flags (full-screen, compact), draft metadata and send state. Drafts
- * are auto-saved to localStorage (debounced 10s) and can be loaded back.
+ * are auto-saved to localStorage (every 10s while dirty) and can be loaded
+ * back when the composer reopens.
  */
 import { create } from "zustand";
 import type {
