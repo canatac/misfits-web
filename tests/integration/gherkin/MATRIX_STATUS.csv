@@ -33,3 +33,13 @@ MW-1088-AC3,External accounts: provider picker and OAuth2 consent flow,The picke
 MW-1088-AC3,External accounts: provider picker and OAuth2 consent flow,The consent step exposes its state to assistive technology,FAIL,no implementation,no consent step in the client
 MW-1088-AC4,External accounts: provider picker and OAuth2 consent flow,A failed or revoked authorization shows a clear, non-technical error with a way to retry,FAIL,no implementation,no consent error state in the client
 MW-1088-AC5,External accounts: provider picker and OAuth2 consent flow,The account appears in the account list with its sync state once connected,FAIL,no implementation,no account sync state in the client
+MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the archive command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the delete command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the star command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1089-AC1,Command palette action commands apply to the selected email,Selecting the mark-unread command applies the action to the selected email,FAIL,no implementation,src/components/command-palette.tsx only calls closePalette()
+MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the mark-unread change without a manual refresh,FAIL,no implementation,no list update on action
+MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the star change without a manual refresh,FAIL,no implementation,no list update on action
+MW-1089-AC2,Command palette action commands apply to the selected email,The list reflects the removal from the inbox without a manual refresh,FAIL,no implementation,no list update on action
+MW-1089-AC3,Command palette action commands apply to the selected email,The result of an action command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
+MW-1089-AC3,Command palette action commands apply to the selected email,The result of the delete command is announced to assistive technology,FAIL,no implementation,no aria-live announcement on action
+MW-1089-AC4,Command palette action commands apply to the selected email,The delete command is undoable like its toolbar equivalent,FAIL,no implementation,no undo affordance on the palette delete
