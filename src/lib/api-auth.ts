@@ -107,11 +107,13 @@ export function initiateGithubLogin(redirectPath?: string): void {
     // ignore cookie write failures
   }
 
-  const url = new URL(`${getApiBaseUrl()}/auth/oauth/github`);
-  if (safeRedirect) {
-    url.searchParams.set("redirect", safeRedirect);
-  }
-  window.location.href = url.toString();
+  // The API base is the relative "/api" in production: new URL() without a
+  // base throws on it ("is not a valid URL"), and the sign-in never started
+  // (reimagined-guide#736). Built as a string, it works relative or absolute.
+  const start = `${getApiBaseUrl()}/auth/oauth/github`;
+  window.location.href = safeRedirect
+    ? `${start}?redirect=${encodeURIComponent(safeRedirect)}`
+    : start;
 }
 
 /** Used by the store's `refreshSession` action when a manual refresh is needed. */
