@@ -11,6 +11,16 @@ mail.misfits.ai, www.mail.misfits.ai {
     # AUTH-SENSITIVE API routes — must go through Next.js (port 3000) so Edge
     # middleware enforces session auth. Catching these BEFORE the generic /api/*
     # handle prevents Caddy from bypassing Next.js security (issue #723, #722).
+    # The OAuth return (reimagined-guide#736, misfits-web#1188): a route of
+    # Next.js, which receives the session and sets its cookies; every other
+    # /api/auth/* goes to the backend through the generic /api/* below.
+    handle /api/auth/callback {
+        reverse_proxy http://localhost:3001 {
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
     handle /api/admin* {
         reverse_proxy http://localhost:3001 {
             header_up X-Real-IP {remote_host}
