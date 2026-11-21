@@ -47,12 +47,24 @@ function resolveRedirectPath(req: NextRequest): string {
   return "/dashboard";
 }
 
+/**
+ * A redirect to PATH on this site, relative (misfits-web#1188): behind Caddy,
+ * req.url holds the internal address of the container (http://<ip>:3000),
+ * and an absolute redirect built from it sent the browser there.
+ */
+function redirectTo(path: string): NextResponse {
+  return new NextResponse(null, { status: 307, headers: { Location: path } });
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl;
   const sessionParam = searchParams.get("session");
   const provider = searchParams.get("provider") ?? "unknown";
   const errorParam = searchParams.get("error");
-  const isSecure = req.nextUrl.protocol === "https:";
+  // Behind Caddy the request reaches Next.js in http: the scheme the browser
+  // used is in X-Forwarded-Proto.
+  const isSecure =
+    req.headers.get("x-forwarded-proto") === "https" || req.nextUrl.protocol === "https:";
   const redirectPath = resolveRedirectPath(req);
 
   // ── Case 0: Backend / OAuth provider returned an error ──
@@ -60,7 +72,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // Propagate recognisable error codes; fall back to oauth_failed.
     const code =
       errorParam === "access_denied" ? "oauth_cancelled" : "oauth_failed";
-    return NextResponse.redirect(new URL(`/login?error=${code}`, req.url));
+    return redirectTo(`/login?error=${code}`);
   }
 
   // ── Case 1: Backend passed the full session as a base64-encoded JSON param ──
@@ -78,7 +90,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           : Date.now() + 86_400_000;
       const ttlSeconds = Math.max(60, Math.round((rfa - Date.now()) / 1000));
 
-      const res = NextResponse.redirect(new URL(redirectPath, req.url));
+      const res = redirectTo(redirectPath);
 
       // httpOnly session cookie — read by Edge middleware for route protection.
       res.cookies.set("mfa_session", session.id, {
@@ -110,15 +122,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
       return res;
     } catch {
-      return NextResponse.redirect(
-        new URL("/login?error=oauth_failed", req.url)
-      );
+      return redirectTo("/login?error=oauth_failed");
     }
   }
 
   // ── Case 2: Backend already set the mfa_session cookie — just redirect ──
   if (req.cookies.get("mfa_session")) {
-    const res = NextResponse.redirect(new URL(redirectPath, req.url));
+    const res = redirectTo(redirectPath);
     res.cookies.set("mfa_oauth_provider", provider, {
       httpOnly: false,
       sameSite: "lax",
@@ -137,5 +147,5 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   // ── Case 3: Nothing to work with — send back to login ──
-  return NextResponse.redirect(new URL("/login?error=oauth_failed", req.url));
+  return redirectTo("/login?error=oauth_failed");
 }
