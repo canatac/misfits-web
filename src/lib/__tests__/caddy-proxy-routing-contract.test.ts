@@ -17,7 +17,7 @@ import { describe, it, expect } from "vitest";
 
 describe("Caddy proxy routing contract", () => {
   /**
-   * Caddyfile routing rules (from /root/reimagined-guide--fleet-dev-back-2/Caddyfile):
+   * Caddyfile routing rules (the Caddyfile of reimagined-guide, the one of the VM, #1192):
    *
    * Routes proxied to Next.js (port 3001) — require Edge auth middleware:
    *   - /api/admin*

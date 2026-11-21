@@ -2,11 +2,10 @@
  * The OAuth return (misfits-web#1188, reimagined-guide#736), as it reaches
  * Next.js behind Caddy: in http, on the internal address of the container,
  * with X-Forwarded-Proto: https. Its redirects stay on the public site
- * (relative), and its cookies are Secure.
+ * (relative), and its cookies are Secure. That Caddy hands it to Next.js is
+ * checked where the Caddyfile is, in reimagined-guide (#1192).
  */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { NextRequest } from "next/server";
 import { GET } from "./route";
 
@@ -52,12 +51,5 @@ describe("GET /api/auth/callback behind Caddy", () => {
       expect(location).not.toContain("0.0.0.0");
     }
     expect((await GET(callback("error=access_denied"))).headers.get("location")).toBe("/login?error=oauth_cancelled");
-  });
-
-  it("is served by Next.js, not by the backend: Caddy hands it to port 3001", () => {
-    const caddyfile = readFileSync(join(process.cwd(), "Caddyfile"), "utf8");
-    const block = caddyfile.match(/handle \/api\/auth\/callback \{([\s\S]*?)\n    \}/);
-    expect(block).not.toBeNull();
-    expect(block?.[1]).toContain("reverse_proxy http://localhost:3001");
   });
 });

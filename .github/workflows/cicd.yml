@@ -161,28 +161,9 @@ jobs:
           echo "REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
           echo "NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION=${BACKEND_LABEL}" >> "$GITHUB_ENV"
 
-      - name: Deploy Caddyfile to VM (fixes #730, #436 — auth bypass via proxy)
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: 22
-          script_stop: true
-          script: |
-            set -euo pipefail
-            # Pull latest Caddyfile from GitHub raw at this commit, validate, deploy
-            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/Caddyfile" -o /tmp/Caddyfile
-            caddy validate --config /tmp/Caddyfile
-            # Caddy container mounts ./Caddyfile relative to docker-compose.deploy.yml (at VM_DEPLOY_DIR root)
-            # MUST copy to deploy dir root — rg-backend/ subdir does not exist on VM (fixes #810)
-            mkdir -p ${{ secrets.VM_DEPLOY_DIR }} && cp /tmp/Caddyfile ${{ secrets.VM_DEPLOY_DIR }}/Caddyfile
-            rm -f /tmp/Caddyfile
-            # Caddy runs in docker — restart container to pick up new config
-            cd ${{ secrets.VM_DEPLOY_DIR }} && docker compose -f docker-compose.deploy.yml restart caddy
-            # Ensure Caddy reloads the new config (caddy_config volume may cache old JSON)
-            sleep 3 && docker exec caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || true
-            echo "Caddyfile deployed to VM root, Caddy container restarted and reloaded."
+      # The Caddyfile of the VM is deployed by reimagined-guide only, which owns
+      # the VM (#1192): its routes for this site are checked there
+      # (scripts/caddy_routes_check.sh); this deploy no longer touches Caddy.
 
       - name: Deploy web container via SSH
         uses: appleboy/ssh-action@v1.2.0
