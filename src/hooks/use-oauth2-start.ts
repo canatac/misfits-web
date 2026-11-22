@@ -3,10 +3,12 @@
 /**
  * Start the OAuth2 consent flow for a provider.
  *
- * The navigation to the provider consent screen is immediate: it is
- * initiated on selection, before the start route answers (AC2). The start
- * route is only a fallback for providers without a built-in authorization
- * endpoint, and its error is surfaced after the navigation attempt.
+ * The backend start route is the single source of truth for the
+ * authorization URL (issue #1119 AC2): selecting a provider calls
+ * GET /api/external-accounts/oauth2/start?provider=... and navigates to the
+ * returned authorizationUrl, for every provider, built-in or not. The
+ * built-in authorization endpoints are a fallback, used only when the start
+ * route does not answer or answers without an authorizationUrl.
  */
 import * as React from "react";
 
@@ -35,21 +37,9 @@ export function useOAuth2Start(): UseOAuth2StartResult {
     setPending(true);
     setError(null);
 
-    // 1. Navigate immediately, without waiting for the start route (AC2).
-    //    The provider consent screen is a full-page navigation.
-    const builtin = BUILTIN_AUTHORIZATION_ENDPOINTS[provider.toLowerCase()];
-    if (builtin) {
-      const params = new URLSearchParams({
-        provider,
-        redirect_uri: window.location.origin + "/settings/accounts/oauth2/callback",
-      });
-      window.location.assign(`${builtin}?${params.toString()}`);
-      // Keep pending true: the page is navigating away.
-      return;
-    }
-
-    // 2. Fallback: ask the backend for the authorization URL.
+    let startError: string | null = null;
     try {
+      // 1. The start route is the single source of truth (AC2).
       const response = await fetch(
         `/api/external-accounts/oauth2/start?provider=${encodeURIComponent(provider)}`,
         { headers: { Accept: "application/json" } }
@@ -58,21 +48,37 @@ export function useOAuth2Start(): UseOAuth2StartResult {
         authorizationUrl?: string;
         message?: string;
       } | null;
-      if (!response.ok || !payload?.authorizationUrl) {
-        throw new Error(
-          payload?.message ??
-            `The provider consent screen could not be opened (HTTP ${response.status}).`
-        );
+      if (response.ok && payload?.authorizationUrl) {
+        window.location.assign(payload.authorizationUrl);
+        // Keep pending true: the page is navigating away.
+        return;
       }
-      window.location.assign(payload.authorizationUrl);
+      startError =
+        payload?.message ??
+        `The provider consent screen could not be opened (HTTP ${response.status}).`;
     } catch (cause) {
-      setError(
+      startError =
         cause instanceof Error
           ? cause.message
-          : "The provider consent screen could not be opened."
-      );
-      setPending(false);
+          : "The provider consent screen could not be opened.";
     }
+
+    // 2. Fallback: a built-in authorization endpoint, when there is one.
+    const builtin = BUILTIN_AUTHORIZATION_ENDPOINTS[provider.toLowerCase()];
+    if (builtin) {
+      const params = new URLSearchParams({
+        provider,
+        redirect_uri:
+          window.location.origin + "/settings/accounts/oauth2/callback",
+      });
+      window.location.assign(`${builtin}?${params.toString()}`);
+      // Keep pending true: the page is navigating away.
+      return;
+    }
+
+    // 3. No built-in endpoint: surface the start route error.
+    setError(startError ?? "The provider consent screen could not be opened.");
+    setPending(false);
   }
 
   return { start, pending, error };

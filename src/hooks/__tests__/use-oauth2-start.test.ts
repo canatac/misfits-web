@@ -1,9 +1,10 @@
 /**
  * Tests for the OAuth2 start hook.
  *
- * AC2: the navigation is initiated on selection, before the start route
- * answers; the start route is only a fallback when the provider has no
- * built-in authorization endpoint.
+ * AC2: choosing a provider calls GET /api/external-accounts/oauth2/start
+ * and navigates to the returned authorizationUrl, for every provider,
+ * built-in or not; the built-in endpoints are a fallback when the start
+ * route does not answer or answers without an authorizationUrl.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, renderHook } from "@testing-library/react";
@@ -15,15 +16,22 @@ afterEach(() => {
 });
 
 describe("useOAuth2Start", () => {
-  it("navigates immediately for a built-in provider, without calling the start route", async () => {
+  it("calls the start route for a built-in provider and navigates to the returned authorizationUrl", async () => {
     const assign = vi.fn();
     vi.stubGlobal("location", {
       assign,
       origin: "https://mail.example",
     });
-    const fetchMock = vi.fn(async () => {
-      throw new Error("the start route must not be called for a built-in provider");
-    });
+    const fetchMock = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          authorizationUrl: "https://provider.example/authorize?state=abc",
+          state: "abc",
+          provider: "gmail",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     const { result } = renderHook(() => useOAuth2Start());
@@ -31,15 +39,17 @@ describe("useOAuth2Start", () => {
       await result.current.start("gmail");
     });
 
-    expect(assign).toHaveBeenCalledOnce();
-    const target = assign.mock.calls[0][0] as string;
-    expect(target).toContain("accounts.google.com/o/oauth2/v2/auth");
-    expect(target).toContain("provider=gmail");
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/external-accounts/oauth2/start?provider=gmail",
+      { headers: { Accept: "application/json" } }
+    );
+    expect(assign).toHaveBeenCalledWith(
+      "https://provider.example/authorize?state=abc"
+    );
     expect(result.current.error).toBeNull();
   });
 
-  it("falls back to the start route and navigates to the returned URL", async () => {
+  it("navigates to the URL returned by the start route for a provider without a built-in endpoint", async () => {
     const assign = vi.fn();
     vi.stubGlobal("location", { assign, origin: "https://mail.example" });
     vi.stubGlobal(
@@ -67,7 +77,7 @@ describe("useOAuth2Start", () => {
     expect(result.current.error).toBeNull();
   });
 
-  it("surfaces an error when the fallback start route fails", async () => {
+  it("surfaces the start route error for a provider without a built-in endpoint", async () => {
     vi.stubGlobal("location", { assign: vi.fn(), origin: "https://mail.example" });
     vi.stubGlobal(
       "fetch",
