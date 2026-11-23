@@ -13,7 +13,7 @@ import { ChatPanel } from "@/components/mail/chat-panel";
 import { ChatTrigger } from "@/components/mail/chat-trigger";
 import { ReminderBanner } from "@/components/mail/reminder-banner";
 import { TerminalConsole } from "@/components/mail/terminal-console";
-import { KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
+import { HelpButton, KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 import {
   Modal,
   ModalContent,
@@ -86,6 +86,9 @@ export function MailPageOverlays({
             <ModalTitle>{t("nav.compose")}</ModalTitle>
           </ModalHeader>
           <ModalBody>
+            <div className="flex justify-end px-2 pt-2">
+              <HelpButton onClick={openShortcutsHelp} />
+            </div>
             <ComposerPanel onClose={closeComposer} />
           </ModalBody>
         </ModalContent>

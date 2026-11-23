@@ -24,8 +24,8 @@ const SHORTCUTS = [
   { key: "⌘/Ctrl + J", label: "Afficher / masquer le panneau assistant", category: "Affichage" },
   { key: "⌘/Ctrl + /", label: "Afficher cette aide", category: "Navigation" },
   { key: "Esc", label: "Fermer", category: "Navigation" },
-  { key: "⌘/Ctrl + Enter", label: "Envoyer le message", category: "Édition" },
-  { key: "⌘/Ctrl + Z", label: "Annuler", category: "Édition" },
+  { key: "⌘/Ctrl + Enter", label: "Envoyer le message", category: "Composition" },
+  { key: "⌘/Ctrl + Z", label: "Annuler", category: "Composition" },
 ];
 
 export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({

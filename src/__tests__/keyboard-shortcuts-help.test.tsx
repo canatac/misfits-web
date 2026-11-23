@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { KeyboardShortcutsHelp, HelpButton } from "@/components/mail/keyboard-shortcuts-help";
@@ -11,21 +11,26 @@ describe("KeyboardShortcutsHelp (MW-2026-122)", () => {
     expect(screen.queryByTestId("keyboard-shortcuts-help")).toBeNull();
   });
 
-  it("opens from the composer toolbar help button", () => {
-    const onClose = vi.fn();
-    render(
-      <div>
-        <HelpButton onClick={() => {}} />
-        <KeyboardShortcutsHelp open={true} onClose={onClose} />
-      </div>
-    );
+  it("opens from the help button", () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <HelpButton onClick={() => setOpen(true)} />
+          <KeyboardShortcutsHelp open={open} onClose={() => setOpen(false)} />
+        </div>
+      );
+    }
+    render(<Harness />);
+    expect(screen.queryByTestId("keyboard-shortcuts-help")).toBeNull();
+    fireEvent.click(screen.getByTestId("help-button"));
     expect(screen.getByTestId("keyboard-shortcuts-help")).toBeTruthy();
     expect(screen.getByText("Raccourcis clavier")).toBeTruthy();
   });
 
   it("groups shortcuts by category", () => {
     render(<KeyboardShortcutsHelp open={true} onClose={() => {}} />);
-    for (const category of ["Navigation", "Actions", "Recherche", "Édition"]) {
+    for (const category of ["Navigation", "Composition", "Actions", "Recherche"]) {
       expect(screen.getByText(category)).toBeTruthy();
     }
   });
