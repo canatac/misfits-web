@@ -36,12 +36,16 @@ export function useOAuth2Start(): UseOAuth2StartResult {
     setError(null);
 
     // 1. Navigate immediately, without waiting for the start route (AC2).
-    //    The provider consent screen is a full-page navigation.
+    //    The provider consent screen is a full-page navigation. The chosen
+    //    provider travels in the OAuth2 state parameter so the callback can
+    //    name the account it confirms (issue #1178, AC1), without writing it
+    //    to storage (clear-text-storage alert).
     const builtin = BUILTIN_AUTHORIZATION_ENDPOINTS[provider.toLowerCase()];
     if (builtin) {
       const params = new URLSearchParams({
         provider,
         redirect_uri: window.location.origin + "/settings/accounts/oauth2/callback",
+        state: provider,
       });
       window.location.assign(`${builtin}?${params.toString()}`);
       // Keep pending true: the page is navigating away.

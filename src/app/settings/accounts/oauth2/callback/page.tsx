@@ -9,6 +9,10 @@
  * revoked/expired. The code is exchanged by POST
  * /api/external-accounts/oauth2/callback; a revoked or expired token is
  * reported with a clear message and a way to reconnect.
+ *
+ * The provider chosen before the consent screen travels in the OAuth2
+ * state parameter (issue #1178, AC1): the confirmation names it and
+ * nothing is written to storage.
  */
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,10 +25,35 @@ type CallbackStatus =
   | { kind: "success" }
   | { kind: "error"; message: string };
 
+const PROVIDER_LABELS: Record<string, string> = {
+  gmail: "Gmail",
+  google: "Gmail",
+  outlook: "Outlook",
+  microsoft: "Outlook",
+  office365: "Outlook",
+  yahoo: "Yahoo",
+};
+
+function providerLabel(provider: string | null): string {
+  if (!provider) return "Account";
+  return PROVIDER_LABELS[provider.toLowerCase()] ?? provider;
+}
+
+/** The state parameter carries the provider chosen on the add-account
+ * modal; a random state (fallback start route) names nothing. */
+function providerFromState(state: string | null): string | null {
+  if (!state) return null;
+  const normalized = state.trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(PROVIDER_LABELS, normalized)
+    ? normalized
+    : null;
+}
+
 export default function OAuth2CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = React.useState<CallbackStatus>({ kind: "pending" });
+  const accountLabel = providerLabel(providerFromState(searchParams.get("state")));
 
   React.useEffect(() => {
     const code = searchParams.get("code");
@@ -67,15 +96,17 @@ export default function OAuth2CallbackPage() {
           return;
         }
         const payload = (await response.json().catch(() => null)) as {
-          code?: string;
           message?: string;
+          error?: { code?: string; message?: string };
         } | null;
+        const errorCode = payload?.error?.code;
+        const errorMessage = payload?.error?.message ?? payload?.message;
         setStatus({
           kind: "error",
           message:
-            payload?.code === "OAUTH2_TOKEN_REVOKED"
+            errorCode === "OAUTH2_TOKEN_REVOKED"
               ? "The token was revoked or expired. Reconnect the account to authorise access again."
-              : payload?.message ??
+              : errorMessage ??
                 `The authorization code could not be exchanged (HTTP ${response.status}). Reconnect the account to try again.`,
         });
       })
@@ -114,9 +145,11 @@ export default function OAuth2CallbackPage() {
           <div
             className="text-sm text-[var(--color-success-fg)]"
             role="status"
+            aria-live="polite"
             data-testid="oauth2-callback-success"
           >
-            Account connected. Returning to your accounts…
+            <span data-testid="oauth2-callback-success-account">{accountLabel} connected.</span>{" "}
+            Returning to your accounts…
           </div>
         )}
 
