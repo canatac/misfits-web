@@ -9,22 +9,55 @@
  * revoked/expired. The code is exchanged by POST
  * /api/external-accounts/oauth2/callback; a revoked or expired token is
  * reported with a clear message and a way to reconnect.
+ *
+ * The confirmation names the provider chosen before the consent screen
+ * (issue #1178): useOAuth2Start stores it and this page reads it back.
  */
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { OAUTH2_PENDING_PROVIDER_KEY } from "@/hooks/use-oauth2-start";
 
 type CallbackStatus =
   | { kind: "pending" }
   | { kind: "success" }
   | { kind: "error"; message: string };
 
+const PROVIDER_LABELS: Record<string, string> = {
+  gmail: "Gmail",
+  google: "Gmail",
+  outlook: "Outlook",
+  microsoft: "Outlook",
+  office365: "Outlook",
+  yahoo: "Yahoo",
+};
+
+function providerLabel(provider: string | null): string {
+  if (!provider) return "Account";
+  return PROVIDER_LABELS[provider.toLowerCase()] ?? provider;
+}
+
 export default function OAuth2CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = React.useState<CallbackStatus>({ kind: "pending" });
+  const [accountLabel, setAccountLabel] = React.useState<string>("Account");
+
+  // Recover the provider chosen on the add-account modal so the
+  // confirmation can name it (issue #1178, AC1).
+  React.useEffect(() => {
+    try {
+      const stored = window.sessionStorage.getItem(OAUTH2_PENDING_PROVIDER_KEY);
+      if (stored) {
+        setAccountLabel(providerLabel(stored));
+        window.sessionStorage.removeItem(OAUTH2_PENDING_PROVIDER_KEY);
+      }
+    } catch {
+      // Storage unavailable: keep the generic "Account" label.
+    }
+  }, []);
 
   React.useEffect(() => {
     const code = searchParams.get("code");
@@ -67,15 +100,17 @@ export default function OAuth2CallbackPage() {
           return;
         }
         const payload = (await response.json().catch(() => null)) as {
-          code?: string;
           message?: string;
+          error?: { code?: string; message?: string };
         } | null;
+        const errorCode = payload?.error?.code;
+        const errorMessage = payload?.error?.message ?? payload?.message;
         setStatus({
           kind: "error",
           message:
-            payload?.code === "OAUTH2_TOKEN_REVOKED"
+            errorCode === "OAUTH2_TOKEN_REVOKED"
               ? "The token was revoked or expired. Reconnect the account to authorise access again."
-              : payload?.message ??
+              : errorMessage ??
                 `The authorization code could not be exchanged (HTTP ${response.status}). Reconnect the account to try again.`,
         });
       })
@@ -114,9 +149,11 @@ export default function OAuth2CallbackPage() {
           <div
             className="text-sm text-[var(--color-success-fg)]"
             role="status"
+            aria-live="polite"
             data-testid="oauth2-callback-success"
           >
-            Account connected. Returning to your accounts…
+            <span data-testid="oauth2-callback-success-account">{accountLabel} connected.</span>{" "}
+            Returning to your accounts…
           </div>
         )}
 
