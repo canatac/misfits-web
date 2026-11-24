@@ -7,7 +7,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import OAuth2CallbackPage from "../app/settings/accounts/oauth2/callback/page";
-import { OAUTH2_PENDING_PROVIDER_KEY } from "../hooks/use-oauth2-start";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -16,7 +15,6 @@ vi.mock("next/navigation", () => ({
 
 describe("OAuth2CallbackPage", () => {
   beforeEach(() => {
-    window.sessionStorage.clear();
     window.history.pushState({}, "", "/settings/accounts/oauth2/callback");
   });
 
@@ -38,9 +36,8 @@ describe("OAuth2CallbackPage", () => {
     window.history.pushState(
       {},
       "",
-      "/settings/accounts/oauth2/callback?code=abc"
+      "/settings/accounts/oauth2/callback?code=abc&state=gmail"
     );
-    window.sessionStorage.setItem(OAUTH2_PENDING_PROVIDER_KEY, "gmail");
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }))
@@ -56,7 +53,7 @@ describe("OAuth2CallbackPage", () => {
     window.history.pushState(
       {},
       "",
-      "/settings/accounts/oauth2/callback?code=abc"
+      "/settings/accounts/oauth2/callback?code=abc&state=gmail"
     );
     vi.stubGlobal(
       "fetch",

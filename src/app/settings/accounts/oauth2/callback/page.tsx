@@ -10,15 +10,15 @@
  * /api/external-accounts/oauth2/callback; a revoked or expired token is
  * reported with a clear message and a way to reconnect.
  *
- * The confirmation names the provider chosen before the consent screen
- * (issue #1178): useOAuth2Start stores it and this page reads it back.
+ * The provider chosen before the consent screen travels in the OAuth2
+ * state parameter (issue #1178, AC1): the confirmation names it and
+ * nothing is written to storage.
  */
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { OAUTH2_PENDING_PROVIDER_KEY } from "@/hooks/use-oauth2-start";
 
 type CallbackStatus =
   | { kind: "pending" }
@@ -39,25 +39,21 @@ function providerLabel(provider: string | null): string {
   return PROVIDER_LABELS[provider.toLowerCase()] ?? provider;
 }
 
+/** The state parameter carries the provider chosen on the add-account
+ * modal; a random state (fallback start route) names nothing. */
+function providerFromState(state: string | null): string | null {
+  if (!state) return null;
+  const normalized = state.trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(PROVIDER_LABELS, normalized)
+    ? normalized
+    : null;
+}
+
 export default function OAuth2CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = React.useState<CallbackStatus>({ kind: "pending" });
-  const [accountLabel, setAccountLabel] = React.useState<string>("Account");
-
-  // Recover the provider chosen on the add-account modal so the
-  // confirmation can name it (issue #1178, AC1).
-  React.useEffect(() => {
-    try {
-      const stored = window.sessionStorage.getItem(OAUTH2_PENDING_PROVIDER_KEY);
-      if (stored) {
-        setAccountLabel(providerLabel(stored));
-        window.sessionStorage.removeItem(OAUTH2_PENDING_PROVIDER_KEY);
-      }
-    } catch {
-      // Storage unavailable: keep the generic "Account" label.
-    }
-  }, []);
+  const accountLabel = providerLabel(providerFromState(searchParams.get("state")));
 
   React.useEffect(() => {
     const code = searchParams.get("code");

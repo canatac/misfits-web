@@ -21,10 +21,6 @@ const BUILTIN_AUTHORIZATION_ENDPOINTS: Record<string, string> = {
   yahoo: "https://api.login.yahoo.com/oauth2/request_auth",
 };
 
-/** Session-storage key holding the provider chosen for the consent flow.
- * The callback page reads it back to name the account it confirms. */
-export const OAUTH2_PENDING_PROVIDER_KEY = "misfits.oauth2.pendingProvider";
-
 export interface UseOAuth2StartResult {
   start: (provider: string) => Promise<void>;
   pending: boolean;
@@ -39,22 +35,17 @@ export function useOAuth2Start(): UseOAuth2StartResult {
     setPending(true);
     setError(null);
 
-    // Remember the provider so the consent callback can name the account
-    // (issue #1178, AC1). Storage can be unavailable; the callback then
-    // falls back to a generic confirmation.
-    try {
-      window.sessionStorage.setItem(OAUTH2_PENDING_PROVIDER_KEY, provider);
-    } catch {
-      // Ignore: the callback handles a missing provider.
-    }
-
     // 1. Navigate immediately, without waiting for the start route (AC2).
-    //    The provider consent screen is a full-page navigation.
+    //    The provider consent screen is a full-page navigation. The chosen
+    //    provider travels in the OAuth2 state parameter so the callback can
+    //    name the account it confirms (issue #1178, AC1), without writing it
+    //    to storage (clear-text-storage alert).
     const builtin = BUILTIN_AUTHORIZATION_ENDPOINTS[provider.toLowerCase()];
     if (builtin) {
       const params = new URLSearchParams({
         provider,
         redirect_uri: window.location.origin + "/settings/accounts/oauth2/callback",
+        state: provider,
       });
       window.location.assign(`${builtin}?${params.toString()}`);
       // Keep pending true: the page is navigating away.
