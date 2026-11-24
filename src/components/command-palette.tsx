@@ -31,6 +31,24 @@ import {
   Mail,
 } from "lucide-react";
 
+/** Minimum number of characters before the email search runs (#1146). */
+export const SEARCH_MIN_LENGTH = 2;
+
+/**
+ * Single source of truth for what assistive technology announces (#1146):
+ * the result count, the empty-result message and the below-threshold hint.
+ * Exported so the behaviour can be tested without rendering cmdk.
+ */
+export function getSearchAnnouncement(query: string, count: number): string {
+  const trimmed = query.trim();
+  if (trimmed.length === 0) return "";
+  if (trimmed.length < SEARCH_MIN_LENGTH) {
+    return `Tapez au moins ${SEARCH_MIN_LENGTH} caractères pour lancer la recherche.`;
+  }
+  if (count <= 0) return "Aucun email trouvé pour cette recherche.";
+  return count === 1 ? "1 email trouvé." : `${count} emails trouvés.`;
+}
+
 interface CommandItem {
   id: string;
   label: string;
@@ -47,6 +65,7 @@ export function CommandPalette() {
   const openComposer = useComposerStore((s) => s.openComposer);
   const emails = useEmailStore((s) => s.emails);
   const [query, setQuery] = useState("");
+  const [announcement, setAnnouncement] = useState("");
 
   const navigate = useCallback(
     (path: string) => {
@@ -167,9 +186,15 @@ export function CommandPalette() {
     {} as Record<string, CommandItem[]>,
   );
 
-  const emailResults = query.trim().length >= 2
-    ? searchEmails(query, emails, "relevance").results.slice(0, 8)
-    : [];
+  const trimmedQuery = query.trim();
+  const emailResults =
+    trimmedQuery.length >= SEARCH_MIN_LENGTH
+      ? searchEmails(trimmedQuery, emails, "relevance").results.slice(0, 8)
+      : [];
+
+  useEffect(() => {
+    setAnnouncement(getSearchAnnouncement(query, emailResults.length));
+  }, [query, emailResults.length]);
 
   return (
     <CommandDialog open={open} onOpenChange={(o: boolean) => !o && closePalette()}>
@@ -220,6 +245,23 @@ export function CommandPalette() {
           </CommandGroup>
         ))}
       </CommandList>
+      <div
+        data-testid="command-palette-announcement"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
+      {trimmedQuery.length > 0 && trimmedQuery.length < SEARCH_MIN_LENGTH && (
+        <p
+          id="command-palette-search-hint"
+          className="px-3 py-2 text-xs text-[var(--color-muted-fg)]"
+        >
+          {getSearchAnnouncement(query, 0)}
+        </p>
+      )}
     </CommandDialog>
   );
 }

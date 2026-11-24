@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { X, Search, HelpCircle } from "lucide-react";
 
 interface KeyboardShortcutsHelpProps {
@@ -24,8 +24,8 @@ const SHORTCUTS = [
   { key: "⌘/Ctrl + J", label: "Afficher / masquer le panneau assistant", category: "Affichage" },
   { key: "⌘/Ctrl + /", label: "Afficher cette aide", category: "Navigation" },
   { key: "Esc", label: "Fermer", category: "Navigation" },
-  { key: "⌘/Ctrl + Enter", label: "Envoyer le message", category: "Édition" },
-  { key: "⌘/Ctrl + Z", label: "Annuler", category: "Édition" },
+  { key: "⌘/Ctrl + Enter", label: "Envoyer le message", category: "Composition" },
+  { key: "⌘/Ctrl + Z", label: "Annuler", category: "Composition" },
 ];
 
 export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
@@ -33,6 +33,21 @@ export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
   onClose,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setSearchQuery("");
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    searchRef.current?.focus();
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
 
   const filteredShortcuts = useMemo(() => {
     if (!searchQuery.trim()) return SHORTCUTS;
@@ -56,6 +71,7 @@ export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label="Raccourcis clavier"
+      data-testid="keyboard-shortcuts-help"
     >
       <div
         className="relative w-full max-w-lg max-h-[80vh] overflow-y-auto bg-[#121214] border border-[#242427] rounded-2xl shadow-2xl p-6"
@@ -76,10 +92,12 @@ export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#71717A]" />
           <input
+            ref={searchRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filtrer les raccourcis..."
+            aria-label="Filtrer les raccourcis"
             className="w-full pl-10 pr-4 py-2 rounded-lg bg-[#0A0A0B] border border-[#242427] text-sm text-white placeholder-[#71717A] outline-none focus:border-[#C49B66]/40"
           />
         </div>
@@ -121,7 +139,15 @@ export const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
             <span className="px-1.5 py-0.5 rounded bg-[#1D1D20] text-[#C49B66] font-mono border border-[#242427]">
               Ctrl + /
             </span>{" "}
-            pour ouvrir cette aide à tout moment
+            pour ouvrir cette aide à tout moment.{" "}
+            <a
+              href="/docs/USAGE.md"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[#C49B66] underline underline-offset-2 hover:text-white"
+            >
+              Documentation complète
+            </a>
           </p>
         </div>
       </div>
@@ -136,6 +162,7 @@ export function HelpButton({ onClick }: { onClick: () => void }) {
       className="p-2 rounded-lg bg-[#1D1D20] border border-[#242427] text-[#71717A] hover:text-[#C49B66] hover:border-[#C49B66]/40 transition-colors"
       aria-label="Aide raccourcis clavier"
       title="Raccourcis clavier (Ctrl+/)"
+      data-testid="help-button"
     >
       <HelpCircle className="h-4 w-4" />
     </button>

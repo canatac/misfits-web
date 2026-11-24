@@ -3,14 +3,17 @@
 /**
  * MailPageOverlays — modals, overlays and floating panels stacked
  * above the mail workspace: composer modal, search overlay, mobile
- * chat overlay + trigger, terminal console, and reminder banner.
+ * chat overlay + trigger, terminal console, reminder banner and the
+ * keyboard shortcut cheat sheet (MW-2026-122).
  */
+import { useCallback, useEffect, useState } from "react";
 import { ComposerPanel } from "@/components/mail/composer-panel";
 import { SearchOverlay } from "@/components/mail/search-overlay";
 import { ChatPanel } from "@/components/mail/chat-panel";
 import { ChatTrigger } from "@/components/mail/chat-trigger";
 import { ReminderBanner } from "@/components/mail/reminder-banner";
 import { TerminalConsole } from "@/components/mail/terminal-console";
+import { HelpButton, KeyboardShortcutsHelp } from "@/components/mail/keyboard-shortcuts-help";
 import {
   Modal,
   ModalContent,
@@ -32,6 +35,16 @@ interface MailPageOverlaysProps {
   setDesktopConsoleOpen: (v: boolean) => void;
 }
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT" ||
+    target.isContentEditable
+  );
+}
+
 export function MailPageOverlays({
   composerOpen,
   closeComposer,
@@ -44,6 +57,22 @@ export function MailPageOverlays({
   setDesktopConsoleOpen,
 }: MailPageOverlaysProps) {
   const { t } = useI18n();
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
+
+  const openShortcutsHelp = useCallback(() => setShortcutsHelpOpen(true), []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "?" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
+      if (composerOpen || searchOverlayOpen) return;
+      e.preventDefault();
+      openShortcutsHelp();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [composerOpen, searchOverlayOpen, openShortcutsHelp]);
+
   return (
     <>
       <Modal
@@ -57,6 +86,9 @@ export function MailPageOverlays({
             <ModalTitle>{t("nav.compose")}</ModalTitle>
           </ModalHeader>
           <ModalBody>
+            <div className="flex justify-end px-2 pt-2">
+              <HelpButton onClick={openShortcutsHelp} />
+            </div>
             <ComposerPanel onClose={closeComposer} />
           </ModalBody>
         </ModalContent>
@@ -88,6 +120,11 @@ export function MailPageOverlays({
       />
 
       <ReminderBanner />
+
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onClose={() => setShortcutsHelpOpen(false)}
+      />
     </>
   );
 }
