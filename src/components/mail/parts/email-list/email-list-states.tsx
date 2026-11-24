@@ -1,6 +1,12 @@
 "use client";
 
-import { Inbox as InboxIcon, Search, PenSquare } from "lucide-react";
+import {
+  Inbox as InboxIcon,
+  Search,
+  PenSquare,
+  RefreshCw,
+  CloudOff,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -28,13 +34,52 @@ export function EmailListSkeleton() {
   );
 }
 
-export function EmailListEmpty() {
+/**
+ * Which empty state the unified inbox shows.
+ * - "syncing": the first sync of a freshly connected account is still running.
+ * - "empty": the sync finished and found no message.
+ * - "error": the connection or sync of the account failed.
+ */
+export type EmailListEmptyState = "empty" | "syncing" | "error";
+
+export function EmailListEmpty({
+  state = "empty",
+}: {
+  state?: EmailListEmptyState;
+}) {
+  if (state === "syncing") {
+    return (
+      <EmptyState
+        icon={RefreshCw}
+        title="Synchronisation en cours…"
+        description="Nous récupérons vos emails pour la première fois. Cela peut prendre quelques instants."
+        size="lg"
+        role="status"
+        aria-live="polite"
+        data-testid="email-list-empty-syncing"
+      />
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <EmptyState
+        icon={CloudOff}
+        title="Connexion au compte impossible"
+        description="La synchronisation a échoué. Vérifiez la connexion de votre compte puis réessayez."
+        size="lg"
+        data-testid="email-list-empty-connection-failed"
+      />
+    );
+  }
+
   return (
     <EmptyState
       icon={InboxIcon}
       title="Aucun email ici"
       description="Ce dossier est vide, ou aucun email ne correspond à vos filtres actuels."
       size="lg"
+      data-testid="email-list-empty-no-mail"
       action={
         <div className="mt-6 flex flex-col items-center gap-3">
           <p className="text-xs text-[var(--color-muted-fg)]">

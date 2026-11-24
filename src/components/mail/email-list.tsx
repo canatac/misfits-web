@@ -33,6 +33,7 @@ interface EmailListProps {
 export function EmailList({ className }: EmailListProps) {
   const filteredEmails = useFilteredSortedEmails();
   const loading = useEmailStore((s) => s.loading);
+  const error = useEmailStore((s) => s.error);
   const emails = useEmailStore((s) => s.emails);
   const currentFolder = useEmailStore((s) => s.currentFolder);
   const filterType = useEmailStore((s) => s.filterType);
@@ -186,10 +187,12 @@ export function EmailList({ className }: EmailListProps) {
       )}
 
       <ScrollArea className="flex-1">
-        {loading ? (
+        {loading && filteredEmails.length > 0 ? (
           <EmailListSkeleton />
         ) : filteredEmails.length === 0 ? (
-          <EmailListEmpty />
+          <EmailListEmpty
+            state={loading ? "syncing" : error ? "error" : "empty"}
+          />
         ) : threadingEnabled && threads.length > 0 ? (
           <div role="listbox" aria-label="Thread list" data-testid="thread-list">
             {threads.map((thread) => (
