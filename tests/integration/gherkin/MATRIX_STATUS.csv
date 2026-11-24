@@ -1,3 +1,4 @@
 MW-2026-122,PASS,tests/integration/gherkin/features/issue-1026-email-cheat-sheet-keyboard-shortcuts.feature
 MW-2026-123,TODO,tests/integration/gherkin/features/issue-1172-unified-inbox-empty-state.feature
 MW-2026-124,TODO,tests/integration/gherkin/features/issue-1178-oauth2-consent-return-confirmation.feature
+MW-2026-125,TODO,tests/integration/gherkin/features/issue-1199-shortcut-presets-conflict-resolution.feature
