@@ -9,6 +9,7 @@ import {
   findConflicts,
   updateBinding,
   applyPreset,
+  applyPresetWithReport,
   resetToDefault,
   exportBindings,
   importBindings,
@@ -71,6 +72,49 @@ describe("shortcuts", () => {
       let state = createShortcutState();
       state = applyPreset(state, "gmail");
       expect(state.activePreset).toBe("gmail");
+    });
+  });
+
+  describe("preset conflict resolution (#1199)", () => {
+    it("AC1: a preset replaces the bindings of the actions it redefines", () => {
+      let state = createShortcutState();
+      state = applyPreset(state, "vim");
+      expect(state.bindings.filter((b) => b.action === "previous")).toHaveLength(1);
+      expect(getBinding(state, "previous")?.shortcut).toBe("p");
+      expect(state.bindings.filter((b) => b.action === "reply")).toHaveLength(1);
+    });
+
+    it("AC2: vim gives Previous email and Star/Pin email one shortcut each, none shared", () => {
+      let state = createShortcutState();
+      state = applyPreset(state, "vim");
+      expect(getBinding(state, "previous")?.shortcut).toBe("p");
+      expect(getBinding(state, "star")?.shortcut).toBe("k");
+      const counts = new Map<string, number>();
+      for (const binding of state.bindings) {
+        counts.set(binding.shortcut, (counts.get(binding.shortcut) ?? 0) + 1);
+      }
+      for (const count of counts.values()) {
+        expect(count).toBe(1);
+      }
+    });
+
+    it("AC3: gmail gives Reply to email and Archive email one shortcut each", () => {
+      let state = createShortcutState();
+      state = applyPreset(state, "gmail");
+      expect(getBinding(state, "reply")?.shortcut).toBe("a");
+      expect(getBinding(state, "archive")?.shortcut).toBe("y");
+      expect(state.bindings.filter((b) => b.action === "reply")).toHaveLength(1);
+      expect(state.bindings.filter((b) => b.action === "archive")).toHaveLength(1);
+    });
+
+    it("AC4: a conflicting binding is resolved and reported, not applied silently", () => {
+      const state = createShortcutState();
+      const result = applyPresetWithReport(state, "vim");
+      expect(result.conflicts).toHaveLength(1);
+      expect(result.conflicts[0].shortcut).toBe("p");
+      expect(result.conflicts[0].displacedAction).toBe("star");
+      expect(result.conflicts[0].message).toContain("Star/Pin email");
+      expect(getBinding(result.state, "previous")?.shortcut).toBe("p");
     });
   });
 
