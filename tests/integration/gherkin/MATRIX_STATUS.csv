@@ -1,5 +1,3 @@
-MW-2026-122,PASS,tests/integration/gherkin/features/issue-1026-email-cheat-sheet-keyboard-shortcuts.feature
-MW-2026-123,TODO,tests/integration/gherkin/features/issue-1172-unified-inbox-empty-state.feature
-MW-2026-124,TODO,tests/integration/gherkin/features/issue-1178-oauth2-consent-return-confirmation.feature
-MW-2026-125,TODO,tests/integration/gherkin/features/issue-1183-oauth2-provider-picker-assistive-technology.feature
-MW-2026-126,TODO,tests/integration/gherkin/features/issue-1199-shortcut-presets-conflict-resolution.feature
+id,feature,status,last_updated
+MW-2026-125,issue-1199-shortcut-presets-conflict-resolution,TODO,2026-11-25
+MW-2026-126,issue-1219-command-palette-accessible-name,TODO,2026-11-26
