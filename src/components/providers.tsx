@@ -71,7 +71,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <I18nProvider>
-      <ProvidersContent children={children} />
+      <ProvidersContent>{children}</ProvidersContent>
     </I18nProvider>
   );
 }
