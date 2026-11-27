@@ -47,6 +47,13 @@ const fr = {
     searchPlaceholder: "Rechercher (from:, subject:, has:attachment...)",
     proMode: "Mode Pro",
   },
+  toast: {
+    welcomeSignedIn: "Bienvenue ! Connexion réussie.",
+  },
+  errorBoundary: {
+    fallbackTitle: "Un problème est survenu",
+    fallbackMessage: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+  },
 } as const;
 
 export default fr;
