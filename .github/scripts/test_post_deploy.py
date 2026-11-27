@@ -39,7 +39,18 @@ class Failures(unittest.TestCase):
         out = Path(__file__).parent / "_failures_test.json"
         self.addCleanup(lambda: out.unlink(missing_ok=True))
         fail.main(["x", "/nonexistent/report.json", str(out)])
-        self.assertEqual(json.loads(out.read_text()), [{"check": "run", "detail": "no report of Playwright"}])
+        self.assertEqual(json.loads(out.read_text()),
+                         {"failures": [{"check": "run", "detail": "no report of Playwright"}], "passed": []})
+
+    def test_the_tests_passed_and_only_them(self):
+        # paperclip-fleet#882: passed, after a retry too; failed or skipped
+        # (serial, after a failure): neither.
+        retried = {"title": "mail", "ok": True, "tests": [{"results": [{"status": "failed"}, {"status": "passed"}]}]}
+        skipped = {"title": "compose", "ok": True, "tests": [{"results": [{"status": "skipped"}]}]}
+        report = {"suites": [{"specs": [spec("login", True), retried], "suites": [
+            {"specs": [skipped, spec("add account: provider catalogue", False, "Error: 500")]}]}]}
+        self.assertEqual(fail.passed(report), ["login", "mail"])
+        self.assertEqual(fail.passed({"suites": [{"specs": [{"title": "x", "ok": True, "tests": []}]}]}), [])
 
 
 class FakeGitHub:
@@ -90,6 +101,33 @@ class Report(unittest.TestCase):
         rep.report(github, [self.FAILURE], "c" * 40, "", [])
         self.assertNotIn("type", github.calls[-1][2])
         self.assertEqual(github.calls[-1][2]["labels"][0], "priority-P1")
+
+    def test_a_check_that_passes_closes_its_issue(self):
+        # paperclip-fleet#882: misfits-web#1254, "Post-deploy check failed:
+        # mail", its acceptance criterion met; a check failed again or not
+        # passed keeps its issue open; a pull request is never closed.
+        github = FakeGitHub([{"number": 7, "title": "Post-deploy check failed: mail"},
+                             {"number": 8, "title": "Post-deploy check failed: provider catalogue"},
+                             {"number": 9, "title": "Post-deploy check failed: compose"},
+                             {"number": 10, "title": "Post-deploy check failed: mail", "pull_request": {}}])
+        done = rep.report(github, [self.FAILURE], "d" * 40, "https://run", [], ["login", "mail", "provider catalogue"])
+        self.assertEqual(done, ["#8 commented: provider catalogue", "#7 closed: mail"])
+        self.assertEqual(github.calls[-2:], [
+            ("POST", "/issues/7/comments", {"body": "The post-deploy check passes on production after the deploy of "
+                                                    "dddddddddddd: its acceptance criterion is met, closed.\n\n"
+                                                    "Run: https://run"}),
+            ("PATCH", "/issues/7", {"state": "closed", "state_reason": "completed"})])
+        # All green: no label created, the issue closed all the same.
+        github = FakeGitHub([{"number": 7, "title": "Post-deploy check failed: mail"}])
+        self.assertEqual(rep.report(github, [], "e" * 40, "", [], ["mail"]), ["#7 closed: mail"])
+        self.assertNotIn("/labels", [path for _, path, _ in github.calls])
+
+    def test_the_file_of_the_failures_old_or_new(self):
+        out = Path(__file__).parent / "_report_test.json"
+        self.addCleanup(lambda: out.unlink(missing_ok=True))
+        for found in ([], {"failures": [], "passed": []}):
+            out.write_text(json.dumps(found))
+            self.assertEqual(rep.main(["x", str(out)]), 0)
 
 
 if __name__ == "__main__":
