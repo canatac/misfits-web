@@ -42,18 +42,38 @@ interface WorkspaceBuildFooterProps {
   className?: string;
 }
 
-export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = {}) {
-  const staticWeb = normalizeBuildInfo(
-    (process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION || "unknown").trim() ||
-      "unknown",
-    "misfits-web"
-  );
+/** The build labels of the environment. On the server they are read when it
+ * runs; in the browser, when the bundle was built: in production they differ
+ * (misfits-web#1254, Minified React error #418 on /mail), so they are read
+ * only once mounted, never in the render the server and the browser share. */
+function environmentBuilds(): { web: BuildInfo; backend: BuildInfo } {
+  return {
+    web: normalizeBuildInfo(
+      (process.env.NEXT_PUBLIC_MISFITS_WEB_BUILD_VERSION || "unknown").trim() ||
+        "unknown",
+      "misfits-web"
+    ),
+    backend: normalizeBuildInfo(
+      (process.env.NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION || "unknown").trim() ||
+        "unknown",
+      "reimagined-guide"
+    ),
+  };
+}
 
-  const staticBackend = normalizeBuildInfo(
-    (process.env.NEXT_PUBLIC_REIMAGINED_GUIDE_BUILD_VERSION || "unknown").trim() ||
-      "unknown",
-    "reimagined-guide"
-  );
+const UNKNOWN_BUILDS = {
+  web: normalizeBuildInfo("unknown", "misfits-web"),
+  backend: normalizeBuildInfo("unknown", "reimagined-guide"),
+};
+
+export function WorkspaceBuildFooter({ className }: WorkspaceBuildFooterProps = {}) {
+  // The same first render on the server and in the browser (#1254).
+  const [staticBuilds, setStaticBuilds] = useState(UNKNOWN_BUILDS);
+  useEffect(() => {
+    setStaticBuilds(environmentBuilds());
+  }, []);
+  const staticWeb = staticBuilds.web;
+  const staticBackend = staticBuilds.backend;
 
   const [runtimeBuilds, setRuntimeBuilds] = useState<{
     web: BuildInfo;
