@@ -4,3 +4,4 @@ MW-2026-128,App-shell feedback messages i18n - AC2,TODO,1213,issue-1213-app-shel
 MW-2026-129,App-shell feedback messages i18n - AC2,TODO,1213,issue-1213-app-shell-feedback-i18n,Error fallback renders in French and English,2026-11-27,2026-11-27
 MW-2026-130,App-shell feedback messages i18n - AC3,TODO,1213,issue-1213-app-shell-feedback-i18n,All app-shell user-visible strings come from the i18n dictionary,2026-11-27,2026-11-27
 MW-2026-131,App-shell feedback messages i18n - AC4,TODO,1213,issue-1213-app-shell-feedback-i18n,Each acceptance criterion has a test,2026-11-27,2026-11-27
+MW-2026-132,Post-deploy check mail - AC1,TODO,1254,issue-1254-post-deploy-check-mail,Post-deploy check "mail" passes on production after the next deploy,2026-11-27,2026-11-27
