@@ -3,8 +3,10 @@
 Playwright, for post_deploy_report.py (paperclip-fleet#878).
 
 Usage: post_deploy_failures.py REPORT.json FAILURES.json
-One failure per test failed after its retries: {"check": its title,
-"detail": the first line of its last error}. Standard library only.
+FAILURES.json: {"failures": one per test failed after its retries,
+{"check": its title, "detail": the first line of its last error},
+"passed": the titles of the tests passed, whose issue is closed
+(paperclip-fleet#882); a test skipped is neither}. Standard library only.
 """
 
 from __future__ import annotations
@@ -44,6 +46,17 @@ def failures(report: dict) -> list[dict]:
     return found
 
 
+def passed(report: dict) -> list[str]:
+    """The titles of the tests whose last result passed (after a retry too)."""
+    found = []
+    for suite in report.get("suites") or []:
+        for spec in specs(suite):
+            results = [result for case in spec.get("tests") or [] for result in case.get("results") or []]
+            if spec.get("ok", True) and results and results[-1].get("status") == "passed":
+                found.append(spec.get("title") or "unnamed")
+    return found
+
+
 def main(argv: list[str]) -> int:
     try:
         with open(argv[1], encoding="utf-8") as source:
@@ -51,7 +64,7 @@ def main(argv: list[str]) -> int:
     except (OSError, ValueError):
         report = {"errors": [{"message": "no report of Playwright"}]}
     with open(argv[2], "w", encoding="utf-8") as out:
-        json.dump(failures(report), out)
+        json.dump({"failures": failures(report), "passed": passed(report)}, out)
     return 0
 
 
