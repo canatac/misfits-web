@@ -289,3 +289,73 @@ jobs:
             exit 1
           fi
           echo "PASS: /api/health returns ${HTTP_CODE} (route registered)"
+
+  # ============================================================
+  # Post-deploy checks of the interface on production (paperclip-fleet#878)
+  # ============================================================
+  post-deploy-scripts:
+    name: Post-deploy scripts - unit tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit tests of the post-deploy scripts (no network)
+        run: python3 -I -m unittest discover -s .github/scripts -v
+
+  post-deploy-smoke:
+    name: Post-deploy checks - interface on production
+    needs: deploy
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      QA_BASE_URL: ${{ vars.QA_BASE_URL || 'https://mail.misfits.ai' }}
+      QA_TEST_LOGIN: ${{ secrets.QA_TEST_LOGIN }}
+      QA_TEST_PASSWORD: ${{ secrets.QA_TEST_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test account
+        id: account
+        run: |
+          if [ -z "$QA_TEST_LOGIN" ] || [ -z "$QA_TEST_PASSWORD" ]; then
+            echo "::warning::QA_TEST_LOGIN and QA_TEST_PASSWORD are not set: post-deploy checks skipped"
+            echo "set=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "set=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node.js
+        if: steps.account.outputs.set == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install pnpm
+        if: steps.account.outputs.set == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies and Chromium
+        if: steps.account.outputs.set == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Checks of the interface (read-only)
+        id: checks
+        if: steps.account.outputs.set == 'true'
+        run: pnpm exec playwright test -c tests/e2e/playwright.config.ts
+
+      - name: Critical bug for each check that failed (#876)
+        if: failure() && steps.checks.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 -I .github/scripts/post_deploy_failures.py tests/e2e/results/post-deploy.json "$RUNNER_TEMP/failures.json"
+          python3 -I .github/scripts/post_deploy_report.py "$RUNNER_TEMP/failures.json"
