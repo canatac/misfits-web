@@ -45,3 +45,8 @@ docker-compose.override.yml
 
 # Misc
 *.pem
+
+# Post-deploy checks (paperclip-fleet#878)
+tests/e2e/results/
+
+__pycache__/

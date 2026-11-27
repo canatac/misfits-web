@@ -1,35 +1,44 @@
-Feature: Shortcut presets replace redefined bindings and resolve conflicts
-  Applying a preset replaces the bindings of the actions it redefines, so no action keeps two shortcuts and no shortcut is bound to two actions.
+Feature: Shortcut presets conflict resolution
+  As a user of misfits.ai Mail
+  I want to apply keyboard shortcut presets without conflicts
+  So that each action has exactly one shortcut and no shortcut is bound to multiple actions
 
   @AC1
-  Scenario: Applying a preset replaces the bindings of the actions it redefines
-    Given the default shortcut bindings
-    When I apply a preset
-    Then the bindings of the actions it redefines are replaced
-    And no action keeps two shortcuts
+  Scenario: Applying a preset replaces existing bindings for redefined actions
+    Given the default bindings are loaded in src/lib/shortcuts.ts
+    When I apply the Vim preset
+    Then the "Previous email" action should have only the preset shortcut "p"
+    And the default shortcut "k" for "Previous email" should be removed
 
   @AC2
-  Scenario: The Vim preset leaves Previous email and Star/Pin email one shortcut each
-    Given the default shortcut bindings
+  Scenario: Vim preset ensures no duplicate bindings
+    Given the default bindings are loaded
     When I apply the Vim preset
-    Then "Previous email" and "Star/Pin email" each have exactly one shortcut
-    And no shortcut is bound to two actions
+    Then "Previous email" should have exactly one shortcut
+    And "Star/Pin email" should have exactly one shortcut
+    And no shortcut should be bound to more than one action
 
   @AC3
-  Scenario: The Gmail preset leaves Reply to email and Archive email one shortcut each
-    Given the default shortcut bindings
+  Scenario: Gmail preset ensures no duplicate bindings
+    Given the default bindings are loaded
     When I apply the Gmail preset
-    Then "Reply to email" and "Archive email" each have exactly one shortcut
+    Then "Reply to email" should have exactly one shortcut
+    And "Archive email" should have exactly one shortcut
 
   @AC4
-  Scenario: A conflicting binding is never applied silently
-    Given the default shortcut bindings
-    When I apply a preset that conflicts with an existing binding
-    Then the conflict is refused or resolved
-    And the user is told
+  Scenario: Conflicting bindings are not applied silently
+    Given the default bindings are loaded
+    When I attempt to apply a preset that would create a conflict
+    Then the conflicting binding should be refused
+    Or the conflict should be resolved automatically
+    And I should be informed of the conflict resolution
 
   @AC5
-  Scenario: Each criterion has a test
-    Given the acceptance criteria of issue #1199
-    When the test suite runs
-    Then each criterion has a test
+  Scenario: Each acceptance criterion has a test
+    Given the test suite is set up
+    When I run the tests for shortcut presets
+    Then there should be a test for AC1
+    And there should be a test for AC2
+    And there should be a test for AC3
+    And there should be a test for AC4
+    And there should be a test for AC5

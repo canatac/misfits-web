@@ -7,7 +7,7 @@
  * add-account modal) and passed down as props, so this component does not
  * import the data hook and no circular dependency remains.
  *
- * States (issue #1104):
+ * States (issue #1104, #1183):
  *  - loading: the provider catalogue is being fetched;
  *  - empty: the catalogue answered with no provider;
  *  - error: the catalogue request failed, with a retry action;
@@ -52,6 +52,7 @@ export function OAuth2ProviderPicker({
         className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground"
         role="status"
         aria-live="polite"
+        aria-atomic="true"
         data-testid="oauth2-provider-loading"
       >
         <span
@@ -68,6 +69,8 @@ export function OAuth2ProviderPicker({
       <div
         className="flex flex-col gap-2 px-3 py-2 text-sm"
         role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         data-testid="oauth2-provider-error"
       >
         <p className="text-destructive">{error}</p>
@@ -75,6 +78,7 @@ export function OAuth2ProviderPicker({
           type="button"
           className="self-start rounded-md border border-border px-2 py-1 text-sm hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           onClick={onRetry}
+          aria-label="Retry loading the provider catalogue"
         >
           Retry
         </button>
@@ -86,6 +90,9 @@ export function OAuth2ProviderPicker({
     return (
       <p
         className="px-3 py-2 text-sm text-muted-foreground"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         data-testid="oauth2-provider-empty"
       >
         No external account provider is available.
