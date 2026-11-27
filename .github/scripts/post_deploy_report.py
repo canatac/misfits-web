@@ -5,10 +5,14 @@
 The issue is a critical bug for the team (paperclip-fleet#876): the type
 Bug, labelled priority-P1, priority:high and post-deploy, with its
 acceptance criteria. Still open from an earlier deploy: a comment instead.
+A check that passes closes its issue still open, with a comment: its
+acceptance criterion met (paperclip-fleet#882).
 The values of QA_TEST_LOGIN, QA_TEST_PASSWORD and QA_TEST_RECIPIENT are
 masked in every text written.
 
 Usage: post_deploy_report.py FAILURES.json
+FAILURES.json: {"failures": [{"check", "detail"}], "passed": [check]}, or
+the list of the failures alone.
 Environment: GITHUB_REPOSITORY, GITHUB_TOKEN, GITHUB_SHA, RUN_URL,
 GITHUB_API_URL (optional). Standard library only.
 """
@@ -53,21 +57,24 @@ class GitHub:
         return json.loads(raw) if raw else None
 
 
-def report(github: GitHub, failures: list[dict], sha: str, run_url: str, secrets: list[str]) -> list[str]:
-    """What it did, one line per failure."""
-    try:
-        github.call("POST", "/labels", {"name": LABEL, "color": "b60205",
-                                        "description": "A check after a deploy failed on production"})
-    except urllib.error.HTTPError as error:
-        if error.code != 422:  # 422: the label is there already.
-            raise
-    issues = github.call("GET", f"/issues?state=open&labels={LABEL}&per_page=100") or []
+def report(github: GitHub, failures: list[dict], sha: str, run_url: str, secrets: list[str],
+           passed: list[str] = ()) -> list[str]:
+    """What it did, one line per failure and per issue closed."""
+    if failures:
+        try:
+            github.call("POST", "/labels", {"name": LABEL, "color": "b60205",
+                                            "description": "A check after a deploy failed on production"})
+        except urllib.error.HTTPError as error:
+            if error.code != 422:  # 422: the label is there already.
+                raise
+    issues = [i for i in github.call("GET", f"/issues?state=open&labels={LABEL}&per_page=100") or []
+              if "pull_request" not in i]
     done = []
     for failure in failures:
         check = masked(str(failure.get("check") or "unnamed"), secrets)
         detail = masked(str(failure.get("detail") or ""), secrets)[:DETAIL_CHARS]
         title = title_of(check)
-        found = next((i for i in issues if i.get("title") == title and "pull_request" not in i), None)
+        found = next((i for i in issues if i.get("title") == title), None)
         if found:
             github.call("POST", f"/issues/{found['number']}/comments",
                         {"body": f"Still failing after the deploy of {sha[:12]}.\n\n{detail}\n\nRun: {run_url}"})
@@ -84,18 +91,32 @@ def report(github: GitHub, failures: list[dict], sha: str, run_url: str, secrets
                 raise
             created = github.call("POST", "/issues", issue)
         done.append(f"#{created['number']} opened: {check}")
+    failed = {title_of(masked(str(failure.get("check") or "unnamed"), secrets)) for failure in failures}
+    for check in passed:
+        check = masked(str(check), secrets)
+        title = title_of(check)
+        if title in failed:
+            continue
+        for found in (i for i in issues if i.get("title") == title):
+            github.call("POST", f"/issues/{found['number']}/comments",
+                        {"body": f"The post-deploy check passes on production after the deploy of {sha[:12]}: "
+                                 f"its acceptance criterion is met, closed.\n\nRun: {run_url}"})
+            github.call("PATCH", f"/issues/{found['number']}", {"state": "closed", "state_reason": "completed"})
+            done.append(f"#{found['number']} closed: {check}")
     return done
 
 
 def main(argv: list[str]) -> int:
     with open(argv[1], encoding="utf-8") as source:
-        failures = json.load(source)
-    if not failures:
+        found = json.load(source)
+    failures, passed = (found, []) if isinstance(found, list) else (found.get("failures") or [],
+                                                                    found.get("passed") or [])
+    if not failures and not passed:
         return 0
     github = GitHub(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"],
                     os.environ.get("GITHUB_API_URL", "https://api.github.com"))
     for line in report(github, failures, os.environ.get("GITHUB_SHA", ""), os.environ.get("RUN_URL", ""),
-                       [os.environ.get(name, "") for name in SECRETS]):
+                       [os.environ.get(name, "") for name in SECRETS], passed):
         print(line)
     return 0
 

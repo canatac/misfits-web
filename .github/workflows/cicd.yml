@@ -351,8 +351,10 @@ jobs:
         if: steps.account.outputs.set == 'true'
         run: pnpm exec playwright test -c tests/e2e/playwright.config.ts
 
-      - name: Critical bug for each check that failed (#876)
-        if: failure() && steps.checks.outcome == 'failure'
+      # A critical bug for each check that failed (#876); the issue of a
+      # check that passes again closed (#882).
+      - name: Issues of the checks
+        if: always() && (steps.checks.outcome == 'failure' || steps.checks.outcome == 'success')
         env:
           GITHUB_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
