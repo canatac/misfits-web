@@ -2,6 +2,8 @@
  * Error boundary utilities (Issue #439).
  */
 
+import { useI18n } from "@/i18n/provider";
+
 export interface ErrorInfo {
   message: string;
   stack?: string;
@@ -27,15 +29,17 @@ export interface RecoveryOptions {
   allowRetry?: boolean;
 }
 
-export const DEFAULT_RECOVERY_OPTIONS: Required<Pick<RecoveryOptions, "maxRetries" | "retryDelayMs" | "showErrorDetails" | "allowReload" | "allowRetry">> & { fallbackTitle: string; fallbackMessage: string } = {
-  maxRetries: 3,
-  retryDelayMs: 1000,
-  showErrorDetails: false,
-  allowReload: true,
-  allowRetry: true,
-  fallbackTitle: "Something went wrong",
-  fallbackMessage: "An unexpected error occurred. Please try again.",
-};
+export function getDefaultRecoveryOptions(t: (key: string) => string): Required<Pick<RecoveryOptions, "maxRetries" | "retryDelayMs" | "showErrorDetails" | "allowReload" | "allowRetry">> & { fallbackTitle: string; fallbackMessage: string } {
+  return {
+    maxRetries: 3,
+    retryDelayMs: 1000,
+    showErrorDetails: false,
+    allowReload: true,
+    allowRetry: true,
+    fallbackTitle: t("errorBoundary.fallbackTitle"),
+    fallbackMessage: t("errorBoundary.fallbackMessage"),
+  };
+}
 
 export function generateErrorId(): string {
   return `err_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -67,3 +71,14 @@ export function formatErrorMessage(error: Error): string {
 export function createErrorLogEntry(error: Error, errorId: string, context?: Record<string, unknown>): Record<string, unknown> {
   return { errorId, timestamp: new Date().toISOString(), message: error.message, stack: error.stack, name: error.name, ...context };
 }
+
+// Legacy export for backwards compatibility - use getDefaultRecoveryOptions with i18n instead
+export const DEFAULT_RECOVERY_OPTIONS: Required<Pick<RecoveryOptions, "maxRetries" | "retryDelayMs" | "showErrorDetails" | "allowReload" | "allowRetry">> & { fallbackTitle: string; fallbackMessage: string } = {
+  maxRetries: 3,
+  retryDelayMs: 1000,
+  showErrorDetails: false,
+  allowReload: true,
+  allowRetry: true,
+  fallbackTitle: "errorBoundary.fallbackTitle",
+  fallbackMessage: "errorBoundary.fallbackMessage",
+};

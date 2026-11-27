@@ -47,6 +47,13 @@ const en = {
     searchPlaceholder: "Search (from:, subject:, has:attachment...)",
     proMode: "Pro mode",
   },
+  toast: {
+    welcomeSignedIn: "Welcome! Signed in successfully.",
+  },
+  errorBoundary: {
+    fallbackTitle: "Something went wrong",
+    fallbackMessage: "An unexpected error occurred. Please try again.",
+  },
 } as const;
 
 export default en;
