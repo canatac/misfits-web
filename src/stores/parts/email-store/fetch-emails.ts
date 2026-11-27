@@ -15,7 +15,7 @@ interface StoreSlice {
   selectedEmailId: string | null;
   selectedEmailIds: Set<string>;
   folders: EmailFolder[];
-  _fetchGen?: number;
+  _fetchGen: number;
   emails: Email[];
   error: string | null;
 }
@@ -86,9 +86,9 @@ export async function performFetchEmails(
   }
   if (get().loading && get().currentFolder === targetFolder) return;
   set({ loading: true, error: null, currentFolder: targetFolder });
-  const gen = get()._fetchGen ?? 0;
+  const gen = get()._fetchGen;
   const myGen = gen + 1;
-  get()._fetchGen = myGen;
+  set({ _fetchGen: myGen });
   try {
     const data = await emailRepository.fetchEmails({
       folder: targetFolder,
