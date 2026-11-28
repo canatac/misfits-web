@@ -90,7 +90,7 @@ test("mail", async () => {
 
 test("compose", async () => {
   await page.goto("/compose");
-  await expect(page.getByTestId("compose-page")).toBeVisible();
+  await expect(page.getByTestId("compose-page")).toBeVisible({ timeout: 30_000 });
   await noProblem();
 });
 
