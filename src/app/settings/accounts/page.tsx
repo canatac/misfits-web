@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Mail, Save, RotateCcw } from "lucide-react";
+import { Mail, Save, RotateCcw, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AddAccountModal } from "@/components/mail/add-account-modal";
 
 function initialsOf(email: string): string {
   const local = email.split("@")[0] ?? email;
@@ -20,6 +21,7 @@ export default function AccountsSettingsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
   const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [connectOpen, setConnectOpen] = useState(false);
 
   const startEditing = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
@@ -57,6 +59,46 @@ export default function AccountsSettingsPage() {
           from an account, its signature will be used automatically.
         </p>
       </div>
+
+      <div className="flex justify-end">
+        {!connectOpen && (
+          <Button
+            variant="outline"
+            onClick={() => setConnectOpen(true)}
+            data-testid="connect-external-account"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Connect an external account
+          </Button>
+        )}
+      </div>
+
+      {connectOpen && (
+        <Card
+          className="bg-[#0A0A0B] border-[#242427]"
+          data-testid="connect-external-account-panel"
+        >
+          <CardHeader className="flex flex-row items-center gap-3 pb-2">
+            <CardTitle className="text-base font-medium text-white">
+              Connect an external account
+            </CardTitle>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto"
+              onClick={() => setConnectOpen(false)}
+            >
+              Close
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <AddAccountModal
+              open={connectOpen}
+              onOpenChange={setConnectOpen}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {accounts.length === 0 ? (
         <Card className="bg-[#0A0A0B] border-[#242427]">
