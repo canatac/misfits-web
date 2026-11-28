@@ -29,6 +29,9 @@ const LOOP_CALLS = 10;
 let page: Page;
 const problems: string[] = [];
 const calls = new Map<string, number>();
+/** The API calls answered 4xx since the last check: no problem alone, but
+ * named when the element of a page does not come (misfits-web#1325). */
+const refused = new Set<string>();
 
 /** The API calls answered 5xx, the uncaught errors and the API calls made
  * since the last check. */
@@ -45,6 +48,8 @@ function watch(target: Page): void {
     const url = new URL(response.url());
     if (url.pathname.startsWith("/api/") && response.status() >= 500) {
       problems.push(`${response.request().method()} ${url.pathname} answered ${response.status()}`);
+    } else if (url.pathname.startsWith("/api/") && response.status() >= 400) {
+      refused.add(`${response.request().method()} ${url.pathname} answered ${response.status()}`);
     }
   });
 }
@@ -58,9 +63,27 @@ function loops(counts: Map<string, number>, limit: number = LOOP_CALLS): string[
 /** Watches the page for OBSERVE_MS, then no problem since the last check. */
 async function noProblem(): Promise<void> {
   calls.clear();
+  refused.clear();
   await page.waitForTimeout(OBSERVE_MS);
   const found = [...problems.splice(0), ...loops(calls)];
   expect(found, found.join("; ")).toEqual([]);
+}
+
+/** The element of TEST_ID visible; else the first line of the failure names
+ * where the page is (its path only, never its address) and what it met: the
+ * API calls answered 4xx or 5xx, the uncaught errors (misfits-web#1325: the
+ * check "compose" failed three times on "element(s) not found" alone). It is
+ * the line of the issue opened by post_deploy_report.py. */
+async function visible(testId: string, timeout?: number): Promise<void> {
+  try {
+    await expect(page.getByTestId(testId)).toBeVisible({ timeout });
+  } catch (error) {
+    const met = [...problems.splice(0), ...refused];
+    refused.clear();
+    const where = `${testId} not visible, the page on ${new URL(page.url()).pathname}`;
+    throw new Error(`${where}${met.length ? `; ${met.join("; ")}` : "; no API call refused, no uncaught error"}\n`
+      + (error instanceof Error ? error.message : String(error)));
+  }
 }
 
 test.beforeAll(async ({ browser }) => {
@@ -84,13 +107,13 @@ test("login", async () => {
 
 test("mail", async () => {
   await page.goto("/mail");
-  await expect(page.getByTestId("account-selector-trigger")).toBeVisible();
+  await visible("account-selector-trigger");
   await noProblem();
 });
 
 test("compose", async () => {
   await page.goto("/compose");
-  await expect(page.getByTestId("compose-page")).toBeVisible({ timeout: 30_000 });
+  await visible("compose-page", 30_000);
   await noProblem();
 });
 
