@@ -25,6 +25,25 @@ export interface ShortcutState {
   activePreset: string;
 }
 
+/**
+ * A shortcut a preset had to take from another action to avoid a conflict.
+ * Reported to the caller so the resolution is never silent (#1199).
+ */
+export interface PresetConflict {
+  shortcut: string;
+  presetAction: string;
+  presetLabel: string;
+  displacedAction: string;
+  displacedLabel: string;
+  displacedShortcut: string | null;
+  message: string;
+}
+
+export interface ApplyPresetResult {
+  state: ShortcutState;
+  conflicts: PresetConflict[];
+}
+
 export const DEFAULT_BINDINGS: ShortcutBinding[] = [
   { action: "compose", label: "Compose new email", shortcut: "c", category: "Navigation" },
   { action: "reply", label: "Reply to email", shortcut: "r", category: "Actions" },
@@ -114,16 +133,94 @@ export function updateBinding(state: ShortcutState, action: string, newShortcut:
 }
 
 /**
+ * Apply a preset and report every conflict it had to resolve (#1199).
+ *
+ * The bindings of the actions a preset redefines are replaced, so an action
+ * never keeps two shortcuts. When the preset gives a shortcut another action
+ * already uses, the preset wins and the displaced action is moved to the
+ * shortcut the preset action gave up, so each action keeps exactly one
+ * shortcut and no shortcut is bound to two actions. Every such resolution is
+ * returned in `conflicts` with a readable message, never applied silently.
+ */
+export function applyPresetWithReport(
+  state: ShortcutState,
+  presetId: string
+): ApplyPresetResult {
+  const preset = state.presets.find((p) => p.id === presetId);
+  if (!preset) return { state, conflicts: [] };
+
+  // A preset lists full bindings; the last entry for an action is the one that
+  // applies, so a redefined action never keeps its previous shortcut twice.
+  const desired = new Map<string, ShortcutBinding>();
+  for (const binding of preset.bindings) {
+    desired.set(binding.action, binding);
+  }
+
+  const previousShortcutByAction = new Map(
+    state.bindings.map((b) => [b.action, b.shortcut])
+  );
+  const bindingsByAction = new Map<string, ShortcutBinding>();
+  const actionByShortcut = new Map<string, string>();
+  const conflicts: PresetConflict[] = [];
+
+  for (const binding of desired.values()) {
+    const occupant = actionByShortcut.get(binding.shortcut);
+    if (occupant === undefined) {
+      bindingsByAction.set(binding.action, binding);
+      actionByShortcut.set(binding.shortcut, binding.action);
+      continue;
+    }
+    if (occupant === binding.action) continue;
+
+    const displaced = bindingsByAction.get(occupant);
+    if (!displaced) continue;
+
+    const fallback = previousShortcutByAction.get(binding.action);
+    const displacedShortcut =
+      fallback && fallback !== binding.shortcut && !actionByShortcut.has(fallback)
+        ? fallback
+        : null;
+
+    bindingsByAction.set(binding.action, binding);
+    actionByShortcut.set(binding.shortcut, binding.action);
+    bindingsByAction.set(
+      displaced.action,
+      displacedShortcut ? { ...displaced, shortcut: displacedShortcut } : { ...displaced, shortcut: "" }
+    );
+    if (displacedShortcut) {
+      actionByShortcut.set(displacedShortcut, displaced.action);
+    }
+
+    conflicts.push({
+      shortcut: binding.shortcut,
+      presetAction: binding.action,
+      presetLabel: binding.label,
+      displacedAction: displaced.action,
+      displacedLabel: displaced.label,
+      displacedShortcut,
+      message:
+        `"${binding.label}" takes "${binding.shortcut}" from "${displaced.label}"` +
+        (displacedShortcut
+          ? `, which is moved to "${displacedShortcut}".`
+          : ", which keeps no shortcut."),
+    });
+  }
+
+  return {
+    state: {
+      ...state,
+      bindings: [...bindingsByAction.values()],
+      activePreset: presetId,
+    },
+    conflicts,
+  };
+}
+
+/**
  * Apply a preset.
  */
 export function applyPreset(state: ShortcutState, presetId: string): ShortcutState {
-  const preset = state.presets.find((p) => p.id === presetId);
-  if (!preset) return state;
-  return {
-    ...state,
-    bindings: [...preset.bindings],
-    activePreset: presetId,
-  };
+  return applyPresetWithReport(state, presetId).state;
 }
 
 /**
